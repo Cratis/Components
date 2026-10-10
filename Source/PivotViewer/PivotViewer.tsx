@@ -3,18 +3,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PivotViewerProps } from './types';
-import type { GroupingResult } from './engine/types';
 import { usePivotEngine } from './hooks/usePivotEngine';
-import { computeLayout } from './engine/layout';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
-import {
-    BASE_CARD_WIDTH,
-    BASE_CARD_HEIGHT,
-    CARDS_PER_COLUMN,
-    GROUP_SPACING,
-} from './constants';
+import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT } from './constants';
 import { PivotViewerMain } from './components/PivotViewerMain';
 import { FilterPanelContainer } from './components/FilterPanelContainer';
 import { ToolbarContainer } from './components/ToolbarContainer';
@@ -24,13 +17,17 @@ import type { ViewMode } from './components/Toolbar';
 import { useFieldExtractors } from './hooks/useFieldExtractors';
 import { presentGrouping } from './utils/presentGrouping';
 import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
-import { filterVisibleIdsBySearch } from './utils/search';
 import { resolveInternalItemIndex } from './utils/idResolution';
 import { useCardSelection } from './hooks/useCardSelection';
 import { useDetailPanelClose } from './hooks/useDetailPanelClose';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useAnimationModeTracking } from './hooks/useAnimationModeTracking';
 import { useViewModeScrollHandling } from './hooks/useViewModeScrollHandling';
+import { useVisibleIds } from './hooks/useVisibleIds';
+import { useRawGrouping } from './hooks/useRawGrouping';
+import { useColorCssVariables } from './hooks/useColorCssVariables';
+import { useViewerLayout } from './hooks/useViewerLayout';
+import { useScrollPositionTracking } from './hooks/useScrollPositionTracking';
 
 /**
  * A faceted, zoomable card-grid visualization inspired by Microsoft's PivotViewer.
@@ -80,8 +77,6 @@ export function PivotViewer<TItem extends object>({
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<TItem | null>(null);
     const [isZooming, setIsZooming] = useState(false);
-    const [visibleIds, setVisibleIds] = useState<Uint32Array>(new Uint32Array(0));
-    const [rawGrouping, setRawGrouping] = useState<GroupingResult>({ groups: [] });
     const [hoveredGroupIndex, setHoveredGroupIndex] = useState<number | null>(null);
     const [preSelectionState, setPreSelectionState] = useState<{
         zoom: number;
@@ -134,20 +129,7 @@ export function PivotViewer<TItem extends object>({
     // Track container dimensions for responsive layout
     const containerDimensions = useContainerDimensions(containerRef, isLoading);
 
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleScroll = () => {
-            setScrollPosition({
-                x: container.scrollLeft,
-                y: container.scrollTop,
-            });
-        };
-
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
-    }, []);
+    useScrollPositionTracking(containerRef, setScrollPosition);
 
     // Build field extractors for the columnar store
     const { fieldExtractors, indexFields } = useFieldExtractors(dimensions, filters);
@@ -175,127 +157,31 @@ export function PivotViewer<TItem extends object>({
 
     const currentGroupBy = useCurrentGroupBy(activeDimensionKey, dimensions);
 
-    // Apply filters, then narrow the result by search - a post-filter step over the visible
-    // Uint32 ids so it applies identically whether the engine result came from the worker or
-    // its synchronous fallback.
-    useEffect(() => {
-        if (!ready) return;
+    const visibleIds = useVisibleIds({
+        ready,
+        data,
+        currentFilters,
+        search,
+        searchFields,
+        engineApplyFilters,
+    });
 
-        let cancelled = false;
-        void engineApplyFilters(currentFilters).then((result) => {
-            if (cancelled) return;
-            let ids = result.visibleIds;
-
-            // If the engine failed to return any IDs while no filters are active,
-            // fall back to showing the full dataset so the canvas never renders empty.
-            if (ids.length === 0 && currentFilters.length === 0 && data.length > 0) {
-                const fallbackIds = new Uint32Array(data.length);
-                for (let i = 0; i < data.length; i++) {
-                    fallbackIds[i] = i;
-                }
-                ids = fallbackIds;
-            }
-
-            setVisibleIds(filterVisibleIdsBySearch(data, ids, search, searchFields));
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [ready, currentFilters, engineApplyFilters, data, search, searchFields]);
-
-    // Compute grouping. Every async branch ignores a result after its dependencies change, so an
-    // older worker response can never overwrite a newer filter/search/view selection.
-    useEffect(() => {
-        if (!ready || visibleIds.length === 0) {
-            setRawGrouping({ groups: [] });
-            return;
-        }
-
-        let cancelled = false;
-        if (viewMode === 'collection') {
-            // In collection mode, create a single group with all items.
-            if (activeDimensionKey) {
-                void sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
-                    if (cancelled) return;
-                    setRawGrouping({
-                        groups: [
-                            {
-                                key: 'all',
-                                label: 'All Items',
-                                value: 'all',
-                                ids: sortedIds,
-                                count: sortedIds.length,
-                            },
-                        ],
-                    });
-                });
-            } else {
-                setRawGrouping({
-                    groups: [
-                        {
-                            key: 'all',
-                            label: 'All Items',
-                            value: 'all',
-                            ids: visibleIds,
-                            count: visibleIds.length,
-                        },
-                    ],
-                });
-            }
-        } else {
-            void computeGrouping(visibleIds, currentGroupBy).then((result) => {
-                if (!cancelled) setRawGrouping(result);
-            });
-        }
-
-        return () => {
-            cancelled = true;
-        };
-    }, [
+    const rawGrouping = useRawGrouping({
         ready,
         visibleIds,
         currentGroupBy,
         viewMode,
+        activeDimensionKey,
         computeGrouping,
         sortIds,
-        activeDimensionKey,
-    ]);
+    });
 
     const grouping = useMemo(
         () => viewMode === 'grouped' ? presentGrouping(rawGrouping, activeDimension, data) : rawGrouping,
         [viewMode, rawGrouping, activeDimension, data],
     );
 
-    // Compute layout
-    const layout = useMemo(() => {
-        // Calculate layout at base dimensions (zoom is applied as transform)
-        const cardWidth = BASE_CARD_WIDTH;
-        const cardHeight = BASE_CARD_HEIGHT;
-        const containerWidth = containerDimensions.width / zoomLevel;
-        // For grouped mode, use fixed container height to ensure stable layout during zoom
-        const containerHeight =
-            viewMode === 'collection'
-                ? containerDimensions.height / zoomLevel
-                : containerDimensions.height;
-
-        const result = computeLayout(grouping, {
-            viewMode,
-            cardWidth,
-            cardHeight,
-            cardsPerColumn: CARDS_PER_COLUMN,
-            groupSpacing: GROUP_SPACING,
-            containerWidth,
-            containerHeight,
-        });
-
-        return result;
-    }, [
-        grouping,
-        viewMode,
-        zoomLevel,
-        containerDimensions.width,
-        containerDimensions.height,
-    ]);
+    const layout = useViewerLayout(grouping, viewMode, zoomLevel, containerDimensions);
 
     const resolveId = useCallback(
         (item: TItem) => resolveInternalItemIndex(data, item, getItemId),
@@ -396,29 +282,7 @@ export function PivotViewer<TItem extends object>({
         setSelectedItem(null);
     }, [viewMode]);
 
-    // Map provided color overrides to CSS variables understood by the component.
-    const cssVariables = useMemo(() => {
-        const vars: Record<string, string> = {};
-        if (!colors) return vars;
-        if (colors.primaryColor) vars['--cratis-primary-color'] = colors.primaryColor;
-        if (colors.primaryColorText)
-            vars['--cratis-primary-color-text'] = colors.primaryColorText;
-        if (colors.primary500) vars['--cratis-primary-500'] = colors.primary500;
-        if (colors.surfaceGround) vars['--cratis-surface-ground'] = colors.surfaceGround;
-        if (colors.surfaceCard) vars['--cratis-surface-card'] = colors.surfaceCard;
-        if (colors.surfaceSection)
-            vars['--cratis-surface-section'] = colors.surfaceSection;
-        if (colors.surfaceOverlay)
-            vars['--cratis-surface-overlay'] = colors.surfaceOverlay;
-        if (colors.surfaceBorder) vars['--cratis-surface-border'] = colors.surfaceBorder;
-        if (colors.textColor) vars['--cratis-text-color'] = colors.textColor;
-        if (colors.textColorSecondary)
-            vars['--cratis-text-color-secondary'] = colors.textColorSecondary;
-        if (colors.highlightBg) vars['--cratis-highlight-bg'] = colors.highlightBg;
-        if (colors.maskbg) vars['--cratis-maskbg'] = colors.maskbg;
-        if (colors.focusRing) vars['--cratis-focus-ring'] = colors.focusRing;
-        return vars;
-    }, [colors]);
+    const cssVariables = useColorCssVariables(colors);
 
     return (
         <div className={viewerClassName} style={cssVariables as React.CSSProperties}>

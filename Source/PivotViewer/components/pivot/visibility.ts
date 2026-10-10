@@ -1,11 +1,23 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import * as PIXI from 'pixi.js';
+import type * as PIXI from 'pixi.js';
 import type { CardSprite } from './constants';
-import { CARD_GAP } from './constants';
 import type { LayoutResult } from '../../engine/types';
-import { destroySprite } from './sprites';
+import {
+    createVisibleRect,
+    rectIntersects,
+    tryConsumeCreationBudget,
+    measureViewport,
+    applyContainerTransforms,
+    computeWorldViewport,
+    collectInViewportIds,
+    addLastRowIds,
+    applySpriteVisibility,
+    sweepHiddenSprites,
+    spawnSprite,
+    retargetSprite,
+} from './visibilityHelpers';
 
 export interface SyncParams<TItem> {
     root: PIXI.Container | null;
@@ -51,112 +63,14 @@ export function createTransitionCompleteSync<TItem>(getParams: () => SyncParams<
     };
 }
 
-interface VisibleRect {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-    epsilon: number;
-    cardWidth: number;
-    cardHeight: number;
-}
-
-interface VisibleRectSource {
-    panWorldX: number;
-    panWorldY: number;
-    worldWidth: number;
-    worldHeight: number;
-    invScale: number;
-    cardWidth: number;
-    cardHeight: number;
-}
-
-/**
- * Builds the unbuffered visible rect in world units, with a zoom-aware rounding tolerance. Cards
- * intersecting it are created first and are never subject to the per-frame budget or the sweep.
- */
-function createVisibleRect(source: VisibleRectSource): VisibleRect {
-    return {
-        left: source.panWorldX,
-        right: source.panWorldX + source.worldWidth,
-        top: source.panWorldY,
-        bottom: source.panWorldY + source.worldHeight,
-        epsilon: Math.max(0.5, 0.5 * source.invScale),
-        cardWidth: source.cardWidth,
-        cardHeight: source.cardHeight,
-    };
-}
-
-function rectIntersects(rect: VisibleRect, x: number, y: number) {
-    return x + rect.cardWidth >= rect.left - rect.epsilon &&
-        x <= rect.right + rect.epsilon &&
-        y + rect.cardHeight >= rect.top - rect.epsilon &&
-        y <= rect.bottom + rect.epsilon;
-}
-
-/** When the sprite was hidden, or undefined when it is not hidden or its card is on screen (never swept). */
-function sweepableHiddenAt(sprite: CardSprite, position: { x: number; y: number } | undefined, rect: VisibleRect) {
-    if (position && rectIntersects(rect, position.x, position.y)) return undefined;
-    return (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
-}
-
-/**
- * Decides whether a sprite may be created this frame. Visible cards are always allowed;
- * buffer-only cards are limited by the budget and mark the sync as pending when deferred.
- */
-function tryConsumeCreationBudget(budget: { created: number; pending: boolean; max: number }, isVisible: boolean) {
-    if (isVisible) return true;
-    if (budget.created >= budget.max) {
-        budget.pending = true;
-        return false;
-    }
-    budget.created++;
-    return true;
-}
-
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncResult {
-    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, transitionSeenIds } = params;
+    const { root, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, updateCardContent, isViewTransition } = params;
     if (!root || !container) return { pending: false };
 
     void _visibleIds;
 
-    // Use the container's measured client size for the viewport dimensions
-    // (in pixels). The passed `viewportWidth`/`viewportHeight` can be stale
-    // when the browser/device zoom changes; `clientWidth/clientHeight` are
-    // authoritative for the actual visible pixel area.
-    const viewportPxWidth = container.clientWidth || viewportWidth;
-    const viewportPxHeight = container.clientHeight || viewportHeight;
-
-    const contentHeightPx = (layout.totalHeight || 0) * zoomLevel;
-    let offsetY = 0;
-
-    // If content fits vertically within the viewport, align relative to bottom.
-    // The spacer ensures container isn't scrollable in this case (scrollTop=0).
-    // The items are at large Y coordinates relative to layout.totalHeight.
-    // We want the bottom of the layout (totalHeight) to align with viewport bottom.
-    if (viewMode === 'grouped' && contentHeightPx < viewportPxHeight) {
-        // Calculate offset in pixels to shift the content down
-        offsetY = viewportPxHeight - contentHeightPx;
-    }
-
-    // Use the container's actual scroll position for positioning, not the passed panX/panY
-    // which may be stale (from React state) compared to live DOM scroll values.
-    const actualScrollX = typeof container.scrollLeft === 'number' ? container.scrollLeft : (panX || 0);
-    const actualScrollY = typeof container.scrollTop === 'number' ? container.scrollTop : (panY || 0);
-
-    // Apply scaling and position to root container
-    if (root) {
-        root.scale.set(zoomLevel);
-        // Standard position: -scrollX, -scrollY
-        // Plus vertical alignment offset if zoomed out
-        root.position.set(-actualScrollX, offsetY - actualScrollY);
-    }
-    
-    // Apply synchronization to groups container if present
-    if (groupsContainer) {
-        groupsContainer.scale.set(zoomLevel);
-        groupsContainer.position.set(-actualScrollX, offsetY - actualScrollY);
-    }
+    const metrics = measureViewport(params, container);
+    applyContainerTransforms(params, metrics);
 
     // `visibleIds` comes from callers but this module iterates `layout.positions`
 
@@ -167,163 +81,26 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
     // This compensation is only useful for rapid scrolling/panning where sprites
     // need to maintain visual stability, which isn't the case during view transitions.
 
-    const visibleSet = new Set<string | number>();
+    const viewport = computeWorldViewport(params, metrics);
+    const visibleRect = createVisibleRect({
+        panWorldX: viewport.panWorldX,
+        panWorldY: viewport.panWorldY,
+        worldWidth: viewport.worldWidth,
+        worldHeight: viewport.worldHeight,
+        invScale: viewport.invScale,
+        cardWidth,
+        cardHeight,
+    });
 
-    // Increase buffer (in world units) to reduce edge cases where rapid
-    // scrolling skips sprite creation. Keep buffer in world units and convert
-    // DOM pixel measurements into world coordinates below to avoid mixing
-    // coordinate spaces which can cause precision drift at browser zooms.
-    const baseBufferWorld = Math.max(cardWidth, cardHeight) * 4;
-    // Ensure buffer scales with viewport size (in world units) so that when
-    // zoomed out we still pre-create enough sprites ahead of the viewport.
-    const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
-    // The layout positions are in world units; when the root container is scaled
-    // (zoomed) the rendered pixel position = position * zoomLevel. The DOM
-    // scroll positions (`container.scrollLeft/Top`) are the authoritative pixel
-    // camera offsets; prefer them over the passed `panX/panY` to avoid stale
-    // values or race conditions between React state and direct DOM updates.
-    const effectivePanX = typeof container.scrollLeft === 'number' ? container.scrollLeft : (panX || 0);
-    const effectivePanY = typeof container.scrollTop === 'number' ? container.scrollTop : (panY || 0);
-
-    // Convert pixel-based DOM measurements into world units so we compare like
-    // with like. root.position is set using -pixels, so the mapping
-    // from DOM scroll (pixels) to world units is: world = pixels / zoomLevel.
-    // OffsetY is already in pixels and doesn't need scaling in panWorldY calc
-    // because panWorldY is used for viewport buffering/culling, which is relative
-    // to the "camera" position in world space.
-    // The camera world Y = (scrollTop - offsetY) / zoomLevel.
-    const effectivePanYWithOffset = effectivePanY - offsetY;
-    const panWorldX = effectivePanX * invScale;
-    const panWorldY = effectivePanYWithOffset * invScale;
-
-    const viewportWorldWidth = viewportPxWidth * invScale;
-    const viewportWorldHeight = viewportPxHeight * invScale;
-
-    // Ensure bufferWorld is calculated from the actual measured viewport
-    // in world units (after converting client pixel dims using invScale).
-    // Make buffer adaptive to zoom: when zoomed out (invScale > 1) a small
-    // pixel scroll maps to a larger world delta, so increase the buffer.
-    // Use the larger of width/height to ensure we buffer enough in both directions.
-    const bufferWorld = Math.max(baseBufferWorld * invScale, Math.max(viewportWorldWidth, viewportWorldHeight) * 2.0, baseBufferWorld);
-
-    // Do not clamp viewport edges to 0 — allow negative top/left values so the
-    // visible window correctly follows the scroll even when the buffer is
-    // larger than the current scroll offset.
-    const viewportLeftWorld = panWorldX - bufferWorld;
-    const viewportRightWorld = panWorldX + viewportWorldWidth + bufferWorld;
-    const viewportTopWorld = panWorldY - bufferWorld;
-    const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
-
-    const visibleRect = createVisibleRect({ panWorldX, panWorldY, worldWidth: viewportWorldWidth, worldHeight: viewportWorldHeight, invScale, cardWidth, cardHeight });
-
-    const inViewportIds: (string | number)[] = [];
-    // Small tolerance in world units to avoid floating-point edge cases when
-    // browser/device zoom or high scroll values produce tiny rounding errors.
-    const worldEpsilon = Math.max(0.5, 0.5 * invScale);
-    const intersectsViewport = (x: number, y: number) =>
-        x + cardWidth >= viewportLeftWorld - worldEpsilon &&
-        x <= viewportRightWorld + worldEpsilon &&
-        y + cardHeight >= viewportTopWorld - worldEpsilon &&
-        y <= viewportBottomWorld + worldEpsilon;
-    const addVisibleId = (id: string | number) => {
-        if (!visibleSet.has(id)) {
-            inViewportIds.push(id);
-            visibleSet.add(id);
-        }
-    };
-
-    // Target positions are authoritative, but during a transition cards may
-    // still be at their old positions while the camera catches up.
-    for (const [id, position] of layout.positions) {
-        if (position && intersectsViewport(position.x, position.y)) addVisibleId(id);
-    }
-    if (isViewTransition) {
-        for (const [id, position] of prevLayout?.positions ?? []) {
-            if (!sprites.has(id) && !transitionSeenIds.has(id) && layout.positions.has(id) && position && intersectsViewport(position.x, position.y)) addVisibleId(id);
-        }
-        for (const [id, sprite] of sprites) {
-            transitionSeenIds.add(id);
-            if (layout.positions.has(id) && intersectsViewport(sprite.currentX, sprite.currentY)) addVisibleId(id);
-        }
-    }
-
-    // Ensure last rows are present when the user scrolls near the bottom.
-    // Compute slot/row information and force-insert IDs from the last few
-    // rows to avoid missing tiles due to rounding/precision at zoom levels.
-    try {
-        const slotHeight = cardHeight + (CARD_GAP || 8);
-        const totalRows = Math.ceil((layout.totalHeight || 0) / slotHeight) || 0;
-        // Determine how many rows are visible in the viewport (world units),
-        // then prefetch a fraction of that adjusted by zoom (invScale).
-        const rowsVisible = Math.max(1, Math.ceil(viewportWorldHeight / slotHeight));
-        const prefetchMultiplier = 0.75; // fraction of viewport to prefetch
-        const prefetchRows = Math.max(2, Math.ceil(rowsVisible * prefetchMultiplier * Math.max(1, invScale)));
-        const lastRowThresholdY = Math.max(0, (totalRows - prefetchRows) * slotHeight);
-        for (const [id, position] of layout.positions) {
-            if (position.y >= lastRowThresholdY) {
-                if (!visibleSet.has(id)) {
-                    inViewportIds.push(id);
-                    visibleSet.add(id);
-                }
-            }
-        }
-    } catch (e) {
-        void e;
-    }
+    const collector = collectInViewportIds(params, viewport);
+    addLastRowIds(params, viewport, collector);
+    const { ids: inViewportIds, set: visibleSet } = collector;
 
     // Outside transitions, avoid mass-hiding sprites on a potentially stale viewport calculation.
     const aggressiveCull = !isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5));
 
-    for (const [id, sprite] of sprites) {
-        if (!visibleSet.has(id)) {
-            if (aggressiveCull) {
-                // Keep sprite visible this frame to avoid visual holes
-                try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
-                continue;
-            }
-
-            try {
-                if (sprite.container) {
-                    sprite.container.visible = false;
-                }
-                (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt ??= Date.now();
-            } catch (e) {
-                void e;
-            }
-        } else {
-            try {
-                if (sprite.container) {
-                    sprite.container.visible = true;
-                }
-                if ((sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt) delete (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
-            } catch (e) { void e; }
-        }
-    }
-
-    // Sweep: actually destroy sprites that have been hidden longer than threshold
-    try {
-        const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
-        const now = Date.now();
-        for (const [id, sprite] of sprites) {
-            const lastHidden = sweepableHiddenAt(sprite, layout.positions.get(id), visibleRect);
-            if (lastHidden && (params.sweepImmediately || now - lastHidden > SWEEP_MS)) {
-                try {
-                    // remove from parent if present
-                    if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
-                } catch (e) {
-                    void e;
-                }
-                try {
-                    destroySprite(sprite);
-                } catch (e) {
-                    void e;
-                }
-                sprites.delete(id);
-            }
-        }
-    } catch (e) {
-        void e;
-    }
+    applySpriteVisibility(sprites, visibleSet, aggressiveCull);
+    sweepHiddenSprites(sprites, layout, visibleRect, params.sweepImmediately);
 
     // Limit the number of buffer-only sprites created per frame to avoid choking the GPU/CPU
     // when scrolling rapidly or zooming out significantly.
@@ -341,78 +118,10 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
             if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y))) {
                 continue;
             }
-
-            let startX = position.x;
-            let startY = position.y;
-            let shouldAnimate = false;
-
-            // If view transition, try to find old position to fly in from
-            if (isViewTransition && prevLayout && prevLayout.positions.has(id)) {
-                const oldPos = prevLayout.positions.get(id);
-                if (oldPos && intersectsViewport(oldPos.x, oldPos.y)) {
-                    startX = oldPos.x;
-                    startY = oldPos.y;
-
-                    // If we have a pan delta (camera jump), we need to adjust the start position
-                    // so that the sprite appears at the same visual location relative to the NEW camera.
-                    // StartWorld = OldWorld + PanDelta
-                    if (panDeltaX || panDeltaY) {
-                        const dx = (panDeltaX || 0) / (zoomLevel || 1);
-                        const dy = (panDeltaY || 0) / (zoomLevel || 1);
-                        startX += dx;
-                        startY += dy;
-                    }
-
-                    shouldAnimate = true;
-                }
-            }
-
-            sprite = createCardSprite(id, startX, startY);
-            sprites.set(id, sprite);
-            if (isViewTransition) transitionSeenIds.add(id);
-            if (sprite.container) {
-                root.addChild(sprite.container);
-                sprite.currentX = startX;
-                sprite.currentY = startY;
-                // Keep sprite.container positioned in world units; animation/update
-                // loop will apply root.scale/position to convert to pixels.
-                sprite.container.position.set(startX, startY);
-            }
-
-            if (shouldAnimate) {
-                sprite.targetX = position.x;
-                sprite.targetY = position.y;
-                sprite.startX = startX;
-                sprite.startY = startY;
-                sprite.animationStartTime = Date.now();
-                sprite.animationDelay = Math.random() * 300;
-            }
+            sprite = spawnSprite(params, viewport, root, id, position);
         }
 
-        // Check if target changed to trigger animation
-        const targetChanged = sprite.targetX !== position.x || sprite.targetY !== position.y;
-        if (targetChanged) {
-            if (isViewTransition) {
-                // Only set up animation if not already animating - don't reset animation
-                // when targets change during layout recalculations
-                if (sprite.animationStartTime === undefined) {
-                    sprite.startX = sprite.currentX;
-                    sprite.startY = sprite.currentY;
-                    sprite.animationStartTime = Date.now();
-                    // Add random delay for "organic" fly effect
-                    sprite.animationDelay = Math.random() * 300;
-                }
-                // Always update target to the new position (animation will smoothly
-                // adjust to the new target)
-                sprite.targetX = position.x;
-                sprite.targetY = position.y;
-            } else {
-                sprite.targetX = position.x;
-                sprite.targetY = position.y;
-                delete sprite.animationStartTime;
-                delete sprite.animationDelay;
-            }
-        }
+        retargetSprite(sprite, position, isViewTransition);
 
         const item = items[Number(id)];
         if (item) {
