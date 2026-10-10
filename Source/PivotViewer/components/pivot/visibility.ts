@@ -64,7 +64,7 @@ export function createTransitionCompleteSync<TItem>(getParams: () => SyncParams<
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncResult {
-    const { root, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, updateCardContent, isViewTransition } = params;
+    const { root, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, updateCardContent, createCardSprite, isViewTransition } = params;
     if (!root || !container) return { pending: false };
 
     void _visibleIds;
@@ -118,7 +118,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
             if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y))) {
                 continue;
             }
-            sprite = spawnSprite(params, viewport, root, id, position);
+            sprite = spawnSprite(params, viewport, root, id, position, createCardSprite);
         }
 
         retargetSprite(sprite, position, isViewTransition);

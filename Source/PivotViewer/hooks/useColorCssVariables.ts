@@ -34,8 +34,8 @@ export function useColorCssVariables(
         const vars: Record<string, string> = {};
         if (!colors) return vars;
         for (const [colorKey, variable] of colorVariables) {
-            const value = colors[colorKey];
-            if (value) vars[variable] = value;
+            // Read the property twice (condition, then assignment), exactly as the original did.
+            if (colors[colorKey]) vars[variable] = colors[colorKey] as string;
         }
         return vars;
     }, [colors]);

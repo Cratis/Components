@@ -399,10 +399,11 @@ export function spawnSprite<TItem>(
     root: PIXI.Container,
     id: SpriteId,
     position: Point,
+    createCardSprite: SyncParams<TItem>['createCardSprite'],
 ): CardSprite {
     const { startX, startY, shouldAnimate } = resolveSpawnStart(params, viewport, id, position);
 
-    const sprite = params.createCardSprite(id, startX, startY);
+    const sprite = createCardSprite(id, startX, startY);
     params.sprites.set(id, sprite);
     if (params.isViewTransition) params.transitionSeenIds.add(id);
     if (sprite.container) {
