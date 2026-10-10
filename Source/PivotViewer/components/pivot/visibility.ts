@@ -51,6 +51,56 @@ export function createTransitionCompleteSync<TItem>(getParams: () => SyncParams<
     };
 }
 
+interface VisibleRect {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+    epsilon: number;
+}
+
+/**
+ * Builds the unbuffered visible rect in world units, with a zoom-aware rounding tolerance. Cards
+ * intersecting it are created first and are never subject to the per-frame budget or the sweep.
+ */
+function createVisibleRect(panWorldX: number, panWorldY: number, worldWidth: number, worldHeight: number, invScale: number): VisibleRect {
+    return {
+        left: panWorldX,
+        right: panWorldX + worldWidth,
+        top: panWorldY,
+        bottom: panWorldY + worldHeight,
+        epsilon: Math.max(0.5, 0.5 * invScale),
+    };
+}
+
+function rectIntersects(rect: VisibleRect, x: number, y: number, cardWidth: number, cardHeight: number) {
+    return x + cardWidth >= rect.left - rect.epsilon &&
+        x <= rect.right + rect.epsilon &&
+        y + cardHeight >= rect.top - rect.epsilon &&
+        y <= rect.bottom + rect.epsilon;
+}
+
+/** When the sprite was hidden, or undefined when it is not hidden or its card is on screen (never swept). */
+function sweepableHiddenAt(sprite: CardSprite, layout: LayoutResult, id: string | number, rect: VisibleRect, cardWidth: number, cardHeight: number) {
+    const position = layout.positions.get(id);
+    if (position && rectIntersects(rect, position.x, position.y, cardWidth, cardHeight)) return undefined;
+    return (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
+}
+
+/**
+ * Decides whether a sprite may be created this frame. Visible cards are always allowed;
+ * buffer-only cards are limited by the budget and mark the sync as pending when deferred.
+ */
+function tryConsumeCreationBudget(budget: { created: number; pending: boolean; max: number }, isVisible: boolean) {
+    if (isVisible) return true;
+    if (budget.created >= budget.max) {
+        budget.pending = true;
+        return false;
+    }
+    budget.created++;
+    return true;
+}
+
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncResult {
     const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, transitionSeenIds } = params;
     if (!root || !container) return { pending: false };
@@ -151,14 +201,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
     const viewportTopWorld = panWorldY - bufferWorld;
     const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
 
-    // The actual visible rect (no buffer), in world units. Cards intersecting it are
-    // created first and are never subject to the per-frame budget or the sweep.
-    const worldEpsilonVisible = Math.max(0.5, 0.5 * invScale);
-    const intersectsVisibleRect = (x: number, y: number) =>
-        x + cardWidth >= panWorldX - worldEpsilonVisible &&
-        x <= panWorldX + viewportWorldWidth + worldEpsilonVisible &&
-        y + cardHeight >= panWorldY - worldEpsilonVisible &&
-        y <= panWorldY + viewportWorldHeight + worldEpsilonVisible;
+    const visibleRect = createVisibleRect(panWorldX, panWorldY, viewportWorldWidth, viewportWorldHeight, invScale);
 
     const inViewportIds: (string | number)[] = [];
     // Small tolerance in world units to avoid floating-point edge cases when
@@ -249,9 +292,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
         for (const [id, sprite] of sprites) {
-            const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
-            const layoutPosition = layout.positions.get(id);
-            if (layoutPosition && intersectsVisibleRect(layoutPosition.x, layoutPosition.y)) continue;
+            const lastHidden = sweepableHiddenAt(sprite, layout, id, visibleRect, cardWidth, cardHeight);
             if (lastHidden && (params.sweepImmediately || now - lastHidden > SWEEP_MS)) {
                 try {
                     // remove from parent if present
@@ -272,12 +313,9 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
     }
 
     // Limit the number of buffer-only sprites created per frame to avoid choking the GPU/CPU
-    // when scrolling rapidly or zooming out significantly. Cards in the visible rect are
-    // always created immediately.
+    // when scrolling rapidly or zooming out significantly.
     const MAX_SPRITES_PER_FRAME = 50;
-    let createdCount = 0;
-    let pending = false;
-
+    const budget = { created: 0, pending: false, max: MAX_SPRITES_PER_FRAME };
 
     for (const id of inViewportIds) {
         const position = layout.positions.get(id);
@@ -287,12 +325,8 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
 
         let sprite = sprites.get(id);
         if (!sprite) {
-            if (!intersectsVisibleRect(position.x, position.y)) {
-                if (createdCount >= MAX_SPRITES_PER_FRAME) {
-                    pending = true;
-                    continue;
-                }
-                createdCount++;
+            if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y, cardWidth, cardHeight))) {
+                continue;
             }
 
             let startX = position.x;
@@ -372,6 +406,5 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
             updateCardContent(sprite, item);
         }
     }
-
-    return { pending };
+    return { pending: budget.pending };
 }
