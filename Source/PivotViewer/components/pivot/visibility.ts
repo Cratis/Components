@@ -64,13 +64,21 @@ export function createTransitionCompleteSync<TItem>(getParams: () => SyncParams<
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncResult {
-    const { root, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, updateCardContent, createCardSprite, isViewTransition } = params;
+    // Read every parameter exactly once, in this order, as a snapshot. Helpers use the snapshot
+    // so that later changes made by callbacks (e.g. createCardSprite) are not observed mid-sync.
+    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, transitionSeenIds } = params;
     if (!root || !container) return { pending: false };
 
     void _visibleIds;
 
-    const metrics = measureViewport(params, container);
-    applyContainerTransforms(params, metrics);
+    const snapshot: SyncParams<TItem> = {
+        root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight,
+        panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, zoomLevel,
+        createCardSprite, updateCardContent, isViewTransition, viewMode, prevLayout, transitionSeenIds,
+    };
+
+    const metrics = measureViewport(snapshot, container);
+    applyContainerTransforms(snapshot, metrics);
 
     // `visibleIds` comes from callers but this module iterates `layout.positions`
 
@@ -81,7 +89,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
     // This compensation is only useful for rapid scrolling/panning where sprites
     // need to maintain visual stability, which isn't the case during view transitions.
 
-    const viewport = computeWorldViewport(params, metrics);
+    const viewport = computeWorldViewport(snapshot, metrics);
     const visibleRect = createVisibleRect({
         panWorldX: viewport.panWorldX,
         panWorldY: viewport.panWorldY,
@@ -92,15 +100,15 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
         cardHeight,
     });
 
-    const collector = collectInViewportIds(params, viewport);
-    addLastRowIds(params, viewport, collector);
+    const collector = collectInViewportIds(snapshot, viewport);
+    addLastRowIds(snapshot, viewport, collector);
     const { ids: inViewportIds, set: visibleSet } = collector;
 
     // Outside transitions, avoid mass-hiding sprites on a potentially stale viewport calculation.
     const aggressiveCull = !isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5));
 
     applySpriteVisibility(sprites, visibleSet, aggressiveCull);
-    sweepHiddenSprites(sprites, layout, visibleRect, params.sweepImmediately);
+    sweepHiddenSprites(sprites, layout, visibleRect, () => params.sweepImmediately);
 
     // Limit the number of buffer-only sprites created per frame to avoid choking the GPU/CPU
     // when scrolling rapidly or zooming out significantly.
@@ -118,7 +126,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
             if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y))) {
                 continue;
             }
-            sprite = spawnSprite(params, viewport, root, id, position, createCardSprite);
+            sprite = spawnSprite(snapshot, viewport, root, id, position, createCardSprite);
         }
 
         retargetSprite(sprite, position, isViewTransition);

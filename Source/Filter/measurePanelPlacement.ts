@@ -64,8 +64,8 @@ const containerTypePattern = /^(?:size|inline-size)$/u;
 const willChangePattern = /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u;
 
 function hasBackdropFilter(rootStyle: CSSStyleDeclaration): boolean {
-    const backdropFilter = rootStyle.getPropertyValue('backdrop-filter');
-    return backdropFilter !== 'none' && backdropFilter !== '';
+    return rootStyle.getPropertyValue('backdrop-filter') !== 'none' &&
+        rootStyle.getPropertyValue('backdrop-filter') !== '';
 }
 
 function hasFixedContainingStyle(rootStyle: CSSStyleDeclaration): boolean {
@@ -87,35 +87,33 @@ function edgesMatchPaddingBox(
     rootEdges: ProbeEdges,
     rootRect: DOMRect,
     rootStyle: CSSStyleDeclaration,
+    scaleX: number,
+    scaleY: number,
 ): boolean {
-    const scaleX = rootEdges.origin.width;
-    const scaleY = rootEdges.origin.height;
-    const pairs: Array<[number, number]> = [
-        [rootEdges.origin.left, rootRect.left + parseFloat(rootStyle.borderLeftWidth) * scaleX],
-        [rootEdges.origin.top, rootRect.top + parseFloat(rootStyle.borderTopWidth) * scaleY],
-        [rootEdges.right, rootRect.right - parseFloat(rootStyle.borderRightWidth) * scaleX],
-        [rootEdges.bottom, rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * scaleY],
+    // Lazy checks: each edge is read only when the previous edges matched.
+    const edgeChecks: Array<() => boolean> = [
+        () => Math.abs(rootEdges.origin.left - (rootRect.left + parseFloat(rootStyle.borderLeftWidth) * scaleX)) <= edgeTolerance,
+        () => Math.abs(rootEdges.origin.top - (rootRect.top + parseFloat(rootStyle.borderTopWidth) * scaleY)) <= edgeTolerance,
+        () => Math.abs(rootEdges.right - (rootRect.right - parseFloat(rootStyle.borderRightWidth) * scaleX)) <= edgeTolerance,
+        () => Math.abs(rootEdges.bottom - (rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * scaleY)) <= edgeTolerance,
     ];
-    return pairs.every(([actual, expected]) => Math.abs(actual - expected) <= edgeTolerance);
+    return edgeChecks.every(check => check());
 }
 
-function edgesDiffer(a: ProbeEdges, b: ProbeEdges): boolean {
-    const pairs: Array<[number, number]> = [
-        [a.origin.left, b.origin.left],
-        [a.origin.top, b.origin.top],
-        [a.right, b.right],
-        [a.bottom, b.bottom],
+function edgesDiffer(probeEdges: ProbeEdges, rootEdges: ProbeEdges): boolean {
+    // Lazy checks: each edge is read only when the previous edges did not differ.
+    const edgeChecks: Array<() => boolean> = [
+        () => Math.abs(probeEdges.origin.left - rootEdges.origin.left) > edgeTolerance,
+        () => Math.abs(probeEdges.origin.top - rootEdges.origin.top) > edgeTolerance,
+        () => Math.abs(probeEdges.right - rootEdges.right) > edgeTolerance,
+        () => Math.abs(probeEdges.bottom - rootEdges.bottom) > edgeTolerance,
     ];
-    return pairs.some(([first, second]) => Math.abs(first - second) > edgeTolerance);
+    return edgeChecks.some(check => check());
 }
 
 /** Layoutless environments cannot supply a modal clip rect. */
 function hasLayout(rect: DOMRect): boolean {
     return rect.right > rect.left && rect.bottom > rect.top;
-}
-
-function rootOwnsBlock(rootEdges: ProbeEdges, rootRect: DOMRect, rootStyle: CSSStyleDeclaration): boolean {
-    return hasFixedContainingStyle(rootStyle) || edgesMatchPaddingBox(rootEdges, rootRect, rootStyle);
 }
 
 /** The modal's rect when the modal or the portal's descendant block owns the fixed containing block. */
@@ -128,12 +126,17 @@ function resolveModalClip(
     const rootRect = modalRoot.getBoundingClientRect();
     const rootEdges = rootProbe ? measureProbe(rootProbe) : edges;
     const rootStyle = getComputedStyle(modalRoot);
+    const rootScaleX = rootEdges.origin.width;
+    const rootScaleY = rootEdges.origin.height;
     // Axis-aligned bounding rects lose the padding origin under rotation/skew.
     // The root's own containing-block properties cover those cases; the probe
     // comparison below still handles nested portal containers geometrically.
+    const rootOwnsBlock = hasFixedContainingStyle(rootStyle) ||
+        edgesMatchPaddingBox(rootEdges, rootRect, rootStyle, rootScaleX, rootScaleY);
+    // Evaluated even when the root owns the block, as the probe edges are always compared.
     const descendantOwnsBlock = rootProbe !== null && edgesDiffer(edges, rootEdges);
-    if (!rootOwnsBlock(rootEdges, rootRect, rootStyle) && !descendantOwnsBlock) return null;
-    return hasLayout(rootRect) ? rootRect : null;
+    const ownsBlock = rootOwnsBlock || descendantOwnsBlock;
+    return ownsBlock && hasLayout(rootRect) ? rootRect : null;
 }
 
 /** The viewport rectangle, narrowed to the modal clip when there is one. */

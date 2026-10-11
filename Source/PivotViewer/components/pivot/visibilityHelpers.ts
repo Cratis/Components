@@ -362,9 +362,10 @@ export function removeSprite(sprite: CardSprite) {
     }
 }
 
-function isSweepDue(lastHidden: number | undefined, now: number, thresholdMs: number, immediately: boolean | undefined) {
+/** The immediate-sweep flag is read lazily, only for sprites that are hidden and off screen. */
+function isSweepDue(lastHidden: number | undefined, now: number, thresholdMs: number, readImmediately: () => boolean | undefined) {
     if (!lastHidden) return false;
-    return !!immediately || now - lastHidden > thresholdMs;
+    return !!readImmediately() || now - lastHidden > thresholdMs;
 }
 
 /** Sweep: actually destroy sprites that have been hidden longer than threshold. */
@@ -372,14 +373,14 @@ export function sweepHiddenSprites(
     sprites: SpriteMap,
     layout: LayoutResult,
     visibleRect: VisibleRect,
-    sweepImmediately: boolean | undefined,
+    readSweepImmediately: () => boolean | undefined,
 ) {
     try {
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
         for (const [id, sprite] of sprites) {
             const lastHidden = sweepableHiddenAt(sprite, layout.positions.get(id), visibleRect);
-            if (isSweepDue(lastHidden, now, SWEEP_MS, sweepImmediately)) {
+            if (isSweepDue(lastHidden, now, SWEEP_MS, readSweepImmediately)) {
                 removeSprite(sprite);
                 sprites.delete(id);
             }
@@ -402,8 +403,8 @@ export function resolveSpawnStart<TItem>(
     // If we have a pan delta (camera jump), we need to adjust the start position
     // so that the sprite appears at the same visual location relative to the NEW camera.
     // StartWorld = OldWorld + PanDelta
-    const { dx, dy } = panDeltaInWorld(params);
-    return { startX: oldPos.x + dx, startY: oldPos.y + dy, shouldAnimate: true };
+    const { deltaX, deltaY } = panDeltaInWorld(params);
+    return { startX: oldPos.x + deltaX, startY: oldPos.y + deltaY, shouldAnimate: true };
 }
 
 /** During a view transition, the previous position of the card if it was inside the buffered viewport. */
@@ -416,10 +417,10 @@ function findPreviousPositionInViewport<TItem>(params: SyncParams<TItem>, viewpo
 
 function panDeltaInWorld<TItem>(params: SyncParams<TItem>) {
     const { panDeltaX, panDeltaY, zoomLevel } = params;
-    if (!panDeltaX && !panDeltaY) return { dx: 0, dy: 0 };
+    if (!panDeltaX && !panDeltaY) return { deltaX: 0, deltaY: 0 };
     return {
-        dx: (panDeltaX || 0) / (zoomLevel || 1),
-        dy: (panDeltaY || 0) / (zoomLevel || 1),
+        deltaX: (panDeltaX || 0) / (zoomLevel || 1),
+        deltaY: (panDeltaY || 0) / (zoomLevel || 1),
     };
 }
 

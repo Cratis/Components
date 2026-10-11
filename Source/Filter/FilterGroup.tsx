@@ -53,7 +53,7 @@ interface TriggerProps extends GroupKind {
     isExpanded: boolean;
     canClear: boolean;
     clearLabel: string;
-    selectionCount: number;
+    selections: Set<string>;
     hasRange: boolean;
     hasCustomValue: boolean;
     onToggleExpanded: () => void;
@@ -67,7 +67,7 @@ function FilterGroupTrigger({
     clearLabel,
     isNumeric,
     isCustom,
-    selectionCount,
+    selections,
     hasRange,
     hasCustomValue,
     onToggleExpanded,
@@ -96,9 +96,9 @@ function FilterGroupTrigger({
                 <span className='pv-filter-trigger-meta'>
                     {!isNumeric &&
                         !isCustom &&
-                        selectionCount > 0 && (
+                        selections.size > 0 && (
                             <span className='pv-filter-count'>
-                                {selectionCount}
+                                {selections.size}
                             </span>
                         )}
                     {isNumeric && hasRange && (
@@ -256,7 +256,7 @@ export function FilterGroup({
                 isDate={isDate}
                 isNumeric={isNumeric}
                 isCustom={isCustom}
-                selectionCount={selections.size}
+                selections={selections}
                 hasRange={Boolean(rangeSelection)}
                 hasCustomValue={hasCustomValue}
                 onToggleExpanded={() => onExpandedFilterChange(isExpanded ? null : filter.key)}
