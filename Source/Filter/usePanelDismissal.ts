@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect } from 'react';
-import type { RefObject } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 
 /** Inputs for {@link useDismissOnOutsideClick}. */
 export interface UseDismissOnOutsideClickOptions {
@@ -10,6 +10,16 @@ export interface UseDismissOnOutsideClickOptions {
     anchorRef: RefObject<HTMLButtonElement | null>;
     panelRef: RefObject<HTMLDivElement | null>;
     onClose: () => void;
+}
+
+/** True when the element is mounted and does not contain the target. */
+function isOutside(target: Node, element: HTMLElement | null): boolean {
+    return !!element && !element.contains(target);
+}
+
+/** True for an Escape key press that nobody else has handled. */
+function isUnhandledEscape(event: KeyboardEvent): boolean {
+    return event.key === 'Escape' && !event.defaultPrevented && !event.isComposing;
 }
 
 /**
@@ -27,11 +37,7 @@ export function useDismissOnOutsideClick({
         if (!isOpen) return;
 
         const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Node;
-            const panel = panelRef.current;
-            const anchor = anchorRef.current;
-
-            if (panel && !panel.contains(target) && anchor && !anchor.contains(target)) {
+            if (isOutside(event.target as Node, panelRef.current) && isOutside(event.target as Node, anchorRef.current)) {
                 onClose();
             }
         };
@@ -71,7 +77,7 @@ export function useCloseOnAnchorEscape({
         if (!isOpen) return;
 
         const handleAnchorEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+            if (!isUnhandledEscape(event)) return;
             const focused = document.activeElement;
             if (focused && anchorRef.current?.contains(focused)) {
                 event.preventDefault();
@@ -85,4 +91,24 @@ export function useCloseOnAnchorEscape({
             document.removeEventListener('keydown', handleAnchorEscape, true);
         };
     }, [isOpen, anchorRef, onClose]);
+}
+
+/** Moves focus into an open panel unless focus is already inside it. */
+export function focusPanelUnlessFocused(isOpen: boolean, panel: HTMLDivElement | null) {
+    if (isOpen && panel && !panel.contains(document.activeElement)) {
+        panel.focus();
+    }
+}
+
+/** Closes the panel on an unhandled Escape and returns focus to the anchor. */
+export function closeOnPanelEscape(
+    event: ReactKeyboardEvent<HTMLElement>,
+    onClose: () => void,
+    anchorRef: RefObject<HTMLButtonElement | null>,
+) {
+    if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onClose();
+    anchorRef.current?.focus();
 }

@@ -56,16 +56,24 @@ function readViewport(): { width: number; height: number } {
     };
 }
 
-function hasFixedContainingStyle(rootStyle: CSSStyleDeclaration): boolean {
+/** Properties whose non-"none" value makes an element the containing block of fixed descendants. */
+const fixedContainingProperties = ['transform', 'translate', 'scale', 'rotate', 'perspective', 'filter'] as const;
+
+const containLayoutPattern = /\b(?:layout|paint|strict|content)\b/u;
+const containerTypePattern = /^(?:size|inline-size)$/u;
+const willChangePattern = /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u;
+
+function hasBackdropFilter(rootStyle: CSSStyleDeclaration): boolean {
     const backdropFilter = rootStyle.getPropertyValue('backdrop-filter');
-    return rootStyle.transform !== 'none' || rootStyle.translate !== 'none' ||
-        rootStyle.scale !== 'none' || rootStyle.rotate !== 'none' ||
-        rootStyle.perspective !== 'none' || rootStyle.filter !== 'none' ||
-        backdropFilter !== 'none' && backdropFilter !== '' ||
-        /\b(?:layout|paint|strict|content)\b/u.test(rootStyle.contain) ||
-        /^(?:size|inline-size)$/u.test(rootStyle.getPropertyValue('container-type')) ||
-        /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u
-            .test(rootStyle.willChange);
+    return backdropFilter !== 'none' && backdropFilter !== '';
+}
+
+function hasFixedContainingStyle(rootStyle: CSSStyleDeclaration): boolean {
+    if (fixedContainingProperties.some(property => rootStyle[property] !== 'none')) return true;
+    if (hasBackdropFilter(rootStyle)) return true;
+    return containLayoutPattern.test(rootStyle.contain) ||
+        containerTypePattern.test(rootStyle.getPropertyValue('container-type')) ||
+        willChangePattern.test(rootStyle.willChange);
 }
 
 /**
@@ -80,19 +88,34 @@ function edgesMatchPaddingBox(
     rootRect: DOMRect,
     rootStyle: CSSStyleDeclaration,
 ): boolean {
-    const rootScaleX = rootEdges.origin.width;
-    const rootScaleY = rootEdges.origin.height;
-    return Math.abs(rootEdges.origin.left - (rootRect.left + parseFloat(rootStyle.borderLeftWidth) * rootScaleX)) <= edgeTolerance &&
-        Math.abs(rootEdges.origin.top - (rootRect.top + parseFloat(rootStyle.borderTopWidth) * rootScaleY)) <= edgeTolerance &&
-        Math.abs(rootEdges.right - (rootRect.right - parseFloat(rootStyle.borderRightWidth) * rootScaleX)) <= edgeTolerance &&
-        Math.abs(rootEdges.bottom - (rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * rootScaleY)) <= edgeTolerance;
+    const scaleX = rootEdges.origin.width;
+    const scaleY = rootEdges.origin.height;
+    const pairs: Array<[number, number]> = [
+        [rootEdges.origin.left, rootRect.left + parseFloat(rootStyle.borderLeftWidth) * scaleX],
+        [rootEdges.origin.top, rootRect.top + parseFloat(rootStyle.borderTopWidth) * scaleY],
+        [rootEdges.right, rootRect.right - parseFloat(rootStyle.borderRightWidth) * scaleX],
+        [rootEdges.bottom, rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * scaleY],
+    ];
+    return pairs.every(([actual, expected]) => Math.abs(actual - expected) <= edgeTolerance);
 }
 
 function edgesDiffer(a: ProbeEdges, b: ProbeEdges): boolean {
-    return Math.abs(a.origin.left - b.origin.left) > edgeTolerance ||
-        Math.abs(a.origin.top - b.origin.top) > edgeTolerance ||
-        Math.abs(a.right - b.right) > edgeTolerance ||
-        Math.abs(a.bottom - b.bottom) > edgeTolerance;
+    const pairs: Array<[number, number]> = [
+        [a.origin.left, b.origin.left],
+        [a.origin.top, b.origin.top],
+        [a.right, b.right],
+        [a.bottom, b.bottom],
+    ];
+    return pairs.some(([first, second]) => Math.abs(first - second) > edgeTolerance);
+}
+
+/** Layoutless environments cannot supply a modal clip rect. */
+function hasLayout(rect: DOMRect): boolean {
+    return rect.right > rect.left && rect.bottom > rect.top;
+}
+
+function rootOwnsBlock(rootEdges: ProbeEdges, rootRect: DOMRect, rootStyle: CSSStyleDeclaration): boolean {
+    return hasFixedContainingStyle(rootStyle) || edgesMatchPaddingBox(rootEdges, rootRect, rootStyle);
 }
 
 /** The modal's rect when the modal or the portal's descendant block owns the fixed containing block. */
@@ -101,21 +124,26 @@ function resolveModalClip(
     edges: ProbeEdges,
 ): DOMRect | null {
     const { modalRoot, portalContainer, rootProbe } = targets;
-    const rootRect = modalRoot && modalRoot.contains(portalContainer)
-        ? modalRoot.getBoundingClientRect() : null;
-    const rootEdges = rootRect && (rootProbe ? measureProbe(rootProbe) : edges);
-    const rootStyle = rootRect && getComputedStyle(modalRoot!);
+    if (!modalRoot || !modalRoot.contains(portalContainer)) return null;
+    const rootRect = modalRoot.getBoundingClientRect();
+    const rootEdges = rootProbe ? measureProbe(rootProbe) : edges;
+    const rootStyle = getComputedStyle(modalRoot);
     // Axis-aligned bounding rects lose the padding origin under rotation/skew.
     // The root's own containing-block properties cover those cases; the probe
     // comparison below still handles nested portal containers geometrically.
-    const rootHasFixedContainingStyle = Boolean(rootStyle && hasFixedContainingStyle(rootStyle));
-    const rootOwnsBlock = rootHasFixedContainingStyle || Boolean(rootRect && rootEdges && rootStyle &&
-        edgesMatchPaddingBox(rootEdges, rootRect, rootStyle));
-    const descendantOwnsBlock = Boolean(rootEdges && rootProbe && edgesDiffer(edges, rootEdges));
-    const modalRect = rootOwnsBlock || descendantOwnsBlock ? rootRect : null;
-    // Layoutless environments cannot supply a modal clip rect.
-    return modalRect && modalRect.right > modalRect.left && modalRect.bottom > modalRect.top
-        ? modalRect : null;
+    const descendantOwnsBlock = rootProbe !== null && edgesDiffer(edges, rootEdges);
+    if (!rootOwnsBlock(rootEdges, rootRect, rootStyle) && !descendantOwnsBlock) return null;
+    return hasLayout(rootRect) ? rootRect : null;
+}
+
+/** The viewport rectangle, narrowed to the modal clip when there is one. */
+function resolveBounds(viewport: { width: number; height: number }, clip: DOMRect | null) {
+    return {
+        left: Math.max(0, clip?.left ?? 0),
+        top: Math.max(0, clip?.top ?? 0),
+        right: Math.min(viewport.width, clip?.right ?? viewport.width),
+        bottom: Math.min(viewport.height, clip?.bottom ?? viewport.height),
+    };
 }
 
 /** Measures the CSS width without a previous resize's inline clamp applied. */
@@ -144,12 +172,7 @@ export function measurePanelPlacement(targets: PlacementTargets): PanelPosition 
     const scaleY = origin.height || 1;
     const viewport = readViewport();
     const clip = resolveModalClip(targets, edges);
-    const bounds = {
-        left: Math.max(0, clip?.left ?? 0),
-        top: Math.max(0, clip?.top ?? 0),
-        right: Math.min(viewport.width, clip?.right ?? viewport.width),
-        bottom: Math.min(viewport.height, clip?.bottom ?? viewport.height),
-    };
+    const bounds = resolveBounds(viewport, clip);
     const visible = {
         width: Math.max(0, bounds.right - bounds.left),
         height: Math.max(0, bounds.bottom - bounds.top),

@@ -5,10 +5,8 @@ import {
     Children,
     isValidElement,
     useEffect,
-    useLayoutEffect,
     useMemo,
     useRef,
-    useState,
     useSyncExternalStore,
 } from 'react';
 import type { ReactNode } from 'react';
@@ -26,7 +24,9 @@ import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
 import { FilterGroup } from './FilterGroup';
 import { usePanelPosition } from './usePanelPosition';
-import { useDismissOnOutsideClick, useCloseOnAnchorEscape } from './usePanelDismissal';
+import { useResolvedAnchor } from './useResolvedAnchor';
+import { FilterSearchBox } from './FilterSearchBox';
+import { useDismissOnOutsideClick, useCloseOnAnchorEscape, closeOnPanelEscape, focusPanelUnlessFocused } from './usePanelDismissal';
 
 /**
  * Props for {@link FilterPanel}.
@@ -102,6 +102,20 @@ function buildEditorMap(
         }
     });
     return map;
+}
+
+/**
+ * A shared overlay root sits outside a modal's focus scope and is hidden from assistive
+ * technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
+ * An explicitly unavailable container still defers the portal; it is never a body fallback.
+ */
+function resolvePortalContainer(
+    environmentContainer: HTMLElement | null,
+    modalRoot: HTMLElement | null | undefined,
+): HTMLElement | null {
+    return environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
+        ? modalRoot
+        : environmentContainer;
 }
 
 /**
@@ -216,28 +230,9 @@ export function FilterPanel({
     const { messages } = useCratisComponentsConfig();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
-    const [resolvedAnchor, setResolvedAnchor] = useState<{
-        anchor: HTMLButtonElement | null;
-        modalRoot: HTMLElement | null;
-    } | null>(null);
-    // Refs attach during commit, after render. Resolve the modal before mounting any open
-    // panel so its first portal never lands in a shared root hidden by the modal.
-    // Ref attachment/identity can change on any commit; the state updater bails out if unchanged.
-    // eslint-disable-next-line @eslint-react/exhaustive-deps
-    useLayoutEffect(() => {
-        const anchor = anchorRef.current;
-        const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
-        setResolvedAnchor((previous) => previous?.anchor === anchor && previous.modalRoot === modalRoot
-            ? previous
-            : { anchor, modalRoot });
-    });
-    // A shared overlay root sits outside a modal's focus scope and is hidden from assistive
-    // technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
-    // An explicitly unavailable container still defers the portal; it is never a body fallback.
+    const resolvedAnchor = useResolvedAnchor(anchorRef);
     const modalRoot = resolvedAnchor?.modalRoot;
-    const portalContainer = environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
-        ? modalRoot
-        : environmentContainer;
+    const portalContainer = resolvePortalContainer(environmentContainer, modalRoot);
     const panelRef = useRef<HTMLDivElement>(null);
     const position = usePanelPosition({
         isOpen,
@@ -253,9 +248,7 @@ export function FilterPanel({
     useDismissOnOutsideClick({ isOpen, anchorRef, panelRef, onClose });
 
     useEffect(() => {
-        if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
-            panelRef.current.focus();
-        }
+        focusPanelUnlessFocused(isOpen, panelRef.current);
     }, [isOpen, portalContainer, resolvedAnchor]);
 
     useCloseOnAnchorEscape({ isOpen, anchorRef, onClose });
@@ -270,13 +263,7 @@ export function FilterPanel({
                     role='dialog'
                     aria-label={ariaLabel ?? messages?.filter?.label ?? 'Filters'}
                     tabIndex={-1}
-                    onKeyDown={(event) => {
-                        if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onClose();
-                        anchorRef.current?.focus();
-                    }}
+                    onKeyDown={(event) => closeOnPanelEscape(event, onClose, anchorRef)}
                     className='pv-filter-dropdown'
                     style={{
                         position: 'fixed',
@@ -294,17 +281,12 @@ export function FilterPanel({
                 >
                     <div className='pv-filter-dropdown-content'>
                         {onSearchChange && (
-                            <div className='pv-search'>
-                                <input
-                                    type='search'
-                                    placeholder={searchPlaceholder}
-                                    aria-label={(searchAriaLabel ?? messages?.filter?.searchAriaLabel ?? searchPlaceholder) || 'Search'}
-                                    value={search ?? ''}
-                                    onChange={(event) =>
-                                        onSearchChange(event.target.value)
-                                    }
-                                />
-                            </div>
+                            <FilterSearchBox
+                                search={search}
+                                placeholder={searchPlaceholder}
+                                ariaLabel={searchAriaLabel}
+                                onSearchChange={onSearchChange}
+                            />
                         )}
                         <div className='pv-filter-groups'>
                             {filters.map((filter) => (

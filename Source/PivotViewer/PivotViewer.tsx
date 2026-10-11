@@ -29,6 +29,38 @@ import { useColorCssVariables } from './hooks/useColorCssVariables';
 import { useViewerLayout } from './hooks/useViewerLayout';
 import { useScrollPositionTracking } from './hooks/useScrollPositionTracking';
 
+function countActiveFilters(
+    filterState: Record<string, unknown>,
+    rangeFilterState: Record<string, unknown>,
+): number {
+    const selectionCount = Object.values(filterState).reduce(
+        (sum: number, vals) => sum + (vals as Set<string>).size,
+        0,
+    );
+    return selectionCount + Object.values(rangeFilterState).filter((r) => r !== null).length;
+}
+
+function filtersClassName(hasFilters: boolean, filtersOpen: boolean): string {
+    if (!hasFilters) return 'no-filters';
+    return filtersOpen ? 'filters-open' : 'filters-closed';
+}
+
+function buildViewerClassName(
+    className: string | undefined,
+    hasFilters: boolean,
+    filtersOpen: boolean,
+    viewMode: ViewMode,
+): string {
+    return [
+        'pivot-viewer',
+        className,
+        filtersClassName(hasFilters, filtersOpen),
+        viewMode === 'grouped' ? 'grouped-mode' : 'collection-mode',
+    ]
+        .filter(Boolean)
+        .join(' ');
+}
+
 /**
  * A faceted, zoomable card-grid visualization inspired by Microsoft's PivotViewer.
  * Renders a large set of items as cards that can be grouped by any of a set of
@@ -262,20 +294,8 @@ export function PivotViewer<TItem extends object>({
     const filterOptions = useFilterOptions(data, filters, filterState, rangeFilterState);
 
     const hasFilters = Boolean(filters && filters.length > 0);
-    const activeFilterCount =
-        Object.values(filterState).reduce(
-            (sum: number, vals) => sum + (vals as Set<string>).size,
-            0,
-        ) + Object.values(rangeFilterState).filter((r) => r !== null).length;
-
-    const viewerClassName = [
-        'pivot-viewer',
-        className,
-        hasFilters ? (filtersOpen ? 'filters-open' : 'filters-closed') : 'no-filters',
-        viewMode === 'grouped' ? 'grouped-mode' : 'collection-mode',
-    ]
-        .filter(Boolean)
-        .join(' ');
+    const activeFilterCount = countActiveFilters(filterState, rangeFilterState);
+    const viewerClassName = buildViewerClassName(className, hasFilters, filtersOpen, viewMode);
 
     // Deselect any selected card when switching between view modes
     useEffect(() => {

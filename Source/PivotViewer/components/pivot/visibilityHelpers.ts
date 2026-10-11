@@ -225,17 +225,45 @@ export function computeWorldViewport<TItem>(params: SyncParams<TItem>, metrics: 
     };
 }
 
-export function intersectsBufferedViewport(
-    viewport: WorldViewport,
-    cardWidth: number,
-    cardHeight: number,
-    x: number,
-    y: number,
-) {
-    return x + cardWidth >= viewport.bufferedLeft - viewport.epsilon &&
-        x <= viewport.bufferedRight + viewport.epsilon &&
-        y + cardHeight >= viewport.bufferedTop - viewport.epsilon &&
-        y <= viewport.bufferedBottom + viewport.epsilon;
+export interface CardSize {
+    cardWidth: number;
+    cardHeight: number;
+}
+
+function overlapsRange(start: number, size: number, low: number, high: number, epsilon: number) {
+    return start + size >= low - epsilon && start <= high + epsilon;
+}
+
+export function intersectsBufferedViewport(viewport: WorldViewport, card: CardSize, x: number, y: number) {
+    const { bufferedLeft, bufferedRight, bufferedTop, bufferedBottom, epsilon } = viewport;
+    return overlapsRange(x, card.cardWidth, bufferedLeft, bufferedRight, epsilon) &&
+        overlapsRange(y, card.cardHeight, bufferedTop, bufferedBottom, epsilon);
+}
+
+type PositionTest = (x: number, y: number) => boolean;
+
+function addIntersectingTargets<TItem>(params: SyncParams<TItem>, intersects: PositionTest, collector: IdCollector) {
+    for (const [id, position] of params.layout.positions) {
+        if (position && intersects(position.x, position.y)) collector.add(id);
+    }
+}
+
+function isUnseenPreviousCard<TItem>(params: SyncParams<TItem>, id: SpriteId) {
+    return !params.sprites.has(id) && !params.transitionSeenIds.has(id) && params.layout.positions.has(id);
+}
+
+function addIntersectingPreviousPositions<TItem>(params: SyncParams<TItem>, intersects: PositionTest, collector: IdCollector) {
+    for (const [id, position] of params.prevLayout?.positions ?? []) {
+        if (!isUnseenPreviousCard(params, id)) continue;
+        if (position && intersects(position.x, position.y)) collector.add(id);
+    }
+}
+
+function addIntersectingCurrentSprites<TItem>(params: SyncParams<TItem>, intersects: PositionTest, collector: IdCollector) {
+    for (const [id, sprite] of params.sprites) {
+        params.transitionSeenIds.add(id);
+        if (params.layout.positions.has(id) && intersects(sprite.currentX, sprite.currentY)) collector.add(id);
+    }
 }
 
 /** Collects the ids whose target positions, or (during a transition) current positions, are in the buffered viewport. */
@@ -243,23 +271,15 @@ export function collectInViewportIds<TItem>(
     params: SyncParams<TItem>,
     viewport: WorldViewport,
 ): IdCollector {
-    const { layout, sprites, cardWidth, cardHeight, isViewTransition, prevLayout, transitionSeenIds } = params;
     const collector = createIdCollector();
-    const intersects = (x: number, y: number) => intersectsBufferedViewport(viewport, cardWidth, cardHeight, x, y);
+    const intersects: PositionTest = (x, y) => intersectsBufferedViewport(viewport, params, x, y);
 
     // Target positions are authoritative, but during a transition cards may
     // still be at their old positions while the camera catches up.
-    for (const [id, position] of layout.positions) {
-        if (position && intersects(position.x, position.y)) collector.add(id);
-    }
-    if (isViewTransition) {
-        for (const [id, position] of prevLayout?.positions ?? []) {
-            if (!sprites.has(id) && !transitionSeenIds.has(id) && layout.positions.has(id) && position && intersects(position.x, position.y)) collector.add(id);
-        }
-        for (const [id, sprite] of sprites) {
-            transitionSeenIds.add(id);
-            if (layout.positions.has(id) && intersects(sprite.currentX, sprite.currentY)) collector.add(id);
-        }
+    addIntersectingTargets(params, intersects, collector);
+    if (params.isViewTransition) {
+        addIntersectingPreviousPositions(params, intersects, collector);
+        addIntersectingCurrentSprites(params, intersects, collector);
     }
     return collector;
 }
@@ -311,15 +331,21 @@ export function hideSprite(sprite: CardSprite) {
 /** Shows sprites that are wanted and hides the rest (unless culling would risk visual holes). */
 export function applySpriteVisibility(sprites: SpriteMap, visibleSet: Set<SpriteId>, aggressiveCull: boolean) {
     for (const [id, sprite] of sprites) {
-        if (visibleSet.has(id)) {
-            showSprite(sprite);
-        } else if (aggressiveCull) {
-            // Keep sprite visible this frame to avoid visual holes
-            try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
-        } else {
-            hideSprite(sprite);
-        }
+        applyVisibilityToSprite(sprite, visibleSet.has(id), aggressiveCull);
     }
+}
+
+function applyVisibilityToSprite(sprite: CardSprite, wanted: boolean, aggressiveCull: boolean) {
+    if (wanted) {
+        showSprite(sprite);
+        return;
+    }
+    if (!aggressiveCull) {
+        hideSprite(sprite);
+        return;
+    }
+    // Keep sprite visible this frame to avoid visual holes
+    try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
 }
 
 export function removeSprite(sprite: CardSprite) {
@@ -336,6 +362,11 @@ export function removeSprite(sprite: CardSprite) {
     }
 }
 
+function isSweepDue(lastHidden: number | undefined, now: number, thresholdMs: number, immediately: boolean | undefined) {
+    if (!lastHidden) return false;
+    return !!immediately || now - lastHidden > thresholdMs;
+}
+
 /** Sweep: actually destroy sprites that have been hidden longer than threshold. */
 export function sweepHiddenSprites(
     sprites: SpriteMap,
@@ -348,7 +379,7 @@ export function sweepHiddenSprites(
         const now = Date.now();
         for (const [id, sprite] of sprites) {
             const lastHidden = sweepableHiddenAt(sprite, layout.positions.get(id), visibleRect);
-            if (lastHidden && (sweepImmediately || now - lastHidden > SWEEP_MS)) {
+            if (isSweepDue(lastHidden, now, SWEEP_MS, sweepImmediately)) {
                 removeSprite(sprite);
                 sprites.delete(id);
             }
@@ -365,32 +396,31 @@ export function resolveSpawnStart<TItem>(
     id: SpriteId,
     position: Point,
 ): { startX: number; startY: number; shouldAnimate: boolean } {
-    const { isViewTransition, prevLayout, panDeltaX, panDeltaY, zoomLevel, cardWidth, cardHeight } = params;
-    let startX = position.x;
-    let startY = position.y;
-    let shouldAnimate = false;
+    const oldPos = findPreviousPositionInViewport(params, viewport, id);
+    if (!oldPos) return { startX: position.x, startY: position.y, shouldAnimate: false };
 
-    // If view transition, try to find old position to fly in from
-    if (isViewTransition && prevLayout && prevLayout.positions.has(id)) {
-        const oldPos = prevLayout.positions.get(id);
-        if (oldPos && intersectsBufferedViewport(viewport, cardWidth, cardHeight, oldPos.x, oldPos.y)) {
-            startX = oldPos.x;
-            startY = oldPos.y;
+    // If we have a pan delta (camera jump), we need to adjust the start position
+    // so that the sprite appears at the same visual location relative to the NEW camera.
+    // StartWorld = OldWorld + PanDelta
+    const { dx, dy } = panDeltaInWorld(params);
+    return { startX: oldPos.x + dx, startY: oldPos.y + dy, shouldAnimate: true };
+}
 
-            // If we have a pan delta (camera jump), we need to adjust the start position
-            // so that the sprite appears at the same visual location relative to the NEW camera.
-            // StartWorld = OldWorld + PanDelta
-            if (panDeltaX || panDeltaY) {
-                const dx = (panDeltaX || 0) / (zoomLevel || 1);
-                const dy = (panDeltaY || 0) / (zoomLevel || 1);
-                startX += dx;
-                startY += dy;
-            }
+/** During a view transition, the previous position of the card if it was inside the buffered viewport. */
+function findPreviousPositionInViewport<TItem>(params: SyncParams<TItem>, viewport: WorldViewport, id: SpriteId) {
+    const { isViewTransition, prevLayout } = params;
+    if (!isViewTransition || !prevLayout) return undefined;
+    const oldPos = prevLayout.positions.get(id);
+    return oldPos && intersectsBufferedViewport(viewport, params, oldPos.x, oldPos.y) ? oldPos : undefined;
+}
 
-            shouldAnimate = true;
-        }
-    }
-    return { startX, startY, shouldAnimate };
+function panDeltaInWorld<TItem>(params: SyncParams<TItem>) {
+    const { panDeltaX, panDeltaY, zoomLevel } = params;
+    if (!panDeltaX && !panDeltaY) return { dx: 0, dy: 0 };
+    return {
+        dx: (panDeltaX || 0) / (zoomLevel || 1),
+        dy: (panDeltaY || 0) / (zoomLevel || 1),
+    };
 }
 
 export function spawnSprite<TItem>(
