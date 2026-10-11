@@ -5,16 +5,13 @@ import {
     Children,
     isValidElement,
     useEffect,
-    useLayoutEffect,
     useMemo,
     useRef,
-    useState,
     useSyncExternalStore,
 } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCratisIcon } from '../configuration/useCratisIcon';
 import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type {
@@ -23,11 +20,13 @@ import type {
     RangeValues,
     CustomFilterValues,
 } from './types';
-import { resolveDropdownPosition, type DropdownPosition } from './utils';
 import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
-import { RangeHistogramFilter } from './RangeHistogramFilter';
-import { CheckboxListFilter } from './CheckboxListFilter';
+import { FilterGroup } from './FilterGroup';
+import { usePanelPosition } from './usePanelPosition';
+import { useResolvedAnchor } from './useResolvedAnchor';
+import { FilterSearchBox } from './FilterSearchBox';
+import { useDismissOnOutsideClick, useCloseOnAnchorEscape, closeOnPanelEscape, focusPanelUnlessFocused } from './usePanelDismissal';
 
 /**
  * Props for {@link FilterPanel}.
@@ -106,6 +105,20 @@ function buildEditorMap(
 }
 
 /**
+ * A shared overlay root sits outside a modal's focus scope and is hidden from assistive
+ * technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
+ * An explicitly unavailable container still defers the portal; it is never a body fallback.
+ */
+function resolvePortalContainer(
+    environmentContainer: HTMLElement | null,
+    modalRoot: HTMLElement | null | undefined,
+): HTMLElement | null {
+    return environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
+        ? modalRoot
+        : environmentContainer;
+}
+
+/**
  * Renders a filter dropdown panel anchored below a trigger button. The panel
  * appears as a portal at a fixed position on the page and includes search,
  * collapsible filter groups, and per-filter editors (option lists, numeric
@@ -174,40 +187,6 @@ function buildEditorMap(
  *
  * @param props - {@link FilterPanelProps}.
  */
-interface OptionListProps {
-    filter: FilterDefinition;
-    selections: Set<string>;
-    onFilterToggle: (filterKey: string, optionKey: string, multi: boolean) => void;
-    /** Falls back to the panel-level search placeholder when the filter group has none of its own. */
-    searchPlaceholder?: string;
-    isExpanded: boolean;
-}
-
-/** Adapts a `FilterDefinition`'s string/option shape onto the reusable {@link CheckboxListFilter}. */
-function OptionList({
-    filter,
-    selections,
-    onFilterToggle,
-    searchPlaceholder,
-    isExpanded,
-}: OptionListProps) {
-    return (
-        <CheckboxListFilter
-            options={filter.options ?? []}
-            selected={selections}
-            multi={filter.multi}
-            searchable={filter.searchable}
-            searchPlaceholder={filter.searchPlaceholder ?? searchPlaceholder}
-            searchAriaLabel={filter.searchAriaLabel}
-            autoFocusSearch={filter.autoFocus === true && isExpanded}
-            name={`filter-${filter.key}`}
-            onToggle={(optionKey) =>
-                onFilterToggle(filter.key, optionKey, filter.multi ?? false)
-            }
-        />
-    );
-}
-
 const subscribeToBrowserState = () => () => undefined;
 const browserSnapshot = () => true;
 const serverSnapshot = () => false;
@@ -248,271 +227,31 @@ export function FilterPanel({
         browserSnapshot,
         serverSnapshot,
     );
-    const icon = useCratisIcon();
     const { messages } = useCratisComponentsConfig();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
-    const [resolvedAnchor, setResolvedAnchor] = useState<{
-        anchor: HTMLButtonElement | null;
-        modalRoot: HTMLElement | null;
-    } | null>(null);
-    // Refs attach during commit, after render. Resolve the modal before mounting any open
-    // panel so its first portal never lands in a shared root hidden by the modal.
-    // Ref attachment/identity can change on any commit; the state updater bails out if unchanged.
-    // eslint-disable-next-line @eslint-react/exhaustive-deps
-    useLayoutEffect(() => {
-        const anchor = anchorRef.current;
-        const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
-        setResolvedAnchor((previous) => previous?.anchor === anchor && previous.modalRoot === modalRoot
-            ? previous
-            : { anchor, modalRoot });
-    });
-    // A shared overlay root sits outside a modal's focus scope and is hidden from assistive
-    // technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
-    // An explicitly unavailable container still defers the portal; it is never a body fallback.
+    const resolvedAnchor = useResolvedAnchor(anchorRef);
     const modalRoot = resolvedAnchor?.modalRoot;
-    const portalContainer = environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
-        ? modalRoot
-        : environmentContainer;
+    const portalContainer = resolvePortalContainer(environmentContainer, modalRoot);
     const panelRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState<DropdownPosition & { width?: number }>({
-        top: 0,
-        left: 0,
-        maxHeight: 0,
+    const position = usePanelPosition({
+        isOpen,
+        portalContainer,
+        modalRoot,
+        anchorRef,
+        panelRef,
+        resolvedAnchor: resolvedAnchor?.anchor,
     });
 
     const editorMap = useMemo(() => buildEditorMap(children), [children]);
 
-    // Keep the fixed-position portal attached to its anchor and clamped inside the viewport.
-    // A transform (or other fixed containing-block property) on the portal container OR any
-    // ancestor changes the meaning of CSS left/top/bottom. A fixed probe in the portal sees
-    // exactly the same containing block as the panel, without guessing which ancestor owns it.
-    // Capture-phase scroll observation also covers nested scrolling containers.
-    useLayoutEffect(() => {
-        if (!isOpen || !portalContainer) return;
-
-        const probeStyle = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
-        const probe = document.createElement('div');
-        probe.style.cssText = probeStyle;
-        portalContainer.appendChild(probe);
-        // A portal inside (rather than directly on) the root can have a different fixed
-        // containing block. A second probe distinguishes that descendant block from one
-        // owned by the positioner outside the root.
-        const rootProbe = modalRoot && modalRoot.contains(portalContainer) && portalContainer !== modalRoot
-            ? document.createElement('div') : null;
-        if (rootProbe && modalRoot) {
-            rootProbe.style.cssText = probeStyle;
-            modalRoot.appendChild(rootProbe);
-        }
-
-        const measureProbe = (element: HTMLDivElement) => {
-            element.style.top = '0';
-            element.style.bottom = 'auto';
-            const origin = element.getBoundingClientRect();
-            element.style.top = 'auto';
-            element.style.bottom = '0';
-            const bottom = element.getBoundingClientRect().bottom;
-            element.style.bottom = 'auto';
-            element.style.left = 'auto';
-            element.style.right = '0';
-            const right = element.getBoundingClientRect().right;
-            element.style.left = '0';
-            element.style.right = 'auto';
-            return { origin, bottom, right };
-        };
-
-        const updatePosition = () => {
-            if (!anchorRef.current || !panelRef.current) return;
-
-            // The probe stays mounted while open, but its origin must be read on every
-            // update: scrolling a transformed ancestor changes its viewport coordinates.
-            const { origin, bottom: containingBlockBottom, right: containingBlockRight } = measureProbe(probe);
-
-            // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
-            // Preserve the viewport gutter even when a containing block scales the dropdown.
-            const scaleX = origin.width || 1;
-            const scaleY = origin.height || 1;
-            // Layoutless renderers report zero; browser layout uses the scrollbar-free viewport.
-            // In quirks mode the viewport's client size is reported on the body, not the root.
-            const viewportElement = document.compatMode === 'BackCompat' ? document.body : document.documentElement;
-            const viewport = {
-                width: viewportElement.clientWidth || window.innerWidth,
-                height: viewportElement.clientHeight || window.innerHeight,
-            };
-            const rootRect = modalRoot && modalRoot.contains(portalContainer)
-                ? modalRoot.getBoundingClientRect() : null;
-            const rootEdges = rootRect && (rootProbe ? measureProbe(rootProbe) :
-                { origin, bottom: containingBlockBottom, right: containingBlockRight });
-            const rootStyle = rootRect && getComputedStyle(modalRoot!);
-            const rootScaleX = rootEdges?.origin.width ?? 1;
-            const rootScaleY = rootEdges?.origin.height ?? 1;
-            // Axis-aligned bounding rects lose the padding origin under rotation/skew.
-            // The root's own containing-block properties cover those cases; the probe
-            // comparison below still handles nested portal containers geometrically.
-            const rootHasFixedContainingStyle = Boolean(rootStyle && (
-                rootStyle.transform !== 'none' || rootStyle.translate !== 'none' ||
-                rootStyle.scale !== 'none' || rootStyle.rotate !== 'none' ||
-                rootStyle.perspective !== 'none' || rootStyle.filter !== 'none' ||
-                rootStyle.getPropertyValue('backdrop-filter') !== 'none' &&
-                    rootStyle.getPropertyValue('backdrop-filter') !== '' ||
-                /\b(?:layout|paint|strict|content)\b/u.test(rootStyle.contain) ||
-                /^(?:size|inline-size)$/u.test(rootStyle.getPropertyValue('container-type')) ||
-                /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u
-                    .test(rootStyle.willChange)
-            ));
-            // A fixed probe spans its containing block, not the Dialog's overflow box.
-            // Compare all four edges to the root's padding box: a side dialog can share
-            // the positioner's top-left origin without sharing its containing block.
-            // Comparing to innerWidth/innerHeight instead would mistake classic scrollbars
-            // (excluded from the layout viewport) for a transformed containing block.
-            const rootOwnsBlock = rootHasFixedContainingStyle || Boolean(rootRect && rootEdges && rootStyle &&
-                Math.abs(rootEdges.origin.left - (rootRect.left + parseFloat(rootStyle.borderLeftWidth) * rootScaleX)) <= 0.5 &&
-                Math.abs(rootEdges.origin.top - (rootRect.top + parseFloat(rootStyle.borderTopWidth) * rootScaleY)) <= 0.5 &&
-                Math.abs(rootEdges.right - (rootRect.right - parseFloat(rootStyle.borderRightWidth) * rootScaleX)) <= 0.5 &&
-                Math.abs(rootEdges.bottom - (rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * rootScaleY)) <= 0.5);
-            const descendantOwnsBlock = Boolean(rootEdges && rootProbe && (
-                Math.abs(origin.left - rootEdges.origin.left) > 0.5 ||
-                Math.abs(origin.top - rootEdges.origin.top) > 0.5 ||
-                Math.abs(containingBlockRight - rootEdges.right) > 0.5 ||
-                Math.abs(containingBlockBottom - rootEdges.bottom) > 0.5));
-            const modalRect = rootOwnsBlock || descendantOwnsBlock ? rootRect : null;
-            // Layoutless environments cannot supply a modal clip rect.
-            const clip = modalRect && modalRect.right > modalRect.left && modalRect.bottom > modalRect.top
-                ? modalRect : null;
-            const bounds = {
-                left: Math.max(0, clip?.left ?? 0),
-                top: Math.max(0, clip?.top ?? 0),
-                right: Math.min(viewport.width, clip?.right ?? viewport.width),
-                bottom: Math.min(viewport.height, clip?.bottom ?? viewport.height),
-            };
-            const visible = {
-                width: Math.max(0, bounds.right - bounds.left),
-                height: Math.max(0, bounds.bottom - bounds.top),
-            };
-            // Measure the CSS width without a previous resize's inline clamp applied.
-            const panel = panelRef.current;
-            const previousWidth = panel.style.width;
-            if (previousWidth) panel.style.width = '';
-            const cssWidth = panel.offsetWidth;
-            if (previousWidth) panel.style.width = previousWidth;
-            const width = cssWidth * scaleX > visible.width - 32
-                ? Math.max(0, (visible.width - 32) / scaleX)
-                : undefined;
-            const anchor = anchorRef.current.getBoundingClientRect();
-            const viewportPosition = resolveDropdownPosition({
-                left: anchor.left - bounds.left,
-                top: anchor.top - bounds.top,
-                bottom: anchor.bottom - bounds.top,
-            }, visible, (width ?? cssWidth) * scaleX);
-            const nextPosition = {
-                left: (bounds.left + viewportPosition.left - origin.left) / scaleX,
-                top: viewportPosition.top === undefined ? undefined : (bounds.top + viewportPosition.top - origin.top) / scaleY,
-                bottom: viewportPosition.bottom === undefined ? undefined
-                    : (containingBlockBottom - (bounds.bottom - viewportPosition.bottom)) / scaleY,
-                maxHeight: viewportPosition.maxHeight / scaleY,
-                width,
-            };
-            setPosition((previous) => previous.left === nextPosition.left &&
-                previous.top === nextPosition.top && previous.bottom === nextPosition.bottom &&
-                previous.maxHeight === nextPosition.maxHeight && previous.width === nextPosition.width
-                ? previous : nextPosition);
-        };
-
-        // A Dialog's entry motion may change the fixed-position containing block.
-        // Measure again when its root or positioner stops moving.
-        let animationFrame: number | undefined;
-        const schedulePosition = () => {
-            if (animationFrame !== undefined) return;
-            animationFrame = requestAnimationFrame(() => {
-                animationFrame = undefined;
-                updatePosition();
-            });
-        };
-        const handleScroll = (event: Event) => {
-            if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
-            schedulePosition();
-        };
-        // Consumers may replace the Dialog's entry animation or animate its positioner.
-        // Ignore events bubbling from controls inside the dialog; one frame is enough for
-        // any number of animations or transitions ending in the same rendering frame.
-        const positioner = modalRoot?.parentElement?.matches('[data-cratis-part="positioner"]')
-            ? modalRoot.parentElement : null;
-        const handleModalMotionEnd = (event: Event) => {
-            if (event.target === modalRoot || event.target === positioner) schedulePosition();
-        };
-        const motionEvents = ['animationend', 'animationcancel', 'transitionend'] as const;
-
-        updatePosition();
-        window.addEventListener('resize', schedulePosition);
-        window.addEventListener('scroll', handleScroll, true);
-        for (const eventName of motionEvents) {
-            modalRoot?.addEventListener(eventName, handleModalMotionEnd);
-            positioner?.addEventListener(eventName, handleModalMotionEnd);
-        }
-
-        return () => {
-            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
-            window.removeEventListener('resize', schedulePosition);
-            window.removeEventListener('scroll', handleScroll, true);
-            for (const eventName of motionEvents) {
-                modalRoot?.removeEventListener(eventName, handleModalMotionEnd);
-                positioner?.removeEventListener(eventName, handleModalMotionEnd);
-            }
-            probe.remove();
-            rootProbe?.remove();
-        };
-    }, [anchorRef, isOpen, modalRoot, portalContainer, resolvedAnchor?.anchor]);
-
-    // Handle click outside to close
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Node;
-            const panel = panelRef.current;
-            const anchor = anchorRef.current;
-
-            if (panel && !panel.contains(target) && anchor && !anchor.contains(target)) {
-                onClose();
-            }
-        };
-
-        // Use capture phase to ensure we catch the event before any other handlers.
-        // Use timeout to avoid closing immediately when clicking the button to open.
-        const timeoutId = setTimeout(() => {
-            document.addEventListener('mousedown', handleClickOutside, true);
-        }, 0);
-
-        return () => {
-            clearTimeout(timeoutId);
-            document.removeEventListener('mousedown', handleClickOutside, true);
-        };
-    }, [isOpen, anchorRef, onClose]);
+    useDismissOnOutsideClick({ isOpen, anchorRef, panelRef, onClose });
 
     useEffect(() => {
-        if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
-            panelRef.current.focus();
-        }
+        focusPanelUnlessFocused(isOpen, panelRef.current);
     }, [isOpen, portalContainer, resolvedAnchor]);
 
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const handleAnchorEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
-            const focused = document.activeElement;
-            if (focused && anchorRef.current?.contains(focused)) {
-                event.preventDefault();
-                event.stopPropagation();
-                onClose();
-                anchorRef.current?.focus();
-            }
-        };
-        document.addEventListener('keydown', handleAnchorEscape, true);
-        return () => {
-            document.removeEventListener('keydown', handleAnchorEscape, true);
-        };
-    }, [isOpen, anchorRef, onClose]);
+    useCloseOnAnchorEscape({ isOpen, anchorRef, onClose });
 
     if (!portalContainer || !resolvedAnchor || resolvedAnchor.anchor !== anchorRef.current) return null;
 
@@ -524,13 +263,7 @@ export function FilterPanel({
                     role='dialog'
                     aria-label={ariaLabel ?? messages?.filter?.label ?? 'Filters'}
                     tabIndex={-1}
-                    onKeyDown={(event) => {
-                        if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onClose();
-                        anchorRef.current?.focus();
-                    }}
+                    onKeyDown={(event) => closeOnPanelEscape(event, onClose, anchorRef)}
                     className='pv-filter-dropdown'
                     style={{
                         position: 'fixed',
@@ -548,153 +281,33 @@ export function FilterPanel({
                 >
                     <div className='pv-filter-dropdown-content'>
                         {onSearchChange && (
-                            <div className='pv-search'>
-                                <input
-                                    type='search'
-                                    placeholder={searchPlaceholder}
-                                    aria-label={(searchAriaLabel ?? messages?.filter?.searchAriaLabel ?? searchPlaceholder) || 'Search'}
-                                    value={search ?? ''}
-                                    onChange={(event) =>
-                                        onSearchChange(event.target.value)
-                                    }
-                                />
-                            </div>
+                            <FilterSearchBox
+                                search={search}
+                                placeholder={searchPlaceholder}
+                                ariaLabel={searchAriaLabel}
+                                onSearchChange={onSearchChange}
+                            />
                         )}
                         <div className='pv-filter-groups'>
-                            {filters.map((filter) => {
-                                const selections =
-                                    filterValues[filter.key] ?? new Set<string>();
-                                const rangeSelection = rangeValues[filter.key];
-                                const customValue = customValues?.[filter.key];
-                                const isExpanded = expandedFilterKey === filter.key;
-                                const isDate = filter.type === 'date';
-                                const isNumeric = filter.type === 'number' || isDate;
-                                const editorRender = editorMap[filter.key];
-                                const isCustom =
-                                    filter.type === 'custom' ||
-                                    editorRender !== undefined;
-                                const hasCustomValue =
-                                    customValue !== undefined && customValue !== null;
-                                const canClear = isNumeric
-                                    ? Boolean(rangeSelection)
-                                    : isCustom
-                                      ? hasCustomValue
-                                      : selections.size > 0;
-                                const clearLabel = isNumeric
-                                    ? clearRangeAriaLabel
-                                    : clearFilterAriaLabel;
-                                const clearValue = () => {
-                                    if (isNumeric) onRangeChange(filter.key, null);
-                                    else if (isCustom) {
-                                        onCustomValueChange?.(filter.key, undefined);
-                                    } else onFilterClear(filter.key);
-                                };
-                                const formatRangeValue = isDate
-                                    ? (value: number) => new Date(value).toLocaleString()
-                                    : undefined;
-
-                                return (
-                                    <div
-                                        key={filter.key}
-                                        className={`pv-filter ${isExpanded ? 'expanded' : ''}`}
-                                        data-selected={canClear || undefined}
-                                        data-open={isExpanded || undefined}
-                                    >
-                                        <div
-                                            className='pv-filter-trigger'
-                                            data-selected={canClear || undefined}
-                                            data-open={isExpanded || undefined}
-                                        >
-                                            <button
-                                                type='button'
-                                                className='pv-filter-toggle'
-                                                aria-expanded={isExpanded}
-                                                data-selected={canClear || undefined}
-                                                data-open={isExpanded || undefined}
-                                                data-pressed={isExpanded || undefined}
-                                                onClick={() =>
-                                                    onExpandedFilterChange(
-                                                        isExpanded ? null : filter.key,
-                                                    )
-                                                }
-                                            >
-                                                <span className='pv-filter-label'>
-                                                    {filter.label}
-                                                </span>
-                                                <span className='pv-filter-trigger-meta'>
-                                                    {!isNumeric &&
-                                                        !isCustom &&
-                                                        selections.size > 0 && (
-                                                            <span className='pv-filter-count'>
-                                                                {selections.size}
-                                                            </span>
-                                                        )}
-                                                    {isNumeric && rangeSelection && (
-                                                        <span className='pv-filter-count'>
-                                                            Range
-                                                        </span>
-                                                    )}
-                                                    {isCustom && hasCustomValue && (
-                                                        <span className='pv-filter-count'>
-                                                            •
-                                                        </span>
-                                                    )}
-                                                    <span className='pv-filter-chevron' />
-                                                </span>
-                                            </button>
-                                            {canClear && (
-                                                <button
-                                                    type='button'
-                                                    className='pv-filter-clear-header'
-                                                    title={clearLabel}
-                                                    aria-label={clearLabel}
-                                                    onClick={clearValue}
-                                                >
-                                                    {icon('clear', '×')}
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div
-                                            className={`pv-filter-content ${isExpanded ? 'expanded' : ''}`}
-                                            data-open={isExpanded || undefined}
-                                        >
-                                            {isCustom && editorRender ? (
-                                                editorRender({
-                                                    value: customValue,
-                                                    onChange: (value) =>
-                                                        onCustomValueChange?.(
-                                                            filter.key,
-                                                            value,
-                                                        ),
-                                                })
-                                            ) : isNumeric && filter.numericRange ? (
-                                                <RangeHistogramFilter
-                                                    values={filter.numericRange.values}
-                                                    histogram={
-                                                        filter.numericRange.histogram
-                                                    }
-                                                    min={filter.numericRange.min}
-                                                    max={filter.numericRange.max}
-                                                    buckets={filter.buckets ?? 20}
-                                                    selectedRange={rangeSelection ?? null}
-                                                    onChange={(range) =>
-                                                        onRangeChange(filter.key, range)
-                                                    }
-                                                    formatValue={formatRangeValue}
-                                                />
-                                            ) : (
-                                                <OptionList
-                                                    filter={filter}
-                                                    selections={selections}
-                                                    onFilterToggle={onFilterToggle}
-                                                    searchPlaceholder={searchPlaceholder}
-                                                    isExpanded={isExpanded}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            {filters.map((filter) => (
+                                <FilterGroup
+                                    key={filter.key}
+                                    filter={filter}
+                                    selections={filterValues[filter.key] ?? new Set<string>()}
+                                    rangeSelection={rangeValues[filter.key]}
+                                    customValue={customValues?.[filter.key]}
+                                    isExpanded={expandedFilterKey === filter.key}
+                                    editorRender={editorMap[filter.key]}
+                                    searchPlaceholder={searchPlaceholder}
+                                    clearFilterAriaLabel={clearFilterAriaLabel}
+                                    clearRangeAriaLabel={clearRangeAriaLabel}
+                                    onFilterToggle={onFilterToggle}
+                                    onFilterClear={onFilterClear}
+                                    onRangeChange={onRangeChange}
+                                    onExpandedFilterChange={onExpandedFilterChange}
+                                    onCustomValueChange={onCustomValueChange}
+                                />
+                            ))}
                         </div>
                     </div>
                 </motion.div>
