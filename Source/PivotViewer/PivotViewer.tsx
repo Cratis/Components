@@ -1,9 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PivotViewerProps } from './types';
-import { usePivotEngine } from './hooks/usePivotEngine';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
@@ -14,20 +13,11 @@ import { ToolbarContainer } from './components/ToolbarContainer';
 import { usePanning, useWheelZoom, useZoomScrollAnchor, useFilterOptions } from './hooks';
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
-import { useFieldExtractors } from './hooks/useFieldExtractors';
-import { presentGrouping } from './utils/presentGrouping';
-import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
-import { resolveInternalItemIndex } from './utils/idResolution';
-import { useCardSelection } from './hooks/useCardSelection';
-import { useDetailPanelClose } from './hooks/useDetailPanelClose';
-import { useScrollSync } from './hooks/useScrollSync';
-import { useAnimationModeTracking } from './hooks/useAnimationModeTracking';
-import { useViewModeScrollHandling } from './hooks/useViewModeScrollHandling';
-import { useVisibleIds } from './hooks/useVisibleIds';
-import { useRawGrouping } from './hooks/useRawGrouping';
 import { useColorCssVariables } from './hooks/useColorCssVariables';
 import { useViewerLayout } from './hooks/useViewerLayout';
 import { useScrollPositionTracking } from './hooks/useScrollPositionTracking';
+import { usePivotViewerGrouping } from './hooks/usePivotViewerGrouping';
+import { usePivotViewerInteractions } from './hooks/usePivotViewerInteractions';
 
 function countActiveFilters(
     filterState: Record<string, unknown>,
@@ -163,91 +153,23 @@ export function PivotViewer<TItem extends object>({
 
     useScrollPositionTracking(containerRef, setScrollPosition);
 
-    // Build field extractors for the columnar store
-    const { fieldExtractors, indexFields } = useFieldExtractors(dimensions, filters);
-
-    // Initialize the Web Worker engine
-    const {
-        ready,
-        applyFilters: engineApplyFilters,
-        computeGrouping,
-        sortIds,
-    } = usePivotEngine({
+    const { ready, visibleIds, grouping } = usePivotViewerGrouping({
         data,
-        fieldExtractors,
-        indexFields,
-    });
-
-    // Build filter specs from UI state
-    const currentFilters = useCurrentFilters(
+        dimensions,
         filters,
         filterState,
         rangeFilterState,
         dimensionFilter,
         activeDimension,
-    );
-
-    const currentGroupBy = useCurrentGroupBy(activeDimensionKey, dimensions);
-
-    const visibleIds = useVisibleIds({
-        ready,
-        data,
-        currentFilters,
-        search,
-        searchFields,
-        engineApplyFilters,
-    });
-
-    const rawGrouping = useRawGrouping({
-        ready,
-        visibleIds,
-        currentGroupBy,
-        viewMode,
         activeDimensionKey,
-        computeGrouping,
-        sortIds,
+        searchFields,
+        search,
+        viewMode,
     });
-
-    const grouping = useMemo(
-        () => viewMode === 'grouped' ? presentGrouping(rawGrouping, activeDimension, data) : rawGrouping,
-        [viewMode, rawGrouping, activeDimension, data],
-    );
 
     const layout = useViewerLayout(grouping, viewMode, zoomLevel, containerDimensions);
 
-    const resolveId = useCallback(
-        (item: TItem) => resolveInternalItemIndex(data, item, getItemId),
-        [data, getItemId],
-    );
-
-    // Track animation mode changes
-    useAnimationModeTracking(
-        filterState,
-        rangeFilterState,
-        search,
-        activeDimensionKey,
-        viewMode,
-        setAnimationMode,
-    );
-
-    // Sync axis labels scroll with container scroll
-    useScrollSync(containerRef, axisLabelsRef, viewMode);
-
-    // Handle scroll positioning when switching view modes or grouping changes
-    useViewModeScrollHandling({
-        containerRef,
-        viewMode,
-        grouping,
-        layout,
-        selectedItem,
-        zoomLevel,
-        resolveId,
-        data,
-        setPreSelectionState,
-    });
-
-    // Handle card selection (click)
-    const handleCardClick = useCardSelection({
+    const { resolveId, handleCardClick, closeDetail } = usePivotViewerInteractions({
         data,
         isPanning,
         selectedItem,
@@ -255,31 +177,18 @@ export function PivotViewer<TItem extends object>({
         viewMode,
         layout,
         containerRef,
+        axisLabelsRef,
         spacerRef,
         containerDimensions,
         scrollPosition,
         preSelectionState,
         grouping,
         getItemId,
-        resolveId,
-        setZoomLevel,
-        setIsZooming,
-        setSelectedItem,
-        setPreSelectionState,
-    });
-
-    // Handle detail panel close
-    const closeDetail = useDetailPanelClose({
-        selectedItem,
-        preSelectionState,
-        zoomLevel,
-        viewMode,
-        layout,
-        containerRef,
-        containerDimensions,
-        grouping,
-        data,
-        resolveId,
+        filterState,
+        rangeFilterState,
+        search,
+        activeDimensionKey,
+        setAnimationMode,
         setZoomLevel,
         setIsZooming,
         setSelectedItem,
