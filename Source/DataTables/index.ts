@@ -8,6 +8,8 @@ export * from './DataTableForObservableQuery';
 export * from './Column';
 export * from './ColumnFilterMenu';
 export * from './TablePaginator';
+export { paginatorPages } from './paginatorPages';
+export type { PaginatorPageItem } from './PaginatorPageItem';
 export * from './DataTableSelectionChangeEvent';
 export * from './DataTableFilterMeta';
 export type { DataTableSort } from './DataTableSort';

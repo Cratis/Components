@@ -126,6 +126,9 @@ export interface DataTableForQueryProps<
      */
     unstyled?: boolean;
 
+    /** Shows numbered page buttons in the paginator. Defaults to false. */
+    pageLinks?: TablePaginatorProps['pageLinks'];
+
     /** Extra CSS class name forwarded to the paginator. */
     paginatorClassName?: string;
 
@@ -266,6 +269,7 @@ export const DataTableForQuery = <
                         onPageChange={setPage}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
+                        pageLinks={props.pageLinks}
                         className={props.paginatorClassName}
                         ariaLabels={props.paginatorAriaLabels}
                         pt={props.paginatorPt}

@@ -658,7 +658,18 @@ export const createSlotProfiles = (
     {
         slotId: 'datatables.paginator',
         partsKey: 'TablePaginator',
-        ptKeys: ['root', 'range', 'info', 'first', 'previous', 'next', 'last'],
+        ptKeys: [
+            'root',
+            'range',
+            'info',
+            'pages',
+            'page',
+            'ellipsis',
+            'first',
+            'previous',
+            'next',
+            'last',
+        ],
         nativeSelector: '[role="navigation"]',
         nativeTag: 'DIV',
         refCapable: false,
@@ -677,6 +688,16 @@ export const createSlotProfiles = (
             } satisfies TablePaginatorProps;
             return recordProps(props);
         },
+        createPartVariants: () => [
+            recordProps({
+                page: 5,
+                pageCount: 12,
+                totalItems: 120,
+                pageSize: 10,
+                pageLinks: true,
+                onPageChange: () => undefined,
+            } satisfies TablePaginatorProps),
+        ],
         exercise: async (_document, container) => {
             click(container, '[aria-label="Next page"]');
             await pause(0);

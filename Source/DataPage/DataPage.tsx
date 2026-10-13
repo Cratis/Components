@@ -369,6 +369,9 @@ export interface DataPageProps<
      */
     tableUnstyled?: boolean;
 
+    /** Shows numbered page buttons in the query table paginator. Defaults to false. */
+    pageLinks?: TablePaginatorProps['pageLinks'];
+
     /** Extra CSS class name forwarded to the query table paginator. */
     paginatorClassName?: string;
 

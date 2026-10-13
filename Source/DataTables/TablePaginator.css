@@ -1,23 +1,68 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-.cratis-table-paginator {
+.cratis-table-paginator,
+.cratis-table-paginator-pages {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.25rem;
+}
+
+.cratis-table-paginator {
+    justify-content: center;
     padding: 0.25rem;
+}
+
+.cratis-table-paginator-info,
+.cratis-table-paginator-ellipsis,
+.cratis-table-paginator-range {
+    color: var(--cratis-text-color-secondary);
+    padding: 0 0.5rem;
 }
 
 .cratis-table-paginator-info {
     font-size: 0.875rem;
-    color: var(--cratis-text-color-secondary);
-    padding: 0 0.5rem;
+}
+
+.cratis-table-paginator-page {
+    min-width: var(--cratis-control-height);
+    min-height: var(--cratis-control-height);
+    padding: 0.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--cratis-border-radius);
+    background: transparent;
+    color: var(--cratis-text-color);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cratis-table-paginator-page:hover:not(:disabled, [data-selected]) {
+    background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.cratis-table-paginator-page[data-selected] {
+    border-color: var(--cratis-action-background);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
+}
+
+.cratis-table-paginator-page:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+
+@media (forced-colors: active) {
+    .cratis-table-paginator-page:focus-visible {
+        outline: 2px solid Highlight;
+    }
+
+    .cratis-table-paginator-page[data-selected] {
+        border-color: Highlight;
+    }
 }
 
 .cratis-table-paginator-range {
     font-size: 0.8125rem;
-    color: var(--cratis-text-color-secondary);
     margin-right: auto;
-    padding: 0 0.5rem;
 }

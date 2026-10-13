@@ -13,6 +13,8 @@ export const cratisDefaults: CratisComponentsConfig = {
             previous: 'Previous page',
             next: 'Next page',
             last: 'Last page',
+            page: (page) => `Page ${page}`,
+            pages: 'Pages',
         },
         datePicker: {
             today: 'Today',

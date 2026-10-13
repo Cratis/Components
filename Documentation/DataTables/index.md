@@ -118,11 +118,77 @@ import { TablePaginator } from '@cratis/components/DataTables';
 | `onPageChange` | `(page: number) => void` | Receives the requested zero-based page. The host owns loading and current-page state. |
 | `totalItems`   | `number`                 | Total record count. Together with `pageSize`, enables the loaded range report.        |
 | `pageSize`     | `number`                 | Rows per page. Together with `totalItems`, enables the loaded range report.           |
-| `ariaLabels`   | `object`                 | Localizes the navigation and first/previous/next/last accessible names.               |
+| `pageLinks`    | `boolean \| { siblings?: number; boundaries?: number }` | Opt-in numbered page buttons with gaps; defaults to `false`. |
+| `ariaLabels`   | `object`                 | Localizes navigation, control names, and numbered page names.                         |
 | `className`    | `string`                 | Extra class on the paginator root.                                                    |
-| `pt`           | `TablePaginatorParts`    | Stable attributes for the root, reports, and the four button parts.                   |
+| `pt`           | `TablePaginatorParts`    | Stable attributes for the root, reports, navigation buttons, numbered pages, and gaps. |
 
 `TablePaginator` does not fetch data or change pages internally. Keep `page`, `pageCount`, and the optional range inputs synchronized with the query result supplied by the host.
+
+### Numbered page links
+
+Set `pageLinks` to show page buttons between previous and next instead of the `info` report.
+`true` includes one sibling on each side of the current page and one boundary page at each end.
+An object changes those counts: `pageLinks={{ siblings: 2, boundaries: 1 }}`.
+The current button has `aria-current='page'` and `data-selected`; clicking any page still requests
+its zero-based index. First/last buttons and the loaded range remain unchanged.
+
+The default window shows every page for counts up to seven. Longer ranges keep the selected window
+and boundary pages, fill a gap of one page with its number, and show a non-interactive,
+`aria-hidden` ellipsis for larger gaps. For custom window sizes the short-range threshold is
+`2 * boundaries + 2 * siblings + 3` pages.
+
+This complete example hides the first/last controls and range through the existing parts:
+
+```tsx
+import { useState } from 'react';
+import { TablePaginator } from '@cratis/components/DataTables';
+
+export function NumberedPages() {
+    const [page, setPage] = useState(5);
+    return (
+        <TablePaginator
+            page={page}
+            pageCount={12}
+            pageLinks
+            onPageChange={setPage}
+            ariaLabels={{ page: (number) => `Página ${number}`, pages: 'Páginas' }}
+            pt={{
+                first: { root: { style: { display: 'none' } } },
+                last: { root: { style: { display: 'none' } } },
+                range: { style: { display: 'none' } },
+            }}
+        />
+    );
+}
+```
+
+Use the same `pageLinks` prop on `DataPage`, `DataTableForQuery`, or
+`DataTableForObservableQuery`. Their `paginatorAriaLabels` and `paginatorPt` props forward
+labels and part attributes to the paginator.
+
+| Part | Attributes apply to | State |
+| --- | --- | --- |
+| `pages` | Numbered-page group container (`HTMLAttributes<HTMLDivElement>`) | `role='group'` and the resolved group label |
+| `page` | Each native numbered button (`ButtonHTMLAttributes<HTMLButtonElement>`) | `aria-current='page'` and `data-selected` only on the current button |
+| `ellipsis` | Non-interactive gap span (`HTMLAttributes<HTMLSpanElement>`) | `aria-hidden='true'` |
+
+Part names are exposed as `data-cratis-part` values. `pt.page` is a native button attribute
+object, unlike the nested `ButtonParts` used by `pt.first`, `pt.previous`, `pt.next`, and `pt.last`.
+Use `pt.page.className`, or `[data-cratis-part='page'][data-selected]`, to customize the current page.
+
+Accessible names resolve from `ariaLabels` first, then `CratisComponentsProvider`'s
+`messages.paginator`, then English defaults. The new `page: (number: number) => string`
+message receives the **one-based** number and defaults to `Page ${number}`. The optional `pages`
+message names the group and defaults to `Pages`. Existing messages (`navigation`, `first`,
+`previous`, `next`, `last`) keep their precedence.
+
+For a custom composition, import the pure `paginatorPages(page, pageCount, siblings = 1,
+boundaries = 1)` helper and its `PaginatorPageItem` type from `@cratis/components/DataTables`.
+It returns ordered `{ kind: 'page', page: number }` items with zero-based indices and
+`{ kind: 'ellipsis', key: 'start' | 'end' }` gaps. A zero, negative, or non-finite count returns
+no items; it clamps the current page to the available pages and truncates numeric inputs.
+Negative window sizes become zero; non-finite window sizes use their defaults.
 
 ## See Also
 

@@ -28,6 +28,10 @@ export interface CratisPaginatorMessages {
     next?: string;
     /** Last-page action label. */
     last?: string;
+    /** Builds a numbered page button's accessible name from its one-based page number. */
+    page?: (page: number) => string;
+    /** Accessible name for the numbered-page group. */
+    pages?: string;
 }
 
 /** Localizable labels owned by the Cratis date picker composition. */
@@ -287,6 +291,7 @@ const withLegacyLocaleMessages = (
         messages: {
             ...config.messages,
             paginator: {
+                ...config.messages?.paginator,
                 navigation:
                     explicitMessages?.paginator?.navigation ??
                     legacy.aria?.navigation ??
