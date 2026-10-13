@@ -6,6 +6,7 @@ import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { TablePaginatorProps } from './TablePaginator';
 import { paginatorRange } from './paginatorRange';
+import { TablePaginatorPages } from './TablePaginatorPages';
 
 /**
  * A minimal first/previous/next/last paginator. The
@@ -19,6 +20,7 @@ export const TablePaginatorImplementation = ({
     onPageChange,
     totalItems,
     pageSize,
+    pageLinks = false,
     ariaLabels,
     className,
     pt,
@@ -36,6 +38,11 @@ export const TablePaginatorImplementation = ({
         previous: ariaLabels?.previous ?? paginatorMessages?.previous ?? 'Previous page',
         next: ariaLabels?.next ?? paginatorMessages?.next ?? 'Next page',
         last: ariaLabels?.last ?? paginatorMessages?.last ?? 'Last page',
+        page:
+            ariaLabels?.page ??
+            paginatorMessages?.page ??
+            ((number: number) => `Page ${number}`),
+        pages: ariaLabels?.pages ?? paginatorMessages?.pages ?? 'Pages',
     };
 
     return (
@@ -77,15 +84,27 @@ export const TablePaginatorImplementation = ({
             >
                 <span aria-hidden='true'>{icon('previous', '‹')}</span>
             </Button>
-            <span
-                {...pt?.info}
-                className={['cratis-table-paginator-info', pt?.info?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='info'
-            >
-                {page + 1} / {Math.max(pageCount, 1)}
-            </span>
+            {pageLinks ? (
+                <TablePaginatorPages
+                    page={page}
+                    pageCount={pageCount}
+                    pageLinks={pageLinks}
+                    onPageChange={onPageChange}
+                    pt={pt}
+                    pageLabel={labels.page}
+                    pagesLabel={labels.pages}
+                />
+            ) : (
+                <span
+                    {...pt?.info}
+                    className={['cratis-table-paginator-info', pt?.info?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='info'
+                >
+                    {page + 1} / {Math.max(pageCount, 1)}
+                </span>
+            )}
             <Button
                 variant='ghost'
                 disabled={isLast}

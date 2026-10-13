@@ -435,10 +435,10 @@ export const partDefinitions = {
         ],
     },
     TablePaginator: {
-        parts: ['root', 'range', 'info'],
-        sources: ['DataTables/TablePaginatorImplementation.tsx'],
+        parts: ['root', 'range', 'info', 'pages', 'page', 'ellipsis'],
+        sources: ['DataTables/TablePaginatorImplementation.tsx', 'DataTables/TablePaginatorPages.tsx'],
         ptFiles: ['DataTables/TablePaginator.tsx'],
-        ptKeys: ['root', 'range', 'info', 'first', 'previous', 'next', 'last'],
+        ptKeys: ['root', 'range', 'info', 'pages', 'page', 'ellipsis', 'first', 'previous', 'next', 'last'],
     },
     Toaster: {
         parts: [
@@ -1074,6 +1074,9 @@ export const partStateDefinitions = {
         root: [],
         range: [],
         info: [],
+        pages: [],
+        page: ['selected'],
+        ellipsis: [],
     },
     Toaster: {
         region: [],

@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { HTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import type { ButtonParts } from '../Common/Button';
 import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
@@ -16,6 +16,12 @@ export interface TablePaginatorParts {
     range?: HTMLAttributes<HTMLSpanElement>;
     /** Current page / page-count report. */
     info?: HTMLAttributes<HTMLSpanElement>;
+    /** Numbered-page group container. */
+    pages?: HTMLAttributes<HTMLDivElement>;
+    /** Each numbered-page native button. */
+    page?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Non-interactive gap between numbered pages. */
+    ellipsis?: HTMLAttributes<HTMLSpanElement>;
     /** First-page Button parts. */
     first?: ButtonParts;
     /** Previous-page Button parts. */
@@ -38,6 +44,18 @@ export interface TablePaginatorProps {
     totalItems?: number;
     /** Rows per page — enables the "X–Y of Z" range report. */
     pageSize?: number;
+    /**
+     * Shows numbered page buttons instead of the page-count report. Defaults to false.
+     * Pass true for one sibling and one boundary page, or customize the window sizes.
+     */
+    pageLinks?:
+        | boolean
+        | {
+              /** Number of pages on each side of the current page. Defaults to 1. */
+              siblings?: number;
+              /** Number of pages at each end of the range. Defaults to 1. */
+              boundaries?: number;
+          };
     /** Accessible names for the paginator and its controls. Override any to localize. */
     ariaLabels?: {
         navigation?: string;
@@ -45,6 +63,10 @@ export interface TablePaginatorProps {
         previous?: string;
         next?: string;
         last?: string;
+        /** Builds a numbered button's accessible name from its one-based page number. */
+        page?: (page: number) => string;
+        /** Accessible name for the numbered-page group. */
+        pages?: string;
     };
     /** Extra class name for the paginator container. */
     className?: string;
@@ -63,7 +85,7 @@ const coreTablePaginatorDeclaration = Object.freeze({
 }) satisfies unstable_SlotDeclaration<'datatables.paginator'>;
 
 /**
- * A minimal first/previous/next/last paginator. The Cratis data tables drive paging through Arc's
+ * A first/previous/next/last paginator with optional numbered page links. The Cratis data tables drive paging through Arc's
  * paging hook and receive requested zero-based pages through `onPageChange`.
  */
 export const TablePaginator = (props: TablePaginatorProps) => {

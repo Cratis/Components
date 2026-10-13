@@ -46,7 +46,7 @@ export const cratisParts = {
     DataTableForObservableQuery: ['root', 'search', 'search-input', 'table-container', 'table', 'head', 'header-row', 'header-cell', 'header-content', 'sort', 'select-all', 'body', 'empty-row', 'empty-cell', 'loading-row', 'loading-cell', 'failure-row', 'failure-cell', 'row', 'cell'],
     DataTableForQuery: ['root', 'search', 'search-input', 'table-container', 'table', 'head', 'header-row', 'header-cell', 'header-content', 'sort', 'select-all', 'body', 'empty-row', 'empty-cell', 'loading-row', 'loading-cell', 'failure-row', 'failure-cell', 'row', 'cell'],
     ColumnFilterMenu: ['filter-trigger', 'filter-popover', 'filter-menu', 'filter-actions'],
-    TablePaginator: ['root', 'range', 'info'],
+    TablePaginator: ['root', 'range', 'info', 'pages', 'page', 'ellipsis'],
     Toaster: ['region', 'toast', 'icon', 'content', 'title', 'description', 'close', 'action'],
     EventsView: ['timeline', 'event', 'separator', 'marker', 'connector', 'content'],
     ChatSidebar: ['backdrop', 'root', 'header', 'back', 'title', 'close', 'content'],
@@ -456,6 +456,9 @@ export const cratisPartStates = {
         'root': [],
         'range': [],
         'info': [],
+        'pages': [],
+        'page': ['selected'],
+        'ellipsis': [],
     },
     Toaster: {
         'region': [],

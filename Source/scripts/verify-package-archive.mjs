@@ -296,11 +296,15 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // mount the editor imports per-area sheets and pays nothing.
 // Measured when the SchemaEditor tree layout gained its colored type chips and refreshed menu: raw 246039, 1372 declaration blocks.
 // The raw ceiling moves to 242 KiB and the blocks to 1385; gzip holds. The chips are one rule per property type.
+// Measured on 2026-10-13 when the TablePaginator page links joined: raw 248470, gzip 38163,
+// 1387 declaration blocks. Shared layout/text declarations are grouped and unused button rules
+// are removed. Raw and blocks move only by the remaining overage (662 bytes and 2 blocks);
+// gzip holds. A consumer that does not mount a table imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 242 * 1024,
+    rawBytes: 248470,
     gzipBytes: 38 * 1024,
-    declarationBlocks: 1385,
+    declarationBlocks: 1387,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
