@@ -60,7 +60,7 @@ export interface SchemaEditorParts {
     /** The key toggle. Carries `data-pressed` while the property is the key. */
     key?: ButtonHTMLAttributes<HTMLButtonElement>;
 
-    /** The Generated toggle. Carries `data-pressed` while the value is generated. */
+    /** The Generated toggle, or non-interactive marker when editing is unavailable. Carries `data-pressed` while the value is generated. */
     generated?: ButtonHTMLAttributes<HTMLButtonElement>;
 
     /** The wrapper of the host's accessory slot. */

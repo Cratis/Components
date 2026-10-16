@@ -28,8 +28,10 @@ import { TreeSchemaEditor, type TreeSchemaEditorProps } from './Tree/TreeSchemaE
 export { defaultSchemaEditorLabels };
 export type { SchemaEditorLabels };
 
-/** Properties of the tree layout the table layout has no counterpart for. They are ignored when `layout` is `'table'`. */
-// Includes allowGeneratedProperty and onSetGeneratedProperty; the table layout ignores both.
+/**
+ * Properties of the tree layout the table layout has no counterpart for, including allowGeneratedProperty
+ * and onSetGeneratedProperty. They are ignored when `layout` is `'table'`.
+ */
 type TreeOnlyProps = Omit<
     TreeSchemaEditorProps,
     | 'schema'

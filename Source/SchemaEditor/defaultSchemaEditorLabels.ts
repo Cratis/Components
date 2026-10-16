@@ -37,7 +37,7 @@ export const completeSchemaEditorLabels: Required<SchemaEditorLabels> = {
     isKey: 'This is the key that identifies the object. Select it again to clear it.',
     generatedProperty: (propertyName) => `Generated: ${propertyName}`,
     setAsGenerated: 'Mark as generated: the value is created when the command runs, not entered',
-    isGenerated: 'Generated',
+    isGenerated: 'The value is generated. Select it again to mark it as entered.',
     keyColumn: 'Key',
     requiredColumn: 'Required',
     protectedProperty: 'This property cannot be renamed or removed.',

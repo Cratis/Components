@@ -6,6 +6,8 @@ import type { Property } from './Property';
 import { PropertyType } from './PropertyType';
 import { conceptPropertyName, uniquePropertyName } from './propertyNaming';
 import { findPropertyById } from './propertyTree';
+import { itemSchemaKeywordOrder, schemaKeywordOrder, type SchemaOrderedProperty } from './SchemaOrderedProperty';
+import { schemaInOriginalOrder } from './schemaInOriginalOrder';
 
 /**
  * The JSON Schema keyword carrying the concept a property is typed as. It annotates the primitive node the
@@ -64,21 +66,30 @@ function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
+function readItemKeywords(node: SchemaNode): Partial<SchemaOrderedProperty> {
+    if (node.type !== 'array' || typeof node.items !== 'object' || node.items === null) return {};
+    const items = node.items as SchemaNode;
+    const keywords = vendorKeywords(items, false);
+    return { [itemSchemaKeywordOrder]: Object.keys(items), ...(keywords ? { itemVendorKeywords: keywords } : {}) };
+}
+
+function readFlags(node: SchemaNode, isRequired: boolean): Partial<SchemaOrderedProperty> {
+    const keywords = vendorKeywords(node, true);
+    return {
+        [schemaKeywordOrder]: Object.keys(node),
+        ...readItemKeywords(node),
+        ...(keywords ? { vendorKeywords: keywords } : {}),
+        ...(node[GENERATED_KEYWORD] === true ? { isGenerated: true } : {}),
+        ...(isRequired ? { isRequired: true } : {}),
+        ...(node[KEY_KEYWORD] === true ? { isKey: true } : {}),
+    };
+}
+
 function schemaPropertyToProperty(name: string, value: JsonSchemaProperty, required: ReadonlySet<string>): Property {
     const node = value as unknown as SchemaNode;
     const type = schemaPropertyType(node);
     const concept = node[CONCEPT_KEYWORD];
-    const keywords = vendorKeywords(node, true);
-    const itemKeywords = node.type === 'array' && typeof node.items === 'object' && node.items !== null
-        ? vendorKeywords(node.items as SchemaNode, false)
-        : undefined;
-    const flags = {
-        ...(keywords ? { vendorKeywords: keywords } : {}),
-        ...(itemKeywords ? { itemVendorKeywords: itemKeywords } : {}),
-        ...(node[GENERATED_KEYWORD] === true ? { isGenerated: true } : {}),
-        ...(required.has(name) ? { isRequired: true } : {}),
-        ...(node[KEY_KEYWORD] === true ? { isKey: true } : {}),
-    };
+    const flags = readFlags(node, required.has(name));
 
     const container = (type === PropertyType.Object ? node : type === PropertyType.ObjectArray ? node.items : undefined) as
         | { properties?: Record<string, JsonSchemaProperty>; required?: string[] }
@@ -141,14 +152,23 @@ function primitiveSchema(property: Property): SchemaNode {
     }
 }
 
-function propertySchema(property: Property): JsonSchemaProperty {
+function orderedPrimitiveSchema(property: SchemaOrderedProperty): SchemaNode {
+    const schema = primitiveSchema(property);
+    if (schema.items) schema.items = schemaInOriginalOrder(schema.items as SchemaNode, property[itemSchemaKeywordOrder]);
+    return schema;
+}
+
+function propertyAnnotations(property: Property): SchemaNode {
     return {
-        ...primitiveSchema(property),
         ...property.vendorKeywords,
         ...(property.isGenerated === true ? { [GENERATED_KEYWORD]: true } : {}),
         ...(property.concept ? { [CONCEPT_KEYWORD]: property.concept } : {}),
         ...(property.isKey === true ? { [KEY_KEYWORD]: true } : {}),
-    } as unknown as JsonSchemaProperty;
+    };
+}
+
+function propertySchema(property: SchemaOrderedProperty): JsonSchemaProperty {
+    return schemaInOriginalOrder({ ...orderedPrimitiveSchema(property), ...propertyAnnotations(property) }, property[schemaKeywordOrder]) as unknown as JsonSchemaProperty;
 }
 
 function objectSchema(properties: Property[]): { properties: Record<string, JsonSchemaProperty>; required?: string[] } {
@@ -168,9 +188,9 @@ function objectSchema(properties: Property[]): { properties: Record<string, Json
  * @param base The incoming schema. Root keys other than type, properties and required are preserved.
  * @returns The schema.
  */
-export function propertiesToJsonSchema(properties: Property[], base?: JsonSchema): JsonSchema {
-    const root = Object.fromEntries(Object.entries(base ?? {}).filter(([name]) => !['type', 'properties', 'required'].includes(name)));
-    return { ...root, type: 'object', ...objectSchema(properties) } as JsonSchema;
+export function propertiesToJsonSchema(properties: Property[], base: JsonSchema = {}): JsonSchema {
+    const root = Object.fromEntries(Object.entries(base).filter(([name]) => !['properties', 'required'].includes(name)));
+    return schemaInOriginalOrder({ ...root, type: 'object', ...objectSchema(properties) }, Object.keys(base)) as JsonSchema;
 }
 
 // ── Pure tree edits ─────────────────────────────────────────────────
@@ -255,9 +275,23 @@ export function renameProperty(properties: Property[], targetId: string, newName
     return updateProperty(properties, targetId, property => ({ ...property, name: newName }));
 }
 
+function retypedProperty(property: Property, newType: PropertyType, concept?: string): Property {
+    const next: SchemaOrderedProperty = {
+        ...property,
+        type: newType,
+        concept,
+        children: isComplex(newType) ? (property.children ?? []) : undefined,
+    };
+    if (property.type !== newType) {
+        delete next.itemVendorKeywords;
+        delete next[itemSchemaKeywordOrder];
+    }
+    return next;
+}
+
 /**
  * Changes the type of a property. Choosing a plain primitive drops the concept; choosing an object or
- * object list keeps the children, and any other type drops them.
+ * object list keeps the children, and any other type drops them. A different item kind clears item metadata.
  * @param properties The root properties.
  * @param targetId The id of the property.
  * @param newType The new type.
@@ -265,12 +299,7 @@ export function renameProperty(properties: Property[], targetId: string, newName
  * @returns The new tree.
  */
 export function changePropertyType(properties: Property[], targetId: string, newType: PropertyType, concept?: string): Property[] {
-    return updateProperty(properties, targetId, property => ({
-        ...property,
-        type: newType,
-        concept,
-        children: isComplex(newType) ? (property.children ?? []) : undefined,
-    }));
+    return updateProperty(properties, targetId, property => retypedProperty(property, newType, concept));
 }
 
 /**
@@ -304,7 +333,10 @@ export function setRequiredProperty(properties: Property[], targetId: string, is
 export function setGeneratedProperty(properties: Property[], targetId: string, isGenerated: boolean): Property[] {
     return updateProperty(properties, targetId, property => {
         const keywords = Object.fromEntries(Object.entries(property.vendorKeywords ?? {}).filter(([name]) => name !== GENERATED_KEYWORD));
-        return { ...property, isGenerated, vendorKeywords: Object.keys(keywords).length > 0 ? keywords : undefined };
+        const next = { ...property };
+        delete next.isGenerated;
+        delete next.vendorKeywords;
+        return { ...next, ...(isGenerated ? { isGenerated: true } : {}), ...(Object.keys(keywords).length > 0 ? { vendorKeywords: keywords } : {}) };
     });
 }
 

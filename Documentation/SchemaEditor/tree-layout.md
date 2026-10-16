@@ -101,9 +101,9 @@ For a per-property policy, pass a predicate. This example offers the toggle on r
 />
 ```
 
-In [controlled mode](extending.md#controlled-mode), supply `onSetGeneratedProperty={(propertyId, isGenerated) => setProperties(current => setGeneratedProperty(current, propertyId, isGenerated))}`. Import `setGeneratedProperty` from `@cratis/components/SchemaEditor`. The callback implies `allowGeneratedProperty` unless you explicitly set it to `false`; without a callback the controlled tree offers no toggle. `readOnly` hides it in either mode. Other edits, including type changes, keep the generated flag.
+In [controlled mode](extending.md#controlled-mode), supply `onSetGeneratedProperty={(propertyId, isGenerated) => setProperties(current => setGeneratedProperty(current, propertyId, isGenerated))}`. Import `setGeneratedProperty` from `@cratis/components/SchemaEditor`. The callback implies `allowGeneratedProperty` unless you explicitly set it to `false`; without a callback the controlled tree offers no toggle. `readOnly` hides the toggle in either mode. A generated property still shows a non-interactive marker when editing is read-only, the predicate rejects it, or no toggle is offered. The marker uses the same `generated` part and pressed state, with an accessible name. Other edits, including type changes, keep the generated flag.
 
-Unknown `x-` keywords survive tree edits on property nodes and array `items` nodes, including nested properties. Root metadata also survives. Standard non-`x-` property keywords outside the supported shape do not; see [JSON Schema mapping](json-schema.md#what-the-tree-layout-preserves).
+Unknown `x-` keywords survive tree edits on property nodes and array `items` nodes, including nested properties. Root metadata also survives. A type change clears item annotations when the item kind changes or the property stops being an array. Standard non-`x-` property keywords outside the supported shape do not; see [JSON Schema mapping](json-schema.md#what-the-tree-layout-preserves).
 
 ## Styling
 
@@ -125,7 +125,7 @@ Labels are the same `labels` prop as the table layout. The tree adds optional ke
 />
 ```
 
-The Generated toggle uses `generatedProperty(name)` for its accessible name, `setAsGenerated` for its inactive tooltip, and `isGenerated` for its active tooltip. Defaults are `Generated: <name>`, `Mark as generated: the value is created when the command runs, not entered`, and `Generated`.
+The Generated toggle uses `generatedProperty(name)` for its accessible name, `setAsGenerated` for its inactive tooltip, and `isGenerated` for its active tooltip. Defaults are `Generated: <name>`, `Mark as generated: the value is created when the command runs, not entered`, and `The value is generated. Select it again to mark it as entered.`. The non-interactive marker uses `generatedProperty(name)` for its name and tooltip.
 
 ## Accessibility
 

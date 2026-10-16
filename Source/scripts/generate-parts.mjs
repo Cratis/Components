@@ -783,6 +783,7 @@ export const partDefinitions = {
         sources: [
             'SchemaEditor/Tree/TreeSchemaEditor.tsx',
             'SchemaEditor/Tree/SchemaPropertyRow.tsx',
+            'SchemaEditor/Tree/GeneratedToggle.tsx',
             'SchemaEditor/Tree/PropertyTypeMenu.tsx',
             'SchemaEditor/Tree/PropertyTypeBadge.tsx',
         ],

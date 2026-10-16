@@ -22,15 +22,16 @@ const schema = {
 describe('when round tripping vendor keywords at every schema depth', () => {
     let properties: Property[];
     let result: JsonSchema;
+    let plain: Property;
     beforeEach(() => {
         properties = jsonSchemaToProperties(schema);
         result = propertiesToJsonSchema(properties);
+        [plain] = jsonSchemaToProperties({ properties: { plain: { type: 'string' } } });
     });
 
     it('should preserve every vendor keyword on properties and array items', () => result.should.deep.equal(schema));
     it('should carry deep values untouched', () => (properties[0].vendorKeywords!['x-object'] === keywords['x-object']).should.be.true);
     it('should omit empty keyword fields', () => {
-        const [plain] = jsonSchemaToProperties({ properties: { plain: { type: 'string' } } });
         Object.keys(plain).should.not.include('vendorKeywords');
         Object.keys(plain).should.not.include('itemVendorKeywords');
         Object.keys(plain).should.not.include('isGenerated');
@@ -38,18 +39,18 @@ describe('when round tripping vendor keywords at every schema depth', () => {
 });
 
 describe('when editing a property that carries vendor keywords', () => {
-    let result: Property[];
+    let written: JsonSchema;
     beforeEach(() => {
         const properties = jsonSchemaToProperties(schema);
         const target = properties[3].id;
-        result = renameProperty(properties, target, 'renamed');
+        let result = renameProperty(properties, target, 'renamed');
         result = changePropertyType(result, target, PropertyType.NumberArray);
         result = setKeyProperty(result, target);
         result = setRequiredProperty(result, target, true);
+        written = propertiesToJsonSchema(result);
     });
 
-    it('should retain property and item keywords through rename type key and required edits', () => {
-        const written = propertiesToJsonSchema(result).properties!;
-        written.renamed.should.deep.equal({ type: 'array', ...keywords, items: { type: 'number', ...keywords }, 'x-key': true });
+    it('should retain property keywords through edits and discard annotations of a changed item kind', () => {
+        written.properties!.renamed.should.deep.equal({ type: 'array', ...keywords, items: { type: 'number' }, 'x-key': true });
     });
 });

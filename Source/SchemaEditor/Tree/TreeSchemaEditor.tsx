@@ -171,6 +171,12 @@ export interface TreeSchemaEditorProps {
 
 const never = () => false;
 
+function allowance(flag: TreeSchemaEditorProps['allowKeyProperty'], callback: unknown, isControlled: boolean) {
+    const allowed = flag ?? (isControlled && callback !== undefined);
+    if (typeof allowed === 'function') return allowed;
+    return allowed ? () => true : never;
+}
+
 /**
  * The tree layout of the {@link SchemaEditor} (`layout='tree'`). Edits the properties of a JSON Schema as a tree: names, types, nested objects and lists of objects, and
  * optionally concepts, the key, and whether a property is required.
@@ -282,17 +288,6 @@ export const TreeSchemaEditor = ({
         : (type: PropertyType, concept?: string) =>
             apply(addProperty(latest.current, type, totalPropertyCount(latest.current), concept));
 
-    // In controlled mode a toggle callback implies its allow flag, unless the host set the flag to false.
-    const keyAllowance = allowKeyProperty ?? (isControlled && onSetKeyProperty !== undefined);
-    const isKeyAllowed = typeof keyAllowance === 'function'
-        ? keyAllowance
-        : keyAllowance ? () => true : never;
-    const generatedAllowance = allowGeneratedProperty ?? (isControlled && onSetGeneratedProperty !== undefined);
-    const isGeneratedAllowed = typeof generatedAllowance === 'function'
-        ? generatedAllowance
-        : generatedAllowance ? () => true : never;
-    const isRequiredAllowed = allowRequired ?? (isControlled && onSetRequiredProperty !== undefined);
-
     const contextValue: SchemaEditorContextValue = {
         labels,
         parts: pt,
@@ -302,9 +297,9 @@ export const TreeSchemaEditor = ({
         operations,
         selectedPropertyId,
         onPropertyClick,
-        isKeyAllowed,
-        isGeneratedAllowed,
-        isRequiredAllowed,
+        isKeyAllowed: allowance(allowKeyProperty, onSetKeyProperty, isControlled),
+        isGeneratedAllowed: allowance(allowGeneratedProperty, onSetGeneratedProperty, isControlled),
+        isRequiredAllowed: allowRequired ?? (isControlled && onSetRequiredProperty !== undefined),
         isProtected: isPropertyProtected ?? never,
         validateName: validatePropertyName,
         getRowState: getPropertyRowState,

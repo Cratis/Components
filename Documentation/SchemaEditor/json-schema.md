@@ -27,7 +27,7 @@ Reading is more forgiving: `integer` reads as a number, and an unknown or missin
 
 ## Keywords the editor adds
 
-Both layouts read and write these keywords; the table layout leaves them untouched until `allowRequired` or `allowKeyProperty` turns the matching column on.
+The tree layout reads and writes these keywords. The table layout offers controls only for `required` and `x-key`, when `allowRequired` or `allowKeyProperty` enables the matching column; it preserves `x-concept` and `x-generated` without editing them.
 
 | Keyword | Where | Meaning |
 | --- | --- | --- |
@@ -51,11 +51,11 @@ The keywords are exported as `CONCEPT_KEYWORD`, `KEY_KEYWORD` and `GENERATED_KEY
 
 ## What the tree layout preserves
 
-Unknown `x-` vendor keywords round-trip verbatim on every property node, including nested object properties, array properties and array `items` nodes. Strings, numbers, booleans, nulls, objects and arrays keep their values. `Property.vendorKeywords` carries property annotations, and `Property.itemVendorKeywords` carries item annotations; empty maps are omitted. Rename, type, required and key edits keep this metadata.
+Unknown `x-` vendor keywords round-trip verbatim on every property node, including nested object properties, array properties and array `items` nodes. Strings, numbers, booleans, nulls, objects and arrays keep their values. `Property.vendorKeywords` carries property annotations, and `Property.itemVendorKeywords` carries item annotations; empty maps are omitted. Rename, required and key edits keep this metadata. A type change keeps property annotations but clears item annotations when the item kind changes, including a change to a non-array type.
 
 `x-generated: true` reads as `Property.isGenerated`. Any other `x-generated` value stays verbatim in `vendorKeywords` until an explicit Generated edit replaces or clears it. `x-concept` and `x-key` retain their dedicated mapping.
 
-The tree editor also preserves every root key except `type`, `properties` and `required`, which it rebuilds. This keeps root vendor keywords, `title`, `definitions` and other root metadata. When using conversion helpers directly, pass the incoming schema as the second argument to `propertiesToJsonSchema(properties, schema)` for the same behavior.
+The tree editor also preserves every root key except `type`, `properties` and `required`, which it rebuilds. This keeps root vendor keywords, `title`, `definitions` and other root metadata. When using conversion helpers directly, pass the incoming schema as the second argument to `propertiesToJsonSchema(properties, schema)` for the same behavior. Unedited round trips preserve the order of supported root, property and item keywords as well as their values.
 
 ## What the tree layout does not preserve
 
@@ -65,7 +65,7 @@ The table layout edits the document in place and drops nothing it does not touch
 - `description`, `title`, `$id`, `$ref`, `definitions`, composition keywords (`oneOf`, `anyOf`, `allOf`, `not`), `enum`, `const`, numeric and string constraints, and `additionalProperties`;
 - names in `required` that have no declared property.
 
-Treat the output as authoritative only for the shape the editor supports, and validate it with the application's own validator. A host that must keep richer property-level vocabulary should use an editor that supports it rather than relying on vendor-keyword preservation.
+Treat the output as authoritative only for the shape the editor supports, and validate it with the application's own validator. A host that must keep richer property-level vocabulary should merge the output into its own document instead of replacing it, or use a dedicated editor. Broader property-keyword preservation is tracked in [#426](https://github.com/Cratis/Components/issues/426).
 
 ## Converting without the editor
 
