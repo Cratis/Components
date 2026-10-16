@@ -6,7 +6,7 @@ import type { Property } from './Property';
 import { PropertyType } from './PropertyType';
 import { conceptPropertyName, uniquePropertyName } from './propertyNaming';
 import { findPropertyById } from './propertyTree';
-import { itemSchemaKeywordOrder, schemaKeywordOrder, type SchemaOrderedProperty } from './SchemaOrderedProperty';
+import { copySchemaKeywordOrder, itemSchemaKeywordOrder, schemaKeywordOrder, type SchemaOrderedProperty } from './SchemaOrderedProperty';
 import { schemaInOriginalOrder } from './schemaInOriginalOrder';
 
 /**
@@ -97,23 +97,23 @@ function schemaPropertyToProperty(name: string, value: JsonSchemaProperty, requi
 
     if (container?.properties) {
         const childRequired = new Set(container.required ?? []);
-        return {
+        return copySchemaKeywordOrder(flags, {
             id: identifier(),
             name,
             type,
             ...flags,
             children: Object.entries(container.properties).map(([childName, child]) =>
                 schemaPropertyToProperty(childName, child, childRequired)),
-        };
+        });
     }
 
-    return {
+    return copySchemaKeywordOrder(flags, {
         id: identifier(),
         name,
         type,
         ...flags,
         ...(typeof concept === 'string' && concept.length > 0 ? { concept } : {}),
-    };
+    });
 }
 
 /**
@@ -239,8 +239,8 @@ export function addChildProperty(
     const siblings = findPropertyById(properties, parentId)?.children ?? [];
     const child = newProperty(siblings, type, existingCount, concept);
     const insert = (level: Property[]): Property[] => level.map(property => {
-        if (property.id === parentId) return { ...property, children: [...(property.children ?? []), child] };
-        return property.children ? { ...property, children: insert(property.children) } : property;
+        if (property.id === parentId) return copySchemaKeywordOrder(property, { ...property, children: [...(property.children ?? []), child] });
+        return property.children ? copySchemaKeywordOrder(property, { ...property, children: insert(property.children) }) : property;
     });
     return insert(properties);
 }
@@ -254,13 +254,13 @@ export function addChildProperty(
 export function removeProperty(properties: Property[], targetId: string): Property[] {
     return properties
         .filter(property => property.id !== targetId)
-        .map(property => property.children ? { ...property, children: removeProperty(property.children, targetId) } : property);
+        .map(property => property.children ? copySchemaKeywordOrder(property, { ...property, children: removeProperty(property.children, targetId) }) : property);
 }
 
 function updateProperty(properties: Property[], targetId: string, update: (property: Property) => Property): Property[] {
     return properties.map(property => {
         if (property.id === targetId) return update(property);
-        return property.children ? { ...property, children: updateProperty(property.children, targetId, update) } : property;
+        return property.children ? copySchemaKeywordOrder(property, { ...property, children: updateProperty(property.children, targetId, update) }) : property;
     });
 }
 
@@ -272,16 +272,16 @@ function updateProperty(properties: Property[], targetId: string, update: (prope
  * @returns The new tree.
  */
 export function renameProperty(properties: Property[], targetId: string, newName: string): Property[] {
-    return updateProperty(properties, targetId, property => ({ ...property, name: newName }));
+    return updateProperty(properties, targetId, property => copySchemaKeywordOrder(property, { ...property, name: newName }));
 }
 
 function retypedProperty(property: Property, newType: PropertyType, concept?: string): Property {
-    const next: SchemaOrderedProperty = {
+    const next: SchemaOrderedProperty = copySchemaKeywordOrder(property, {
         ...property,
         type: newType,
         concept,
         children: isComplex(newType) ? (property.children ?? []) : undefined,
-    };
+    });
     if (property.type !== newType) {
         delete next.itemVendorKeywords;
         delete next[itemSchemaKeywordOrder];
@@ -309,7 +309,7 @@ export function changePropertyType(properties: Property[], targetId: string, new
  * @returns The new tree.
  */
 export function toggleRequiredProperty(properties: Property[], targetId: string): Property[] {
-    return updateProperty(properties, targetId, property => ({ ...property, isRequired: !property.isRequired || undefined }));
+    return updateProperty(properties, targetId, property => copySchemaKeywordOrder(property, { ...property, isRequired: !property.isRequired || undefined }));
 }
 
 /**
@@ -320,7 +320,7 @@ export function toggleRequiredProperty(properties: Property[], targetId: string)
  * @returns The new tree.
  */
 export function setRequiredProperty(properties: Property[], targetId: string, isRequired: boolean): Property[] {
-    return updateProperty(properties, targetId, property => ({ ...property, isRequired }));
+    return updateProperty(properties, targetId, property => copySchemaKeywordOrder(property, { ...property, isRequired }));
 }
 
 /**
@@ -336,7 +336,7 @@ export function setGeneratedProperty(properties: Property[], targetId: string, i
         const next = { ...property };
         delete next.isGenerated;
         delete next.vendorKeywords;
-        return { ...next, ...(isGenerated ? { isGenerated: true } : {}), ...(Object.keys(keywords).length > 0 ? { vendorKeywords: keywords } : {}) };
+        return copySchemaKeywordOrder(property, { ...next, ...(isGenerated ? { isGenerated: true } : {}), ...(Object.keys(keywords).length > 0 ? { vendorKeywords: keywords } : {}) });
     });
 }
 
@@ -349,7 +349,7 @@ export function setGeneratedProperty(properties: Property[], targetId: string, i
  */
 export function setKeyProperty(properties: Property[], targetId: string): Property[] {
     const target = properties.find(property => property.id === targetId);
-    return properties.map(property => ({
+    return properties.map(property => copySchemaKeywordOrder(property, {
         ...property,
         ...(target ? { isKey: property.id === targetId && target.isKey !== true ? true : undefined } : {}),
         ...(property.children ? { children: setKeyProperty(property.children, targetId) } : {}),

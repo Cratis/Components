@@ -245,14 +245,14 @@
 }
 
 .cratis-schema-editor__type-button:hover,
-.cratis-schema-editor__toggle:hover,
+button.cratis-schema-editor__toggle:hover,
 .cratis-schema-editor__remove:hover,
 .cratis-schema-editor__add:hover {
     background: var(--cratis-surface-hover);
 }
 
 .cratis-schema-editor__type-button:focus-visible,
-.cratis-schema-editor__toggle:focus-visible,
+button.cratis-schema-editor__toggle:focus-visible,
 .cratis-schema-editor__remove:focus-visible,
 .cratis-schema-editor__add:focus-visible {
     outline: none;

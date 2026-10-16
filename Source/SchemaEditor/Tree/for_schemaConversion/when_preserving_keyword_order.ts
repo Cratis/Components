@@ -3,7 +3,8 @@
 
 import { beforeEach, describe, it } from 'vitest';
 import type { JsonSchema } from '../../../types/JsonSchema';
-import { jsonSchemaToProperties, propertiesToJsonSchema } from '../schemaConversion';
+import { PropertyType } from '../PropertyType';
+import { addChildProperty, changePropertyType, jsonSchemaToProperties, propertiesToJsonSchema, removeProperty, renameProperty, setGeneratedProperty, setKeyProperty, setRequiredProperty, toggleRequiredProperty } from '../schemaConversion';
 
 const schema = {
     title: 'Example schema', type: 'object', definitions: { Example: { type: 'string' } }, 'x-root': { sample: true },
@@ -25,4 +26,27 @@ describe('when round tripping property annotations without a base schema', () =>
     let written: string;
     beforeEach(() => { written = JSON.stringify(propertiesToJsonSchema(jsonSchemaToProperties(schema)).properties); });
     it('should retain the order of concept key generated and unknown vendor keywords', () => written.should.equal(JSON.stringify(schema.properties)));
+});
+
+describe('when editing a tree and restoring its original values', () => {
+    let written: string;
+    beforeEach(() => {
+        let properties = jsonSchemaToProperties(schema);
+        const sampleId = properties[0].id;
+        const nestedId = properties[1].id;
+        const childId = properties[1].children![0].id;
+        properties = renameProperty(properties, childId, 'renamed');
+        properties = renameProperty(properties, childId, 'child');
+        properties = changePropertyType(properties, properties[2].id, PropertyType.StringArray);
+        properties = toggleRequiredProperty(properties, sampleId);
+        properties = setRequiredProperty(properties, sampleId, true);
+        properties = setKeyProperty(properties, sampleId);
+        properties = setKeyProperty(properties, sampleId);
+        properties = setGeneratedProperty(properties, sampleId, false);
+        properties = setGeneratedProperty(properties, sampleId, true);
+        properties = addChildProperty(properties, nestedId, PropertyType.Boolean, 4);
+        properties = removeProperty(properties, properties[1].children![1].id);
+        written = JSON.stringify(propertiesToJsonSchema(properties, schema));
+    });
+    it('should preserve property and item keyword order through immutable copies', () => written.should.equal(JSON.stringify(schema)));
 });

@@ -4,7 +4,7 @@
 // @vitest-environment jsdom
 
 import { useState } from 'react';
-import { afterEach, beforeEach, describe, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SchemaEditor } from '../../SchemaEditor';
 import type { Property } from '../Property';
 import { PropertyType } from '../PropertyType';
@@ -21,22 +21,45 @@ const Host = ({ schemas, trees }: { schemas: JsonSchema[]; trees: Property[][] }
     return <SchemaEditor layout='tree' schema={value} allowGeneratedProperty onChange={next => { schemas.push(next); setValue(next); }} onPropertiesChange={next => trees.push(next)} />;
 };
 
-for (const options of [
-    { name: 'not enabled', props: {}, count: 0 },
-    { name: 'enabled', props: { allowGeneratedProperty: true }, count: 3 },
-    { name: 'enabled only below the root', props: { allowGeneratedProperty: (_property: Property, context: { depth: number }) => context.depth > 0 }, count: 1 },
-    { name: 'read only', props: { allowGeneratedProperty: true, readOnly: true }, count: 0 },
-]) {
-    describe(`when Generated is ${options.name}`, () => {
-        const mount = new Mount();
-        beforeEach(async () => {
-            mount.setup();
-            await mount.render(<SchemaEditor layout='tree' schema={schema} {...options.props} />);
-        });
-        afterEach(() => mount.teardown());
-        it('should offer the allowed generated toggles only', () => mount.parts('generated').should.have.length(options.count));
+describe('when Generated is not enabled', () => {
+    const mount = new Mount();
+    beforeEach(async () => {
+        mount.setup();
+        await mount.render(<SchemaEditor layout='tree' schema={schema} />);
     });
-}
+    afterEach(() => mount.teardown());
+    it('should not offer generated toggles', () => mount.parts('generated').should.have.length(0));
+});
+
+describe('when Generated is enabled', () => {
+    const mount = new Mount();
+    beforeEach(async () => {
+        mount.setup();
+        await mount.render(<SchemaEditor layout='tree' schema={schema} allowGeneratedProperty />);
+    });
+    afterEach(() => mount.teardown());
+    it('should offer a generated toggle for each property', () => mount.parts('generated').should.have.length(3));
+});
+
+describe('when Generated is enabled only below the root', () => {
+    const mount = new Mount();
+    beforeEach(async () => {
+        mount.setup();
+        await mount.render(<SchemaEditor layout='tree' schema={schema} allowGeneratedProperty={(_property, context) => context.depth > 0} />);
+    });
+    afterEach(() => mount.teardown());
+    it('should offer the allowed generated toggle only', () => mount.parts('generated').should.have.length(1));
+});
+
+describe('when Generated is read only', () => {
+    const mount = new Mount();
+    beforeEach(async () => {
+        mount.setup();
+        await mount.render(<SchemaEditor layout='tree' schema={schema} allowGeneratedProperty readOnly />);
+    });
+    afterEach(() => mount.teardown());
+    it('should not offer generated toggles', () => mount.parts('generated').should.have.length(0));
+});
 
 describe('when marking Generated in an editor-owned tree', () => {
     const mount = new Mount();
@@ -75,25 +98,44 @@ describe('when clearing Generated in an editor-owned tree', () => {
         schemas[1].should.deep.equal(schema);
         trees[0][0].id.should.equal(trees[1][0].id);
     });
+    it('should report properties that compare equal to plain host literals', () => {
+        expect(trees[1]).toEqual([
+            { id: expect.any(String), name: 'sample', type: PropertyType.String, vendorKeywords: { 'x-sample': [1, 2] } },
+            {
+                id: expect.any(String), name: 'nested', type: PropertyType.Object,
+                children: [{ id: expect.any(String), name: 'child', type: PropertyType.Number }],
+            },
+        ]);
+    });
 });
 
-for (const isGenerated of [true, false]) {
-    describe(`when the host owns a property with Generated ${isGenerated}`, () => {
-        const mount = new Mount();
-        let calls: [string, boolean][];
-        beforeEach(async () => {
-            mount.setup();
-            calls = [];
-            await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated }]} onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
-            await mount.click(mount.control('sample', 'generated'));
-        });
-        afterEach(() => mount.teardown());
-        it('should offer the inverse value to the host without changing the property', () => {
-            calls.should.deep.equal([['sample-id', !isGenerated]]);
-            mount.control('sample', 'generated').getAttribute('aria-pressed')!.should.equal(String(isGenerated));
-        });
+describe('when clearing Generated on a host-owned property', () => {
+    const mount = new Mount();
+    let calls: [string, boolean][];
+    beforeEach(async () => {
+        mount.setup();
+        calls = [];
+        await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated: true }]} onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
+        await mount.click(mount.control('sample', 'generated'));
     });
-}
+    afterEach(() => mount.teardown());
+    it('should ask the host to clear the flag', () => calls.should.deep.equal([['sample-id', false]]));
+    it('should leave the property unchanged', () => mount.control('sample', 'generated').getAttribute('aria-pressed')!.should.equal('true'));
+});
+
+describe('when marking Generated on a host-owned property', () => {
+    const mount = new Mount();
+    let calls: [string, boolean][];
+    beforeEach(async () => {
+        mount.setup();
+        calls = [];
+        await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated: false }]} onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
+        await mount.click(mount.control('sample', 'generated'));
+    });
+    afterEach(() => mount.teardown());
+    it('should ask the host to set the flag', () => calls.should.deep.equal([['sample-id', true]]));
+    it('should leave the property unchanged', () => mount.control('sample', 'generated').getAttribute('aria-pressed')!.should.equal('false'));
+});
 
 describe('when a host explicitly hides Generated despite supplying the callback', () => {
     const mount = new Mount();
@@ -105,32 +147,49 @@ describe('when a host explicitly hides Generated despite supplying the callback'
     it('should not offer a toggle', () => mount.parts('generated').should.have.length(0));
 });
 
-for (const options of [
-    { name: 'read only', props: { allowGeneratedProperty: true, readOnly: true } },
-    { name: 'rejected by the predicate', props: { allowGeneratedProperty: () => false } },
-]) {
-    describe(`when a generated property's toggle is ${options.name}`, () => {
-        const mount = new Mount();
-        let calls: [string, boolean][];
-        let marker: HTMLElement;
-        beforeEach(async () => {
-            mount.setup();
-            calls = [];
-            await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated: true }]} {...options.props} onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
-            marker = mount.control('sample', 'generated');
-            await mount.click(marker);
-        });
-        afterEach(() => mount.teardown());
-        it('should expose a pressed non-interactive marker with an accessible name', () => {
-            marker.tagName.should.equal('SPAN');
-            marker.getAttribute('role')!.should.equal('img');
-            marker.getAttribute('data-pressed')!.should.equal('true');
-            marker.getAttribute('aria-label')!.should.equal('Generated: sample');
-            marker.hasAttribute('tabindex').should.equal(false);
-        });
-        it('should not offer a generated edit', () => calls.should.have.length(0));
+describe('when a generated property is read only', () => {
+    const mount = new Mount();
+    let calls: [string, boolean][];
+    let marker: HTMLElement;
+    beforeEach(async () => {
+        mount.setup();
+        calls = [];
+        await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated: true }]} allowGeneratedProperty readOnly onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
+        marker = mount.control('sample', 'generated');
+        await mount.click(marker);
     });
-}
+    afterEach(() => mount.teardown());
+    it('should expose a pressed non-interactive marker with an accessible name', () => {
+        marker.tagName.should.equal('SPAN');
+        marker.getAttribute('role')!.should.equal('img');
+        marker.getAttribute('data-pressed')!.should.equal('true');
+        marker.getAttribute('aria-label')!.should.equal('Generated: sample');
+        marker.hasAttribute('tabindex').should.equal(false);
+    });
+    it('should not offer a generated edit', () => calls.should.have.length(0));
+});
+
+describe('when a generated property is rejected by the predicate', () => {
+    const mount = new Mount();
+    let calls: [string, boolean][];
+    let marker: HTMLElement;
+    beforeEach(async () => {
+        mount.setup();
+        calls = [];
+        await mount.render(<SchemaEditor layout='tree' properties={[{ id: 'sample-id', name: 'sample', type: PropertyType.String, isGenerated: true }]} allowGeneratedProperty={() => false} onSetGeneratedProperty={(id, value) => calls.push([id, value])} />);
+        marker = mount.control('sample', 'generated');
+        await mount.click(marker);
+    });
+    afterEach(() => mount.teardown());
+    it('should expose a pressed non-interactive marker with an accessible name', () => {
+        marker.tagName.should.equal('SPAN');
+        marker.getAttribute('role')!.should.equal('img');
+        marker.getAttribute('data-pressed')!.should.equal('true');
+        marker.getAttribute('aria-label')!.should.equal('Generated: sample');
+        marker.hasAttribute('tabindex').should.equal(false);
+    });
+    it('should not offer a generated edit', () => calls.should.have.length(0));
+});
 
 describe('when adapting the Generated toggle', () => {
     const mount = new Mount();
