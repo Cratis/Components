@@ -6,7 +6,16 @@ import type { Property } from './Property';
 import { PropertyType } from './PropertyType';
 import { conceptPropertyName, uniquePropertyName } from './propertyNaming';
 import { findPropertyById } from './propertyTree';
-import { copySchemaKeywordOrder, itemSchemaKeywordOrder, schemaKeywordOrder, type SchemaOrderedProperty } from './SchemaOrderedProperty';
+import { KeywordFamily } from './KeywordFamily';
+import { keywordsAfterTypeChange, propertyTypeFamily } from './keywordApplicability';
+import {
+    copySchemaKeywordOrder,
+    itemSchemaKeywordOrder,
+    schemaKeywordOrder,
+    schemaOriginalShape,
+    type SchemaOrderedProperty,
+} from './SchemaOrderedProperty';
+import type { SchemaOriginalShape } from './SchemaOriginalShape';
 import { schemaInOriginalOrder } from './schemaInOriginalOrder';
 
 /**
@@ -33,7 +42,7 @@ const identifier = (): string => Math.random().toString(36).slice(2, 10) + Math.
 
 // ── JsonSchema → Property[] ─────────────────────────────────────────
 
-function schemaPropertyType(value: SchemaNode): PropertyType {
+export function schemaPropertyType(value: SchemaNode): PropertyType {
     const items = value.items as { type?: string } | undefined;
 
     switch (value.type) {
@@ -66,19 +75,65 @@ function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-function readItemKeywords(node: SchemaNode): Partial<SchemaOrderedProperty> {
-    if (node.type !== 'array' || typeof node.items !== 'object' || node.items === null) return {};
-    const items = node.items as SchemaNode;
-    const keywords = vendorKeywords(items, false);
-    return { [itemSchemaKeywordOrder]: Object.keys(items), ...(keywords ? { itemVendorKeywords: keywords } : {}) };
+function isNode(value: unknown): value is SchemaNode {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function readFlags(node: SchemaNode, isRequired: boolean): Partial<SchemaOrderedProperty> {
+function standardKeywords(node: SchemaNode, modelled: readonly string[]): Readonly<Record<string, unknown>> | undefined {
+    const entries = Object.entries(node).filter(([name]) => !name.startsWith('x-') && !modelled.includes(name));
+    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function present(node: SchemaNode, names: readonly string[]): Record<string, unknown> {
+    return Object.fromEntries(names.filter(name => Object.hasOwn(node, name)).map(name => [name, node[name]]));
+}
+
+function modelledKeywords(node: SchemaNode, type: PropertyType): string[] {
+    const isArray = type === PropertyType.StringArray || type === PropertyType.NumberArray || type === PropertyType.ObjectArray;
+    return [
+        'type',
+        'format',
+        ...(isArray && isNode(node.items) ? ['items'] : []),
+        ...(type === PropertyType.Object && isNode(node.properties) ? ['properties', 'required'] : []),
+    ];
+}
+
+function itemModelledKeywords(items: SchemaNode, type: PropertyType): string[] {
+    return ['type', 'format', ...(type === PropertyType.ObjectArray && isNode(items.properties) ? ['properties', 'required'] : [])];
+}
+
+function readItemKeywords(node: SchemaNode, type: PropertyType): Partial<SchemaOrderedProperty> {
+    if (node.type !== 'array' || !isNode(node.items)) return {};
+    const items = node.items;
+    const keywords = vendorKeywords(items, false);
+    const standard = standardKeywords(items, itemModelledKeywords(items, type));
+    return {
+        [itemSchemaKeywordOrder]: Object.keys(items),
+        ...(keywords ? { itemVendorKeywords: keywords } : {}),
+        ...(standard ? { itemSchemaKeywords: standard } : {}),
+    };
+}
+
+function readOriginalShape(node: SchemaNode, type: PropertyType): SchemaOriginalShape {
+    const items = node.type === 'array' && isNode(node.items) ? node.items : undefined;
+    const container = type === PropertyType.Object ? node : type === PropertyType.ObjectArray ? items : undefined;
+    return {
+        propertyType: type,
+        node: present(node, ['type', 'format']),
+        ...(items ? { item: present(items, ['type', 'format']) } : {}),
+        ...(container && !isNode(container.properties) ? { withoutProperties: true } : {}),
+    };
+}
+
+function readFlags(node: SchemaNode, type: PropertyType, isRequired: boolean): Partial<SchemaOrderedProperty> {
     const keywords = vendorKeywords(node, true);
+    const standard = standardKeywords(node, modelledKeywords(node, type));
     return {
         [schemaKeywordOrder]: Object.keys(node),
-        ...readItemKeywords(node),
+        [schemaOriginalShape]: readOriginalShape(node, type),
+        ...readItemKeywords(node, type),
         ...(keywords ? { vendorKeywords: keywords } : {}),
+        ...(standard ? { schemaKeywords: standard } : {}),
         ...(node[GENERATED_KEYWORD] === true ? { isGenerated: true } : {}),
         ...(isRequired ? { isRequired: true } : {}),
         ...(node[KEY_KEYWORD] === true ? { isKey: true } : {}),
@@ -89,7 +144,7 @@ function schemaPropertyToProperty(name: string, value: JsonSchemaProperty, requi
     const node = value as unknown as SchemaNode;
     const type = schemaPropertyType(node);
     const concept = node[CONCEPT_KEYWORD];
-    const flags = readFlags(node, required.has(name));
+    const flags = readFlags(node, type, required.has(name));
 
     const container = (type === PropertyType.Object ? node : type === PropertyType.ObjectArray ? node.items : undefined) as
         | { properties?: Record<string, JsonSchemaProperty>; required?: string[] }
@@ -129,6 +184,10 @@ export function jsonSchemaToProperties(schema: JsonSchema | undefined): Property
 
 // ── Property[] → JsonSchema ─────────────────────────────────────────
 
+function itemSchema(property: Property, type: string, extra: SchemaNode = {}): SchemaNode {
+    return { ...property.itemSchemaKeywords, type, ...extra, ...property.itemVendorKeywords };
+}
+
 function primitiveSchema(property: Property): SchemaNode {
     switch (property.type) {
         case PropertyType.Number:
@@ -142,18 +201,39 @@ function primitiveSchema(property: Property): SchemaNode {
         case PropertyType.Object:
             return { type: 'object', ...objectSchema(property.children ?? []) };
         case PropertyType.StringArray:
-            return { type: 'array', items: { type: 'string', ...property.itemVendorKeywords } };
+            return { type: 'array', items: itemSchema(property, 'string') };
         case PropertyType.NumberArray:
-            return { type: 'array', items: { type: 'number', ...property.itemVendorKeywords } };
+            return { type: 'array', items: itemSchema(property, 'number') };
         case PropertyType.ObjectArray:
-            return { type: 'array', items: { type: 'object', ...objectSchema(property.children ?? []), ...property.itemVendorKeywords } };
+            return { type: 'array', items: itemSchema(property, 'object', objectSchema(property.children ?? [])) };
         default:
             return { type: 'string' };
     }
 }
 
+function withOriginalNodeShape(node: SchemaNode, original: Readonly<Record<string, unknown>>): SchemaNode {
+    const restored = { ...node };
+    delete restored.type;
+    delete restored.format;
+    return { ...restored, ...original };
+}
+
+function withOriginalShape(schema: SchemaNode, property: SchemaOrderedProperty): SchemaNode {
+    const shape = property[schemaOriginalShape];
+    if (!shape || shape.propertyType !== property.type) return schema;
+
+    const restored = withOriginalNodeShape(schema, shape.node);
+    const isArray = propertyTypeFamily(property.type) === KeywordFamily.Array;
+    if (isArray && !shape.item) delete restored.items;
+    if (isArray && shape.item) restored.items = withOriginalNodeShape(restored.items as SchemaNode, shape.item);
+
+    const container = isArray ? (restored.items as SchemaNode | undefined) : restored;
+    if (container && shape.withoutProperties && (property.children ?? []).length === 0) delete container.properties;
+    return restored;
+}
+
 function orderedPrimitiveSchema(property: SchemaOrderedProperty): SchemaNode {
-    const schema = primitiveSchema(property);
+    const schema = withOriginalShape({ ...property.schemaKeywords, ...primitiveSchema(property) }, property);
     if (schema.items) schema.items = schemaInOriginalOrder(schema.items as SchemaNode, property[itemSchemaKeywordOrder]);
     return schema;
 }
@@ -182,8 +262,8 @@ function objectSchema(properties: Property[]): { properties: Record<string, Json
 
 /**
  * Converts a property tree into a JSON Schema object. Empty `required` lists are omitted, and a property
- * typed as a concept or marked as the key carries the `x-concept` and `x-key` keywords. Vendor keywords are
- * preserved on properties and array items; generated values carry `x-generated: true`.
+ * typed as a concept or marked as the key carries the `x-concept` and `x-key` keywords. Vendor keywords and the
+ * standard keywords the editor does not model are preserved on properties and array items; generated values carry `x-generated: true`.
  * @param properties The root properties.
  * @param base The incoming schema. Root keys other than type, properties and required are preserved.
  * @returns The schema.
@@ -283,15 +363,22 @@ function retypedProperty(property: Property, newType: PropertyType, concept?: st
         children: isComplex(newType) ? (property.children ?? []) : undefined,
     });
     if (property.type !== newType) {
+        const kept = keywordsAfterTypeChange(property.schemaKeywords ?? {}, propertyTypeFamily(property.type), propertyTypeFamily(newType));
+        delete next.schemaKeywords;
+        if (Object.keys(kept).length > 0) next.schemaKeywords = kept;
         delete next.itemVendorKeywords;
+        delete next.itemSchemaKeywords;
         delete next[itemSchemaKeywordOrder];
+        delete next[schemaOriginalShape];
     }
     return next;
 }
 
 /**
  * Changes the type of a property. Choosing a plain primitive drops the concept; choosing an object or
- * object list keeps the children, and any other type drops them. A different item kind clears item metadata.
+ * object list keeps the children, and any other type drops them. A different type keeps the annotations and the
+ * constraints of the same keyword family, and drops value keywords, the original type and format, item metadata
+ * and every other standard keyword that no longer applies. The same type keeps everything.
  * @param properties The root properties.
  * @param targetId The id of the property.
  * @param newType The new type.

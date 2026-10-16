@@ -2,6 +2,29 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
+import { isKeywordApplicable, jsonTypeFamily } from './Tree/keywordApplicability';
+import { schemaPropertyType } from './Tree/schemaConversion';
+
+const modelledKeywords = new Set(['type', 'format', 'items', 'properties', 'required']);
+
+/**
+ * Removes the standard keywords that no longer apply after a property's type changed, in place. The type,
+ * format, items, properties and `required` keywords and every `x-` keyword are left to the caller. A change
+ * that keeps the property type, as the editor models it, keeps everything.
+ * @param node The property node after the type change.
+ * @param previous The property node before the type change.
+ */
+export function dropInapplicableKeywords(node: Record<string, unknown>, previous: Record<string, unknown>): void {
+    const kindOf = (candidate: Record<string, unknown>) => schemaPropertyType({ ...candidate, items: undefined });
+    if (kindOf(node) === kindOf(previous)) return;
+
+    const from = jsonTypeFamily(previous.type);
+    const to = jsonTypeFamily(node.type);
+    for (const keyword of Object.keys(node)) {
+        if (modelledKeywords.has(keyword) || keyword.startsWith('x-')) continue;
+        if (!isKeywordApplicable(keyword, from, to)) delete node[keyword];
+    }
+}
 
 const reservedPrototypeKeys = new Set(['__proto__', 'constructor', 'prototype']);
 
