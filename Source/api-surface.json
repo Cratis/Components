@@ -613,7 +613,7 @@
     "JsonSchemaProperty": "export interface JsonSchemaProperty { id?: string; name?: string; type?: string; format?: string; description?: string; items?: JsonSchema; properties?: Record<string, JsonSchemaProperty>; required?: string[]; $ref?: string; }",
     "KEY_KEYWORD": "KEY_KEYWORD = \"x-key\"",
     "NavigationItem": "export interface NavigationItem { name: string; path: string[]; }",
-    "Property": "export interface Property { id: string; name: string; type: PropertyType; concept?: string; children?: Property[]; isKey?: boolean; isGenerated?: boolean; vendorKeywords?: Readonly<Record<string, unknown>>; itemVendorKeywords?: Readonly<Record<string, unknown>>; isRequired?: boolean; }",
+    "Property": "export interface Property { id: string; name: string; type: PropertyType; concept?: string; children?: Property[]; isKey?: boolean; isGenerated?: boolean; vendorKeywords?: Readonly<Record<string, unknown>>; itemVendorKeywords?: Readonly<Record<string, unknown>>; schemaKeywords?: Readonly<Record<string, unknown>>; itemSchemaKeywords?: Readonly<Record<string, unknown>>; isRequired?: boolean; }",
     "PropertyConcept": "export interface PropertyConcept { name: string; type: PropertyType; }",
     "PropertyConceptsProvider": "PropertyConceptsProvider: (props: PropertyConceptsProviderProps) => import(\"react\").JSX.Element",
     "PropertyConceptsProviderProps": "export interface PropertyConceptsProviderProps { concepts: PropertyConcept[]; children?: ReactNode; }",
