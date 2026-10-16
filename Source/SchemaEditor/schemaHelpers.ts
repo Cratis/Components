@@ -2,6 +2,32 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
+import { isKeywordApplicable, isKeywordApplicableToRefinement, jsonTypeFamily } from './Tree/keywordApplicability';
+import { schemaPropertyType } from './Tree/schemaPropertyType';
+
+const modelledKeywords = new Set(['type', 'format', 'items', 'properties', 'required']);
+
+/**
+ * Removes the standard keywords that no longer apply after a property's type changed, in place. The type,
+ * format, items, properties and `required` keywords and every `x-` keyword are left to the caller. A change
+ * between refinements of one type, such as integer and number, keeps the constraints and drops the value
+ * keywords and `multipleOf`; choosing the type the node already has keeps everything.
+ * @param node The property node after the type change.
+ * @param previous The property node before the type change.
+ */
+export function dropInapplicableKeywords(node: Record<string, unknown>, previous: Record<string, unknown>): void {
+    const kindOf = (candidate: Record<string, unknown>) => schemaPropertyType({ ...candidate, items: undefined });
+    const sameKind = kindOf(node) === kindOf(previous);
+    if (sameKind && node.type === previous.type) return;
+
+    const from = jsonTypeFamily(previous.type);
+    const to = jsonTypeFamily(node.type);
+    const isApplicable = sameKind ? isKeywordApplicableToRefinement : (keyword: string) => isKeywordApplicable(keyword, from, to);
+    for (const keyword of Object.keys(node)) {
+        if (modelledKeywords.has(keyword) || keyword.startsWith('x-')) continue;
+        if (!isApplicable(keyword)) delete node[keyword];
+    }
+}
 
 const reservedPrototypeKeys = new Set(['__proto__', 'constructor', 'prototype']);
 

@@ -16,7 +16,7 @@ import type { ReactNode } from 'react';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { type TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
-import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
+import { validatePropertyName, buildBreadcrumbItems, dropInapplicableKeywords } from './schemaHelpers';
 import { defaultSchemaEditorLabels } from './defaultSchemaEditorLabels';
 import type { SchemaEditorLabels } from './SchemaEditorLabels';
 
@@ -539,6 +539,7 @@ const TableSchemaEditor = ({
                         }
                     }
                 } else if (field === 'type') {
+                    const previousNode = { ...prop } as Record<string, unknown>;
                     prop.type = value as string;
                     // A concept belongs to the type it was chosen for; the table offers no concepts.
                     delete (prop as Record<string, unknown>)['x-concept'];
@@ -572,6 +573,7 @@ const TableSchemaEditor = ({
                         }
                     }
 
+                    dropInapplicableKeywords(prop as Record<string, unknown>, previousNode);
                     newProps[oldName] = prop;
                 } else if (field === 'format') {
                     if (value && value !== 'none') {

@@ -43,6 +43,16 @@ export interface Property {
     /** `x-` keywords on an array's items node, preserved verbatim. */
     itemVendorKeywords?: Readonly<Record<string, unknown>>;
 
+    /**
+     * Standard JSON Schema keywords on this property's schema node that the editor does not model, such as
+     * `description`, `default`, `enum` or `minLength`, preserved verbatim. They are omitted when there are
+     * none. Changing the type drops those that no longer apply.
+     */
+    schemaKeywords?: Readonly<Record<string, unknown>>;
+
+    /** Standard JSON Schema keywords on an array's items node that the editor does not model, preserved verbatim. */
+    itemSchemaKeywords?: Readonly<Record<string, unknown>>;
+
     /** Whether the property must be present in its parent object (membership in the JSON Schema `required` list). */
     isRequired?: boolean;
 }

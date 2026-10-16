@@ -2,22 +2,31 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Property } from './Property';
+import type { SchemaOriginalShape } from './SchemaOriginalShape';
 
 /** Internal ordering metadata that remains invisible to enumeration and plain property comparisons. */
 export const schemaKeywordOrder = Symbol('schemaKeywordOrder');
 export const itemSchemaKeywordOrder = Symbol('itemSchemaKeywordOrder');
 
-/** A property read from a schema, with the original keyword positions. */
+/** Internal original type and format metadata, invisible to enumeration like the key order. */
+export const schemaOriginalShape = Symbol('schemaOriginalShape');
+
+/** Internal order of the `required` names of an object, or of the items of an object list. */
+export const schemaRequiredOrder = Symbol('schemaRequiredOrder');
+
+/** A property read from a schema, with the original keyword positions and node shape. */
 export interface SchemaOrderedProperty extends Property {
     [schemaKeywordOrder]?: readonly string[];
     [itemSchemaKeywordOrder]?: readonly string[];
+    [schemaOriginalShape]?: SchemaOriginalShape;
+    [schemaRequiredOrder]?: readonly string[];
 }
 
-/** Carries original keyword positions onto a property without exposing enumerable metadata. */
+/** Carries original keyword positions and node shape onto a property without exposing enumerable metadata. */
 export function copySchemaKeywordOrder(source: Partial<SchemaOrderedProperty>, target: SchemaOrderedProperty): Property {
-    for (const keyword of [schemaKeywordOrder, itemSchemaKeywordOrder] as const) {
-        const order = source[keyword];
-        if (order) Object.defineProperty(target, keyword, { value: order, enumerable: false, configurable: true });
+    for (const keyword of [schemaKeywordOrder, itemSchemaKeywordOrder, schemaOriginalShape, schemaRequiredOrder] as const) {
+        const value = source[keyword];
+        if (value) Object.defineProperty(target, keyword, { value, enumerable: false, configurable: true });
     }
     return target;
 }
