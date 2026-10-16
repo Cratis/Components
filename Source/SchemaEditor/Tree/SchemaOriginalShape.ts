@@ -15,8 +15,11 @@ export interface SchemaOriginalShape {
     /** The `type` and `format` of the property node, only those present. */
     node: Readonly<Record<string, unknown>>;
 
-    /** The `type` and `format` of an array's items node; absent when the array had no items node. */
+    /** The `type` and `format` of an array's items node; absent when the array had no items node object. */
     item?: Readonly<Record<string, unknown>>;
+
+    /** The `items` of an array when it is not an object, such as `true`, `false` or a tuple list, kept verbatim. */
+    rawItems?: { readonly value: unknown };
 
     /** Whether an object, or the items of an object list, had no `properties` keyword. */
     withoutProperties?: boolean;

@@ -6,6 +6,8 @@ import { PropertyType } from './PropertyType';
 
 const annotations: ReadonlySet<string> = new Set(['title', 'description', '$comment', 'deprecated', 'readOnly', 'writeOnly']);
 
+const refinementKeywords: ReadonlySet<string> = new Set(['default', 'enum', 'const', 'examples', 'multipleOf']);
+
 const familyKeywords: Readonly<Record<KeywordFamily, ReadonlySet<string>>> = {
     [KeywordFamily.None]: new Set(),
     [KeywordFamily.String]: new Set(['minLength', 'maxLength', 'pattern', 'contentEncoding', 'contentMediaType']),
@@ -17,28 +19,25 @@ const familyKeywords: Readonly<Record<KeywordFamily, ReadonlySet<string>>> = {
     ]),
 };
 
+const typeFamilies: Readonly<Record<PropertyType, KeywordFamily>> = {
+    [PropertyType.String]: KeywordFamily.String,
+    [PropertyType.Date]: KeywordFamily.String,
+    [PropertyType.Time]: KeywordFamily.String,
+    [PropertyType.Number]: KeywordFamily.Number,
+    [PropertyType.Boolean]: KeywordFamily.None,
+    [PropertyType.Object]: KeywordFamily.Object,
+    [PropertyType.StringArray]: KeywordFamily.Array,
+    [PropertyType.NumberArray]: KeywordFamily.Array,
+    [PropertyType.ObjectArray]: KeywordFamily.Array,
+};
+
 /**
  * The keyword family of a property type.
  * @param type The property type.
  * @returns The family whose constraints apply to values of the type.
  */
 export function propertyTypeFamily(type: PropertyType): KeywordFamily {
-    switch (type) {
-        case PropertyType.String:
-        case PropertyType.Date:
-        case PropertyType.Time:
-            return KeywordFamily.String;
-        case PropertyType.Number:
-            return KeywordFamily.Number;
-        case PropertyType.Object:
-            return KeywordFamily.Object;
-        case PropertyType.StringArray:
-        case PropertyType.NumberArray:
-        case PropertyType.ObjectArray:
-            return KeywordFamily.Array;
-        default:
-            return KeywordFamily.None;
-    }
+    return typeFamilies[type];
 }
 
 /**
@@ -89,4 +88,14 @@ export function keywordsAfterTypeChange(
     to: KeywordFamily,
 ): Record<string, unknown> {
     return Object.fromEntries(Object.entries(keywords).filter(([keyword]) => isKeywordApplicable(keyword, from, to)));
+}
+
+/**
+ * Whether a keyword survives a change between refinements of one type, such as integer and number: the
+ * constraints stay, but the value keywords and `multipleOf` described the old refinement.
+ * @param keyword The keyword name.
+ * @returns True when the keyword still applies.
+ */
+export function isKeywordApplicableToRefinement(keyword: string): boolean {
+    return !refinementKeywords.has(keyword);
 }

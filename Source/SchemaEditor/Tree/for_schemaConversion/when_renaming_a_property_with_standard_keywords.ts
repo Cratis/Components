@@ -23,5 +23,5 @@ describe('when requiring a property with standard keywords', () => {
         written = propertiesToJsonSchema(setRequiredProperty(properties, properties[2].id, true), standardKeywordsSchema);
     });
     it('should keep the integer type and constraints', () => written.properties!.count.should.deep.equal(standardKeywordsSchema.properties!.count));
-    it('should list the property as required', () => written.required!.should.deep.equal(['title', 'count']));
+    it('should list the property as required', () => written.required!.should.deep.equal(['title', 'code', 'count']));
 });

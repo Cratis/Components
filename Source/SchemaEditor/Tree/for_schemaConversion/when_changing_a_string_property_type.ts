@@ -18,14 +18,18 @@ describe('when a string property changes to a date', () => {
     it('should write the date format', () => (written.format as string).should.equal('date'));
     it('should keep the string constraints', () => written.should.include({ minLength: 2, maxLength: 40, pattern: '^[a-z]+$' }));
     it('should keep the annotations', () => written.should.include({ description: 'Shown to people', title: 'Name', deprecated: true }));
-    it('should drop the value keywords', () => Object.keys(written).should.not.include.members(['enum', 'default', 'examples']));
+    it('should drop enum', () => written.should.not.have.property('enum'));
+    it('should drop default', () => written.should.not.have.property('default'));
+    it('should drop examples', () => written.should.not.have.property('examples'));
 });
 
 describe('when a string property changes to a number', () => {
     let written: Record<string, unknown>;
     beforeEach(() => { written = change(PropertyType.Number).properties!.title as unknown as Record<string, unknown>; });
     it('should write the number type', () => (written.type as string).should.equal('number'));
-    it('should drop the string constraints', () => Object.keys(written).should.not.include.members(['minLength', 'maxLength', 'pattern']));
+    it('should drop minLength', () => written.should.not.have.property('minLength'));
+    it('should drop maxLength', () => written.should.not.have.property('maxLength'));
+    it('should drop pattern', () => written.should.not.have.property('pattern'));
     it('should keep the annotations', () => written.should.include({ description: 'Shown to people', $comment: 'Internal' }));
 });
 

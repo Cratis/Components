@@ -21,7 +21,8 @@ describe('when an object changes to an object list', () => {
         const properties = jsonSchemaToProperties(standardKeywordsSchema);
         written = propertiesToJsonSchema(changePropertyType(properties, properties[9].id, PropertyType.ObjectArray)).properties!.nested as unknown as Record<string, unknown>;
     });
-    it('should drop the object keywords', () => Object.keys(written).should.not.include.members(['minProperties', 'additionalProperties']));
+    it('should drop minProperties', () => written.should.not.have.property('minProperties'));
+    it('should drop additionalProperties', () => written.should.not.have.property('additionalProperties'));
     it('should keep the children', () => ((written.items as Record<string, unknown>).properties as object).should.have.property('child'));
 });
 

@@ -22,6 +22,10 @@ export const standardKeywordsSchema = {
         lines: {
             type: 'array', minItems: 1, items: { type: 'object', description: 'Line', properties: { quantity: { type: 'integer', minimum: 1 } }, required: ['quantity'], additionalProperties: false },
         },
+        anything: { type: 'array', items: true },
+        tuple: { type: 'array', items: [{ type: 'string' }] },
+        prefixed: { type: 'array', prefixItems: [{ type: 'string' }], items: false },
+        ordered: { type: 'object', properties: { b: { type: 'string' }, a: { type: 'string' } }, required: ['b', 'a'] },
     },
-    required: ['title'],
+    required: ['title', 'code'],
 } as unknown as JsonSchema;

@@ -55,7 +55,9 @@ Unknown `x-` vendor keywords round-trip verbatim on every property node, includi
 
 Standard keywords the editor does not model round-trip as well, on a property and on the `items` node of a list: annotations (`title`, `description`, `$comment`, `deprecated`, `readOnly`, `writeOnly`), value keywords (`default`, `enum`, `const`, `examples`), string, number, list and object constraints (`minLength`, `pattern`, `minimum`, `minItems`, `additionalProperties`…), and anything else such as `$ref`, `oneOf` or `if`. `Property.schemaKeywords` and `Property.itemSchemaKeywords` carry them like the vendor keyword maps do, and are omitted when empty. A host that owns the tree in [controlled mode](extending.md#controlled-mode) keeps them on the properties it stores and passes them back unchanged.
 
-The editor models the property type as text, number, yes or no, date, time, object or list, so it keeps where a property came from while its type is unchanged: `integer`, a type array such as `["string", "null"]`, a node without a `type`, and a `format` other than `date` and `time` are written back exactly as read. Choosing a different type discards that detail along with the keywords that no longer apply. The table layout leaves the whole node in place and applies the same rules when you choose a different type.
+The original `type` and `format` detail described next, and the original order of keywords and of `required` names, is not part of the `Property` shape. It lives in hidden metadata on the property objects the editor hands out. A controlled host must keep those objects by reference or update them with the exported edit helpers such as `renameProperty`; copying them with a spread, `structuredClone` or a JSON round trip loses the metadata, and the property is then written from its type alone.
+
+The editor models the property type as text, number, yes or no, date, time, object or list, so it keeps where a property came from while its type is unchanged: `integer`, a type array such as `["string", "null"]`, a node without a `type`, and a `format` other than `date` and `time` are written back exactly as read. Choosing a different type discards that detail along with the keywords that no longer apply. The table layout leaves the whole node in place and drops the keywords that no longer apply when you choose a different type, by the rules in the next section. The two layouts differ in how they decide the type: the table reads the JSON `type`, the tree reads the property type. A nullable type array such as `["number", "null"]` reads as text in the tree, so retyping it drops the number constraints; the table finds no single JSON type in the array and drops them too. In the table, changing between `integer` and `number` keeps the number constraints (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`) and drops `multipleOf` and the value keywords, while the tree treats both as one number type and keeps everything.
 
 `x-generated: true` reads as `Property.isGenerated`. Any other `x-generated` value stays verbatim in `vendorKeywords` until an explicit Generated edit replaces or clears it. `x-concept` and `x-key` retain their dedicated mapping.
 
@@ -79,7 +81,7 @@ A type change keeps only what still applies to the new type. Choosing the type a
 
 ## What the tree layout does not preserve
 
-The tree layout is not a lossless editor for arbitrary JSON Schema. It drops the following:
+Names in `required` keep their original order, and names you add follow them. The tree layout is not a lossless editor for arbitrary JSON Schema. It drops the following:
 
 - names in `required` that have no declared property;
 - the keywords listed above when you change a property's type, and `properties` and `items` that no longer fit the type.

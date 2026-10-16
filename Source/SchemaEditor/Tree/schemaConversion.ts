@@ -6,17 +6,17 @@ import type { Property } from './Property';
 import { PropertyType } from './PropertyType';
 import { conceptPropertyName, uniquePropertyName } from './propertyNaming';
 import { findPropertyById } from './propertyTree';
-import { KeywordFamily } from './KeywordFamily';
 import { keywordsAfterTypeChange, propertyTypeFamily } from './keywordApplicability';
 import {
     copySchemaKeywordOrder,
     itemSchemaKeywordOrder,
     schemaKeywordOrder,
     schemaOriginalShape,
+    schemaRequiredOrder,
     type SchemaOrderedProperty,
 } from './SchemaOrderedProperty';
-import type { SchemaOriginalShape } from './SchemaOriginalShape';
-import { schemaInOriginalOrder } from './schemaInOriginalOrder';
+import { isNode, readOriginalShape, readRequiredOrder, restoreOriginalShape } from './originalShape';
+import { requiredInOriginalOrder, schemaInOriginalOrder } from './schemaInOriginalOrder';
 
 /**
  * The JSON Schema keyword carrying the concept a property is typed as. It annotates the primitive node the
@@ -75,17 +75,9 @@ function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-function isNode(value: unknown): value is SchemaNode {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function standardKeywords(node: SchemaNode, modelled: readonly string[]): Readonly<Record<string, unknown>> | undefined {
     const entries = Object.entries(node).filter(([name]) => !name.startsWith('x-') && !modelled.includes(name));
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-}
-
-function present(node: SchemaNode, names: readonly string[]): Record<string, unknown> {
-    return Object.fromEntries(names.filter(name => Object.hasOwn(node, name)).map(name => [name, node[name]]));
 }
 
 function modelledKeywords(node: SchemaNode, type: PropertyType): string[] {
@@ -114,15 +106,9 @@ function readItemKeywords(node: SchemaNode, type: PropertyType): Partial<SchemaO
     };
 }
 
-function readOriginalShape(node: SchemaNode, type: PropertyType): SchemaOriginalShape {
-    const items = node.type === 'array' && isNode(node.items) ? node.items : undefined;
-    const container = type === PropertyType.Object ? node : type === PropertyType.ObjectArray ? items : undefined;
-    return {
-        propertyType: type,
-        node: present(node, ['type', 'format']),
-        ...(items ? { item: present(items, ['type', 'format']) } : {}),
-        ...(container && !isNode(container.properties) ? { withoutProperties: true } : {}),
-    };
+function requiredOrder(node: SchemaNode, type: PropertyType): Partial<SchemaOrderedProperty> {
+    const order = readRequiredOrder(node, type);
+    return order ? { [schemaRequiredOrder]: order } : {};
 }
 
 function readFlags(node: SchemaNode, type: PropertyType, isRequired: boolean): Partial<SchemaOrderedProperty> {
@@ -131,6 +117,7 @@ function readFlags(node: SchemaNode, type: PropertyType, isRequired: boolean): P
     return {
         [schemaKeywordOrder]: Object.keys(node),
         [schemaOriginalShape]: readOriginalShape(node, type),
+        ...requiredOrder(node, type),
         ...readItemKeywords(node, type),
         ...(keywords ? { vendorKeywords: keywords } : {}),
         ...(standard ? { schemaKeywords: standard } : {}),
@@ -199,42 +186,21 @@ function primitiveSchema(property: Property): SchemaNode {
         case PropertyType.Time:
             return { type: 'string', format: 'time' };
         case PropertyType.Object:
-            return { type: 'object', ...objectSchema(property.children ?? []) };
+            return { type: 'object', ...objectSchema(property.children ?? [], (property as SchemaOrderedProperty)[schemaRequiredOrder]) };
         case PropertyType.StringArray:
             return { type: 'array', items: itemSchema(property, 'string') };
         case PropertyType.NumberArray:
             return { type: 'array', items: itemSchema(property, 'number') };
         case PropertyType.ObjectArray:
-            return { type: 'array', items: itemSchema(property, 'object', objectSchema(property.children ?? [])) };
+            return { type: 'array', items: itemSchema(property, 'object', objectSchema(property.children ?? [], (property as SchemaOrderedProperty)[schemaRequiredOrder])) };
         default:
             return { type: 'string' };
     }
 }
 
-function withOriginalNodeShape(node: SchemaNode, original: Readonly<Record<string, unknown>>): SchemaNode {
-    const restored = { ...node };
-    delete restored.type;
-    delete restored.format;
-    return { ...restored, ...original };
-}
-
-function withOriginalShape(schema: SchemaNode, property: SchemaOrderedProperty): SchemaNode {
-    const shape = property[schemaOriginalShape];
-    if (!shape || shape.propertyType !== property.type) return schema;
-
-    const restored = withOriginalNodeShape(schema, shape.node);
-    const isArray = propertyTypeFamily(property.type) === KeywordFamily.Array;
-    if (isArray && !shape.item) delete restored.items;
-    if (isArray && shape.item) restored.items = withOriginalNodeShape(restored.items as SchemaNode, shape.item);
-
-    const container = isArray ? (restored.items as SchemaNode | undefined) : restored;
-    if (container && shape.withoutProperties && (property.children ?? []).length === 0) delete container.properties;
-    return restored;
-}
-
 function orderedPrimitiveSchema(property: SchemaOrderedProperty): SchemaNode {
-    const schema = withOriginalShape({ ...property.schemaKeywords, ...primitiveSchema(property) }, property);
-    if (schema.items) schema.items = schemaInOriginalOrder(schema.items as SchemaNode, property[itemSchemaKeywordOrder]);
+    const schema = restoreOriginalShape({ ...property.schemaKeywords, ...primitiveSchema(property) }, property);
+    if (isNode(schema.items)) schema.items = schemaInOriginalOrder(schema.items as SchemaNode, property[itemSchemaKeywordOrder]);
     return schema;
 }
 
@@ -251,12 +217,12 @@ function propertySchema(property: SchemaOrderedProperty): JsonSchemaProperty {
     return schemaInOriginalOrder({ ...orderedPrimitiveSchema(property), ...propertyAnnotations(property) }, property[schemaKeywordOrder]) as unknown as JsonSchemaProperty;
 }
 
-function objectSchema(properties: Property[]): { properties: Record<string, JsonSchemaProperty>; required?: string[] } {
+function objectSchema(properties: Property[], requiredOrder?: readonly string[]): { properties: Record<string, JsonSchemaProperty>; required?: string[] } {
     const schemaProperties: Record<string, JsonSchemaProperty> = {};
     for (const property of properties) {
         schemaProperties[property.name] = propertySchema(property);
     }
-    const required = properties.filter(property => property.isRequired === true).map(property => property.name);
+    const required = requiredInOriginalOrder(properties.filter(property => property.isRequired === true).map(property => property.name), requiredOrder);
     return { properties: schemaProperties, ...(required.length > 0 ? { required } : {}) };
 }
 
@@ -270,7 +236,7 @@ function objectSchema(properties: Property[]): { properties: Record<string, Json
  */
 export function propertiesToJsonSchema(properties: Property[], base: JsonSchema = {}): JsonSchema {
     const root = Object.fromEntries(Object.entries(base).filter(([name]) => !['properties', 'required'].includes(name)));
-    return schemaInOriginalOrder({ ...root, type: 'object', ...objectSchema(properties) }, Object.keys(base)) as JsonSchema;
+    return schemaInOriginalOrder({ ...root, type: 'object', ...objectSchema(properties, base.required) }, Object.keys(base)) as JsonSchema;
 }
 
 // ── Pure tree edits ─────────────────────────────────────────────────

@@ -11,16 +11,20 @@ export const itemSchemaKeywordOrder = Symbol('itemSchemaKeywordOrder');
 /** Internal original type and format metadata, invisible to enumeration like the key order. */
 export const schemaOriginalShape = Symbol('schemaOriginalShape');
 
+/** Internal order of the `required` names of an object, or of the items of an object list. */
+export const schemaRequiredOrder = Symbol('schemaRequiredOrder');
+
 /** A property read from a schema, with the original keyword positions and node shape. */
 export interface SchemaOrderedProperty extends Property {
     [schemaKeywordOrder]?: readonly string[];
     [itemSchemaKeywordOrder]?: readonly string[];
     [schemaOriginalShape]?: SchemaOriginalShape;
+    [schemaRequiredOrder]?: readonly string[];
 }
 
 /** Carries original keyword positions and node shape onto a property without exposing enumerable metadata. */
 export function copySchemaKeywordOrder(source: Partial<SchemaOrderedProperty>, target: SchemaOrderedProperty): Property {
-    for (const keyword of [schemaKeywordOrder, itemSchemaKeywordOrder, schemaOriginalShape] as const) {
+    for (const keyword of [schemaKeywordOrder, itemSchemaKeywordOrder, schemaOriginalShape, schemaRequiredOrder] as const) {
         const value = source[keyword];
         if (value) Object.defineProperty(target, keyword, { value, enumerable: false, configurable: true });
     }

@@ -15,6 +15,8 @@ describe('when round tripping a schema with standard keywords the editor does no
         written = propertiesToJsonSchema(properties, standardKeywordsSchema);
     });
     it('should write the schema identically', () => JSON.stringify(written).should.equal(JSON.stringify(standardKeywordsSchema)));
+    it('should keep the required names in their original order', () => JSON.stringify([written.required, written.properties!.ordered.required]).should.equal('[["title","code"],["b","a"]]'));
+    it('should keep an items value that is not an object', () => JSON.stringify([written.properties!.anything, written.properties!.tuple, written.properties!.prefixed]).should.equal(JSON.stringify([standardKeywordsSchema.properties!.anything, standardKeywordsSchema.properties!.tuple, standardKeywordsSchema.properties!.prefixed])));
     it('should carry the property keywords', () => properties[0].schemaKeywords!.should.include({ minLength: 2, deprecated: true }));
     it('should not carry the modelled type and format', () => Object.keys(properties[1].schemaKeywords!).should.not.include.members(['type', 'format']));
     it('should carry the item keywords', () => properties[7].itemSchemaKeywords!.should.deep.equal({ minLength: 1, enum: ['a'] }));
