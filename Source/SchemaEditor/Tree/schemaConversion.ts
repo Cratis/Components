@@ -16,6 +16,8 @@ import {
     type SchemaOrderedProperty,
 } from './SchemaOrderedProperty';
 import { isNode, readOriginalShape, readRequiredOrder, restoreOriginalShape } from './originalShape';
+import { schemaPropertyType } from './schemaPropertyType';
+import { standardItemKeywords, standardPropertyKeywords } from './standardKeywords';
 import { requiredInOriginalOrder, schemaInOriginalOrder } from './schemaInOriginalOrder';
 
 /**
@@ -42,30 +44,6 @@ const identifier = (): string => Math.random().toString(36).slice(2, 10) + Math.
 
 // ── JsonSchema → Property[] ─────────────────────────────────────────
 
-export function schemaPropertyType(value: SchemaNode): PropertyType {
-    const items = value.items as { type?: string } | undefined;
-
-    switch (value.type) {
-        case 'string':
-            if (value.format === 'date') return PropertyType.Date;
-            if (value.format === 'time') return PropertyType.Time;
-            return PropertyType.String;
-        case 'number':
-        case 'integer':
-            return PropertyType.Number;
-        case 'boolean':
-            return PropertyType.Boolean;
-        case 'object':
-            return PropertyType.Object;
-        case 'array':
-            if (items?.type === 'number' || items?.type === 'integer') return PropertyType.NumberArray;
-            if (items?.type === 'object') return PropertyType.ObjectArray;
-            return PropertyType.StringArray;
-        default:
-            return PropertyType.String;
-    }
-}
-
 function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<string, unknown>> | undefined {
     const entries = Object.entries(node).filter(([name, value]) => {
         if (!name.startsWith('x-')) return false;
@@ -75,30 +53,11 @@ function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-function standardKeywords(node: SchemaNode, modelled: readonly string[]): Readonly<Record<string, unknown>> | undefined {
-    const entries = Object.entries(node).filter(([name]) => !name.startsWith('x-') && !modelled.includes(name));
-    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-}
-
-function modelledKeywords(node: SchemaNode, type: PropertyType): string[] {
-    const isArray = type === PropertyType.StringArray || type === PropertyType.NumberArray || type === PropertyType.ObjectArray;
-    return [
-        'type',
-        'format',
-        ...(isArray && isNode(node.items) ? ['items'] : []),
-        ...(type === PropertyType.Object && isNode(node.properties) ? ['properties', 'required'] : []),
-    ];
-}
-
-function itemModelledKeywords(items: SchemaNode, type: PropertyType): string[] {
-    return ['type', 'format', ...(type === PropertyType.ObjectArray && isNode(items.properties) ? ['properties', 'required'] : [])];
-}
-
 function readItemKeywords(node: SchemaNode, type: PropertyType): Partial<SchemaOrderedProperty> {
     if (node.type !== 'array' || !isNode(node.items)) return {};
     const items = node.items;
     const keywords = vendorKeywords(items, false);
-    const standard = standardKeywords(items, itemModelledKeywords(items, type));
+    const standard = standardItemKeywords(items, type);
     return {
         [itemSchemaKeywordOrder]: Object.keys(items),
         ...(keywords ? { itemVendorKeywords: keywords } : {}),
@@ -113,7 +72,7 @@ function requiredOrder(node: SchemaNode, type: PropertyType): Partial<SchemaOrde
 
 function readFlags(node: SchemaNode, type: PropertyType, isRequired: boolean): Partial<SchemaOrderedProperty> {
     const keywords = vendorKeywords(node, true);
-    const standard = standardKeywords(node, modelledKeywords(node, type));
+    const standard = standardPropertyKeywords(node, type);
     return {
         [schemaKeywordOrder]: Object.keys(node),
         [schemaOriginalShape]: readOriginalShape(node, type),

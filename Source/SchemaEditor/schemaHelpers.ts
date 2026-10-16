@@ -3,7 +3,7 @@
 
 import type { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
 import { isKeywordApplicable, isKeywordApplicableToRefinement, jsonTypeFamily } from './Tree/keywordApplicability';
-import { schemaPropertyType } from './Tree/schemaConversion';
+import { schemaPropertyType } from './Tree/schemaPropertyType';
 
 const modelledKeywords = new Set(['type', 'format', 'items', 'properties', 'required']);
 
