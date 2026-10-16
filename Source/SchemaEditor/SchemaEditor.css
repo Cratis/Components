@@ -226,7 +226,7 @@
 }
 
 .cratis-schema-editor__type-button,
-.cratis-schema-editor__key,
+.cratis-schema-editor__toggle,
 .cratis-schema-editor__remove,
 .cratis-schema-editor__add {
     display: inline-flex;
@@ -245,14 +245,14 @@
 }
 
 .cratis-schema-editor__type-button:hover,
-.cratis-schema-editor__key:hover,
+button.cratis-schema-editor__toggle:hover,
 .cratis-schema-editor__remove:hover,
 .cratis-schema-editor__add:hover {
     background: var(--cratis-surface-hover);
 }
 
 .cratis-schema-editor__type-button:focus-visible,
-.cratis-schema-editor__key:focus-visible,
+button.cratis-schema-editor__toggle:focus-visible,
 .cratis-schema-editor__remove:focus-visible,
 .cratis-schema-editor__add:focus-visible {
     outline: none;
@@ -263,7 +263,8 @@
     background: var(--cratis-surface-hover);
 }
 
-.cratis-schema-editor__remove {
+.cratis-schema-editor__remove,
+.cratis-schema-editor__toggle {
     color: var(--cratis-text-color-secondary);
 }
 
@@ -271,11 +272,7 @@
     color: var(--cratis-red-500);
 }
 
-.cratis-schema-editor__key {
-    color: var(--cratis-text-color-secondary);
-}
-
-.cratis-schema-editor__key[data-pressed] {
+.cratis-schema-editor__toggle[data-pressed] {
     border-color: var(--cratis-primary-color);
     background: var(--cratis-highlight-bg);
     color: var(--cratis-highlight-text-color);
@@ -412,7 +409,7 @@
     }
 
     .cratis-schema-editor__row[data-selected],
-    .cratis-schema-editor__key[data-pressed],
+    .cratis-schema-editor__toggle[data-pressed],
     .cratis-schema-editor__menu-item[data-focused] {
         outline: 2px solid Highlight;
     }

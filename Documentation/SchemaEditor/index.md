@@ -31,7 +31,7 @@ SchemaEditor lets users define data structures by adding properties, choosing su
 | Shape | A table that drills into nested objects and lists, with breadcrumbs | One tree with nested properties inline |
 | Editing | Edit, Save and Cancel; `onChange` reports each change and Cancel reports a reset | Every edit applies at once through `onChange` |
 | Typical use | Reviewing and editing a schema document | Designing a property shape inside a larger form or product |
-| Extras | `allowRequired` and `allowKeyProperty` columns, `isPropertyProtected`, `validatePropertyName`, `header`, `footer` | Concepts, controlled mode, per-row slots, selection, read-only, `pt`. See [Tree layout](tree-layout.md) |
+| Extras | `allowRequired` and `allowKeyProperty` columns, `isPropertyProtected`, `validatePropertyName`, `header`, `footer` | Concepts, Generated toggle (`allowGeneratedProperty`), controlled mode, per-row slots, selection, read-only, `pt`. See [Tree layout](tree-layout.md) |
 
 Props that belong to one layout are ignored by the other. [Extending the editor](extending.md) lists exactly which apply where.
 
@@ -109,4 +109,4 @@ tracked.
 - [Validation](validation.md) - Validation rules and constraints
 - [Tree layout](tree-layout.md) - The inline tree editor (`layout='tree'`)
 - [Extending the editor](extending.md) - Slots, callbacks and which props apply to which layout
-- [JSON Schema mapping](json-schema.md) - `x-concept`, `x-key` and the conversion helpers
+- [JSON Schema mapping](json-schema.md) - Vendor keyword preservation, `x-generated`, `x-concept`, `x-key` and the conversion helpers

@@ -4,6 +4,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { FaKey, FaLock, FaPlus, FaXmark } from 'react-icons/fa6';
 import type { Property } from './Property';
+import { GeneratedToggle } from './GeneratedToggle';
 import { PropertyNameProblem, findPropertyNameProblem } from './propertyNaming';
 import { PropertyTypeBadge } from './PropertyTypeBadge';
 import { PropertyTypeMenu } from './PropertyTypeMenu';
@@ -42,7 +43,6 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
     const canRename = !readOnly && !isProtected && operations.rename !== undefined;
     const canRemove = !readOnly && !isProtected && operations.remove !== undefined;
     const canChangeType = !readOnly && operations.changeType !== undefined && rowState?.lockType !== true;
-    const canSetRequired = context.isRequiredAllowed && operations.setRequired !== undefined;
     const canSetKey = !readOnly && operations.setKey !== undefined && context.isKeyAllowed(property, rowContext);
     const canAddChild = !readOnly && operations.addChild !== undefined && hasNestedProperties(property.type);
     const lockReason = rowState?.lockType === true ? rowState.lockTypeReason : undefined;
@@ -200,7 +200,7 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
                     </PropertyTypeMenu>
                 ) : typeBadge}
 
-                {canSetRequired && (
+                {context.isRequiredAllowed && operations.setRequired !== undefined && (
                     <label
                         {...parts?.required}
                         title={labels.requiredHelp}
@@ -226,7 +226,7 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
                         aria-pressed={property.isKey === true}
                         aria-label={labels.keyProperty(property.name)}
                         title={property.isKey ? labels.isKey : labels.setAsKey}
-                        className={`cratis-schema-editor__key ${parts?.key?.className ?? ''}`}
+                        className={`cratis-schema-editor__toggle cratis-schema-editor__key ${parts?.key?.className ?? ''}`}
                         data-cratis-part='key'
                         data-pressed={property.isKey === true || undefined}
                         onClick={() => operations.setKey?.(property.id)}
@@ -234,6 +234,8 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
                         <FaKey aria-hidden='true' />
                     </button>
                 )}
+
+                <GeneratedToggle property={property} rowContext={rowContext} />
 
                 {context.renderAccessory && (
                     <span {...parts?.accessory} className={`cratis-schema-editor__accessory ${parts?.accessory?.className ?? ''}`} data-cratis-part='accessory'>

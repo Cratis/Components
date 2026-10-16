@@ -68,6 +68,12 @@ export interface SchemaEditorLabels {
     setAsKey?: string;
     /** Tooltip of the key toggle while the property is the key. */
     isKey?: string;
+    /** Tree layout: accessible name of the Generated toggle. */
+    generatedProperty?: (propertyName: string) => string;
+    /** Tree layout: tooltip of the Generated toggle while the value is entered. */
+    setAsGenerated?: string;
+    /** Tree layout: tooltip of the Generated toggle while the value is generated. */
+    isGenerated?: string;
     /** Column header of the key column in the table layout. */
     keyColumn?: string;
     /** Column header of the required column in the table layout. */
