@@ -39,6 +39,7 @@ The editor converts `schema` into a tree, keeps the edited tree itself, and call
 | Concepts as property types (`x-concept`) | `concepts`, or wrap the editor in `PropertyConceptsProvider` | tree |
 | Whether a property must be present (`required`) | `allowRequired` | both |
 | The key that identifies an object (`x-key`, at most one per object) | `allowKeyProperty` | both |
+| Generated values (`x-generated`) | `allowGeneratedProperty` | tree |
 | Properties that cannot be renamed or removed | `isPropertyProtected` | both |
 | Extra name checks | `validatePropertyName` | both |
 | Rename and removal notifications | `onPropertyRenamed`, `onPropertyRemoved` | both |
@@ -53,7 +54,7 @@ The editor converts `schema` into a tree, keeps the edited tree itself, and call
 | `schema`, `onChange` | Schema in, complete schema out. The editor keeps the tree |
 | `properties`, `onAddProperty`, `onDeleteProperty`… | [Controlled mode](extending.md#controlled-mode): the host owns the tree and applies each edit |
 | `concepts` | The concepts offered as property types |
-| `allowRequired`, `allowKeyProperty`, `readOnly` | Opt-in features |
+| `allowRequired`, `allowKeyProperty`, `allowGeneratedProperty`, `readOnly` | Opt-in features |
 | `isPropertyProtected`, `validatePropertyName` | Per-property restrictions and extra name checks |
 | `selectedPropertyId`, `onPropertyClick` | Row selection, owned by the host |
 | `header`, `footer` | Content above the tree and beside the add button |
@@ -87,9 +88,26 @@ const concepts = [
 
 **Key** (`allowKeyProperty`) writes `x-key: true` on one property of an object. Choosing another property moves the key, and choosing the key again clears it. Pass a function to offer the toggle on some properties only.
 
+**Generated** (`allowGeneratedProperty`) marks a value created when the command runs rather than entered. It is off by default and writes `x-generated: true`; choosing it again clears the keyword. It does not generate a value itself. The table layout ignores this prop and has no Generated column.
+
+For a per-property policy, pass a predicate. This example offers the toggle on required concept properties, and on already-generated properties so a stale flag can still be cleared:
+
+```tsx
+<SchemaEditor
+    layout='tree'
+    schema={schema}
+    allowGeneratedProperty={property => property.isGenerated === true || (property.isRequired === true && Boolean(property.concept))}
+    onChange={setSchema}
+/>
+```
+
+In [controlled mode](extending.md#controlled-mode), supply `onSetGeneratedProperty={(propertyId, isGenerated) => setProperties(current => setGeneratedProperty(current, propertyId, isGenerated))}`. Import `setGeneratedProperty` from `@cratis/components/SchemaEditor`. The callback implies `allowGeneratedProperty` unless you explicitly set it to `false`; without a callback the controlled tree offers no toggle. `readOnly` hides it in either mode. Other edits, including type changes, keep the generated flag.
+
+Unknown `x-` keywords survive tree edits on property nodes and array `items` nodes, including nested properties. Root metadata also survives. Standard non-`x-` property keywords outside the supported shape do not; see [JSON Schema mapping](json-schema.md#what-the-tree-layout-preserves).
+
 ## Styling
 
-Import `@cratis/components/SchemaEditor/styles`, or the aggregate `@cratis/components/styles`. The tree is styled only with `--cratis-*` tokens. Its stable `data-cratis-part` names, which `pt` also accepts attributes for, are `root`, `header`, `list`, `property`, `row`, `leading`, `name`, `nameInput`, `badge`, `typeButton`, `menu`, `menuItem`, `required`, `key`, `accessory`, `remove`, `protected`, `details`, `add`, `empty`, `message` and `footer`.
+Import `@cratis/components/SchemaEditor/styles`, or the aggregate `@cratis/components/styles`. The tree is styled only with `--cratis-*` tokens. Its stable `data-cratis-part` names, which `pt` also accepts attributes for, are `root`, `header`, `list`, `property`, `row`, `leading`, `name`, `nameInput`, `badge`, `typeButton`, `menu`, `menuItem`, `required`, `key`, `generated`, `accessory`, `remove`, `protected`, `details`, `add`, `empty`, `message` and `footer`.
 
 ## Localization
 
@@ -107,9 +125,11 @@ Labels are the same `labels` prop as the table layout. The tree adds optional ke
 />
 ```
 
+The Generated toggle uses `generatedProperty(name)` for its accessible name, `setAsGenerated` for its inactive tooltip, and `isGenerated` for its active tooltip. Defaults are `Generated: <name>`, `Mark as generated: the value is created when the command runs, not entered`, and `Generated`.
+
 ## Accessibility
 
 - The tree is nested lists; every control is a real button, input or checkbox in the tab order.
 - A name is renamed with a double click or `F2` (announced through `aria-keyshortcuts`); a rejected name stays in the input with its reason in an alert.
 - The type menu is a React Aria menu: arrow keys, typeahead, Escape, and focus returns to its button.
-- The key toggle is a toggle button (`aria-pressed`), and a type is always shown as text.
+- The key and Generated toggles are toggle buttons (`aria-pressed`), and a type is always shown as text.

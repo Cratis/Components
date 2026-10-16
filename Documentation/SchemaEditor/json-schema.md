@@ -1,6 +1,6 @@
 ---
 title: JSON Schema mapping
-description: The x-concept and x-key keywords, the conversion helpers, and what the tree layout does not preserve.
+description: Vendor keywords, generated values, the conversion helpers, and the limits of the tree layout.
 ---
 
 ## JSON Schema support
@@ -34,8 +34,9 @@ Both layouts read and write these keywords; the table layout leaves them untouch
 | `required` | The containing object, or the `items` of a list of objects | Names of the properties that must be present. Omitted when empty |
 | `x-concept` | The property | The concept the property is typed as. The property still carries the primitive's `type` |
 | `x-key` | The property | `true` on the property that identifies its object. At most one per object |
+| `x-generated` | The property | `true` when the value is created when the command runs rather than entered. The tree's opt-in Generated toggle sets or clears it |
 
-The keywords are exported as `CONCEPT_KEYWORD` and `KEY_KEYWORD`.
+The keywords are exported as `CONCEPT_KEYWORD`, `KEY_KEYWORD` and `GENERATED_KEYWORD`. The Generated toggle is tree-only; the table preserves the keyword without offering a column.
 
 ```json
 {
@@ -48,15 +49,23 @@ The keywords are exported as `CONCEPT_KEYWORD` and `KEY_KEYWORD`.
 }
 ```
 
+## What the tree layout preserves
+
+Unknown `x-` vendor keywords round-trip verbatim on every property node, including nested object properties, array properties and array `items` nodes. Strings, numbers, booleans, nulls, objects and arrays keep their values. `Property.vendorKeywords` carries property annotations, and `Property.itemVendorKeywords` carries item annotations; empty maps are omitted. Rename, type, required and key edits keep this metadata.
+
+`x-generated: true` reads as `Property.isGenerated`. Any other `x-generated` value stays verbatim in `vendorKeywords` until an explicit Generated edit replaces or clears it. `x-concept` and `x-key` retain their dedicated mapping.
+
+The tree editor also preserves every root key except `type`, `properties` and `required`, which it rebuilds. This keeps root vendor keywords, `title`, `definitions` and other root metadata. When using conversion helpers directly, pass the incoming schema as the second argument to `propertiesToJsonSchema(properties, schema)` for the same behavior.
+
 ## What the tree layout does not preserve
 
-The table layout edits the document in place and drops nothing it does not touch. The tree layout is not a lossless editor for arbitrary JSON Schema. Reading a schema and writing it back drops everything the property tree has no place for:
+The table layout edits the document in place and drops nothing it does not touch. The tree layout is not a lossless editor for arbitrary JSON Schema. On property and item nodes it drops standard non-`x-` keywords outside its supported shape:
 
 - `integer` becomes `number`, and formats other than `date` and `time` (`guid`, `date-time`, `int32`…) are dropped;
 - `description`, `title`, `$id`, `$ref`, `definitions`, composition keywords (`oneOf`, `anyOf`, `allOf`, `not`), `enum`, `const`, numeric and string constraints, and `additionalProperties`;
 - names in `required` that have no declared property.
 
-Treat the output as authoritative only for the shape the editor supports, and validate it with the application's own validator. A host that must keep richer vocabulary should merge the output into its own document instead of replacing it.
+Treat the output as authoritative only for the shape the editor supports, and validate it with the application's own validator. A host that must keep richer property-level vocabulary should use an editor that supports it rather than relying on vendor-keyword preservation.
 
 ## Converting without the editor
 
@@ -72,14 +81,14 @@ import {
 
 const properties = jsonSchemaToProperties(schema);
 const next = setRequiredProperty(properties, properties[0].id, true);
-const written = propertiesToJsonSchema(setKeyProperty(next, next[0].id));
+const written = propertiesToJsonSchema(setKeyProperty(next, next[0].id), schema);
 ```
 
 | Function | Purpose |
 | --- | --- |
 | `jsonSchemaToProperties`, `propertiesToJsonSchema` | Convert in each direction. Ids are generated on every read |
 | `addProperty`, `addChildProperty`, `removeProperty`, `renameProperty`, `changePropertyType` | Immutable edits of the tree |
-| `setRequiredProperty`, `toggleRequiredProperty`, `setKeyProperty` | Requiredness and the key |
+| `setRequiredProperty`, `toggleRequiredProperty`, `setKeyProperty`, `setGeneratedProperty` | Requiredness, the key and generated values |
 | `findPropertyById`, `findPropertyByName`, `findSiblingProperties`, `totalPropertyCount` | Tree queries |
 | `conceptPropertyName`, `uniquePropertyName`, `findPropertyNameProblem` | Naming |
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
-import { FaKey, FaLock, FaPlus, FaXmark } from 'react-icons/fa6';
+import { FaKey, FaLock, FaPlus, FaWandMagicSparkles, FaXmark } from 'react-icons/fa6';
 import type { Property } from './Property';
 import { PropertyNameProblem, findPropertyNameProblem } from './propertyNaming';
 import { PropertyTypeBadge } from './PropertyTypeBadge';
@@ -44,6 +44,7 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
     const canChangeType = !readOnly && operations.changeType !== undefined && rowState?.lockType !== true;
     const canSetRequired = context.isRequiredAllowed && operations.setRequired !== undefined;
     const canSetKey = !readOnly && operations.setKey !== undefined && context.isKeyAllowed(property, rowContext);
+    const canSetGenerated = !readOnly && operations.setGenerated !== undefined && context.isGeneratedAllowed(property, rowContext);
     const canAddChild = !readOnly && operations.addChild !== undefined && hasNestedProperties(property.type);
     const lockReason = rowState?.lockType === true ? rowState.lockTypeReason : undefined;
     const isSelected = context.selectedPropertyId === property.id;
@@ -232,6 +233,22 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
                         onClick={() => operations.setKey?.(property.id)}
                     >
                         <FaKey aria-hidden='true' />
+                    </button>
+                )}
+
+                {canSetGenerated && (
+                    <button
+                        {...parts?.generated}
+                        type='button'
+                        aria-pressed={property.isGenerated === true}
+                        aria-label={labels.generatedProperty(property.name)}
+                        title={property.isGenerated ? labels.isGenerated : labels.setAsGenerated}
+                        className={`cratis-schema-editor__generated ${parts?.generated?.className ?? ''}`}
+                        data-cratis-part='generated'
+                        data-pressed={property.isGenerated === true || undefined}
+                        onClick={() => operations.setGenerated?.(property.id, !property.isGenerated)}
+                    >
+                        <FaWandMagicSparkles aria-hidden='true' />
                     </button>
                 )}
 

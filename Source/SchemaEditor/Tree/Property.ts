@@ -34,6 +34,15 @@ export interface Property {
     /** Whether the property identifies its parent object. At most one property of an object is the key. */
     isKey?: boolean;
 
+    /** Whether the value is generated when the command runs rather than entered. */
+    isGenerated?: boolean;
+
+    /** Other `x-` keywords on this property's schema node, preserved verbatim. */
+    vendorKeywords?: Readonly<Record<string, unknown>>;
+
+    /** `x-` keywords on an array's items node, preserved verbatim. */
+    itemVendorKeywords?: Readonly<Record<string, unknown>>;
+
     /** Whether the property must be present in its parent object (membership in the JSON Schema `required` list). */
     isRequired?: boolean;
 }

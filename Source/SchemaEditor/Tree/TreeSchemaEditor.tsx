@@ -20,6 +20,7 @@ import {
     removeProperty,
     renameProperty,
     setKeyProperty,
+    setGeneratedProperty,
     setRequiredProperty,
 } from './schemaConversion';
 import { SchemaEditorContext, type SchemaEditorContextValue, type SchemaEditorOperations } from './SchemaEditorContext';
@@ -78,6 +79,9 @@ export interface TreeSchemaEditorProps {
     /** Controlled mode: make a property the key of its object, or clear it when it already is. */
     onSetKeyProperty?: (propertyId: string) => void;
 
+    /** Controlled mode: set whether a property's value is generated. Implies allowGeneratedProperty unless explicitly false. */
+    onSetGeneratedProperty?: (propertyId: string, isGenerated: boolean) => void;
+
     /** Controlled mode: set whether a property must be present. */
     onSetRequiredProperty?: (propertyId: string, isRequired: boolean) => void;
 
@@ -93,6 +97,12 @@ export interface TreeSchemaEditorProps {
      * controlled mode, where supplying `onSetKeyProperty` implies `true` unless this is explicitly `false`.
      */
     allowKeyProperty?: boolean | ((property: Property, context: SchemaPropertyContext) => boolean);
+
+    /**
+     * Offers the Generated toggle on every property, or on properties accepted by the predicate. Off by default;
+     * a controlled onSetGeneratedProperty callback implies true unless explicitly false. The table layout ignores it.
+     */
+    allowGeneratedProperty?: boolean | ((property: Property, context: SchemaPropertyContext) => boolean);
 
     /**
      * Offers the toggle for whether a property must be present (the `required` list). Off by default, except in
@@ -183,9 +193,11 @@ export const TreeSchemaEditor = ({
     onRenameProperty,
     onChangePropertyType,
     onSetKeyProperty,
+    onSetGeneratedProperty,
     onSetRequiredProperty,
     concepts: suppliedConcepts,
     allowKeyProperty,
+    allowGeneratedProperty,
     allowRequired,
     readOnly = false,
     isPropertyProtected,
@@ -221,7 +233,7 @@ export const TreeSchemaEditor = ({
     const [seenSchema, setSeenSchema] = useState(incomingSchema);
     if (!isControlled && incomingSchema !== seenSchema) {
         setSeenSchema(incomingSchema);
-        if (schema !== undefined && incomingSchema !== JSON.stringify(propertiesToJsonSchema(ownedProperties))) {
+        if (schema !== undefined && incomingSchema !== JSON.stringify(propertiesToJsonSchema(ownedProperties, schema))) {
             setOwnedProperties(jsonSchemaToProperties(schema));
         }
     }
@@ -229,7 +241,7 @@ export const TreeSchemaEditor = ({
     const apply = (next: Property[]) => {
         latest.current = next;
         setOwnedProperties(next);
-        onChange?.(propertiesToJsonSchema(next), { source: 'user' });
+        onChange?.(propertiesToJsonSchema(next, schema), { source: 'user' });
         onPropertiesChange?.(next);
     };
 
@@ -250,6 +262,7 @@ export const TreeSchemaEditor = ({
         },
         changeType: (propertyId, type, concept) => apply(changePropertyType(latest.current, propertyId, type, concept)),
         setKey: propertyId => apply(setKeyProperty(latest.current, propertyId)),
+        setGenerated: (propertyId, isGenerated) => apply(setGeneratedProperty(latest.current, propertyId, isGenerated)),
         setRequired: (propertyId, isRequired) => apply(setRequiredProperty(latest.current, propertyId, isRequired)),
     };
 
@@ -259,6 +272,7 @@ export const TreeSchemaEditor = ({
         rename: onRenameProperty,
         changeType: onChangePropertyType,
         setKey: onSetKeyProperty,
+        setGenerated: onSetGeneratedProperty,
         setRequired: onSetRequiredProperty,
     };
 
@@ -273,6 +287,10 @@ export const TreeSchemaEditor = ({
     const isKeyAllowed = typeof keyAllowance === 'function'
         ? keyAllowance
         : keyAllowance ? () => true : never;
+    const generatedAllowance = allowGeneratedProperty ?? (isControlled && onSetGeneratedProperty !== undefined);
+    const isGeneratedAllowed = typeof generatedAllowance === 'function'
+        ? generatedAllowance
+        : generatedAllowance ? () => true : never;
     const isRequiredAllowed = allowRequired ?? (isControlled && onSetRequiredProperty !== undefined);
 
     const contextValue: SchemaEditorContextValue = {
@@ -285,6 +303,7 @@ export const TreeSchemaEditor = ({
         selectedPropertyId,
         onPropertyClick,
         isKeyAllowed,
+        isGeneratedAllowed,
         isRequiredAllowed,
         isProtected: isPropertyProtected ?? never,
         validateName: validatePropertyName,

@@ -121,9 +121,10 @@ Tree layout only. Pass `layout='tree'` and `properties` to own the tree. The edi
 | `onRenameProperty(propertyId, name)` | Rename; the name is already checked |
 | `onChangePropertyType(propertyId, type, concept?)` | Change the type |
 | `onSetKeyProperty(propertyId)` | Set or clear the key |
+| `onSetGeneratedProperty(propertyId, isGenerated)` | Set whether the value is generated (`allowGeneratedProperty`, tree only) |
 | `onSetRequiredProperty(propertyId, isRequired)` | Set requiredness |
 
-A toggle callback implies its allow flag. In controlled mode, supplying `onSetRequiredProperty` offers the required toggle as if `allowRequired` were set, and supplying `onSetKeyProperty` offers the key toggle as if `allowKeyProperty` were set. Set the flag to `false` explicitly to hide the toggle while keeping the callback. In owned mode the flags stay off by default, because the editor performs the edits itself.
+A toggle callback implies its allow flag. In controlled mode, supplying `onSetRequiredProperty` offers the required toggle as if `allowRequired` were set, supplying `onSetKeyProperty` offers the key toggle as if `allowKeyProperty` were set, and supplying `onSetGeneratedProperty` offers Generated as if `allowGeneratedProperty` were set. Set the flag to `false` explicitly to hide the toggle while keeping the callback. In owned mode the flags stay off by default, because the editor performs the edits itself.
 
 Apply each callback with the pure functions `@cratis/components/SchemaEditor` exports (`addChildProperty`, `removeProperty`…), or with your own logic when an edit has side effects, such as removing the mappings of a deleted property.
 

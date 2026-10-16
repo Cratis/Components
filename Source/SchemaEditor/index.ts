@@ -21,6 +21,7 @@ export { findPropertyById, findPropertyByName, findSiblingProperties, totalPrope
 export {
     CONCEPT_KEYWORD,
     KEY_KEYWORD,
+    GENERATED_KEYWORD,
     addChildProperty,
     addProperty,
     changePropertyType,
@@ -29,6 +30,7 @@ export {
     removeProperty,
     renameProperty,
     setKeyProperty,
+    setGeneratedProperty,
     setRequiredProperty,
     toggleRequiredProperty,
 } from './Tree/schemaConversion';

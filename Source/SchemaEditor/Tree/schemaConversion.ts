@@ -20,6 +20,9 @@ export const CONCEPT_KEYWORD = 'x-concept';
  */
 export const KEY_KEYWORD = 'x-key';
 
+/** The JSON Schema keyword marking a value generated when the command runs rather than entered. */
+export const GENERATED_KEYWORD = 'x-generated';
+
 type SchemaNode = Record<string, unknown>;
 
 const isComplex = (type: PropertyType): boolean => type === PropertyType.Object || type === PropertyType.ObjectArray;
@@ -52,11 +55,27 @@ function schemaPropertyType(value: SchemaNode): PropertyType {
     }
 }
 
+function vendorKeywords(node: SchemaNode, isProperty: boolean): Readonly<Record<string, unknown>> | undefined {
+    const entries = Object.entries(node).filter(([name, value]) => {
+        if (!name.startsWith('x-')) return false;
+        if (!isProperty) return true;
+        return name !== CONCEPT_KEYWORD && name !== KEY_KEYWORD && !(name === GENERATED_KEYWORD && value === true);
+    });
+    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
 function schemaPropertyToProperty(name: string, value: JsonSchemaProperty, required: ReadonlySet<string>): Property {
     const node = value as unknown as SchemaNode;
     const type = schemaPropertyType(node);
     const concept = node[CONCEPT_KEYWORD];
+    const keywords = vendorKeywords(node, true);
+    const itemKeywords = node.type === 'array' && typeof node.items === 'object' && node.items !== null
+        ? vendorKeywords(node.items as SchemaNode, false)
+        : undefined;
     const flags = {
+        ...(keywords ? { vendorKeywords: keywords } : {}),
+        ...(itemKeywords ? { itemVendorKeywords: itemKeywords } : {}),
+        ...(node[GENERATED_KEYWORD] === true ? { isGenerated: true } : {}),
         ...(required.has(name) ? { isRequired: true } : {}),
         ...(node[KEY_KEYWORD] === true ? { isKey: true } : {}),
     };
@@ -112,11 +131,11 @@ function primitiveSchema(property: Property): SchemaNode {
         case PropertyType.Object:
             return { type: 'object', ...objectSchema(property.children ?? []) };
         case PropertyType.StringArray:
-            return { type: 'array', items: { type: 'string' } };
+            return { type: 'array', items: { type: 'string', ...property.itemVendorKeywords } };
         case PropertyType.NumberArray:
-            return { type: 'array', items: { type: 'number' } };
+            return { type: 'array', items: { type: 'number', ...property.itemVendorKeywords } };
         case PropertyType.ObjectArray:
-            return { type: 'array', items: { type: 'object', ...objectSchema(property.children ?? []) } };
+            return { type: 'array', items: { type: 'object', ...objectSchema(property.children ?? []), ...property.itemVendorKeywords } };
         default:
             return { type: 'string' };
     }
@@ -125,6 +144,8 @@ function primitiveSchema(property: Property): SchemaNode {
 function propertySchema(property: Property): JsonSchemaProperty {
     return {
         ...primitiveSchema(property),
+        ...property.vendorKeywords,
+        ...(property.isGenerated === true ? { [GENERATED_KEYWORD]: true } : {}),
         ...(property.concept ? { [CONCEPT_KEYWORD]: property.concept } : {}),
         ...(property.isKey === true ? { [KEY_KEYWORD]: true } : {}),
     } as unknown as JsonSchemaProperty;
@@ -141,12 +162,15 @@ function objectSchema(properties: Property[]): { properties: Record<string, Json
 
 /**
  * Converts a property tree into a JSON Schema object. Empty `required` lists are omitted, and a property
- * typed as a concept or marked as the key carries the `x-concept` and `x-key` keywords.
+ * typed as a concept or marked as the key carries the `x-concept` and `x-key` keywords. Vendor keywords are
+ * preserved on properties and array items; generated values carry `x-generated: true`.
  * @param properties The root properties.
+ * @param base The incoming schema. Root keys other than type, properties and required are preserved.
  * @returns The schema.
  */
-export function propertiesToJsonSchema(properties: Property[]): JsonSchema {
-    return { type: 'object', ...objectSchema(properties) } as JsonSchema;
+export function propertiesToJsonSchema(properties: Property[], base?: JsonSchema): JsonSchema {
+    const root = Object.fromEntries(Object.entries(base ?? {}).filter(([name]) => !['type', 'properties', 'required'].includes(name)));
+    return { ...root, type: 'object', ...objectSchema(properties) } as JsonSchema;
 }
 
 // ── Pure tree edits ─────────────────────────────────────────────────
@@ -268,6 +292,20 @@ export function toggleRequiredProperty(properties: Property[], targetId: string)
  */
 export function setRequiredProperty(properties: Property[], targetId: string, isRequired: boolean): Property[] {
     return updateProperty(properties, targetId, property => ({ ...property, isRequired }));
+}
+
+/**
+ * Sets whether a property's value is generated. An explicit edit replaces any non-true x-generated value.
+ * @param properties The root properties.
+ * @param targetId The id of the property.
+ * @param isGenerated Whether the value is generated.
+ * @returns The new tree.
+ */
+export function setGeneratedProperty(properties: Property[], targetId: string, isGenerated: boolean): Property[] {
+    return updateProperty(properties, targetId, property => {
+        const keywords = Object.fromEntries(Object.entries(property.vendorKeywords ?? {}).filter(([name]) => name !== GENERATED_KEYWORD));
+        return { ...property, isGenerated, vendorKeywords: Object.keys(keywords).length > 0 ? keywords : undefined };
+    });
 }
 
 /**

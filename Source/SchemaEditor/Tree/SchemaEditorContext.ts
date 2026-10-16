@@ -17,6 +17,7 @@ export interface SchemaEditorOperations {
     rename?: (propertyId: string, name: string) => void;
     changeType?: (propertyId: string, type: PropertyType, concept?: string) => void;
     setKey?: (propertyId: string) => void;
+    setGenerated?: (propertyId: string, isGenerated: boolean) => void;
     setRequired?: (propertyId: string, isRequired: boolean) => void;
 }
 
@@ -31,6 +32,7 @@ export interface SchemaEditorContextValue {
     selectedPropertyId: string | null | undefined;
     onPropertyClick: ((propertyId: string) => void) | undefined;
     isKeyAllowed: (property: Property, context: SchemaPropertyContext) => boolean;
+    isGeneratedAllowed: (property: Property, context: SchemaPropertyContext) => boolean;
     isRequiredAllowed: boolean;
     isProtected: (property: Property) => boolean;
     validateName: ((name: string, property: Property, siblings: Property[]) => string | undefined) | undefined;

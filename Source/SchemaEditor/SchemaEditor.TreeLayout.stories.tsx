@@ -100,7 +100,7 @@ export const WithConcepts: Story = {
     ),
 };
 
-/** The key (`x-key`) and whether a property is required (`required`) are opt-in. */
+/** The key (`x-key`), generated values (`x-generated`) and required properties are opt-in. */
 export const RequiredAndKey: Story = {
     render: () => (
         <Beside initial={exampleSchema}>
@@ -110,6 +110,7 @@ export const RequiredAndKey: Story = {
                     schema={{ ...exampleSchema, required: ['orderNumber'] }}
                     allowRequired
                     allowKeyProperty
+                    allowGeneratedProperty
                     onChange={report} />
             )}
         </Beside>
@@ -119,6 +120,9 @@ export const RequiredAndKey: Story = {
         const keyButton = canvas.getByRole('button', { name: 'Use orderNumber as the key property' });
         await userEvent.click(keyButton);
         await expect(keyButton).toHaveAttribute('aria-pressed', 'true');
+        const generatedButton = canvas.getByRole('button', { name: 'Generated: orderNumber' });
+        await userEvent.click(generatedButton);
+        await expect(generatedButton).toHaveAttribute('aria-pressed', 'true');
     },
 };
 
