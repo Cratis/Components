@@ -16,6 +16,11 @@ export type { DataTableSort } from './DataTableSort';
 export { DataTableSortDirection } from './DataTableSortDirection';
 export { DataTableRowProcessing } from './DataTableRowProcessing';
 export {
+    defaultServerQuerySearchDebounceMilliseconds,
+    type DataTableServerQuery,
+} from './DataTableServerQuery';
+export type { DataTableServerQueryState } from './DataTableServerQueryState';
+export {
     registerDataTableFilterMatcher,
     resolveDataTableFilterMatcher,
     unregisterDataTableFilterMatcher,

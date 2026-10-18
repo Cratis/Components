@@ -15,6 +15,8 @@ import {
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
+import type { DataTableServerQuery } from './DataTableServerQuery';
+import { useServerQuery } from './useServerQuery';
 
 /**
  * Props for {@link DataTableForObservableQuery}.
@@ -111,6 +113,13 @@ export interface DataTableForObservableQueryProps<
     clientFiltering?: boolean;
 
     /**
+     * Opts into server mode: the query sorts, filters and searches the complete result before
+     * paging, and the table renders the rows as returned. Leave undefined to sort, filter and search
+     * the loaded page. See {@link DataTableServerQuery}.
+     */
+    serverQuery?: DataTableServerQuery<TArguments>;
+
+    /**
      * Extra CSS class name forwarded to the underlying DataTable root.
      */
     className?: string;
@@ -205,11 +214,12 @@ export const DataTableForObservableQuery = <
     // explicitly recovers the row type this component is generic over — strictly better than the
     // `unknown` the inference would otherwise produce. Remove both once Arc returns an interface
     // from `subscribe()` and makes `TDataType` inferable.
-    const [result, , setPage] = useObservableQueryWithPaging<
+    const server = useServerQuery(props.serverQuery, props.queryArguments, props.defaultFilters);
+    const [result, setSorting, setPage] = useObservableQueryWithPaging<
         TDataType,
         never,
         TArguments
-    >(props.query as never, paging, props.queryArguments);
+    >(props.query as never, paging, server.queryArguments);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -288,6 +298,7 @@ export const DataTableForObservableQuery = <
                     globalSearchPlaceholder={props.globalSearchPlaceholder}
                     globalSearchAriaLabel={props.globalSearchAriaLabel}
                     defaultFilters={props.defaultFilters}
+                    {...server.tableProps({ setSorting, setPage })}
                     scrollable
                     scrollHeight='100%'
                     className={props.className}

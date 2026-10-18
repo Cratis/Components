@@ -16,6 +16,7 @@ import type {
 } from '../DataTables/TablePaginator';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
+import type { DataTableServerQuery } from '../DataTables/DataTableServerQuery';
 import { Allotment } from 'allotment';
 import type { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
@@ -347,6 +348,13 @@ export interface DataPageProps<
      * server-reported pagination totals. Retained for source compatibility only.
      */
     clientFiltering?: boolean;
+
+    /**
+     * Opts the page's table into server mode: the query sorts, filters and searches the complete
+     * result before paging, and the table renders the rows as returned. Leave undefined to sort,
+     * filter and search the loaded page. See {@link DataTableServerQuery}.
+     */
+    serverQuery?: DataTableServerQuery<TArguments>;
 
     /** Optional callback forwarded to the details component as `onRefresh`; DataPage does not invoke it or refetch when it is called. */
     onRefresh?(): void;
