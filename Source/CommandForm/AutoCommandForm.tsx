@@ -5,6 +5,8 @@ import type React from 'react';
 import { useMemo } from 'react';
 import type { Command } from '@cratis/arc/commands';
 import { CommandForm, type CommandFormProps } from '@cratis/arc.react/commands';
+import { Guid } from '@cratis/fundamentals';
+import { GuidField } from './fields/GuidField';
 import { registerDefaultFieldTypeProviders } from './defaultFieldTypeProviders';
 import { resolveFieldTypeProvider } from './fieldTypeProviderRegistry';
 
@@ -38,11 +40,22 @@ function formatTitle(propertyName: string): string {
         .trim();
 }
 
+// An invalid GuidField draft leaves the command value empty, so a changed currentValues overlay must
+// discard the draft even when the native value does not change. Only the registered GuidField itself
+// receives the key: no other provider sees an extra prop.
+function guidFieldResetProps(field: unknown, overlayValue: unknown): { resetKey?: unknown } {
+    if (field !== GuidField) {
+        return {};
+    }
+    return { resetKey: overlayValue instanceof Guid ? overlayValue.toString() : overlayValue };
+}
+
 /**
  * A `CommandForm` that generates its field list from the command's own properties, choosing each
  * field's component by the property's type through the {@link FieldTypeProvider} registry -
  * `registerFieldTypeProvider` for a type the built-in defaults (`string`, `number`, `boolean`,
- * `Date`) don't cover, or to override one of them.
+ * `Date`) don't cover, or to override one of them. `GuidField` is not a default; register it for
+ * Fundamentals `Guid` properties to edit them.
  *
  * A property whose type no registered provider handles is left out of the generated list -
  * `exclude` it explicitly for clarity, or add a `CommandForm` child by hand alongside this
@@ -79,6 +92,7 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
             return (
                 <Field
                     key={descriptor.name}
+                    {...guidFieldResetProps(Field, props.currentValues?.[descriptor.name as keyof TCommand])}
                     // The accessor reads the property dynamically, so CommandForm cannot infer the
                     // property name from its source text; fieldName states it explicitly.
                     fieldName={descriptor.name}
