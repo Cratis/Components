@@ -297,12 +297,6 @@ try {
             'utf8',
         ),
     );
-    const nodeNextIssue = exceptionMetadata.upstreamIssues.find(
-        (issue) => issue.id === 'arc-family-nodenext-extensionless-specifiers',
-    );
-    if (!nodeNextIssue) {
-        throw new Error('NodeNext upstream exception metadata is missing.');
-    }
     const parseDiagnostics = (stdout) => {
         const diagnosticLine = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/u;
         return stdout
@@ -364,14 +358,16 @@ try {
             );
         }
         const covered = (diagnostic) =>
-            nodeNextIssue.resolutionModes.includes(resolution) &&
-            (matchesExternalIssue(diagnostic, nodeNextIssue, corePackageJson.name) ||
-                matchesPairedOwnedCascade(
-                    diagnostic,
-                    nodeNextIssue,
-                    diagnostics,
-                    corePackageJson.name,
-                ));
+            exceptionMetadata.upstreamIssues.some((issue) =>
+                issue.resolutionModes.includes(resolution) &&
+                (matchesExternalIssue(diagnostic, issue, corePackageJson.name) ||
+                    matchesPairedOwnedCascade(
+                        diagnostic,
+                        issue,
+                        diagnostics,
+                        corePackageJson.name,
+                    )),
+            );
         const unexpected = diagnostics.filter((diagnostic) => !covered(diagnostic));
         if (unexpected.length > 0) {
             throw new Error(

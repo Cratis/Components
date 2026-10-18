@@ -6,8 +6,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, it } from 'vitest';
 import { useFieldAccessibility } from '../fields/fieldAccessibility';
 
-const ValidationProbe = () => {
+const ValidationProbe = ({ id }: { id?: string }) => {
     const accessibility = useFieldAccessibility({
+        id,
         title: 'Email',
         errors: ['Email is required', 'Email is invalid'],
     });
@@ -34,5 +35,19 @@ describe('when rendering validation errors', () => {
 
     it('should expose every validation message to assistive technology', () => {
         expect(html).to.contain('Email is required. Email is invalid');
+    });
+});
+
+describe('when Arc supplies the field id with validation errors', () => {
+    const html = renderToStaticMarkup(<ValidationProbe id='example-arc-field' />);
+
+    it('should retain the supplied control id', () => {
+        html.should.contain('<input id="example-arc-field"');
+    });
+
+    it('should associate the supplied id with every validation message', () => {
+        html.should.contain('aria-describedby="example-arc-field-errors"');
+        html.should.contain('id="example-arc-field-errors"');
+        html.should.contain('Email is required. Email is invalid');
     });
 });

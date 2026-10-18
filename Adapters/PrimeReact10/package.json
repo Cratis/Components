@@ -108,7 +108,7 @@
         "@cratis/arc.react": "22.16.0",
         "@cratis/components": "workspace:^",
         "@cratis/components.conformance": "workspace:^",
-        "@cratis/fundamentals": "7.19.2",
+        "@cratis/fundamentals": "7.25.1",
         "@types/react": "19.3.0",
         "primereact": "10.9.9",
         "react": "19.3.0",
