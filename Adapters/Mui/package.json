@@ -110,7 +110,7 @@
         "@cratis/arc.react": "22.16.0",
         "@cratis/components": "workspace:^",
         "@cratis/components.conformance": "workspace:^",
-        "@cratis/fundamentals": "7.19.2",
+        "@cratis/fundamentals": "7.25.1",
         "@emotion/react": "11.14.0",
         "@emotion/styled": "11.14.1",
         "@mui/material": "9.4.0",

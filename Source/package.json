@@ -312,7 +312,7 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "22.16.0",
+        "@cratis/arc.vite": "22.122.1",
         "pixi.js": "^8.20.1",
         "react": "19.3.0",
         "react-dom": "19.3.0"
