@@ -17,7 +17,7 @@ The DataTables module provides a semantic local-array table plus specialized Arc
 
 `DataTableCore` keeps its own sort, column filters, and search text unless you control them. Pass `sort` with `onSortChange`, `filters` with `onFilter`, and `globalFilter` with `onGlobalFilterChange` to own that state, for example to persist it or to send it to the server. `sort={null}` means not sorted; leaving a prop undefined lets the table keep that piece of state itself, and the change callbacks report every change either way. Import `DataTableSort`, `DataTableSortDirection`, and `DataTableRowProcessing` from `@cratis/components/DataTables`.
 
-When the rows already reflect that state, because your query filtered and sorted them on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders the rows as given instead of filtering and sorting them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The bound query tables do not take these props yet; server-side sorting and filtering for them is tracked in [#178](https://github.com/Cratis/Components/issues/178).
+When the rows already reflect that state, because your query filtered and sorted them on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders the rows as given instead of filtering and sorting them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The bound query tables manage this state for you: set `serverQuery` on `DataTableForQuery` or `DataTableForObservableQuery` and they send the sort, filters, and search text to the server and render the rows as given. See [Server mode](data-table-for-query.md#server-mode).
 
 ## When to Use
 

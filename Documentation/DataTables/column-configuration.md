@@ -70,7 +70,7 @@ Select-all selects and clears only the rows currently visible after filtering an
 
 ## Sorting
 
-Set `sortable` for client-side sorting of the currently loaded page. A column is sortable only when it also has a `field`. The header becomes a button that sorts ascending, then descending, on each activation; the sorted header carries `aria-sort`. These table components do not automatically forward sort state to Arc. For complete-result sorting, add explicit sort arguments to the generated query, apply them on the server before paging, and connect the product's sort controls to those arguments.
+Set `sortable` for client-side sorting of the currently loaded page. A column is sortable only when it also has a `field`. The header becomes a button that sorts ascending, then descending, on each activation; the sorted header carries `aria-sort`. Without `serverQuery`, the bound query tables do not forward sort state to Arc. For complete-result sorting, set `serverQuery` on `DataTableForQuery` or `DataTableForObservableQuery`; the sort is then sent as Arc sorting and the server orders the complete result before paging. See [Server mode](data-table-for-query.md#server-mode).
 
 ## Column filters
 
@@ -128,7 +128,7 @@ A custom editor (`filterElement`) receives the effective `field`, the draft `val
 
 `filterPt` exposes `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, and `apply`. These are Cratis-owned parts; the popup/menu/actions also render `data-cratis-part='filter-popover'`, `filter-menu`, and `filter-actions`.
 
-Filtering affects the loaded page. For complete-result filtering, send the filter model as query arguments and filter before server paging.
+Without `serverQuery`, filtering affects the loaded page. For complete-result filtering, set `serverQuery`: its `toArguments` turns the filter model into query arguments, and the server filters before paging. See [Server mode](data-table-for-query.md#server-mode).
 
 ## Custom matchers
 

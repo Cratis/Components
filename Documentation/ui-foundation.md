@@ -131,9 +131,9 @@ The React Aria Components Toast API remains unstable, so Components 4 ships its 
 
 ## Table architecture
 
-Components 4 uses semantic React HTML and Cratis-owned table state. `DataTableCore` is a rendered React component, not a headless or framework-neutral table engine. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging; Components does not automatically forward table state to the server.
+Components 4 uses semantic React HTML and Cratis-owned table state. `DataTableCore` is a rendered React component, not a headless or framework-neutral table engine. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging. Components forwards table state to the server only when a bound query table opts in with `serverQuery`, which maps the sort to Arc sorting and the filters and search text to the query arguments the consumer defines; see [Server mode](DataTables/data-table-for-query.md#server-mode).
 
-The reusable product boundary today is Arc's generated query/transport contract and explicit paging/query arguments—not Components' React table state. Components does not currently export `DataTableCore` as a framework-neutral table engine or forward loaded-page table state to the server automatically.
+The reusable product boundary today is Arc's generated query/transport contract and explicit paging/query arguments—not Components' React table state. Components does not currently export `DataTableCore` as a framework-neutral table engine, and it never forwards table state to the server without `serverQuery`.
 
 ## Prime dependency boundary
 

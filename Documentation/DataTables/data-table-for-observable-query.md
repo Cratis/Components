@@ -14,7 +14,7 @@ DataTableForObservableQuery subscribes to an `IObservableQueryFor` query with se
 - Automatic data updates
 - Server-side pagination, 20 rows per page
 - Single or multiple row selection
-- Sorting, column filters, and a global search box, all applied to the loaded page
+- Sorting, column filters, and a global search box, applied to the loaded page or, with `serverQuery`, to the complete result on the server
 - Custom column templates
 - Same props as DataTableForQuery
 
@@ -63,17 +63,18 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 - `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
 - `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
-- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
+- `serverQuery`: Opts the table into server mode, where the server sorts, filters, and searches the complete result before paging. See [Server mode](data-table-for-query.md#server-mode).
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored. Without `serverQuery`, filtering is always scoped to the loaded page
 - `className` / `pt`: Extra class and stable part attributes for the table
 - `paginatorClassName` / `paginatorPt` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
 
 `ptOptions`, `unstyled`, and `paginatorPtOptions` are deprecated and have no effect.
 
-Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page, while pagination continues to use the server-reported totals.
+Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Without `serverQuery`, filters are applied client-side to the currently loaded observable-query page, while pagination continues to use the server-reported totals.
 
-The deprecated `clientFiltering` prop remains accepted only for source compatibility and does not change that scope. Complete-result filtering must be applied by the server before paging, with filter values passed in `queryArguments`; see [Filtering scope and server pagination](data-table-for-query.md#filtering-scope-and-server-pagination).
+The deprecated `clientFiltering` prop remains accepted only for source compatibility and does not change that scope. For complete-result sorting, filtering, and search, set `serverQuery`; the table then sends them to the server, which applies them before paging and pushes the matching page. It works the same way as for snapshot queries; see [Server mode](data-table-for-query.md#server-mode).
 
-While the first observable result is performing without rows, the table shows a loading row with a status announcement instead of `emptyMessage`. If a required argument is missing, Arc does not subscribe and this loading row remains until every required argument has a value. During a refetch with rows, it keeps the rows and marks the table busy. An unauthorized result takes precedence over a failed result; either displays a failure row with an alert instead of an empty state. A successful empty result still shows `emptyMessage`. Set `loadingMessage`, `failureMessage`, or `unauthorizedMessage` to customize these states. See [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries) for the state rules and defaults.
+While the first observable result is performing without rows, the table shows a loading row with a status announcement instead of `emptyMessage`. If a required argument is missing, Arc does not subscribe and this loading row remains until every required argument has a value. During a refetch with rows, it keeps the rows and marks the table busy. An unauthorized result takes precedence over a failed result; either displays a failure row with an alert instead of an empty state. A result that settles without success also shows the failure row. A successful empty result still shows `emptyMessage`. Set `loadingMessage`, `failureMessage`, or `unauthorizedMessage` to customize these states. See [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries) for the state rules and defaults.
 
 ## Observable Behavior
 
