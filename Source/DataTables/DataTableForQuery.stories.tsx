@@ -6,8 +6,10 @@ import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
 import { Column } from './Column';
 import { Tag } from '../Display/Tag';
-import { QueryFor, QueryResult } from '@cratis/arc/queries';
+import { QueryFor, QueryResult, SortDirection } from '@cratis/arc/queries';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import type { DataTableFilterConstraint } from './DataTableFilterMeta';
+import type { DataTableServerQuery } from './DataTableServerQuery';
 
 const meta: Meta<typeof DataTableForQuery> = {
     title: 'DataTables/DataTableForQuery',
@@ -101,6 +103,58 @@ class ManyProductsQuery extends QueryFor<Product, object> {
         } as unknown as QueryResult<Product>);
     }
 }
+
+interface ServerProductsArguments {
+    nameContains?: string;
+    search?: string;
+}
+
+// Stands in for a server query that filters, sorts and pages the complete result itself, the way
+// an `IQueryable` query applies its filter arguments and Arc applies sorting and paging.
+class ServerProductsQuery extends QueryFor<Product, ServerProductsArguments> {
+    readonly route = '/api/server-products';
+    readonly defaultValue: Product = [] as unknown as Product;
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, true);
+    }
+    override perform(args?: ServerProductsArguments): Promise<QueryResult<Product>> {
+        const contains = (value: string, text?: string) => !text || value.toLowerCase().includes(text.toLowerCase());
+        const matching = manyProducts.filter(product =>
+            contains(product.name, args?.nameContains) &&
+            (contains(product.name, args?.search) || contains(product.category, args?.search)));
+        const field = this.sorting.field as keyof Product;
+        const direction = this.sorting.direction === SortDirection.descending ? -1 : 1;
+        const sorted = this.sorting.hasSorting
+            ? [...matching].sort((left, right) => (left[field] < right[field] ? -1 : left[field] > right[field] ? 1 : 0) * direction)
+            : matching;
+        const page = this.paging?.page ?? 0;
+        const size = this.paging?.pageSize ?? 20;
+        const first = page * size;
+
+        return Promise.resolve({
+            data: sorted.slice(first, first + size),
+            paging: { totalItems: sorted.length, totalPages: Math.ceil(sorted.length / size), page, size },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Product>);
+    }
+}
+
+const serverProductsQuery: DataTableServerQuery<ServerProductsArguments> = {
+    toArguments: ({ filters, globalFilter }) => ({
+        nameContains: (filters.name as DataTableFilterConstraint | undefined)?.value as string | undefined,
+        search: globalFilter || undefined,
+    }),
+};
 
 export const Default: Story = {
     render: () => (
@@ -206,4 +260,36 @@ export const WithSelection: Story = {
             </div>
         );
     }
+};
+
+/**
+ * Server mode: sorting, the name filter and the search are sent to the query, which applies them to
+ * all 24 records before paging. The paginator reports the filtered total, and every change returns
+ * to the first page.
+ */
+export const ServerMode: Story = {
+    render: () => (
+        <div className="cratis:p-4">
+            <div style={{ height: '560px' }}>
+                <DataTableForQuery<ServerProductsQuery, Product, ServerProductsArguments>
+                    query={ServerProductsQuery}
+                    serverQuery={serverProductsQuery}
+                    emptyMessage="No products found"
+                    dataKey="id"
+                    globalFilterFields={['name', 'category']}
+                >
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Product Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '40%' }} />
+                    <Column field="category" header="Category" sortable style={{ width: '25%' }} />
+                    <Column
+                        field="price"
+                        header="Price"
+                        sortable
+                        style={{ width: '25%' }}
+                        body={(rowData: Product) => `$${rowData.price.toFixed(2)}`}
+                    />
+                </DataTableForQuery>
+            </div>
+        </div>
+    )
 };

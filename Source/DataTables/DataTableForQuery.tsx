@@ -5,7 +5,7 @@ import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { DataTableCore } from './DataTableCore';
 import {
     TablePaginator,
@@ -15,6 +15,9 @@ import {
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
+import type { DataTableServerQuery } from './DataTableServerQuery';
+import { useServerQuery } from './useServerQuery';
+import { hasRequiredArguments } from './hasRequiredArguments';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -109,6 +112,13 @@ export interface DataTableForQueryProps<
     clientFiltering?: boolean;
 
     /**
+     * Opts into server mode: the query sorts, filters and searches the complete result before
+     * paging, and the table renders the rows as returned. Leave undefined to sort, filter and search
+     * the loaded page. See {@link DataTableServerQuery}.
+     */
+    serverQuery?: DataTableServerQuery<TArguments>;
+
+    /**
      * Extra CSS class name forwarded to the underlying DataTable root.
      */
     className?: string;
@@ -197,17 +207,22 @@ export const DataTableForQuery = <
 >(
     props: DataTableForQueryProps<TQuery, TDataType, TArguments>,
 ) => {
-    const [result, , , setPage] = useQueryWithPaging(
+    const server = useServerQuery(props.serverQuery, props.queryArguments, props.defaultFilters);
+    const [result, , setSorting, setPage] = useQueryWithPaging(
         props.query,
         paging,
-        props.queryArguments,
+        server.queryArguments,
     );
     const totalItems = result.paging.totalItems;
     const pageCount = result.paging.totalPages;
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
-    const status = resolveDataTableStatus(result);
+    const requiredArguments = useMemo(() => new props.query().requiredRequestParameters, [props.query]);
+    // Arc settles a snapshot query it did not send, because a required argument is missing, as
+    // unsuccessful. That is a table waiting for its arguments, not a failed query.
+    const isWaitingForArguments = !hasRequiredArguments(requiredArguments, server.queryArguments);
+    const status = resolveDataTableStatus(isWaitingForArguments ? { ...result, isSuccess: true } : result);
 
     return (
         <div
@@ -244,6 +259,7 @@ export const DataTableForQuery = <
                     globalSearchPlaceholder={props.globalSearchPlaceholder}
                     globalSearchAriaLabel={props.globalSearchAriaLabel}
                     defaultFilters={props.defaultFilters}
+                    {...server.tableProps({ setSorting, setPage })}
                     scrollable
                     scrollHeight='100%'
                     className={props.className}

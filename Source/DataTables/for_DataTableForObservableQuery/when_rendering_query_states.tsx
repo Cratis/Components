@@ -25,6 +25,7 @@ class SampleQuery extends ObservableQueryFor<Row, object> {
 
 const queryState = vi.hoisted(() => ({
     data: [] as { id: number; name: string }[],
+    isSuccess: true,
     isAuthorized: true,
     hasExceptions: false,
     isValid: true,
@@ -48,6 +49,7 @@ let root: Root;
 beforeEach(() => {
     (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
     queryState.data = [];
+    queryState.isSuccess = true;
     queryState.isAuthorized = true;
     queryState.hasExceptions = false;
     queryState.isValid = true;
@@ -88,6 +90,17 @@ describe('when an observable query fails', () => {
     it('should show the failure rather than the server exception or loading', () => {
         expect(container.querySelector('[data-reason="failed"] [role="alert"]')?.textContent).to.equal('Rows unavailable');
         expect(container.textContent).not.to.contain('Sensitive server exception');
+    });
+});
+
+describe('when a settled observable query is unsuccessful without exceptions or validation errors', () => {
+    beforeEach(async () => {
+        queryState.isSuccess = false;
+        await renderTable();
+    });
+    it('should show the failure rather than the empty message', () => {
+        expect(container.querySelector('[data-reason="failed"] [role="alert"]')?.textContent).to.equal('Rows unavailable');
+        expect(container.textContent).not.to.contain('No rows');
     });
 });
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { QueryStatus } from '../QueryStatus/QueryStatus';
-import { resolveQueryStatus } from '../QueryStatus/resolveQueryStatus';
+import { resolveQueryStatus, type QueryStatusFlags } from '../QueryStatus/resolveQueryStatus';
 import { DataTableStatus } from './DataTableStatus';
 
 const tableStatusByQueryStatus: Record<QueryStatus, DataTableStatus> = {
@@ -13,10 +13,5 @@ const tableStatusByQueryStatus: Record<QueryStatus, DataTableStatus> = {
 };
 
 /** Resolve Arc query flags into the table's display state. */
-export const resolveDataTableStatus = (result: {
-    isAuthorized?: boolean;
-    hasExceptions?: boolean;
-    isValid?: boolean;
-    isPerforming?: boolean;
-    isReady?: boolean;
-}): DataTableStatus => tableStatusByQueryStatus[resolveQueryStatus(result)];
+export const resolveDataTableStatus = (result: QueryStatusFlags): DataTableStatus =>
+    tableStatusByQueryStatus[resolveQueryStatus(result)];

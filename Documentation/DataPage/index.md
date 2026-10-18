@@ -11,7 +11,7 @@ DataPage combines a menu bar, data table, and optional detail view into a single
 
 ## Key Features
 
-- Integrated data table with filtering, sorting, and pagination of the loaded page
+- Integrated data table with filtering, sorting, and pagination of the loaded page, or of the complete result on the server with `serverQuery`
 - Action toolbar whose items can be disabled until a row is selected
 - Support for both snapshot queries and observable queries
 - Selection management, uncontrolled or controlled
@@ -166,11 +166,11 @@ DataPage renders its table through [`DataTableForQuery`](../DataTables/data-tabl
 | Refetching with rows | Existing rows; the table is marked busy |
 | Query returned no rows | `emptyMessage` |
 | Filters or search match nothing on the loaded page | `emptyMessage` |
-| Query failed or was unauthorized | An alert row with `failureMessage` or `unauthorizedMessage` |
+| Query failed, settled without success, or was unauthorized | An alert row with `failureMessage` or `unauthorizedMessage` |
 | Snapshot query missing a required argument | `emptyMessage` (no request is sent) |
 | Observable query missing a required argument | A loading row with `loadingMessage` remains until every required argument has a value; Arc does not start a subscription |
 
-Unauthorized takes precedence over failure, which takes precedence over loading. A snapshot response that is not valid JSON (such as an HTML error page from a proxy) is reported by Arc as unsuccessful without throwing and shows `emptyMessage`. Server exception text is not shown. Set the three message props on `DataPage` or configure the provider's `messages.dataTable` defaults. See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for the exact table behavior.
+Unauthorized takes precedence over failure, which takes precedence over loading. A snapshot response that is not valid JSON, such as an HTML error page from a proxy, is reported by Arc as unsuccessful without throwing and shows the failure row, not `emptyMessage`. Server exception text is not shown. Set the three message props on `DataPage` or configure the provider's `messages.dataTable` defaults. See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for the exact table behavior.
 
 ## Props
 
@@ -197,7 +197,8 @@ Unauthorized takes precedence over failure, which takes precedence over loading.
 - `globalSearchPlaceholder`: Placeholder for the search input
 - `globalSearchAriaLabel`: Accessible name for the search input; localize independently from the placeholder
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
-- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
+- `serverQuery`: Opts the table into server mode, where the server sorts, filters, and searches the complete result before paging. See [Filtering scope](#filtering-scope).
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored. Without `serverQuery`, filtering is always scoped to the loaded query page
 - `tablePt` / `tableClassName`: Stable table-part attributes and root class
 - `paginatorPt` / `paginatorClassName`: Stable paginator-part attributes and root class
 - `paginatorAriaLabels`: Localized labels for the paginator navigation and controls
@@ -219,9 +220,11 @@ DataPage checks whether the query class derives from `QueryFor` and renders the 
 
 ## Filtering scope
 
-Column and global filters run against the currently loaded query page. Pagination continues to use the server-reported total so filtering one page never hides later pages. Sorting is also applied to the loaded page only.
+By default, column and global filters run against the currently loaded query page. Pagination continues to use the server-reported total so filtering one page never hides later pages. Sorting is also applied to the loaded page only.
 
-`clientFiltering` remains in the public props only so existing applications continue to compile. It is deprecated, has no effect, and should not be used in new code. To filter the complete result set, pass filter values through `queryArguments` and apply them on the server before paging so the query returns the filtered rows and filtered total. See [DataTableForQuery filtering scope](../DataTables/data-table-for-query.md#filtering-scope-and-server-pagination) for the rationale.
+To sort, filter, and search the complete result, pass `serverQuery`. DataPage forwards it to its table, which sends the sort as Arc sorting and the filters and search text as the query arguments `serverQuery.toArguments` builds; the server applies them before paging and returns the filtered rows and filtered total. See [Server mode](../DataTables/data-table-for-query.md#server-mode) for the contract and an example.
+
+`clientFiltering` remains in the public props only so existing applications continue to compile. It is deprecated, has no effect, and should not be used in new code. See [DataTableForQuery filtering scope](../DataTables/data-table-for-query.md#filtering-scope-and-server-pagination) for why the browser cannot filter the complete result on its own.
 
 ## Layout
 
@@ -283,7 +286,8 @@ When no ancestor supplies a height, DataPage falls back to a minimum height of `
 | --- | --- |
 | The paginator is cut off or the page is only about `20rem` tall | No ancestor with a definite height. See [DataPage needs an ancestor with a height](#datapage-needs-an-ancestor-with-a-height). |
 | The details pane overlaps or grows to its content | The Components stylesheet is not imported. |
-| The table shows `emptyMessage` instead of rows | The query completed empty, the loaded-page filters matched nothing, or a snapshot query is missing a required `queryArguments` value. Failures and authorization denials have separate alert rows. |
+| The table shows `emptyMessage` instead of rows | The query completed empty, the filters matched nothing (on the loaded page, or on the server with `serverQuery`), or a snapshot query is missing a required `queryArguments` value. Failures, unsuccessful results, and authorization denials have separate alert rows. |
+| Sorting or filtering changes only the visible page | Without `serverQuery`, the table sorts and filters the loaded page. Set `serverQuery` and have the query apply the sort and filter arguments before paging. |
 | The table remains in its loading state | The first result has not arrived, or an observable query is missing required `queryArguments`; Arc does not subscribe until all required arguments have values. |
 | `event.value.name` or `item.name` does not compile | The row type was inferred as `object`. Add type arguments (`<DataPage<AllAuthors, Author, object>`) or type the `detailsComponent` with `IDetailsComponentProps<Author>`. |
 | The selection highlight disappears after an update | Set `dataKey` so rows are matched by identity instead of object reference. |
