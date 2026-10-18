@@ -19,6 +19,7 @@ on:
             - 'Source/scripts/verify-packed-fresh-dependencies.mjs'
             - 'Source/scripts/lib/fresh-dependency-resolution.mjs'
             - 'Source/scripts/lib/packed-artifact.mjs'
+            - 'Source/scripts/lib/registry-propagation.mjs'
 
 concurrency:
     # Only pull request runs share a group and replace each other. Calls from Publish, scheduled and
@@ -32,7 +33,9 @@ permissions:
 jobs:
     verify:
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        # Covers the build plus up to 20 minutes waiting for npm to serve a just-published pinned
+        # dependency (CRATIS_REGISTRY_WAIT_SECONDS in the check).
+        timeout-minutes: 45
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

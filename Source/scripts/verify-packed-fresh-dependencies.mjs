@@ -10,6 +10,12 @@
  * framer-motion still imports). This check installs the packed tarball into a scratch project with
  * no lockfile, so every range resolves to the newest published version, then runs the same
  * production bundle and fails on a missing export.
+ *
+ * A just-published pinned dependency the registry does not serve yet is waited for, up to
+ * CRATIS_REGISTRY_WAIT_SECONDS (default 1200), before the install is retried.
+ *
+ * Exit codes: 0 verified, 1 failed, 2 could not run because a pinned dependency was never served
+ * by the registry within the wait.
  */
 
 import assert from 'node:assert/strict';
@@ -27,6 +33,7 @@ import {
     installedVersion,
     resolveDependencyDirectory,
 } from './lib/fresh-dependency-resolution.mjs';
+import { installWaitingForRegistry, RegistryPropagationTimeout } from './lib/registry-propagation.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const keepFixture = process.argv.includes('--keep-fixture');
@@ -51,7 +58,7 @@ process.once('exit', cleanup);
 try {
     const { tgzPath } = packArtifact(packageDir, scratchRoot);
     writeFileSync(path.join(scratchRoot, 'package.json'), JSON.stringify({ private: true, type: 'module' }, null, 4));
-    installPackedTarball(scratchRoot, tgzPath);
+    await installWaitingForRegistry(() => installPackedTarball(scratchRoot, tgzPath));
 
     const packedComponentsDir = resolveDependencyDirectory(scratchRoot, pkg.name);
     const framerMotionDir = resolveDependencyDirectory(scratchRoot, 'framer-motion');
@@ -138,5 +145,5 @@ console.log('VERIFIED');`;
     if (keepFixture) console.log(`Fixture retained at ${scratchRoot}`);
 } catch (error) {
     console.error(`verify-packed-fresh-dependencies: ${error instanceof Error ? error.message : String(error)}`);
-    process.exitCode = 1;
+    process.exitCode = error instanceof RegistryPropagationTimeout ? 2 : 1;
 }
