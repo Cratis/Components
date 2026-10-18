@@ -131,6 +131,11 @@ export const partDefinitions = {
         sources: ['CommandForm/fields/InputTextField.tsx'],
         ptKeys: ['root'],
     },
+    GuidField: {
+        parts: ['input'],
+        sources: ['CommandForm/fields/GuidField.tsx'],
+        ptKeys: ['root'],
+    },
     TextAreaField: {
         parts: ['textarea'],
         sources: ['CommandForm/fields/TextAreaField.tsx'],
@@ -918,6 +923,9 @@ export const partStateDefinitions = {
         toggle: ['disabled'],
     },
     InputTextField: {
+        input: ['disabled', 'invalid', 'readonly'],
+    },
+    GuidField: {
         input: ['disabled', 'invalid', 'readonly'],
     },
     TextAreaField: {

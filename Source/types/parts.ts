@@ -19,6 +19,7 @@ export const cratisParts = {
     ColorPickerField: ['root', 'input', 'value'],
     PasswordField: ['root', 'input', 'toggle'],
     InputTextField: ['input'],
+    GuidField: ['input'],
     TextAreaField: ['textarea'],
     Dropdown: ['root', 'value', 'filter', 'trigger', 'clear', 'popover', 'listbox', 'option', 'multiple', 'indicator'],
     DropdownField: ['root', 'value', 'filter', 'trigger', 'clear', 'popover', 'listbox', 'option', 'multiple', 'indicator'],
@@ -183,6 +184,9 @@ export const cratisPartStates = {
         'toggle': ['disabled'],
     },
     InputTextField: {
+        'input': ['disabled', 'invalid', 'readonly'],
+    },
+    GuidField: {
         'input': ['disabled', 'invalid', 'readonly'],
     },
     TextAreaField: {
