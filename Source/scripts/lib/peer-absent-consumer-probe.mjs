@@ -38,6 +38,14 @@ if (!resolveIfPresent('tsyringe', arcReactRequire)) {
 }
 console.log('Arc React resolves its own tsyringe dependency');
 
+// The opt-in GuidField may use only Arc React exports the oldest supported peer has, so the
+// CommandForm subpath must link on every Arc version this probe is installed with.
+const commandForm = await import('@cratis/components/CommandForm');
+if (!commandForm.AutoCommandForm || !commandForm.GuidField) {
+    throw new Error('CommandForm subpath did not export AutoCommandForm and GuidField.');
+}
+console.log('CommandForm import passed, including the opt-in GuidField');
+
 const dataTables = await import('@cratis/components/DataTables');
 if (!dataTables.DataTableForQuery) throw new Error('Arc-backed DataTables import failed.');
 const { QueryFor } = await import('@cratis/arc/queries');
