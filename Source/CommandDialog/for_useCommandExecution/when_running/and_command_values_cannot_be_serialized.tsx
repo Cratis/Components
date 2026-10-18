@@ -6,7 +6,7 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { command, execute, mount, onException, run, unmount } from '../given/a_submission';
 
-type WithDescriptors = { propertyDescriptors?: { name: string }[]; value?: null };
+type WithDescriptors = { propertyDescriptors?: { name: string }[]; value?: { readonly content: string } };
 
 describe('when running a guarded submission whose values cannot be serialized', () => {
     const guard = vi.fn(() => true);
@@ -14,7 +14,7 @@ describe('when running a guarded submission whose values cannot be serialized', 
     beforeEach(async () => {
         const withDescriptors = command as unknown as WithDescriptors;
         withDescriptors.propertyDescriptors = [{ name: 'value' }];
-        withDescriptors.value = null;
+        withDescriptors.value = { get content(): string { throw new Error('Example serialization failure'); } };
         guard.mockClear();
         await mount({ guard });
         await act(async () => { await run(); });
@@ -30,6 +30,6 @@ describe('when running a guarded submission whose values cannot be serialized', 
     it('should not ask the guard', () => { guard.mock.calls.length.should.equal(0); });
     it('should not execute', () => { execute.mock.calls.length.should.equal(0); });
     it('should report the failure through onException', () => { onException.mock.calls.length.should.equal(1); });
-    it('should report the serializer failure', () => { onException.mock.calls[0][0][0].should.contain('__proto__'); });
+    it('should report the serializer failure', () => { onException.mock.calls[0][0][0].should.contain('Example serialization failure'); });
     it('should release busy', () => { isBusyAfterRun.should.equal(false); });
 });

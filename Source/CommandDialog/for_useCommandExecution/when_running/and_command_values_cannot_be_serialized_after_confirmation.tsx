@@ -6,7 +6,7 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { command, execute, mount, onException, run, unmount } from '../given/a_submission';
 
-type CommandWithValue = { propertyDescriptors?: { name: string }[]; value?: string | null };
+type CommandWithValue = { propertyDescriptors?: { name: string }[]; value?: string | { readonly content: string } };
 
 describe('when approved command values cannot be serialized again', () => {
     const guard = vi.fn();
@@ -19,7 +19,7 @@ describe('when approved command values cannot be serialized again', () => {
         guard.mockReset().mockReturnValue(pending);
         await mount({ guard });
         await act(async () => { void run(); });
-        withValue.value = null;
+        withValue.value = { get content(): string { throw new Error('Example serialization failure'); } };
         await act(async () => resolveGuard(true));
     });
     afterEach(async () => {
@@ -30,5 +30,5 @@ describe('when approved command values cannot be serialized again', () => {
     });
     it('should ask the guard once', () => { guard.mock.calls.length.should.equal(1); });
     it('should not execute', () => { execute.mock.calls.length.should.equal(0); });
-    it('should report the serialization failure', () => { onException.mock.calls[0][0][0].should.contain('__proto__'); });
+    it('should report the serialization failure', () => { onException.mock.calls[0][0][0].should.contain('Example serialization failure'); });
 });
