@@ -5,7 +5,7 @@ import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { DataTableCore } from './DataTableCore';
 import {
     TablePaginator,
@@ -15,6 +15,7 @@ import {
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
+import { hasRequiredArguments } from './hasRequiredArguments';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -207,7 +208,11 @@ export const DataTableForQuery = <
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
-    const status = resolveDataTableStatus(result);
+    const requiredArguments = useMemo(() => new props.query().requiredRequestParameters, [props.query]);
+    // Arc settles a snapshot query it did not send, because a required argument is missing, as
+    // unsuccessful. That is a table waiting for its arguments, not a failed query.
+    const isWaitingForArguments = !hasRequiredArguments(requiredArguments, props.queryArguments);
+    const status = resolveDataTableStatus(isWaitingForArguments ? { ...result, isSuccess: true } : result);
 
     return (
         <div

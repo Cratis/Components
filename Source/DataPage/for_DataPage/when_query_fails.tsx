@@ -12,6 +12,7 @@ import { Column } from '../../DataTables/Column';
 import { DataPage } from '../DataPage';
 
 const queryState = vi.hoisted(() => ({
+    isSuccess: false,
     isAuthorized: true,
     hasExceptions: true,
     isPerforming: false,
@@ -33,6 +34,7 @@ let container: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+    queryState.isSuccess = false;
     queryState.isAuthorized = true;
     queryState.hasExceptions = true;
     queryState.isPerforming = false;
@@ -64,6 +66,17 @@ describe('when a DataPage query fails', () => {
         await renderPage();
     });
     it('should forward the custom failure message to the table', () => {
+        expect(container.querySelector('[data-reason="failed"] [role="alert"]')?.textContent).to.equal('Custom page failure');
+        expect(container.textContent).not.to.contain('No products');
+    });
+});
+
+describe('when a settled DataPage query is unsuccessful without exceptions or validation errors', () => {
+    beforeEach(async () => {
+        queryState.hasExceptions = false;
+        await renderPage();
+    });
+    it('should show the failure message rather than the empty message', () => {
         expect(container.querySelector('[data-reason="failed"] [role="alert"]')?.textContent).to.equal('Custom page failure');
         expect(container.textContent).not.to.contain('No products');
     });
