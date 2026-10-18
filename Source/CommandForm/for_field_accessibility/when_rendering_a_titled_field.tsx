@@ -29,20 +29,41 @@ class RenamePerson extends Command {
 }
 
 describe('when rendering a titled field', () => {
-    const html = renderToStaticMarkup(
+    const field = (
         <CommandForm command={RenamePerson}>
             <InputTextField<RenamePerson>
                 value={(command) => command.name}
                 title='Person name'
             />
-        </CommandForm>,
+        </CommandForm>
     );
+    const html = renderToStaticMarkup(field);
+    const inputId = html.match(/<input[^>]+id="([^"]+)"/)?.[1];
 
     it('should name the primary control from the field title', () => {
         expect(html).to.contain('aria-label="Person name"');
     });
 
-    it('should give the primary control a stable generated id', () => {
-        expect(html).to.match(/<input[^>]+id="cratis-field-[^"]+"/);
+    it('should retain the stable id supplied by Arc rather than generating another', () => {
+        // Arc's CommandFormFieldWrapper supplies useId() and associates its label with that id.
+        (inputId ?? '').should.not.equal('');
+        html.should.contain(`<label for="${inputId}"`);
+        renderToStaticMarkup(field).should.equal(html);
+    });
+
+    it('should give separate fields distinct ids associated with their labels', () => {
+        const multipleFields = renderToStaticMarkup(
+            <CommandForm command={RenamePerson}>
+                <InputTextField<RenamePerson> value={command => command.name} title='Person name' />
+                <InputTextField<RenamePerson> value={command => command.name} title='Confirm name' />
+            </CommandForm>,
+        );
+        const ids = [...multipleFields.matchAll(/<input[^>]+id="([^"]+)"/g)].map(match => match[1]);
+        ids.should.have.lengthOf(2);
+        new Set(ids).size.should.equal(2);
+        ids.forEach(id => {
+            id.should.not.equal('');
+            multipleFields.should.contain(`<label for="${id}"`);
+        });
     });
 });
