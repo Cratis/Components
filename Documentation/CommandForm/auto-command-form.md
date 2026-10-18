@@ -79,9 +79,11 @@ registerFieldTypeProvider({
 });
 ```
 
+For Fundamentals `Guid` properties, register the opt-in [GuidField](guid-field.md#registering-it-for-autocommandform) the same way; it is not a built-in default.
+
 Register once, in module code that runs before any `AutoCommandForm` renders. Providers are consulted most-recently-registered first, so registering a provider for a type the built-in defaults already cover overrides that default.
 
-`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title`. A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; write that property's field by hand instead.
+`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title` (plus `resetKey` when the component is `GuidField` itself). A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; write that property's field by hand instead.
 
 ## Behavior
 

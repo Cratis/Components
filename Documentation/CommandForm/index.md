@@ -19,7 +19,7 @@ CommandForm offers a complete set of form field components designed to work seam
 
 ## Available Field Components
 
-The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration.
+The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration. [GuidField](guid-field.md) edits a scalar Fundamentals `Guid` property as text while keeping the command value a native `Guid`.
 
 Import fields from `@cratis/components/CommandForm` or `@cratis/components/CommandForm/fields`; both subpaths resolve to the same module, so pick one and use it consistently.
 
