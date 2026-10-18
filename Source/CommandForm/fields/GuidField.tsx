@@ -97,19 +97,25 @@ function GuidControl(props: GuidControlProps) {
     const latestGetFieldErrorRef = useRef(getFieldError);
     latestGetFieldErrorRef.current = getFieldError;
 
-    // Only an error this field published may be cleared by it: an onFieldValidate or caller error
-    // must survive a valid edit. Arc React 22.19.1+ reads custom errors live, which is what makes the
-    // ownership check hold for writes made in the same event batch.
-    const publishError = (nextError: string | undefined) => {
+    // The field writes only into an empty slot or over the error it published itself: an
+    // onFieldValidate or caller error is never overwritten or cleared. Arc React 22.19.1+ reads custom
+    // errors live, which is what makes the ownership check hold for writes made in the same event batch.
+    const publishError = (nextError: string | undefined, current = fieldName ? getFieldError(fieldName) : undefined) => {
         if (!fieldName) return;
-        if (nextError || (ownedErrorRef.current && getFieldError(fieldName) === ownedErrorRef.current)) {
+        if (current && current !== ownedErrorRef.current) {
+            ownedErrorRef.current = undefined;
+            return;
+        }
+        if (nextError !== current) {
             setCustomFieldError(fieldName, nextError);
         }
         ownedErrorRef.current = nextError;
     };
+    const customError = fieldName && Object.hasOwn(customFieldErrors, fieldName) ? customFieldErrors[fieldName] || undefined : undefined;
+    // Publish when the draft's own error changes, or refill an emptied slot so an invalid draft stays blocking.
     useEffect(() => {
-        if (error !== ownedErrorRef.current || (error && fieldName && customFieldErrors[fieldName] !== error)) {
-            publishError(error);
+        if (error !== ownedErrorRef.current || (error && !customError)) {
+            publishError(error, customError);
         }
     });
     useEffect(() => () => {
