@@ -9,10 +9,17 @@
  * @param page - Zero-based current page.
  * @param pageSize - Rows per page.
  * @param totalItems - Total records across all pages.
+ * @param format - Optional message builder receiving the one-based start, the
+ * clamped end and the total. Defaults to the English `start–end of total`.
  */
-export function paginatorRange(page: number, pageSize: number | undefined, totalItems: number | undefined): string | undefined {
+export function paginatorRange(
+    page: number,
+    pageSize: number | undefined,
+    totalItems: number | undefined,
+    format: (start: number, end: number, total: number) => string = (start, end, total) => `${start}–${end} of ${total}`,
+): string | undefined {
     if (totalItems === undefined || pageSize === undefined || totalItems <= 0) return undefined;
     const start = page * pageSize + 1;
     const end = Math.min((page + 1) * pageSize, totalItems);
-    return `${start}–${end} of ${totalItems}`;
+    return format(start, end, totalItems);
 }

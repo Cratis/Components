@@ -30,7 +30,12 @@ export const TablePaginatorImplementation = ({
     const icon = useCratisIcon();
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
-    const rangeReport = paginatorRange(page, pageSize, totalItems);
+    const rangeReport = paginatorRange(
+        page,
+        pageSize,
+        totalItems,
+        ariaLabels?.range ?? paginatorMessages?.range,
+    );
     const labels = {
         navigation:
             ariaLabels?.navigation ?? paginatorMessages?.navigation ?? 'Pagination',

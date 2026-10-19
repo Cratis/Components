@@ -32,6 +32,8 @@ export interface CratisPaginatorMessages {
     page?: (page: number) => string;
     /** Accessible name for the numbered-page group. */
     pages?: string;
+    /** Builds the visible range text from the one-based start, the clamped end and the total. Defaults to `start–end of total`. */
+    range?: (start: number, end: number, total: number) => string;
 }
 
 /** Localizable labels owned by the Cratis date picker composition. */
