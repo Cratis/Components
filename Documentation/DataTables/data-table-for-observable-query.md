@@ -47,6 +47,8 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 
 - `query`: Constructor of the generated observable query (derives from `ObservableQueryFor`)
 - `emptyMessage`: Message shown when there are no rows to display
+- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
+- `onGlobalFilterChange`: Called with the search text each time it changes
 
 ### Optional Props
 

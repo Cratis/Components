@@ -48,6 +48,8 @@ export function Products() {
 
 - `query`: Constructor of the generated query (derives from `QueryFor`)
 - `emptyMessage`: Message shown when there are no rows to display
+- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
+- `onGlobalFilterChange`: Called with the search text each time it changes
 
 ### Optional Props
 
@@ -80,7 +82,7 @@ The table distinguishes query state from a successful empty result:
 | First result still loading without rows | A loading row with `loadingMessage` (default `Loading…`) |
 | Refetching with rows | Existing rows; the table has `aria-busy="true"` and its root has `data-busy` |
 | Query returned no rows | `emptyMessage` |
-| Filters or search match nothing on the loaded page | `emptyMessage` |
+| A search or column filter is active and no rows are shown | `filteredEmptyMessage` |
 | Query failed (`hasExceptions === true` or `isValid === false`) | A failure row with `failureMessage` (default `Could not load data.`) |
 | Query settled without success (`isSuccess === false`), for example a response that is not valid JSON | A failure row with `failureMessage` |
 | Query is unauthorized (`isAuthorized === false`) | A failure row with `unauthorizedMessage` (default `You are not authorized to view this data.`) |
