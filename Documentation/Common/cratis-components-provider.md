@@ -62,7 +62,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | Member                   | Purpose                                                                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `locale`                 | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements.                                      |
-| `messages.paginator`     | Components-owned paginator labels.                                                                                              |
+| `messages.paginator`     | Components-owned paginator labels, including the optional `range(start, end, total)` builder for the visible range text.       |
 | `messages.datePicker`    | Components-owned date-picker action/navigation labels, plus the segmented input's fallback accessible name (`label`).           |
 | `messages.dropdown`      | `Dropdown`'s show-options and clear-selection labels.                                                                           |
 | `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`, `refused`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |

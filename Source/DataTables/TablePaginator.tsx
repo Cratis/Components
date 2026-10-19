@@ -67,6 +67,8 @@ export interface TablePaginatorProps {
         page?: (page: number) => string;
         /** Accessible name for the numbered-page group. */
         pages?: string;
+        /** Builds the visible range text from the one-based start, the clamped end and the total. Defaults to `start–end of total`. */
+        range?: (start: number, end: number, total: number) => string;
     };
     /** Extra class name for the paginator container. */
     className?: string;

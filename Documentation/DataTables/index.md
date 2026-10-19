@@ -183,6 +183,18 @@ message receives the **one-based** number and defaults to `Page ${number}`. The 
 message names the group and defaults to `Pages`. Existing messages (`navigation`, `first`,
 `previous`, `next`, `last`) keep their precedence.
 
+The visible range text (`1–10 of 32` by default) is also localizable through an optional
+`range: (start: number, end: number, total: number) => string` message, set on `ariaLabels` or
+`messages.paginator`. It receives the one-based start, the end clamped to the total, and the total:
+
+```tsx
+<CratisComponentsProvider
+    value={{ messages: { paginator: { range: (start, end, total) => `${start} a ${end} de ${total}` } } }}
+>
+    <TablePaginator page={0} pageCount={4} pageSize={10} totalItems={32} onPageChange={setPage} />
+</CratisComponentsProvider>
+```
+
 For a custom composition, import the pure `paginatorPages(page, pageCount, siblings = 1,
 boundaries = 1)` helper and its `PaginatorPageItem` type from `@cratis/components/DataTables`.
 It returns ordered `{ kind: 'page', page: number }` items with zero-based indices and
