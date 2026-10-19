@@ -101,6 +101,7 @@ export const DialogImplementation = ({
     const cancelRef = useRef<HTMLButtonElement>(null);
 
     const [refusals, setRefusals] = useState(0);
+    const handledRefusals = useRef(0);
     const [announcement, setAnnouncement] = useState<{ key: number; text: string } | null>(null);
     const isDialogValid = isValid !== false;
     const hasDismissingButton =
@@ -148,13 +149,21 @@ export const DialogImplementation = ({
         setAnnouncement(null);
         const active = document.activeElement;
         if (active && active !== document.body) return;
-        (confirmRef.current ?? titleRef.current)?.focus();
+        if (confirmRef.current) {
+            confirmRef.current.focus();
+        } else if (titleRef.current) {
+            titleRef.current.tabIndex = -1;
+            titleRef.current.focus();
+        }
     }, [isBusy, visible]);
 
     // A refused confirm (the dialog stays open) returns focus to the confirm button, or to the
     // title when confirm is not enabled, and announces the outcome through the live region.
     useEffect(() => {
-        if (refusals === 0 || isBusy) return;
+        // Each refusal is handled once: a later busy-to-idle change, such as a successful retry,
+        // must neither move focus nor announce the earlier refusal again.
+        if (refusals === handledRefusals.current || isBusy) return;
+        handledRefusals.current = refusals;
         const confirm = confirmRef.current;
         if (confirm && !confirm.disabled) {
             confirm.focus();

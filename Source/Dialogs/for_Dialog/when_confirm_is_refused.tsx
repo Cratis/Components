@@ -18,6 +18,7 @@ import {
 
 const submit = vi.fn();
 let releaseSubmit: () => void = () => undefined;
+let accept = false;
 
 const RefusingDialog = () => {
     const [busy, setBusy] = useState(false);
@@ -32,7 +33,7 @@ const RefusingDialog = () => {
                     releaseSubmit = resolve;
                 });
                 setBusy(false);
-                return false;
+                return accept;
             }}
         >
             Body
@@ -48,6 +49,7 @@ describe('when confirm is refused', () => {
 
     beforeEach(async () => {
         submit.mockReset();
+        accept = false;
         dialog = await render(<RefusingDialog />, 'button:Ok');
         await click('Ok');
     });
@@ -85,5 +87,14 @@ describe('when confirm is refused', () => {
             confirm.dispatchEvent(event);
         });
         expect(event.defaultPrevented).to.equal(true);
+    });
+
+    it('should not announce the earlier refusal when a retry succeeds', async () => {
+        await act(async () => releaseSubmit());
+        accept = true;
+        await click('Ok');
+        await act(async () => releaseSubmit());
+        expect(submit.mock.calls).to.have.lengthOf(2);
+        expect(liveRegionText()).to.equal('');
     });
 });
