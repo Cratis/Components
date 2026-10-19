@@ -68,7 +68,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
 | `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
-| `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages.   |
+| `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages, and the empty result of an active search (`filteredEmpty` for the loaded page, `filteredEmptyServer` in server mode).   |
 | `messages.filter`        | `FilterPanel` dialog and PivotViewer filter button name (`label`), and panel/group/standalone `CheckboxListFilter` search name (`searchAriaLabel`). |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
 | `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) and the drawer folder's close button (`closeDrawer`, default `Close`).  |
@@ -174,6 +174,8 @@ English, spelled out explicitly (this is also what every group defaults to with 
                 loading: 'Loading…',
                 failed: 'Could not load data.',
                 unauthorized: 'You are not authorized to view this data.',
+                filteredEmpty: 'No rows on this page match the search.',
+                filteredEmptyServer: 'No rows match the search.',
             },
             filter: {
                 label: 'Filters',
@@ -249,6 +251,8 @@ The same shape in Norwegian Bokmål:
                 loading: 'Laster…',
                 failed: 'Kunne ikke laste data.',
                 unauthorized: 'Du har ikke tilgang til disse dataene.',
+                filteredEmpty: 'Ingen rader på denne siden samsvarer med søket.',
+                filteredEmptyServer: 'Ingen rader samsvarer med søket.',
             },
             filter: {
                 label: 'Filtre',

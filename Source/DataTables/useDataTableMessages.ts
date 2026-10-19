@@ -8,10 +8,12 @@ import type { DataTableMessages } from './DataTableMessages';
 /**
  * Resolves each table message from its prop, then the provider's `dataTable` messages, then the default.
  * @param overrides The messages passed as props.
+ * @param isServerMode Whether the server, not the loaded page, applies search and filters.
  * @returns The messages to show.
  */
 export const useDataTableMessages = (
     overrides: DataTableMessageOverrides,
+    isServerMode = false,
 ): DataTableMessages => {
     const { messages } = useCratisComponentsConfig();
     const dataTableMessages = messages?.dataTable;
@@ -38,5 +40,11 @@ export const useDataTableMessages = (
             overrides.unauthorizedMessage ??
             dataTableMessages?.unauthorized ??
             'You are not authorized to view this data.',
+        resolvedFilteredEmptyMessage:
+            overrides.filteredEmptyMessage ??
+            (isServerMode
+                ? (dataTableMessages?.filteredEmptyServer ?? 'No rows match the search.')
+                : (dataTableMessages?.filteredEmpty ??
+                  'No rows on this page match the search.')),
     };
 };

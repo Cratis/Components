@@ -12,4 +12,6 @@ export interface DataTableMessages {
     resolvedLoadingMessage: ReactNode;
     resolvedFailureMessage: ReactNode;
     resolvedUnauthorizedMessage: ReactNode;
+    /** The message for an active search or filter that leaves no rows. */
+    resolvedFilteredEmptyMessage: ReactNode;
 }

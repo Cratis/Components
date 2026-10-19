@@ -16,6 +16,7 @@ import { DataTableRowProcessing } from './DataTableRowProcessing';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableSort } from './DataTableSort';
 import { DataTableStatus } from './DataTableStatus';
+import { isFilterEntryActive } from './matchesFilterEntry';
 import { processRows } from './processRows';
 import { useDataTableMessages } from './useDataTableMessages';
 import { useDataTableState } from './useDataTableState';
@@ -45,6 +46,12 @@ export interface DataTableCoreProps<TData extends object> {
     dataKey?: string;
     /** Content shown when the loaded page has no matching rows. */
     emptyMessage: ReactNode;
+    /**
+     * Content shown instead of {@link emptyMessage} when a search or column filter is active and no
+     * rows are shown. Defaults to a localizable message that names the loaded page, or a neutral
+     * one when the server applies the search.
+     */
+    filteredEmptyMessage?: ReactNode;
     /** Table display state. Defaults to ready. */
     status?: DataTableStatus;
     /** Message shown while loading without rows. */
@@ -127,6 +134,7 @@ export const DataTableCore = <TData extends object>({
     children,
     dataKey,
     emptyMessage,
+    filteredEmptyMessage,
     status = DataTableStatus.Ready,
     loadingMessage,
     failureMessage,
@@ -165,7 +173,8 @@ export const DataTableCore = <TData extends object>({
         loadingMessage,
         failureMessage,
         unauthorizedMessage,
-    });
+        filteredEmptyMessage,
+    }, rowProcessing === DataTableRowProcessing.None);
     const {
         resolvedSelectionAriaLabel,
         resolvedSelectAllAriaLabel,
@@ -189,6 +198,10 @@ export const DataTableCore = <TData extends object>({
             onSortChange,
         });
 
+    const isServerMode = rowProcessing === DataTableRowProcessing.None;
+    const isFiltered =
+        (globalFilter.trim() !== '' && !!globalFilterFields?.length) ||
+        Object.values(filters).some(isFilterEntryActive);
     const filteredRows = useMemo(
         () =>
             processRows(data, {
@@ -326,6 +339,7 @@ export const DataTableCore = <TData extends object>({
                         parts={pt}
                         messages={messages}
                         emptyMessage={emptyMessage}
+                        isFiltered={isFiltered && (isServerMode || data.length > 0)}
                         renderRows={() =>
                             filteredRows.map(({ row, loadedIndex }) => {
                                 const identity = dataKey

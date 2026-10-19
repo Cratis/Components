@@ -12,4 +12,5 @@ export interface DataTableMessageOverrides {
     loadingMessage?: ReactNode;
     failureMessage?: ReactNode;
     unauthorizedMessage?: ReactNode;
+    filteredEmptyMessage?: ReactNode;
 }

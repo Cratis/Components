@@ -19,6 +19,8 @@ export interface DataTableBodyProps {
     parts?: DataTableParts;
     messages: DataTableMessages;
     emptyMessage: ReactNode;
+    /** Whether a search or filter is active, so an empty result is a filtered one. */
+    isFiltered?: boolean;
     /** Renders the data rows; called only when there are rows to show. */
     renderRows: () => ReactNode;
 }
@@ -32,6 +34,7 @@ export const DataTableBody = ({
     parts: pt,
     messages,
     emptyMessage,
+    isFiltered = false,
     renderRows,
 }: DataTableBodyProps) => (
     <tbody
@@ -106,7 +109,7 @@ export const DataTableBody = ({
                     )}
                     data-cratis-part='empty-cell'
                 >
-                    {emptyMessage}
+                    {isFiltered ? messages.resolvedFilteredEmptyMessage : emptyMessage}
                 </td>
             </tr>
         ) : (

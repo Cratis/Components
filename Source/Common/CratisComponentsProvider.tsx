@@ -113,6 +113,10 @@ export interface CratisDataTableMessages {
     failed?: string;
     /** Message shown when a query denies access. */
     unauthorized?: string;
+    /** Message shown when a search or filter leaves no rows on the loaded page. */
+    filteredEmpty?: string;
+    /** Message shown when a search or filter leaves no rows in server mode. */
+    filteredEmptyServer?: string;
 }
 
 /** Localizable accessible names for the Cratis filter panel and its searches. */
