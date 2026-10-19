@@ -82,6 +82,18 @@ const builtInMatches = (
     }
 };
 
+const hasConstraintValue = (constraint: DataTableFilterConstraint) =>
+    constraint.value !== null && constraint.value !== undefined && constraint.value !== '';
+
+/**
+ * Whether a filter entry narrows rows at all. Entries without a value match every row, so a table
+ * holding only placeholder entries such as `{ value: null }` is not filtered.
+ * @param entry The filter entry.
+ * @returns True when at least one of its constraints has a value.
+ */
+export const isFilterEntryActive = (entry: DataTableFilterEntry) =>
+    'constraints' in entry ? entry.constraints.some(hasConstraintValue) : hasConstraintValue(entry);
+
 /**
  * Whether a value satisfies a filter entry, combining its constraints with the entry's operator.
  * @param value The row value.

@@ -16,6 +16,7 @@ import { DataTableRowProcessing } from './DataTableRowProcessing';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableSort } from './DataTableSort';
 import { DataTableStatus } from './DataTableStatus';
+import { isFilterEntryActive } from './matchesFilterEntry';
 import { processRows } from './processRows';
 import { useDataTableMessages } from './useDataTableMessages';
 import { useDataTableState } from './useDataTableState';
@@ -200,7 +201,7 @@ export const DataTableCore = <TData extends object>({
     const isServerMode = rowProcessing === DataTableRowProcessing.None;
     const isFiltered =
         (globalFilter.trim() !== '' && !!globalFilterFields?.length) ||
-        Object.keys(filters).length > 0;
+        Object.values(filters).some(isFilterEntryActive);
     const filteredRows = useMemo(
         () =>
             processRows(data, {

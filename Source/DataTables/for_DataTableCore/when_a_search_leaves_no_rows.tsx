@@ -84,11 +84,30 @@ describe('when a search leaves no rows', () => {
         expect(empty()).to.equal('Provider says none');
     });
 
-    it('should show the empty message again once the search is cleared', async () => {
-        await render({ data: [] });
+    it('should show the rows again once the search is cleared', async () => {
+        await render();
         await search('nothing');
         await search('');
+        expect(empty()).to.equal(undefined);
+        expect(container.textContent).to.contain('Example row');
+    });
+
+    it('should show the empty message in server mode when filters hold only placeholder values', async () => {
+        await render({
+            data: [],
+            rowProcessing: DataTableRowProcessing.None,
+            defaultFilters: { name: { value: null } },
+        });
         expect(empty()).to.equal('No rows');
+    });
+
+    it('should show the neutral default in server mode when a column filter has a value', async () => {
+        await render({
+            data: [],
+            rowProcessing: DataTableRowProcessing.None,
+            defaultFilters: { name: { value: 'nothing' } },
+        });
+        expect(empty()).to.equal('No rows match the search.');
     });
 
     it('should show the failure message instead of the filtered empty message', async () => {
