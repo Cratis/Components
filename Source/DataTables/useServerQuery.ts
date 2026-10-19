@@ -64,12 +64,14 @@ const toSorting = (
  * @param serverQuery - The server mode options, or undefined for loaded-page mode.
  * @param queryArguments - The arguments the table was given.
  * @param defaultFilters - The initial column filters.
+ * @param onGlobalFilterChange - Notified of every search text change, as typed.
  * @returns The arguments to query with and the table props for server mode.
  */
 export const useServerQuery = <TArguments extends object>(
     serverQuery: DataTableServerQuery<TArguments> | undefined,
     queryArguments: TArguments | undefined,
     defaultFilters: DataTableFilterMeta | undefined,
+    onGlobalFilterChange?: (globalFilter: string) => void,
 ): ServerQueryBinding<TArguments> => {
     const [sort, setSort] = useState<DataTableSort | null>(null);
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
@@ -108,6 +110,7 @@ export const useServerQuery = <TArguments extends object>(
             },
             globalFilter: searchText,
             onGlobalFilterChange: (next) => {
+                onGlobalFilterChange?.(next);
                 setSearchText(next);
                 clearTimeout(searchTimerRef.current);
                 const apply = () => {

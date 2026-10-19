@@ -286,6 +286,16 @@ export interface DataPageProps<
      */
     emptyMessage: string;
 
+    /**
+     * The message to show instead of {@link emptyMessage} when a search or column filter is active
+     * and no rows are shown. Defaults to a localizable message that says only the loaded page was
+     * searched, or, with `serverQuery`, a neutral "No rows match the search.".
+     */
+    filteredEmptyMessage?: ReactNode;
+
+    /** Notified of every change to the search text, as typed. */
+    onGlobalFilterChange?: (globalFilter: string) => void;
+
     /** Message shown while loading without rows. */
     loadingMessage?: ReactNode;
     /** Message shown when the query fails. */
