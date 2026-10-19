@@ -211,8 +211,9 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
  *    stays open and the `CommandResult` is set on the form context so the
  *    UI can surface the error to the user.
  *
- * Throughout, the dialog is in the `isBusy` state — every action button is
- * disabled and the confirm button shows a spinner.
+ * Throughout, the dialog is in the `isBusy` state — the confirm button keeps
+ * focus but is `aria-disabled` and ignores activation, the other action
+ * buttons are disabled, and the confirm button shows a spinner.
  *
  * ## Destructive commands and initial focus
  *

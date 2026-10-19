@@ -346,10 +346,11 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 
 `CommandDialog` automatically manages a busy state from the start of `onBeforeExecute`, through `confirmBeforeExecute`, until command execution settles:
 
-- All buttons, including header close, are disabled and the primary button shows a loading spinner.
+- The header close and secondary buttons are disabled and the primary button shows a loading spinner. The primary button stays focusable but is `aria-disabled` and ignores activation, so focus stays inside the dialog while the command runs.
 - The form fields are disabled and inert, so values cannot change while the command runs.
 - Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
+- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit closes the dialog as before.
 - This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
 
 ## Context

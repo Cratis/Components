@@ -31,14 +31,20 @@ describe('when rendered with is busy', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should disable footer and header dismissal buttons', () => {
+    it('should disable the cancel and header dismissal buttons', () => {
         const disabledButtons = html.match(/<button[^>]*disabled=""/g) ?? [];
-        expect(disabledButtons).to.have.length(3);
+        expect(disabledButtons).to.have.length(2);
     });
 
-    it('should disable content and footer custom-action scopes', () => {
+    it('should keep the confirm button focusable but aria-disabled', () => {
+        const confirm = markupForPart(html, 'confirm');
+        expect(confirm).to.contain('aria-disabled="true"');
+        expect(confirm).not.to.contain('disabled=""');
+    });
+
+    it('should disable only the content scope, leaving the predefined footer interactive', () => {
         const disabledScopes = html.match(/<fieldset[^>]*disabled=""/g) ?? [];
-        expect(disabledScopes).to.have.length(2);
+        expect(disabledScopes).to.have.length(1);
     });
 
     it('should expose open and busy on every modal framing part', () => {

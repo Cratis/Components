@@ -258,4 +258,5 @@ node, which silently gives all of those up.
 - `onConfirm` and `onCancel` must return `true`, or call `closeDialog` themselves, to close the dialog.
 - `onClose` closes unless it returns `false`.
 - For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<TRequest, TResult>()`.
-- While `isBusy` is `true`, every button, the X, `Escape`, and the backdrop are disabled, and the content is disabled and inert.
+- While `isBusy` is `true`, the X, the secondary buttons, `Escape`, and the backdrop are disabled, and the content is disabled and inert. The confirm button stays focusable but is `aria-disabled` and ignores activation, so keyboard focus is never stranded on the page body and the dialog cannot be submitted twice. A custom footer is disabled and inert as a whole.
+- When `onConfirm` (or `onClose`) keeps the dialog open after a confirm, focus returns to the confirm button (to the title when confirm is disabled by `isValid`) and a polite live region inside the dialog announces the outcome. The text resolves from the provider's `messages.dialog.refused`, then `'The action was not completed. Review the dialog and try again.'`. A held `Enter` or `Space` is ignored on the confirm button, so returning focus never re-submits.

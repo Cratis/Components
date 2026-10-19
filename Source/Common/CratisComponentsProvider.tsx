@@ -77,6 +77,12 @@ export interface CratisDialogMessages {
     no?: string;
     /** Accessible name for the header close (×) action. */
     close?: string;
+    /**
+     * Polite announcement made when a confirm is refused and the dialog stays open
+     * (validation failure or business rule). Defaults to
+     * 'The action was not completed. Review the dialog and try again.'
+     */
+    refused?: string;
 }
 
 /** Localizable navigation labels owned by {@link CommandStepper} / {@link StepperCommandDialog}. */

@@ -5,6 +5,7 @@ import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
 import { UNSAFE_PortalProvider } from 'react-aria';
+import type React from 'react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
@@ -19,6 +20,19 @@ import {
 } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
 import { classNames } from '../ClassNames/classNames';
+
+// Inline rather than in Dialog.css: the packed aggregate stylesheet has a reviewed size budget.
+const visuallyHidden: React.CSSProperties = {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    margin: -1,
+    padding: 0,
+    overflow: 'hidden',
+    clipPath: 'inset(50%)',
+    whiteSpace: 'nowrap',
+    border: 0,
+};
 
 const subscribeToBrowserEnvironment = () => () => undefined;
 const useIsBrowser = () =>
@@ -66,6 +80,9 @@ export const DialogImplementation = ({
     const resolvedYesLabel = yesLabel ?? dialogMessages?.yes ?? 'Yes';
     const resolvedNoLabel = noLabel ?? dialogMessages?.no ?? 'No';
     const resolvedCloseAriaLabel = closeAriaLabel ?? dialogMessages?.close ?? 'Close';
+    const resolvedRefusedMessage =
+        dialogMessages?.refused ??
+        'The action was not completed. Review the dialog and try again.';
     const icon = useCratisIcon();
     const resolvedCloseIcon = icon('close', '×', closeIcon);
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
@@ -83,6 +100,9 @@ export const DialogImplementation = ({
     const confirmRef = useRef<HTMLButtonElement>(null);
     const cancelRef = useRef<HTMLButtonElement>(null);
 
+    const [refusals, setRefusals] = useState(0);
+    const handledRefusals = useRef(0);
+    const [announcement, setAnnouncement] = useState<{ key: number; text: string } | null>(null);
     const isDialogValid = isValid !== false;
     const hasDismissingButton =
         typeof buttons === 'number' && buttons !== DialogButtons.Ok;
@@ -122,8 +142,41 @@ export const DialogImplementation = ({
         return () => cancelAnimationFrame(frame);
     }, [focusesConfirmButton, focusesDismissingButton, visible]);
 
+    // Keyboard focus must never be stranded on <body> while work is in flight: the confirm
+    // button stays focusable (aria-disabled), and a focus held by a now-inert field moves to it.
+    useEffect(() => {
+        if (!visible || !isBusy) return;
+        setAnnouncement(null);
+        const active = document.activeElement;
+        if (active && active !== document.body) return;
+        if (confirmRef.current) {
+            confirmRef.current.focus();
+        } else if (titleRef.current) {
+            titleRef.current.tabIndex = -1;
+            titleRef.current.focus();
+        }
+    }, [isBusy, visible]);
+
+    // A refused confirm (the dialog stays open) returns focus to the confirm button, or to the
+    // title when confirm is not enabled, and announces the outcome through the live region.
+    useEffect(() => {
+        // Each refusal is handled once: a later busy-to-idle change, such as a successful retry,
+        // must neither move focus nor announce the earlier refusal again.
+        if (refusals === handledRefusals.current || isBusy) return;
+        handledRefusals.current = refusals;
+        const confirm = confirmRef.current;
+        if (confirm && !confirm.disabled) {
+            confirm.focus();
+        } else if (titleRef.current) {
+            titleRef.current.tabIndex = -1;
+            titleRef.current.focus();
+        }
+        setAnnouncement({ key: refusals, text: resolvedRefusedMessage });
+    }, [refusals, isBusy, resolvedRefusedMessage]);
+
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
+        const isConfirming = result === DialogResult.Ok || result === DialogResult.Yes;
 
         if (result === DialogResult.Ok || result === DialogResult.Yes) {
             if (onConfirm) {
@@ -142,6 +195,7 @@ export const DialogImplementation = ({
         }
 
         if (shouldCloseThroughContext) contextCloseDialog?.(result);
+        else if (isConfirming) setRefusals((count) => count + 1);
     };
 
     const footerButton = (
@@ -165,9 +219,22 @@ export const DialogImplementation = ({
             data-disabled={(primary ? !isDialogValid || isBusy : isBusy) || undefined}
             data-busy={isBusy || undefined}
             ref={primary ? confirmRef : focused ? cancelRef : undefined}
-            onClick={() => void handleClose(result)}
-            disabled={primary ? !isDialogValid || isBusy : isBusy}
+            onClick={() => {
+                if (isBusy) return;
+                void handleClose(result);
+            }}
+            onKeyDown={
+                primary
+                    ? (event) => {
+                          // A held key must not re-submit when focus returns after a refusal.
+                          if (event.repeat && (event.key === 'Enter' || event.key === ' '))
+                              event.preventDefault();
+                      }
+                    : undefined
+            }
+            disabled={primary ? !isDialogValid : isBusy}
             autoFocus={focused}
+            aria-disabled={primary && isBusy ? true : undefined}
             aria-busy={primary && isBusy ? true : undefined}
         >
             {primary && isBusy && (
@@ -176,6 +243,10 @@ export const DialogImplementation = ({
             <span>{label}</span>
         </button>
     );
+
+    // The predefined footer keeps the confirm button focusable while busy, so only a custom
+    // footer needs the whole scope disabled; predefined secondary buttons disable themselves.
+    const isFooterScopeBusy = isBusy && typeof buttons !== 'number';
 
     const predefinedFooter = () => {
         if (typeof buttons !== 'number') return buttons;
@@ -341,14 +412,23 @@ export const DialogImplementation = ({
                             className='cratis-dialog__busy-scope cratis-dialog__busy-scope--footer'
                             data-cratis-part='busy-scope'
                             data-busy={isBusy || undefined}
-                            disabled={isBusy}
-                            inert={isBusy}
+                            disabled={isFooterScopeBusy}
+                            inert={isFooterScopeBusy}
                             aria-busy={isBusy || undefined}
                         >
                             {predefinedFooter()}
                         </fieldset>
                     </footer>
                 )}
+                <div
+                    className='cratis-dialog__live-region'
+                    style={visuallyHidden}
+                    role='status'
+                    aria-live='polite'
+                    aria-atomic='true'
+                >
+                    {announcement && <span key={announcement.key}>{announcement.text}</span>}
+                </div>
             </>
         </AriaDialog>
         </DialogStackContext.Provider>

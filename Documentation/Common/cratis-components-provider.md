@@ -65,7 +65,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.paginator`     | Components-owned paginator labels.                                                                                              |
 | `messages.datePicker`    | Components-owned date-picker action/navigation labels, plus the segmented input's fallback accessible name (`label`).           |
 | `messages.dropdown`      | `Dropdown`'s show-options and clear-selection labels.                                                                           |
-| `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
+| `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`, `refused`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
 | `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
 | `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages, and the empty result of an active search (`filteredEmpty` for the loaded page, `filteredEmptyServer` in server mode).   |
