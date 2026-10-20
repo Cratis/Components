@@ -9,7 +9,7 @@ forms, and application surfaces. Components owns its public markup, TypeScript
 contracts, stable parts, and design tokens. React Aria supplies selected
 interaction primitives internally; consumers do not import or style React Aria.
 
-- [Canonical Components documentation](https://cratis.io/components/)
+- [Canonical Components documentation](https://www.cratis.io/components/)
 - [Renderer adapters and coexistence](https://github.com/Cratis/Components/tree/main/Documentation/renderers)
 - [Migration guide](./MIGRATION.md)
 - [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
@@ -53,7 +53,7 @@ object; runtime behavior still requires `@cratis/components.conformance`. See th
 [renderer-adapter documentation](https://github.com/Cratis/Components/blob/16dd95b7c894f3275b03714ffdc676d2d3505fd8/Documentation/renderers/index.md#adapter-package-metadata-schema)
 for the boundary and limitations.
 
-**Yarn PnP note:** `@cratis/arc.react@22.6.2` imports `rxjs` without declaring it. Strict PnP consumers that stay on that version install `rxjs@7.8.2` and add a `packageExtensions` entry for `@cratis/arc.react@22.6.2`; Arc React 22.16.0 does not need it. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
+**Yarn PnP note:** `@cratis/arc.react@22.6.2` imports `rxjs` without declaring it. Strict PnP consumers that stay on that version install `rxjs@7.8.2` and add a `packageExtensions` entry for `@cratis/arc.react@22.6.2`; Arc React 22.16.0 does not need it. The canonical [getting-started guide](https://www.cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 

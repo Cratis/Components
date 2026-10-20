@@ -11,11 +11,11 @@ dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
 [![Documentation site](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml)
-[Documentation](https://cratis.io/components/)
+[Documentation](https://www.cratis.io/components/)
 
 ## Start here
 
-- [Browse the canonical Components documentation](https://cratis.io/components/)
+- [Browse the canonical Components documentation](https://www.cratis.io/components/)
 - [Install and mount the provider](#minimal-setup)
 - [Choose a component area](#what-components-owns)
 - [Inspect the package source](https://github.com/Cratis/Components/tree/main/Source)
@@ -106,7 +106,7 @@ few surfaces can import `@cratis/components/styles/base` plus one `<subpath>/sty
 surface instead, and download nothing else.
 
 [`Source/package.json`](./Source/package.json) is the authority for the peer ranges above. The
-[getting-started guide](https://cratis.io/components/getting-started/) walks through installation,
+[getting-started guide](https://www.cratis.io/components/getting-started/) walks through installation,
 TypeScript setup, and a first command dialog.
 
 ## Current boundaries
@@ -129,7 +129,7 @@ TypeScript setup, and a first command dialog.
 
 ## Documentation and migration
 
-- [Canonical Components documentation](https://cratis.io/components/)
+- [Canonical Components documentation](https://www.cratis.io/components/)
 - [Product-owned documentation source](https://github.com/Cratis/Components/tree/main/Documentation)
 - [Package README](./Source/README.md)
 - [Components 3 to 4 migration guide](./Source/MIGRATION.md)

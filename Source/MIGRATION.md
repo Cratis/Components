@@ -5,7 +5,7 @@ Components 4 replaces the PrimeReact-backed Components 3 foundation with Compone
 This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=4 <5` is the current release line and the migration target; Components `>=3 <4` is in maintenance/security-critical support. No Components 3 end-of-life date has been set yet; the support policy requires one to be set no later than 12 months after the Components 4.0.0 release. Components 4 does not provide a transparent Prime compatibility package. Its repository-versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots; see the published [Renderer adapters and coexistence](https://cratis.io/components/renderers/) guide.
+An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=4 <5` is the current release line and the migration target; Components `>=3 <4` is in maintenance/security-critical support. No Components 3 end-of-life date has been set yet; the support policy requires one to be set no later than 12 months after the Components 4.0.0 release. Components 4 does not provide a transparent Prime compatibility package. Its repository-versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots; see the published [Renderer adapters and coexistence](https://www.cratis.io/components/renderers/) guide.
 :::
 
 The adapters do not replace complete Components widgets. Core continues to own Dialog, Dropdown, DatePicker, paginator, table, focus, overlay, selection, and keyboard behavior; an adapter only presents button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface slots. Installing an adapter neither restores PrimeReact public APIs nor transfers key handling to the adapter.
@@ -381,7 +381,7 @@ Every meaningful element also carries `data-cratis-part`. Interactive states use
 | Dropdown `option`              | `option`                                       |
 | DatePicker `input`             | segmented `input`; identity belongs on `group` |
 
-See the published [Stable component parts](https://cratis.io/components/styling/pass-through/) reference for the documented foundation surfaces.
+See the published [Stable component parts](https://www.cratis.io/components/styling/pass-through/) reference for the documented foundation surfaces.
 
 ### Migrate a deeply customized product
 
