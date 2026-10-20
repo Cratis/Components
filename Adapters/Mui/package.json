@@ -2,6 +2,17 @@
     "name": "@cratis/components.mui",
     "version": "4.0.0",
     "description": "Material UI presentation adapter for Cratis Components renderer ABI v1.",
+    "keywords": [
+        "cratis",
+        "components",
+        "react",
+        "typescript",
+        "cqrs",
+        "ui",
+        "mui",
+        "material-ui"
+    ],
+    "homepage": "https://www.cratis.io/components/",
     "author": "Cratis",
     "license": "MIT",
     "type": "module",

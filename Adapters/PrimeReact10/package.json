@@ -2,6 +2,16 @@
     "name": "@cratis/components.primereact10",
     "version": "4.0.0",
     "description": "PrimeReact 10 presentation adapter for Cratis Components renderer ABI v1.",
+    "keywords": [
+        "cratis",
+        "components",
+        "react",
+        "typescript",
+        "cqrs",
+        "ui",
+        "primereact"
+    ],
+    "homepage": "https://www.cratis.io/components/",
     "author": "Cratis",
     "license": "MIT",
     "type": "module",
