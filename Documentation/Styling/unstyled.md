@@ -3,7 +3,9 @@ title: Own all styling
 description: Use Components structure and behavior with a completely custom product design.
 ---
 
-Components does not require a theme runtime. Import the structural CSS and define the semantic tokens yourself:
+Own all styling when your application already has a design system and needs Components behavior without the optional baseline theme. Keep the structural CSS, then map the Cratis semantic tokens to your product's values.
+
+Components does not require a theme runtime. Import these layers once at your application entry point:
 
 ```ts
 import '@cratis/components/tokens';
@@ -31,7 +33,9 @@ import '@cratis/components/styles';
 }
 ```
 
-Do not import `@cratis/components/theme` when the product supplies all values.
+The CSS example assumes that your design system defines the referenced `--product-*` variables. Load your mappings after the token and structural layers so they take precedence. The token layer includes conservative light defaults; leaving a token unmapped retains its default rather than removing the component's styles.
+
+Do not import `@cratis/components/theme` when the product supplies all values. Omitting the theme is not the same as omitting structural CSS: component layout, borders, and interaction-state rules still come from `styles`. You can replace the full stylesheet with the documented per-area entry points when you want a smaller selection.
 
 ## Customize structure
 
@@ -54,3 +58,11 @@ The parts are Cratis-owned and remain stable across internal foundation changes.
 ## Accessibility responsibilities
 
 A custom design still owns visible focus, contrast, target size, reduced motion, forced colors, and responsive behavior. Components supplies semantic behavior but cannot infer product color relationships.
+
+Check hover, active, disabled, and focus states as well as the resting appearance. If your application supports dark mode, supply the appropriate token overrides in your own mode selector; the light defaults do not create that mode for you. Scope custom part rules to the intended component or application region instead of relying on internal renderer markup.
+
+## See also
+
+- [Cratis token reference](cratis-tokens.md) — find the semantic values to map
+- [Per-area stylesheets](per-area-stylesheets.md) — select structural styles
+- [Combine styling setups](mixing-paths.md) — mix baseline and product-owned styling
