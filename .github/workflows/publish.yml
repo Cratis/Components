@@ -94,7 +94,17 @@ jobs:
                     exit 1
                   fi
 
+            - name: Release
+              id: release
+              uses: cratis/release-action@f5fc6db6adbb4db6e6c4548cd7addfc924426e69 # v1
+              with:
+                  version: ${{ github.event.inputs.version }}
+                  release-notes: ${{ github.event.inputs.release-notes }}
+
+            # release-action creates the tag in its post step, which runs only when the job succeeds.
+            # Failing here on workflow drift stops that post step before GitHub refuses the tag.
             - name: Check release target workflow files
+              if: steps.release.outputs.should-publish == 'true'
               env:
                   RELEASE_SHA: ${{ github.sha }}
               run: |
@@ -111,13 +121,6 @@ jobs:
                     echo "::error::Dispatch Publish from current main with the same version and notes, or let the next release carry it."
                     exit 1
                   fi
-
-            - name: Release
-              id: release
-              uses: cratis/release-action@f5fc6db6adbb4db6e6c4548cd7addfc924426e69 # v1
-              with:
-                  version: ${{ github.event.inputs.version }}
-                  release-notes: ${{ github.event.inputs.release-notes }}
 
     publish-npm-packages:
         if: needs.release.outputs.publish == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.version != '0.0.0')

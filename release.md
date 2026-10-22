@@ -58,8 +58,10 @@ older commit's release tag can fail with `403 Resource not accessible by integra
 `GITHUB_TOKEN` cannot grant the workflows permission needed for that ref creation, even with
 `contents: write` ([ref API permissions](https://docs.github.com/en/rest/git/refs#create-a-reference),
 [reported older-commit restriction](https://github.com/orgs/community/discussions/121022)).
-The **Check release target workflow files** step fetches the target SHA and current `origin/main`
-and fails with “Main changed workflow files after this merge” when their workflow files differ.
+The release action creates the tag in its post step, at the end of the `release` job. When the
+action has decided to publish, the **Check release target workflow files** step runs before that
+post step, fetches the target SHA and current `origin/main`, and fails with “Main changed workflow
+files after this merge” when their workflow files differ. Runs that release nothing are not checked.
 Dispatch Publish from current `main` with the same version and notes, or let the next release carry
 it. Re-running the old run still targets the old commit.
 
