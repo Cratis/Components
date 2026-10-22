@@ -300,11 +300,13 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // 1387 declaration blocks. Shared layout/text declarations are grouped and unused button rules
 // are removed. Raw and blocks move only by the remaining overage (662 bytes and 2 blocks);
 // gzip holds. A consumer that does not mount a table imports per-area sheets and pays nothing.
+// Measured when the SchemaEditor type menu gained the unique identifier type: raw 248651 (181 bytes over), one more declaration
+// block for its glyph color. Raw moves by the overage and blocks by one; gzip holds.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 248470,
+    rawBytes: 248651,
     gzipBytes: 38 * 1024,
-    declarationBlocks: 1387,
+    declarationBlocks: 1388,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
