@@ -31,6 +31,11 @@ const glyphs: Record<PropertyType, React.ReactNode> = {
             <path d='M6 3.5v2.5l2 1' />
         </svg>
     ),
+    [PropertyType.UniqueIdentifier]: (
+        <svg {...iconProps}>
+            <path d='M4.5 1.5 3.5 10.5M8.5 1.5 7.5 10.5M1.5 4h9M1.5 8h9' />
+        </svg>
+    ),
     [PropertyType.Object]: '{}',
     [PropertyType.StringArray]: '[A]',
     [PropertyType.NumberArray]: '[#]',

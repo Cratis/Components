@@ -49,6 +49,7 @@ export const completeSchemaEditorLabels: Required<SchemaEditorLabels> = {
     typeBoolean: 'Yes or no',
     typeDate: 'Date',
     typeTime: 'Time',
+    typeUniqueIdentifier: 'Unique identifier',
     typeStringArray: 'List of text',
     typeNumberArray: 'List of numbers',
     typeObject: 'Object',

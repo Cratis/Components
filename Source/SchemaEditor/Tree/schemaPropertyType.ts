@@ -18,6 +18,7 @@ export function schemaPropertyType(value: SchemaNode): PropertyType {
         case 'string':
             if (value.format === 'date') return PropertyType.Date;
             if (value.format === 'time') return PropertyType.Time;
+            if (value.format === 'uuid' || value.format === 'guid') return PropertyType.UniqueIdentifier;
             return PropertyType.String;
         case 'number':
         case 'integer':

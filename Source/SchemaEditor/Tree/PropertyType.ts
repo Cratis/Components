@@ -13,6 +13,8 @@ export enum PropertyType {
     Date = 'date',
     /** A time of day. */
     Time = 'time',
+    /** A unique identifier (a GUID), stored as a string with the `uuid` format. */
+    UniqueIdentifier = 'uniqueIdentifier',
     /** A nested object with its own properties. */
     Object = 'object',
     /** A list of text values. */

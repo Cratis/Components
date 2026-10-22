@@ -168,6 +168,7 @@
     --cratis-schema-editor-type-boolean: #15803d;
     --cratis-schema-editor-type-date: #c2410c;
     --cratis-schema-editor-type-time: #7c6d14;
+    --cratis-schema-editor-type-unique-identifier: #0f766e;
     --cratis-schema-editor-type-object: #6d28d9;
     --cratis-schema-editor-type-string-array: #0f766e;
     --cratis-schema-editor-type-number-array: #991b1b;
@@ -212,6 +213,7 @@
 .cratis-schema-editor__badge-glyph[data-property-type="boolean"] { background: var(--cratis-schema-editor-type-boolean); }
 .cratis-schema-editor__badge-glyph[data-property-type="date"] { background: var(--cratis-schema-editor-type-date); }
 .cratis-schema-editor__badge-glyph[data-property-type="time"] { background: var(--cratis-schema-editor-type-time); }
+.cratis-schema-editor__badge-glyph[data-property-type="uniqueIdentifier"] { background: var(--cratis-schema-editor-type-unique-identifier); }
 .cratis-schema-editor__badge-glyph[data-property-type="object"] { background: var(--cratis-schema-editor-type-object); }
 .cratis-schema-editor__badge-glyph[data-property-type="stringArray"] { background: var(--cratis-schema-editor-type-string-array); }
 .cratis-schema-editor__badge-glyph[data-property-type="numberArray"] { background: var(--cratis-schema-editor-type-number-array); }

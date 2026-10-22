@@ -144,6 +144,8 @@ function primitiveSchema(property: Property): SchemaNode {
             return { type: 'string', format: 'date' };
         case PropertyType.Time:
             return { type: 'string', format: 'time' };
+        case PropertyType.UniqueIdentifier:
+            return { type: 'string', format: 'uuid' };
         case PropertyType.Object:
             return { type: 'object', ...objectSchema(property.children ?? [], (property as SchemaOrderedProperty)[schemaRequiredOrder]) };
         case PropertyType.StringArray:

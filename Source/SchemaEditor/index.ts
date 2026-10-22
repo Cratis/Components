@@ -10,6 +10,9 @@ export { PropertyConceptsProvider, usePropertyConcepts } from './Tree/PropertyCo
 export type { PropertyConceptsProviderProps } from './Tree/PropertyConceptsContext';
 export type { Property } from './Tree/Property';
 export { PropertyType } from './Tree/PropertyType';
+export { PropertyTypeGlyph } from './Tree/PropertyTypeGlyph';
+export { GlyphMenu } from './Tree/GlyphMenu';
+export type { GlyphMenuItem, GlyphMenuProps } from './Tree/GlyphMenu';
 export type { PropertyConcept } from './Tree/PropertyConcept';
 export {
     PropertyNameProblem,
