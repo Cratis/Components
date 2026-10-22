@@ -23,6 +23,7 @@ const typeFamilies: Readonly<Record<PropertyType, KeywordFamily>> = {
     [PropertyType.String]: KeywordFamily.String,
     [PropertyType.Date]: KeywordFamily.String,
     [PropertyType.Time]: KeywordFamily.String,
+    [PropertyType.UniqueIdentifier]: KeywordFamily.None,
     [PropertyType.Number]: KeywordFamily.Number,
     [PropertyType.Boolean]: KeywordFamily.None,
     [PropertyType.Object]: KeywordFamily.Object,

@@ -11,6 +11,7 @@ export const primitivePropertyTypes: readonly PropertyType[] = [
     PropertyType.Boolean,
     PropertyType.Date,
     PropertyType.Time,
+    PropertyType.UniqueIdentifier,
 ];
 
 /** The types the menu offers after the concepts, in order. */
@@ -33,6 +34,7 @@ export function propertyTypeName(type: PropertyType, labels: Required<SchemaEdit
         case PropertyType.Boolean: return labels.typeBoolean;
         case PropertyType.Date: return labels.typeDate;
         case PropertyType.Time: return labels.typeTime;
+        case PropertyType.UniqueIdentifier: return labels.typeUniqueIdentifier;
         case PropertyType.StringArray: return labels.typeStringArray;
         case PropertyType.NumberArray: return labels.typeNumberArray;
         case PropertyType.Object: return labels.typeObject;

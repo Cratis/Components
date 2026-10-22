@@ -33,6 +33,7 @@ describe('when opening the menu of types', () => {
     it('should offer the primitives first', () => {
         expect(offered[0].endsWith('Text')).to.equal(true);
         expect(offered[4].endsWith('Time')).to.equal(true);
+        expect(offered[5].endsWith('Unique identifier')).to.equal(true);
     });
 
     it('should keep the concepts out of the main menu', () => {
@@ -40,7 +41,7 @@ describe('when opening the menu of types', () => {
     });
 
     it('should offer a Concepts entry after the primitives', () => {
-        expect(offered[5].startsWith('Concepts')).to.equal(true);
+        expect(offered[6].startsWith('Concepts')).to.equal(true);
     });
 
     it('should list the concepts alphabetically in the submenu', () => {

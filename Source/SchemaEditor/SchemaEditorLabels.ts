@@ -96,6 +96,8 @@ export interface SchemaEditorLabels {
     typeDate?: string;
     /** Tree layout: name of the `time` type. */
     typeTime?: string;
+    /** Tree layout: name of the unique identifier (GUID) type. */
+    typeUniqueIdentifier?: string;
     /** Tree layout: name of the list-of-text type. */
     typeStringArray?: string;
     /** Tree layout: name of the list-of-numbers type. */
