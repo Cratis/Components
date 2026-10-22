@@ -101,6 +101,27 @@ jobs:
                   version: ${{ github.event.inputs.version }}
                   release-notes: ${{ github.event.inputs.release-notes }}
 
+            # release-action creates the tag in its post step, which runs only when the job succeeds.
+            # Failing here on workflow drift stops that post step before GitHub refuses the tag.
+            - name: Check release target workflow files
+              if: steps.release.outputs.should-publish == 'true'
+              env:
+                  RELEASE_SHA: ${{ github.sha }}
+              run: |
+                  set -euo pipefail
+                  git fetch --no-tags --depth=1 origin "$RELEASE_SHA" +refs/heads/main:refs/remotes/origin/main
+                  if git diff --quiet "$RELEASE_SHA" refs/remotes/origin/main -- .github/workflows; then
+                    echo "Checked .github/workflows between release target $RELEASE_SHA and current origin/main: no differences."
+                  else
+                    status=$?
+                    if (( status != 1 )); then
+                      exit "$status"
+                    fi
+                    echo "::error::Main changed workflow files after this merge ($RELEASE_SHA), so GitHub refuses GITHUB_TOKEN when creating the release tag; contents: write cannot grant workflows permission."
+                    echo "::error::Dispatch Publish from current main with the same version and notes, or let the next release carry it."
+                    exit 1
+                  fi
+
     publish-npm-packages:
         if: needs.release.outputs.publish == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.version != '0.0.0')
         runs-on: ubuntu-latest

@@ -53,6 +53,24 @@ version label.
 version and the original merged pull request's consumer-facing release notes. Do not use a new
 version merely to recover automation.
 
+If `main` changes `.github/workflows` after a merge while its Publish run waits, creating the
+older commit's release tag can fail with `403 Resource not accessible by integration`.
+`GITHUB_TOKEN` cannot grant the workflows permission needed for that ref creation, even with
+`contents: write` ([ref API permissions](https://docs.github.com/en/rest/git/refs#create-a-reference),
+[reported older-commit restriction](https://github.com/orgs/community/discussions/121022)).
+The release action creates the tag in its post step, at the end of the `release` job. When the
+action has decided to publish, the **Check release target workflow files** step runs before that
+post step, fetches the target SHA and current `origin/main`, and fails with “Main changed workflow
+files after this merge” when their workflow files differ. Runs that release nothing are not checked.
+Dispatch Publish from current `main` with the same version and notes, or let the next release carry
+it. Re-running the old run still targets the old commit.
+
+Repository `contents: write` is scoped only to the `release` job, which creates the release and tag;
+its `issues: write` lets the release action close delivered issues. The workflow default stays
+`contents: read`: dependency verification and publication do not write repository contents. The npm
+job separately needs `id-token: write` for trusted publishing; cross-repository dispatches use
+`PAT_DOCUMENTATION`, not `GITHUB_TOKEN`.
+
 The npm job uses trusted publishing through GitHub Actions OIDC (`id-token: write`) and npm 11.5.1
 or newer. Every existing package must trust this repository and `.github/workflows/publish.yml`.
 A brand-new npm package must receive a one-time authenticated bootstrap publication before trusted
