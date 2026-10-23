@@ -154,7 +154,7 @@ jobs:
               run: yarn install --immutable
 
             - name: Test assigned Source specs
-              run: yarn workspace @cratis/components run generate-parts && cd Source && yarn vitest run --shard=${{ matrix.shard }}/3
+              run: yarn workspace @cratis/components run generate-parts && cd Source && yarn run -T vitest run --shard=${{ matrix.shard }}/3
 
     # Matrix over the renderer-adapter workspaces that today run one after another inside
     # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
