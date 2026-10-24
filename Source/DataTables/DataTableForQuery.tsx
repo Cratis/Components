@@ -18,6 +18,8 @@ import { resolveDataTableStatus } from './resolveDataTableStatus';
 import type { DataTableServerQuery } from './DataTableServerQuery';
 import { useServerQuery } from './useServerQuery';
 import { hasRequiredArguments } from './hasRequiredArguments';
+import { DataTableStatus } from './DataTableStatus';
+import { useReconciledQuerySelection } from './useReconciledQuerySelection';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -79,7 +81,8 @@ export interface DataTableForQueryProps<
     selection?: TDataType | undefined | null;
 
     /**
-     * Callback for when the selection changes
+     * Callback for when the selection changes, including replacement or removal of its query row.
+     * The supplied selection remains consumer-owned; without a callback it is left unchanged.
      */
     onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
@@ -238,6 +241,11 @@ export const DataTableForQuery = <
     // unsuccessful. That is a table waiting for its arguments, not a failed query.
     const isWaitingForArguments = !hasRequiredArguments(requiredArguments, server.queryArguments);
     const status = resolveDataTableStatus(isWaitingForArguments ? { ...result, isSuccess: true } : result);
+    useReconciledQuerySelection(
+        rows, props.selection, props.dataKey,
+        status === DataTableStatus.Ready && !isWaitingForArguments,
+        props.onSelectionChange,
+    );
 
     return (
         <div

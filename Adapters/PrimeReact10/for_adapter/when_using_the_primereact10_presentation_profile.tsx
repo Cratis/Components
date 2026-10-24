@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { expect } from 'chai';
+import { expect, should } from 'chai';
 import { createElement, useContext, type ComponentType, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PrimeReactContext, PrimeReactProvider } from 'primereact/api/api.cjs.js';
@@ -80,6 +80,18 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
             skipped: 0,
         });
         expect(primeReact10UiLibrary.profileSlots).to.deep.equal(stablePresentationSlots);
+    });
+
+    it('should leave the unchecked checkbox indicator empty', () => {
+        const host = document.createElement('div');
+        host.innerHTML = renderSlot('common.checkbox', { checked: false });
+        should().equal(host.querySelector('[data-cratis-part="indicator"]')!.textContent, '');
+    });
+
+    it('should show the checked checkbox indicator', () => {
+        const host = document.createElement('div');
+        host.innerHTML = renderSlot('common.checkbox', { checked: true });
+        should().equal(host.querySelector('[data-cratis-part="indicator"]')!.textContent, '✓');
     });
 
     it('should keep static metadata schema and runtime declarations consistent', () => {

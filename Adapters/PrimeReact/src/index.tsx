@@ -606,7 +606,7 @@ const PrimeChoice = ({
                             aria-hidden='true'
                             {...attributes}
                         >
-                            ✓
+                            {state.selected ? '✓' : undefined}
                         </PrimeCheckbox.Indicator>
                     </PrimeCheckbox.Box>
                 </PrimeCheckbox.Root>

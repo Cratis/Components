@@ -620,7 +620,7 @@ const PrimeChoice = ({
             hidden={!state.selected}
             {...attributes}
         >
-            ✓
+            {state.selected ? '✓' : undefined}
         </span>
     );
     // SAFETY: PrimeReact 10 renders the verified radio box and indicator destinations as native
