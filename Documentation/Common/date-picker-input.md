@@ -83,6 +83,7 @@ The Today and Clear buttons call `onChange` directly; they do not close the popo
 | `placeholder` | `string` | — | Text shown while the value is `null` and the field is not focused. Also used as the accessible name when `aria-label` is absent. |
 | `showIcon` | `boolean` | `true` | Renders the calendar trigger button. Without it, the calendar is still reachable with `Alt+ArrowDown`. |
 | `showButtonBar` | `boolean` | `false` | Adds Today and Clear actions below the calendar. |
+| `isNonModal` | `boolean` | `false` | Allows the first outside click to reach another control while dismissing the calendar popover. |
 | `showTime` | `boolean` | `false` | Adds hour and minute segments. |
 | `hourFormat` | `'12' \| '24'` | Locale | Hour cycle for the time segments. Omit it to use the locale's hour cycle. |
 | `minDate` / `maxDate` | `Date` | Unbounded | Earliest and latest selectable date for the calendar and the Today action. |
@@ -100,6 +101,16 @@ The Today and Clear buttons call `onChange` directly; they do not close the popo
 `DatePickerInputProps` and `DatePickerInputPassThrough` are exported types.
 
 Top-level props take precedence over their `pt.input` equivalents. When a top-level prop is omitted, the component falls back to `pt.input.id`, `disabled`, `readOnly`, `placeholder`, `aria-invalid`, `aria-label`, `aria-labelledby` and `aria-describedby`; `pt.input.id` is applied to the group, like `id`. Other `pt.input` attributes, such as `data-*`, are forwarded to the segmented input.
+
+## Popover modality
+
+The popover is modal by default: an outside click dismisses it without activating the control underneath. Opt in to `isNonModal` when a submit or navigation button should react to that first click:
+
+```tsx
+<DatePickerInput value={deliveryDate} onChange={setDeliveryDate} isNonModal />
+```
+
+In non-modal mode, surrounding content remains available to assistive technology and outside controls remain interactive. Escape still dismisses the calendar and restores focus to its trigger. Date entry, calendar selection, bounds, and Today/Clear actions are unchanged.
 
 ## Locale and labels
 

@@ -116,8 +116,10 @@ const [visible, setVisible] = useState(false);
   of your buttons means what, so a custom footer must close the dialog itself
   through `useDialogContext().closeDialog(...)`, or opt the dismiss
   affordances back in explicitly with `dismissable`
-- `dismissable`: Whether the header close (X), a backdrop click and `Escape` are
-  offered (see below)
+- `dismissable`: Combined default for the header close (X), a backdrop click and `Escape` (see below)
+- `dismissOnOutsideClick`: Overrides backdrop dismissal independently
+- `closeOnEscape`: Overrides Escape dismissal independently
+- `showCloseButton`: Overrides header close-button visibility independently
 - `closeAriaLabel`: Accessible name for the header close button. Defaults to
   the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s
   `messages.dialog.close`, then `'Close'` — override it to localize a single dialog
@@ -142,8 +144,7 @@ const [visible, setVisible] = useState(false);
 ## Dismissing
 
 A dialog is _dismissable_ when the header close (X), a backdrop click and
-`Escape` are all offered. Those three affordances are controlled by one switch, so they
-are always on or off together.
+`Escape` are all offered. `dismissable` remains the combined switch; each affordance can also be configured independently.
 
 By default the dialog works out which it should be from `buttons`: a predefined
 `DialogButtons` set is dismissable, a custom `ReactNode` footer or `null` is
@@ -164,6 +165,16 @@ Set `dismissable` explicitly to override that:
     …
 </Dialog>
 ```
+
+Each independent prop falls back to `dismissable`, then to the existing `buttons`-derived default. Explicit `true` or `false` takes precedence over that combined switch. For example, keep the header X and Escape available but prevent accidental backdrop dismissal:
+
+```tsx
+<Dialog title='Edit details' dismissOnOutsideClick={false}>
+    …
+</Dialog>
+```
+
+Use `showCloseButton={false}` to hide only the X, or `closeOnEscape={false}` to disable only Escape. These props are also forwarded by `CommandDialog`. While `isBusy` is true, all dismissal paths remain blocked regardless of overrides; a visible header X is disabled. The focus trap, focus restoration, and footer actions are unchanged.
 
 This is what `StepperCommandDialog` does for its wizard chrome: it renders a
 custom footer and still keeps a header X — and withdraws it again, along with

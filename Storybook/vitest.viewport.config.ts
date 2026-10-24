@@ -23,7 +23,7 @@ export default defineConfig({
     },
     plugins: [react()],
     test: {
-        include: ['PivotViewer/viewport.browser.test.tsx', 'CommandDialog/stepperConnector.browser.test.tsx'],
+        include: ['PivotViewer/viewport.browser.test.tsx', 'CommandDialog/stepperConnector.browser.test.tsx', 'Common/datePickerModality.browser.test.tsx', 'Dialogs/dismissal.browser.test.tsx'],
         testTimeout: 60_000,
         browser: {
             enabled: true,

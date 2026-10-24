@@ -10,6 +10,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalSto
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
+import { resolveDialogDismissal } from './resolveDialogDismissal';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import {
@@ -69,6 +70,9 @@ export const DialogImplementation = ({
     noLabel,
     closeAriaLabel,
     dismissable,
+    dismissOnOutsideClick,
+    closeOnEscape,
+    showCloseButton,
     className,
     pt,
 }: DialogProps) => {
@@ -113,8 +117,9 @@ export const DialogImplementation = ({
     const focusesConfirmButton = resolvedInitialFocus === DialogInitialFocus.Confirm;
     const focusesDismissingButton = resolvedInitialFocus === DialogInitialFocus.Cancel;
     const focusesTitle = resolvedInitialFocus === DialogInitialFocus.Content;
-    const allowsDismissal = dismissable ?? typeof buttons === 'number';
-    const isDismissable = allowsDismissal && !isBusy;
+    const { allowsOutsideDismissal, allowsEscapeDismissal, showsCloseButton } = resolveDialogDismissal({
+        buttons, dismissable, dismissOnOutsideClick, closeOnEscape, showCloseButton, isBusy,
+    });
 
     // Assigns this dialog a strictly increasing tier for as long as it is visible, so a second
     // dialog opened while this one is still open - from anywhere, not necessarily as a React
@@ -357,7 +362,7 @@ export const DialogImplementation = ({
                             {subtitle}
                         </p>
                     )}
-                    {allowsDismissal && (
+                    {showsCloseButton && (
                         <button
                             {...pt?.close}
                             type='button'
@@ -494,8 +499,8 @@ export const DialogImplementation = ({
                 onOpenChange={(open) => {
                     if (!open && !isBusy) void handleClose(DialogResult.Cancelled);
                 }}
-                isDismissable={isDismissable}
-                isKeyboardDismissDisabled={!isDismissable}
+                isDismissable={allowsOutsideDismissal}
+                isKeyboardDismissDisabled={!allowsEscapeDismissal}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{
                     zIndex: resolvedZIndex ?? DIALOG_ZINDEX_TOKEN,
