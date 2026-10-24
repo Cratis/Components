@@ -93,6 +93,11 @@ export interface DatePickerInputProps {
     id?: string;
     /** Shows Today and Clear actions. */
     showButtonBar?: boolean;
+    /**
+     * Keep outside controls interactive while the calendar is open. An outside
+     * click dismisses the popover and reaches its target. Defaults to false.
+     */
+    isNonModal?: boolean;
     /** Visible text while no date is selected. */
     placeholder?: string;
     /** Deprecated renderer mask; locale controls formatting now. */

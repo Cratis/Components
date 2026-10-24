@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import {
     render,
     unmount,
+    pressEscape,
     type DialogInTheDom,
 } from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
 import { CommandDialog } from '../CommandDialog';
@@ -36,6 +37,7 @@ class TestCommand {
 
 describe('when dialog presentation is configured on a command dialog', () => {
     let dialog: DialogInTheDom;
+    const onCancel = vi.fn();
 
     const renderDialog = async () => {
         dialog = await render(
@@ -45,6 +47,10 @@ describe('when dialog presentation is configured on a command dialog', () => {
                 subtitle: 'Project details',
                 placement: 'end',
                 closeIcon: React.createElement('span', null, 'Close example'),
+                dismissOnOutsideClick: false,
+                closeOnEscape: false,
+                showCloseButton: true,
+                onCancel,
             }, React.createElement('p', null, 'Body')),
         );
     };
@@ -76,5 +82,14 @@ describe('when dialog presentation is configured on a command dialog', () => {
         Object.hasOwn(formProps, 'subtitle').should.be.false;
         Object.hasOwn(formProps, 'placement').should.be.false;
         Object.hasOwn(formProps, 'closeIcon').should.be.false;
+        Object.hasOwn(formProps, 'dismissOnOutsideClick').should.be.false;
+        Object.hasOwn(formProps, 'closeOnEscape').should.be.false;
+        Object.hasOwn(formProps, 'showCloseButton').should.be.false;
+    });
+
+    it('should forward disabled Escape dismissal to the dialog', async () => {
+        onCancel.mockClear();
+        await pressEscape();
+        onCancel.mock.calls.should.have.lengthOf(0);
     });
 });

@@ -60,6 +60,7 @@ export const DatePickerInputImplementation = ({
     readOnly,
     id,
     showButtonBar,
+    isNonModal = false,
     placeholder,
     showIcon = true,
     showTime,
@@ -292,6 +293,7 @@ export const DatePickerInputImplementation = ({
                             </Group>
                             <Popover
                                 {...pt?.popover}
+                                isNonModal={isNonModal}
                                 className={classNames(
                                     'cratis-date-picker__popover',
                                     pt?.popover?.className,

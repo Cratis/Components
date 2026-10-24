@@ -72,6 +72,30 @@ const openDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => 
     await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
 };
 
+const IndependentDismissalExample = () => {
+    const [visible, setVisible] = useState(false);
+    return (
+        <>
+            <Button onClick={() => setVisible(true)}>Open Dialog</Button>
+            <Dialog title='Edit details' visible={visible} dismissOnOutsideClick={false} onClose={() => setVisible(false)}>
+                <p>Backdrop clicks do not dismiss this dialog. Escape and the header close button remain available.</p>
+            </Dialog>
+        </>
+    );
+};
+
+export const IndependentDismissal: Story = {
+    render: () => <IndependentDismissalExample />,
+    play: openDialog,
+    parameters: {
+        docs: {
+            description: {
+                story: 'dismissOnOutsideClick, closeOnEscape, and showCloseButton override their individual paths. Omitted values fall back to dismissable and then the footer-derived default. Busy state blocks all dismissal.',
+            },
+        },
+    },
+};
+
 export const OkCancel: Story = {
     play: openDialog,
     render: () => (

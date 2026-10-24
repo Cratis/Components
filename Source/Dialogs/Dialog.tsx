@@ -123,8 +123,17 @@ export interface DialogProps {
     noLabel?: string;
     /** Accessible label for the header close button. Falls back to the provider's `dialog.close` message, then `'Close'`. */
     closeAriaLabel?: string;
-    /** Enables header, Escape, and backdrop dismissal when not busy. */
+    /**
+     * Combined default for header, Escape, and backdrop dismissal. Defaults to true
+     * for predefined buttons and false for custom/no footer. Independent props override it.
+     */
     dismissable?: boolean;
+    /** Whether outside clicks dismiss the dialog. Falls back to `dismissable`; blocked while busy. */
+    dismissOnOutsideClick?: boolean;
+    /** Whether Escape dismisses the dialog. Falls back to `dismissable`; blocked while busy. */
+    closeOnEscape?: boolean;
+    /** Whether to show the header close button. Falls back to `dismissable`; disabled while busy. */
+    showCloseButton?: boolean;
     /** Extra class name for the modal root. */
     className?: string;
     /** Cratis-owned per-part attributes. */

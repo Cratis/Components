@@ -44,6 +44,29 @@ const ControlledPicker = ({
     );
 };
 
+const NonModalExample = () => {
+    const [value, setValue] = useState<Date | null>(null);
+    const [submissions, setSubmissions] = useState(0);
+    return (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6rem' }}>
+            <DatePickerInput value={value} onChange={setValue} isNonModal aria-label='Delivery date' />
+            <button type='button' onClick={() => setSubmissions((count) => count + 1)}>Submit</button>
+            <p role='status'>Submissions: {submissions}</p>
+        </div>
+    );
+};
+
+export const NonModal: Story = {
+    render: () => <NonModalExample />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'With isNonModal, clicking Submit while the calendar is open dismisses the popover and activates Submit on the first click. Omit the prop to retain modal outside-click behavior.',
+            },
+        },
+    },
+};
+
 export const StateMatrix: Story = {
     render: () => (
         <div style={{ display: 'grid', gap: '1rem', maxWidth: '20rem' }}>
