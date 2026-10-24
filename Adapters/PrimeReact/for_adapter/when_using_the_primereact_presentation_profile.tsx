@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { expect } from 'chai';
+import { expect, should } from 'chai';
 import { createElement, type ComponentType, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PrimeReactContext, defaultConfigProps } from '@primereact/core/config';
@@ -193,6 +193,20 @@ describe('when using the PrimeReact stable presentation profile', () => {
         expect(markup.progress).to.contain('p-progressbar');
         expect(markup.surface).to.contain('p-card');
         expect(markup.surface).to.contain('<article');
+    });
+
+    it('should leave the unchecked checkbox indicator empty', () => {
+        const markup = renderSlot('common.checkbox', { checked: false });
+        const host = document.createElement('div');
+        host.innerHTML = markup;
+        should().equal(host.querySelector('[data-cratis-part="indicator"]')!.textContent, '');
+    });
+
+    it('should show the checked checkbox indicator', () => {
+        const markup = renderSlot('common.checkbox', { checked: true });
+        const host = document.createElement('div');
+        host.innerHTML = markup;
+        should().equal(host.querySelector('[data-cratis-part="indicator"]')!.textContent, '✓');
     });
 
     it('should preserve deprecated Button mapping and canonical data attributes', () => {
