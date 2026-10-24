@@ -17,6 +17,8 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
 import { resolveDataTableStatus } from './resolveDataTableStatus';
 import type { DataTableServerQuery } from './DataTableServerQuery';
 import { useServerQuery } from './useServerQuery';
+import { DataTableStatus } from './DataTableStatus';
+import { useReconciledQuerySelection } from './useReconciledQuerySelection';
 
 /**
  * Props for {@link DataTableForObservableQuery}.
@@ -80,7 +82,8 @@ export interface DataTableForObservableQueryProps<
     selection?: TDataType | undefined | null;
 
     /**
-     * Callback for when the selection changes
+     * Callback for when the selection changes, including replacement or removal of its query row.
+     * The supplied selection remains consumer-owned; without a callback it is left unchanged.
      */
     onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
@@ -245,6 +248,10 @@ export const DataTableForObservableQuery = <
     // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
     const status = resolveDataTableStatus(result);
+    useReconciledQuerySelection(
+        rows, props.selection, props.dataKey, status === DataTableStatus.Ready,
+        props.onSelectionChange,
+    );
 
     useEffect(() => {
         if (!containerRef.current) return;

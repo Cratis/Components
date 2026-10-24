@@ -314,7 +314,9 @@ export interface DataPageProps<
     selection?: TDataType | undefined | null;
 
     /**
-     * Callback for when the selection changes
+     * Callback for when the selection changes, including replacement or removal of its query row.
+     * With a controlled selection, the consumer must accept the new value. Without a callback,
+     * the controlled value and its details remain unchanged even if the query row disappears.
      */
     onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
