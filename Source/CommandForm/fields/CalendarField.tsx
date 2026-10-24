@@ -38,6 +38,12 @@ interface CalendarFieldComponentProps
     /** Latest selectable date. */
     maxDate?: Date;
 
+    /**
+     * Keep outside controls interactive while the calendar is open. An outside
+     * click dismisses the popover and reaches its target. Defaults to false.
+     */
+    isNonModal?: boolean;
+
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
@@ -92,6 +98,7 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
                     hourFormat={props.hourFormat}
                     minDate={props.minDate}
                     maxDate={props.maxDate}
+                    isNonModal={props.isNonModal}
                     className={props.className}
                     pt={props.pt}
                     ptOptions={props.ptOptions}
