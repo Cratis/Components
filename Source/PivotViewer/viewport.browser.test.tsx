@@ -2,18 +2,24 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { createRoot } from 'react-dom/client';
+import * as PIXI from 'pixi.js';
+import { should } from 'chai';
 import { cdp, page, userEvent } from 'vitest/browser';
 import axe from 'axe-core';
 import { composeStory } from '@storybook/react';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { waitFor } from 'storybook/test';
 import meta, { KeyboardScrollableViewport } from './PivotViewer.stories';
-import { getSpritePoolSize } from './components/pivot/sprites';
+import { clearSpritePool, createCardSprite, getSpritePoolSize, updateCardContent } from './components/pivot/sprites';
+import { DEFAULT_COLORS, type CardSprite } from './components/pivot/constants';
+import { syncSpritesToViewport, type SyncParams } from './components/pivot/visibility';
 import '../tokens.css';
 import '../theme.css';
 import '../.storybook/preview.css';
 import '../Dialogs/Dialog.css';
 import './PivotViewer.css';
+
+const assert = should();
 
 const Story = composeStory(KeyboardScrollableViewport, meta);
 let host: HTMLDivElement;
@@ -32,6 +38,58 @@ afterEach(() => {
     document.documentElement.classList.remove('cratis-light', 'cratis-dark');
     document.documentElement.style.removeProperty('--cratis-focus-ring');
     document.documentElement.style.removeProperty('--cratis-primary-color');
+});
+
+it('should select the item painted on a pooled card after filtering', async () => {
+    clearSpritePool();
+    const application = new PIXI.Application();
+    await application.init({ width: 200, height: 200, autoStart: false });
+    const viewport = document.createElement('div');
+    viewport.style.cssText = 'width: 200px; height: 200px';
+    host.append(viewport, application.canvas);
+    const sprites = new Map<number | string, CardSprite>();
+    const items = [{ name: 'Removed Item' }, { name: 'Excluded Item' }, { name: 'Retained Item' }];
+    const selections: object[] = [];
+    const cardRenderer = (item: { name: string }) => ({ title: item.name });
+    const params: SyncParams<{ name: string }> = {
+        root: application.stage, container: viewport, sprites,
+        layout: { positions: new Map([[0, { x: 0, y: 0, groupIndex: 0 }]]), totalWidth: 200, totalHeight: 200 },
+        visibleIds: new Uint32Array([0]), items,
+        cardWidth: 200, cardHeight: 200, panX: 0, panY: 0,
+        viewportWidth: 200, viewportHeight: 200, zoomLevel: 1, viewMode: 'collection',
+        transitionSeenIds: new Set(), sweepImmediately: true,
+        createCardSprite: (id, x, y) => createCardSprite(
+            id, x, y, params.items, item => selections.push(item), () => undefined,
+            200, 200, DEFAULT_COLORS, cardRenderer, (_, index) => index,
+        ),
+        updateCardContent: (sprite, item) => updateCardContent(sprite, item, null, 200, 200, DEFAULT_COLORS, cardRenderer),
+    };
+    try {
+        syncSpritesToViewport(params);
+        application.render();
+        const original = sprites.get(0)!;
+        assert.equal(original.titleText.text, 'Removed Item');
+
+        // Filtering removes the first item and reindexes the remaining dataset.
+        // Its next visible card must reuse the released container, not just look similar.
+        params.items = items.filter(item => item.name !== 'Removed Item');
+        params.layout.positions = new Map([[1, { x: 0, y: 0, groupIndex: 0 }]]);
+        params.visibleIds = new Uint32Array([1]);
+        syncSpritesToViewport(params);
+        application.render();
+        const recycled = sprites.get(1)!;
+        assert.equal(recycled, original);
+        assert.equal(recycled.container, original.container);
+        assert.equal(recycled.titleText.text, 'Retained Item');
+        assert.equal(getSpritePoolSize(), 0);
+
+        await userEvent.click(application.canvas, { position: { x: 50, y: 50 } });
+        assert.equal(selections.length, 1);
+        assert.equal(selections[0], params.items[1]);
+    } finally {
+        application.destroy(true, { children: true });
+        clearSpritePool();
+    }
 });
 
 it('scrolls the overflowing Storybook card area with trusted keys and tabs out', async () => {
