@@ -21,6 +21,47 @@ export const App = () => (
 
 The package root exports only the provider and its configuration helpers. Import every component from its subpath, such as `@cratis/components/Common` or `@cratis/components/Toolbar`.
 
+## Connect a client-side router
+
+Configure `value.router` once so Components links, including `Breadcrumbs`, use your application's
+router. The public `CratisComponentsRouter` contract needs only `navigate`; optional `useHref`
+resolves the rendered link destination, for example when a router has a basename.
+
+With React Router, mount the Components provider inside your router:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { Breadcrumbs } from '@cratis/components/Common';
+import { BrowserRouter, useHref, useNavigate } from 'react-router';
+
+const RoutedContent = () => {
+    const navigate = useNavigate();
+    return (
+        <CratisComponentsProvider value={{ router: { navigate, useHref } }}>
+            <Breadcrumbs items={[
+                { label: 'Projects', href: '/projects' },
+                { label: 'Example Project' },
+            ]} />
+        </CratisComponentsProvider>
+    );
+};
+
+export const RoutedApp = () => (
+    <BrowserRouter>
+        <RoutedContent />
+    </BrowserRouter>
+);
+```
+
+An ordinary same-origin link activation calls `navigate` with the original destination rather than
+reloading the page. `useHref` changes the anchor's rendered `href`, not the destination passed to
+`navigate`. Modified clicks (Ctrl, Meta, Shift, Alt), middle clicks, and external links retain native
+browser handling. Links keep real destinations for copying and opening in another tab.
+
+Without `router`, links retain native navigation or an inherited routing provider. No router package
+is required by Components. Existing `BreadcrumbItem.onNavigate` callbacks still run on press; prefer
+plain `href` items with provider routing. Manually navigating in both places can navigate twice.
+
 ## Use it with Arc
 
 `CratisComponentsProvider` does not replace Arc's provider. Command and query components, such as `CommandDialog`, `DataPage` and `ChatSidebarForObservableQueries`, get their origin, API base path, microservice, and shared query cache from `<Arc>` in `@cratis/arc.react`. Render `<Arc>` around the Components provider:

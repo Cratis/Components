@@ -75,6 +75,7 @@ export const approvedRootSymbols = new Set([
     'mergeCratisComponentsConfig',
     'CratisComponentsConfig',
     'CratisComponentsProviderProps',
+    'CratisComponentsRouter',
     'CratisComponentsMessages',
     'CratisPaginatorMessages',
     'CratisDatePickerMessages',

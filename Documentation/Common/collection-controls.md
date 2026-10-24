@@ -109,7 +109,13 @@ out of the tab order. That is what tells a screen-reader user where the trail en
 every segment renders as a link — React Aria hands the current state down to the last one, and a
 segment rendered as plain text would lose it.
 
-Pass `onNavigate` instead of `href` when a router owns navigation. `separator` takes any decorative
+For client-side navigation, configure [provider routing](cratis-components-provider.md#connect-a-client-side-router)
+and keep plain `href` items as above. Ordinary same-origin activations use the configured router;
+modified clicks, middle clicks, and external links retain browser handling. Without provider routing,
+links navigate natively or use an inherited router.
+
+The legacy `onNavigate` press callback still works, but does not replace `href` navigation. Manually
+navigating there as well as through the provider can navigate twice. `separator` takes any decorative
 node and defaults to a slash; separators are hidden from assistive technology either way.
 
 ## Styling

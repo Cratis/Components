@@ -94,7 +94,7 @@ owned-label prop follows one consistent naming and JSDoc convention).
 Components 4 removes every component-family namespace from the package root. The rule keeps a fixed map from each Components 3 namespace to its Components 4 subpath, plus the exact setup allowlist that remains at the root:
 
 - `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig`;
-- `CratisComponentsConfig`, `CratisComponentsProviderProps`, and `CratisComponentsMessages`;
+- `CratisComponentsConfig`, `CratisComponentsProviderProps`, `CratisComponentsRouter`, and `CratisComponentsMessages`;
 - `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, `CratisFilterMessages`, and `CratisColumnFilterMessages`;
 - `CratisComponentsIcons`, `CratisIconResolver`, and `useCratisIcon`.
 

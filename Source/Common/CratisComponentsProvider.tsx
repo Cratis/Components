@@ -3,6 +3,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { I18nProvider } from 'react-aria-components/I18nProvider';
+import { RouterProvider } from 'react-aria-components';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications/Toaster';
 import { unstable_RendererRoot } from '../renderer/RendererContext';
@@ -237,8 +238,18 @@ interface LegacyLocaleMessages {
     [message: string]: unknown;
 }
 
+/** Application routing callbacks used by Components links. */
+export interface CratisComponentsRouter {
+    /** Navigate to the original link destination for an ordinary same-origin activation. */
+    navigate: (href: string) => void;
+    /** Resolve a destination to the rendered href, for example to include a router basename. */
+    useHref?: (href: string) => string;
+}
+
 /** Renderer-independent application configuration for Components. */
 export interface CratisComponentsConfig {
+    /** Optional client-side router. Omit to retain native or inherited routing behavior. */
+    router?: CratisComponentsRouter;
     /** BCP 47 locale used by React Aria for dates, numbers, and interaction announcements. */
     locale?: string;
     /** Cratis-owned labels not supplied by the platform's internationalization APIs. */
@@ -375,6 +386,13 @@ export const CratisComponentsProvider = ({
         [value],
     );
 
+    const content = (
+        <I18nProvider locale={validLocale(resolved.locale)}>
+            {children}
+            {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
+        </I18nProvider>
+    );
+
     return (
         <RendererRoot
             library={library}
@@ -384,12 +402,11 @@ export const CratisComponentsProvider = ({
             rendererSetup={rendererSetup}
         >
             <CratisComponentsContext.Provider value={resolved}>
-                <I18nProvider locale={validLocale(resolved.locale)}>
-                    {children}
-                    {toaster && (
-                        <Toaster {...(typeof toaster === 'object' ? toaster : {})} />
-                    )}
-                </I18nProvider>
+                {resolved.router ? (
+                    <RouterProvider navigate={resolved.router.navigate} useHref={resolved.router.useHref}>
+                        {content}
+                    </RouterProvider>
+                ) : content}
             </CratisComponentsContext.Provider>
         </RendererRoot>
     );

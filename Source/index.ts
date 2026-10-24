@@ -24,6 +24,7 @@ export {
     cratisDefaults,
     mergeCratisComponentsConfig,
     type CratisComponentsConfig,
+    type CratisComponentsRouter,
     type CratisComponentsProviderProps,
     type CratisComponentsMessages,
     type CratisPaginatorMessages,

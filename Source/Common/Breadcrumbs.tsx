@@ -25,7 +25,7 @@ export interface BreadcrumbItem {
     label: ReactNode;
     /** Destination. A segment without one is text rather than a link — as the last segment is. */
     href?: string;
-    /** Called instead of navigating, for a router that owns navigation. */
+    /** Legacy press callback. Prefer provider routing with href; manually navigating here can navigate twice. */
     onNavigate?: () => void;
 }
 
