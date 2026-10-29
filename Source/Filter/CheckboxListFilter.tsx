@@ -96,9 +96,9 @@ export function CheckboxListFilter({
     const groupName = name ?? generatedName;
 
     const autoDetect = searchable === undefined;
-    const overflows = useOptionListOverflow(containerRef, mirrorRef, autoDetect);
-    const showSearch = searchable === true || (autoDetect && overflows);
     const hasOptions = options.length > 0;
+    const overflows = useOptionListOverflow(containerRef, mirrorRef, autoDetect && hasOptions);
+    const showSearch = searchable === true || (autoDetect && overflows);
 
     useEffect(() => {
         if (!autoFocusSearch) {
