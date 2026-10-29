@@ -71,7 +71,9 @@ jobs:
     # the longest shard instead of their sum. Every command that used to run in `build` still
     # runs; only which job runs it changed. `source` runs static checks; `source-specs` runs
     # every Source spec once across three shards without building dist. `typescript-consumers`
-    # checks packed consumers once per compiler (6 and 7), separately from `tooling`.
+    # checks packed consumers once per compiler (6 and 7), separately from `tooling`; the
+    # public-types check runs once per compiler in `verify-public-types` (same build recipe),
+    # which also uploads the report, and `Build` waits for that job.
     # `source`, `typescript-consumers`, and `storybook` build `@cratis/components` (and, for
     # the latter two, the adapters) before checks that need packed/dist output - mirroring
     # what `run-task-on-workspaces.js ci` already did per workspace, and what every other job
@@ -279,6 +281,8 @@ jobs:
 
     # Each compiler checks the same packed artifacts. Conformance's build prepares Source;
     # the four build-only commands preserve the prerequisites formerly owned by tooling.
+    # Public types are skipped here because `verify-public-types` runs them once per compiler
+    # with the same build recipe and uploads the report; `Build` waits for that job.
     typescript-consumers:
         name: TypeScript consumers (${{ matrix.typescript }})
         runs-on: ubuntu-latest
@@ -319,7 +323,7 @@ jobs:
                   yarn workspace @cratis/components.mui run build
                   yarn workspace @cratis/components.primereact run build
                   yarn workspace @cratis/components.primereact10 run build
-                  yarn verify-typescript-consumers --typescript ${{ matrix.typescript }}
+                  yarn verify-typescript-consumers --typescript ${{ matrix.typescript }} --skip-public-types
 
     # The Storybook workspace is `private`, so `run-task-on-workspaces.js ci` always skipped
     # it; its checks ran as their own steps at the end of the old `build` job instead, after
@@ -402,7 +406,7 @@ jobs:
               working-directory: Storybook
               run: node scripts/run-story-matrix.mjs --shard ${{ matrix.shard }}/3
 
-    # Aggregates all jobs above, including every Source, TypeScript, and Storybook matrix leg,
+    # Aggregates all jobs above, including every Source, TypeScript, public-types, and Storybook matrix leg,
     # into the single check this repository's branch protection historically pointed at
     # (`build`). No branch protection rule or ruleset
     # exists on `main` as of this change (checked via the GitHub API), so nothing currently
@@ -412,7 +416,7 @@ jobs:
     build:
         name: Build
         runs-on: ubuntu-latest
-        needs: [source, source-specs, adapters, tooling, typescript-consumers, storybook]
+        needs: [source, source-specs, adapters, tooling, typescript-consumers, verify-public-types, storybook]
         if: always()
         steps:
             - name: Require every shard to have succeeded
