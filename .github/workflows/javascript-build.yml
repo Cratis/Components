@@ -71,7 +71,9 @@ jobs:
     # the longest shard instead of their sum. Every command that used to run in `build` still
     # runs; only which job runs it changed. `source` runs static checks; `source-specs` runs
     # every Source spec once across three shards without building dist. `typescript-consumers`
-    # checks packed consumers once per compiler (6 and 7), separately from `tooling`.
+    # checks packed consumers once per compiler (6 and 7), separately from `tooling`; the
+    # public-types check runs once per compiler in `verify-public-types` (same build recipe),
+    # which also uploads the report, and `Build` waits for that job.
     # `source`, `typescript-consumers`, and `storybook` build `@cratis/components` (and, for
     # the latter two, the adapters) before checks that need packed/dist output - mirroring
     # what `run-task-on-workspaces.js ci` already did per workspace, and what every other job
@@ -279,6 +281,11 @@ jobs:
 
     # Each compiler checks the same packed artifacts. Conformance's build prepares Source;
     # the four build-only commands preserve the prerequisites formerly owned by tooling.
+    # Public types are skipped here because `verify-public-types` runs them once per compiler
+    # with the same build recipe and uploads the report; `Build` waits for that job.
+    # Both compilers also run the no-Pixi consumer check (a consumer with only the mandatory
+    # peers, pixi.js absent) and the spatial consumer check (optional pixi.js peer, one
+    # instance, ./Canvas type-checks) here, so no separate jobs repeat them.
     typescript-consumers:
         name: TypeScript consumers (${{ matrix.typescript }})
         runs-on: ubuntu-latest
@@ -319,7 +326,7 @@ jobs:
                   yarn workspace @cratis/components.mui run build
                   yarn workspace @cratis/components.primereact run build
                   yarn workspace @cratis/components.primereact10 run build
-                  yarn verify-typescript-consumers --typescript ${{ matrix.typescript }}
+                  yarn verify-typescript-consumers --typescript ${{ matrix.typescript }} --skip-public-types
 
     # The Storybook workspace is `private`, so `run-task-on-workspaces.js ci` always skipped
     # it; its checks ran as their own steps at the end of the old `build` job instead, after
@@ -402,7 +409,7 @@ jobs:
               working-directory: Storybook
               run: node scripts/run-story-matrix.mjs --shard ${{ matrix.shard }}/3
 
-    # Aggregates all jobs above, including every Source, TypeScript, and Storybook matrix leg,
+    # Aggregates all jobs above, including every Source, TypeScript, public-types, and Storybook matrix leg,
     # into the single check this repository's branch protection historically pointed at
     # (`build`). No branch protection rule or ruleset
     # exists on `main` as of this change (checked via the GitHub API), so nothing currently
@@ -412,7 +419,7 @@ jobs:
     build:
         name: Build
         runs-on: ubuntu-latest
-        needs: [source, source-specs, adapters, tooling, typescript-consumers, storybook]
+        needs: [source, source-specs, adapters, tooling, typescript-consumers, verify-public-types, storybook]
         if: always()
         steps:
             - name: Require every shard to have succeeded
@@ -638,90 +645,6 @@ jobs:
                   name: verify-package-graph-report
                   path: ${{ runner.temp }}/verify-package-graph-report.json
                   if-no-files-found: ignore
-
-    # Proves a consumer who installs only the mandatory peers - never pixi.js - can fully
-    # use the package root and every non-spatial subpath: runtime import, strict Bundler
-    # and NodeNext TypeScript for the root with pixi.js genuinely absent from
-    # node_modules, an SSR provider smoke test, and a clean packed root closure.
-    verify-no-pixi-consumer:
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-              with:
-                  persist-credentials: false
-
-            - name: Setup node
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-              with:
-                  node-version: 24.x
-                  registry-url: 'https://registry.npmjs.org'
-
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              id: yarn-cache
-              with:
-                  path: |
-                      .yarn/cache
-                      **/node_modules
-                      **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
-
-            - name: Yarn install
-              run: yarn install --immutable
-
-            - name: Build the published artifact
-              working-directory: Source
-              run: |
-                  export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn run prepare
-
-            - name: Verify no-Pixi consumer
-              working-directory: Source
-              run: node scripts/verify-no-pixi-consumer.mjs
-
-    # Complements verify-no-pixi-consumer: proves a consumer who installs the mandatory
-    # peers and the optional pixi.js peer can use the spatial subpaths (./Canvas,
-    # ./PivotViewer), that pixi.js resolves to exactly one instance with no nested copy,
-    # and that ./Canvas type-checks with pixi.js installed.
-    verify-spatial-consumer:
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-              with:
-                  persist-credentials: false
-
-            - name: Setup node
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-              with:
-                  node-version: 24.x
-                  registry-url: 'https://registry.npmjs.org'
-
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              id: yarn-cache
-              with:
-                  path: |
-                      .yarn/cache
-                      **/node_modules
-                      **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
-
-            - name: Yarn install
-              run: yarn install --immutable
-
-            - name: Build the published artifact
-              working-directory: Source
-              run: |
-                  export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn run prepare
-
-            - name: Verify spatial consumer
-              working-directory: Source
-              run: node scripts/verify-spatial-consumer.mjs
 
     # Proves the shared CratisComponentsContext (custom labels) and react-aria-components'
     # I18nProvider locale context stay one singleton across the root barrel and every
