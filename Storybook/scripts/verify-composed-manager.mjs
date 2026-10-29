@@ -9,6 +9,7 @@ import { chromium } from 'playwright';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 import { managerStoryPath, previewStoryPath, selectLinkStory } from './lib/composed-story-links.mjs';
 import { verifyRendererOptions } from './lib/renderer-options.mjs';
+import { switchRenderer } from './renderer-switch.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -254,8 +255,7 @@ try {
     const switchErrors = [];
     switchPage.on('pageerror', error => switchErrors.push(error.message));
     try {
-        await switchPage.locator(selectorQuery).selectOption(targetRendererId);
-        await switchPage.waitForURL(url => url.searchParams.get('path') === `/story/${targetRendererId}_${storyId}`, { timeout: 30_000 });
+        await switchRenderer(switchPage, { selectorQuery, sourceRendererId, targetRendererId, storyId });
         await switchPage.waitForFunction(({ refId, storyId, selectorQuery }) =>
             document.querySelector(selectorQuery)?.value === refId &&
             Array.from(document.querySelectorAll('iframe')).some(frame => {
