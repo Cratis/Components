@@ -283,6 +283,9 @@ jobs:
     # the four build-only commands preserve the prerequisites formerly owned by tooling.
     # Public types are skipped here because `verify-public-types` runs them once per compiler
     # with the same build recipe and uploads the report; `Build` waits for that job.
+    # Both compilers also run the no-Pixi consumer check (a consumer with only the mandatory
+    # peers, pixi.js absent) and the spatial consumer check (optional pixi.js peer, one
+    # instance, ./Canvas type-checks) here, so no separate jobs repeat them.
     typescript-consumers:
         name: TypeScript consumers (${{ matrix.typescript }})
         runs-on: ubuntu-latest
@@ -642,90 +645,6 @@ jobs:
                   name: verify-package-graph-report
                   path: ${{ runner.temp }}/verify-package-graph-report.json
                   if-no-files-found: ignore
-
-    # Proves a consumer who installs only the mandatory peers - never pixi.js - can fully
-    # use the package root and every non-spatial subpath: runtime import, strict Bundler
-    # and NodeNext TypeScript for the root with pixi.js genuinely absent from
-    # node_modules, an SSR provider smoke test, and a clean packed root closure.
-    verify-no-pixi-consumer:
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-              with:
-                  persist-credentials: false
-
-            - name: Setup node
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-              with:
-                  node-version: 24.x
-                  registry-url: 'https://registry.npmjs.org'
-
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              id: yarn-cache
-              with:
-                  path: |
-                      .yarn/cache
-                      **/node_modules
-                      **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
-
-            - name: Yarn install
-              run: yarn install --immutable
-
-            - name: Build the published artifact
-              working-directory: Source
-              run: |
-                  export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn run prepare
-
-            - name: Verify no-Pixi consumer
-              working-directory: Source
-              run: node scripts/verify-no-pixi-consumer.mjs
-
-    # Complements verify-no-pixi-consumer: proves a consumer who installs the mandatory
-    # peers and the optional pixi.js peer can use the spatial subpaths (./Canvas,
-    # ./PivotViewer), that pixi.js resolves to exactly one instance with no nested copy,
-    # and that ./Canvas type-checks with pixi.js installed.
-    verify-spatial-consumer:
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-              with:
-                  persist-credentials: false
-
-            - name: Setup node
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-              with:
-                  node-version: 24.x
-                  registry-url: 'https://registry.npmjs.org'
-
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              id: yarn-cache
-              with:
-                  path: |
-                      .yarn/cache
-                      **/node_modules
-                      **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
-
-            - name: Yarn install
-              run: yarn install --immutable
-
-            - name: Build the published artifact
-              working-directory: Source
-              run: |
-                  export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn run prepare
-
-            - name: Verify spatial consumer
-              working-directory: Source
-              run: node scripts/verify-spatial-consumer.mjs
 
     # Proves the shared CratisComponentsContext (custom labels) and react-aria-components'
     # I18nProvider locale context stay one singleton across the root barrel and every
