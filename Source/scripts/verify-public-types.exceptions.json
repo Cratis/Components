@@ -4,25 +4,10 @@
     "trackingIssue": "https://github.com/Cratis/Components/issues/176",
     "upstreamIssues": [
         {
-            "id": "pixi-webgpu-types-lib-conflict",
-            "summary": "pixi.js bundles @webgpu/types, whose WebGPU ambient declarations duplicate identifiers TypeScript 6 and 7 ship in lib.dom.d.ts (GPUTextureFormat, GPUDevice, GPUBindGroupDescriptor.entries, ...) with incompatible shapes. TS7 reports individual TS2300 duplicates instead of TS6's grouped TS6200; its active platform library path is normalized to typescript/lib while the original path remains in the report.",
-            "reason": "external - upstream declaration collision between @webgpu/types (a pixi.js dependency) and TypeScript's own built-in DOM lib; not a Components authoring defect.",
-            "upstreamPackages": [
-                { "name": "@webgpu/types", "version": "0.1.72", "via": "pixi.js@8.20.1" }
-            ],
-            "resolutionModes": ["bundler", "nodenext"],
-            "diagnosticCodes": ["TS2403", "TS2687", "TS2717", "TS6200"],
-            "diagnosticCodesByTypeScriptVersion": {
-                "7.0.2": ["TS2300", "TS2403", "TS2687", "TS2717"]
-            },
-            "filePrefixes": ["@webgpu/types/", "typescript/lib/lib.dom.d.ts"],
-            "removalCondition": "pixi.js ships a @webgpu/types release whose WebGPU surface no longer duplicates conflicting global identifiers against the target TypeScript version's lib.dom.d.ts (tracked upstream at https://github.com/pixijs/pixijs and https://github.com/gpuweb/types), OR Components narrows Canvas's public renderItem/CanvasContext contract off raw PIXI.* types without losing the ability to render arbitrary Pixi content (rejected for now - see docs/ui-foundation.md, 'Why the Canvas Pixi surface is not narrowed')."
-        },
-        {
             "id": "arc-react-global-jsx-namespace",
             "summary": "@cratis/arc.react ships a global.d.ts that declares `namespace JSX` referencing test-only ambient types (vitest/globals, chai, sinon-chai) as part of its published package instead of scoping that augmentation to its own test build. A strict external consumer that does not also install those test packages cannot resolve the bare `JSX` identifiers arc.react's dialog/command declaration files reference. This defect also surfaces under NodeNext since the extensionless specifiers were fixed.",
             "reason": "external - @cratis/arc.react's own shipped .d.ts, not a Components declaration; Components has no `namespace JSX` augmentation of its own.",
-            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.122.1" }],
+            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.153.1" }],
             "resolutionModes": ["bundler", "nodenext"],
             "diagnosticCodes": ["TS2503"],
             "filePrefixes": ["@cratis/arc.react/"],
@@ -30,13 +15,6 @@
         }
     ],
     "exceptions": [
-        {
-            "subpath": "./Canvas",
-            "resolutionModes": {
-                "bundler": ["pixi-webgpu-types-lib-conflict"],
-                "nodenext": ["pixi-webgpu-types-lib-conflict"]
-            }
-        },
         {
             "subpath": "./CommandDialog",
             "resolutionModes": {

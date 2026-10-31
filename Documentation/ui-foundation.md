@@ -167,7 +167,7 @@ Known upstream failures are bounded in `Source/scripts/verify-public-types.excep
 
 The current exceptions are:
 
-- **`@webgpu/types@0.1.72` through `pixi.js@8.20.1`:** its ambient WebGPU declarations conflict with the built-in DOM declarations for `Canvas`. TypeScript 6 reports `TS2403`, `TS2687`, `TS2717`, and grouped `TS6200`; TypeScript 7 reports individual `TS2300` duplicates instead of `TS6200`. The metadata scopes this code change to 7.0.2. Native compiler library paths are normalized for matching, with the original paths preserved in reports. The setup-only root has no Pixi type exception.
+- **`@cratis/arc.react@22.153.1`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler and NodeNext consumers of Core command/dialog subpaths (`TS2503`).
 - **`@cratis/arc.react@22.16.0`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
 - **`@cratis/arc@22.16.0`, `@cratis/arc.react@22.16.0`, and `@cratis/fundamentals@7.19.2`:** their published ESM declarations still use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
 
@@ -175,7 +175,7 @@ A `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: these upstr
 
 ### Why the Canvas Pixi surface remains public
 
-`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. The bounded WebGPU declaration exception is preferable to weakening this intentional extensibility contract. `pixi.js` is therefore an optional peer: Canvas/PivotViewer consumers install one compatible `^8.20.0` resolution, preventing nested nominally-incompatible Pixi instances while non-Pixi subpaths impose no installation requirement. PivotViewer does not expose Pixi types publicly and needs no equivalent declaration exception.
+`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. With the `pixi.js@8.22.0` dev/test pin, the WebGPU declaration conflict no longer reproduces under TypeScript 6 or 7, so the Canvas exception has been removed without weakening this intentional extensibility contract. `pixi.js` is therefore an optional peer: Canvas/PivotViewer consumers install one compatible `^8.20.0` resolution, preventing nested nominally-incompatible Pixi instances while non-Pixi subpaths impose no installation requirement. PivotViewer does not expose Pixi types publicly and needs no equivalent declaration exception.
 
 ## Current limitations and work records
 

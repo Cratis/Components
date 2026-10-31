@@ -273,16 +273,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:22.122.1":
-  version: 22.122.1
-  resolution: "@cratis/arc.react@npm:22.122.1"
+"@cratis/arc.react@npm:22.153.1":
+  version: 22.153.1
+  resolution: "@cratis/arc.react@npm:22.153.1"
   dependencies:
-    "@cratis/arc": "npm:22.122.1"
-    "@cratis/fundamentals": "npm:^7.23.0"
+    "@cratis/arc": "npm:22.153.1"
+    "@cratis/fundamentals": "npm:^7.27.0"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/69b0fd9825ae2546a19ab1dbca44dd312c5394ad0cc68a34cee18b2e846f01b184bd2b6b58dded4bbd263e5df941b4dedfd8eade65953daa6b38b4e5ad084466
+  checksum: 10/d275bab16e177931e1c1b001425c4aba7af9b39399d7da7b2dd7084f11ab07c1c6c8e6bca142cf6eac8479a34569165d4f1fc47a9cd2ed40772659b15363ca31
   languageName: node
   linkType: hard
 
@@ -318,6 +318,16 @@ __metadata:
     "@cratis/fundamentals": "npm:^7.23.0"
     rxjs: "npm:^7.8.2"
   checksum: 10/e84704b8f8e349d2f088b272447a1776dd724acc28a6f9b5005f7028e0f587318824a92c072ef5dc929824f2b8cf62b17486991f66fd002278abfa112deb32af
+  languageName: node
+  linkType: hard
+
+"@cratis/arc@npm:22.153.1":
+  version: 22.153.1
+  resolution: "@cratis/arc@npm:22.153.1"
+  dependencies:
+    "@cratis/fundamentals": "npm:^7.27.0"
+    rxjs: "npm:^7.8.2"
+  checksum: 10/2b8cddbef0ff44b944c13ef263c5824a77f8c2d7ded92a52fbf86647724951799df5ea3c60f8cfc4e5428d875e2e061ea2f87fec4b1a7c76cc72a9e8579a49ad
   languageName: node
   linkType: hard
 
@@ -461,7 +471,7 @@ __metadata:
     "@internationalized/date": "npm:3.12.4"
     allotment: "npm:1.20.5"
     framer-motion: "npm:13.5.0"
-    pixi.js: "npm:^8.20.1"
+    pixi.js: "npm:8.22.0"
     react: "npm:19.3.0"
     react-aria: "npm:3.52.1"
     react-aria-components: "npm:1.21.1"
@@ -497,6 +507,13 @@ __metadata:
   version: 7.25.1
   resolution: "@cratis/fundamentals@npm:7.25.1"
   checksum: 10/1ed0d6558dd22036d993b8bd36799c145a0e1afe7cb6bbbb0797013c4ff75eafd9851fd865954c17775549987db53f5cf69fb02c5fecb14496a248248d65fb94
+  languageName: node
+  linkType: hard
+
+"@cratis/fundamentals@npm:^7.27.0":
+  version: 7.29.0
+  resolution: "@cratis/fundamentals@npm:7.29.0"
+  checksum: 10/afa745586eaffae158789f96fd84c7c8da6cdfed5bbb93319c3e524d6e583556ad558b9b09fe7f4fa0c372a4347f9b47e112a972a42d0e2f1336bb2f3534aa4e
   languageName: node
   linkType: hard
 
@@ -6348,9 +6365,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pixi.js@npm:^8.20.1":
-  version: 8.20.1
-  resolution: "pixi.js@npm:8.20.1"
+"pixi.js@npm:8.22.0":
+  version: 8.22.0
+  resolution: "pixi.js@npm:8.22.0"
   dependencies:
     "@pixi/colord": "npm:^2.9.6"
     "@types/earcut": "npm:^3.0.0"
@@ -6362,7 +6379,7 @@ __metadata:
     ismobilejs: "npm:^1.1.1"
     parse-svg-path: "npm:^0.2.0"
     tiny-lru: "npm:^11.4.7"
-  checksum: 10/66951b184fc456070653d4f38fadea15627a708df3a2e70a4a70b2ba3669d2d918987640cc47d2739c9a986b57bd02ab4ccd34900eab4193bfa57898a5f75ac0
+  checksum: 10/6bc54a9d12a4f24ef18564f44ce634bb950b1c7dadd6466e84cf03c71c58cfeaca27fa51624ca305c6762668b41767b920998f984b36cb9d2dcb3a86f925e5ae
   languageName: node
   linkType: hard
 
@@ -6923,8 +6940,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:22.122.1"
-    "@cratis/arc.react": "npm:22.122.1"
+    "@cratis/arc": "npm:22.153.1"
+    "@cratis/arc.react": "npm:22.153.1"
     "@cratis/arc.vite": "npm:22.122.1"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"
