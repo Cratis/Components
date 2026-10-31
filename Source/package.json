@@ -314,7 +314,7 @@
     },
     "devDependencies": {
         "@cratis/arc.vite": "22.122.1",
-        "pixi.js": "^8.20.1",
+        "pixi.js": "8.22.0",
         "react": "19.3.0",
         "react-dom": "19.3.0"
     },
