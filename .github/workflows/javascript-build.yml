@@ -409,17 +409,28 @@ jobs:
               working-directory: Storybook
               run: node scripts/run-story-matrix.mjs --shard ${{ matrix.shard }}/3
 
-    # Aggregates all jobs above, including every Source, TypeScript, public-types, and Storybook matrix leg,
-    # into the single check this repository's branch protection historically pointed at
-    # (`build`). No branch protection rule or ruleset
-    # exists on `main` as of this change (checked via the GitHub API), so nothing currently
-    # requires this job - it is added defensively so that if/when branch protection is
-    # configured to require one `javascript-build.yml` check, `build` keeps meaning "every
-    # shard passed" rather than needing per-shard rules kept in sync by hand.
+    # Aggregates every other job in this workflow, including every Source, TypeScript, public-types,
+    # Storybook, release-evidence, package-verification, Arc-consumer and renderer-adapter matrix leg,
+    # into the single `Build` check. A failed or cancelled leg fails `Build`, so one required check
+    # means "every leg passed" without per-leg rules kept in sync by hand. Add any new job here.
     build:
         name: Build
         runs-on: ubuntu-latest
-        needs: [source, source-specs, adapters, tooling, typescript-consumers, verify-public-types, storybook]
+        needs:
+            - source
+            - source-specs
+            - adapters
+            - tooling
+            - typescript-consumers
+            - verify-public-types
+            - storybook
+            - release-evidence
+            - verify-published-exports
+            - verify-package-graph
+            - verify-provider-context-identity
+            - verify-arc-consumers
+            - verify-package-managers
+            - verify-renderer-adapters
         if: always()
         steps:
             - name: Require every shard to have succeeded
