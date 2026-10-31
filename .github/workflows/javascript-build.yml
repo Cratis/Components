@@ -873,6 +873,9 @@ jobs:
                   yarn node verify.mjs "${{ matrix.pixi }}"
                   yarn node verify-peers.mjs
 
+    # Each Node 24 leg verifies npm, pnpm and Yarn Plug'n'Play from one build and pack of Components
+    # and the adapter (`--manager all`, stopping at the first failing manager), instead of repeating
+    # the build and pack per package manager (#453). The Node 22 engine legs stay npm-only.
     verify-renderer-adapters:
         name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }}, Node ${{ matrix.node }})
         runs-on: ubuntu-latest
@@ -882,7 +885,7 @@ jobs:
             matrix:
                 adapter: [mui, primereact11, primereact10]
                 boundary: [minimum, current]
-                manager: [npm, pnpm, yarn-pnp]
+                manager: [all]
                 node: [24.x]
                 # The oldest Node.js the published packages declare in engines. npm with
                 # engine-strict refuses to install a package whose engines exclude the running
