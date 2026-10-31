@@ -3,12 +3,16 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFileSync } from 'node:fs';
 import { matchesExternalIssue, publicTypeIssueForCompiler } from '../Source/scripts/lib/public-type-exceptions.mjs';
 import { normalizeTypeScriptDiagnosticPath } from './lib/typescript-diagnostic-path.mjs';
 
-const metadata = JSON.parse(readFileSync(new URL('../Source/scripts/verify-public-types.exceptions.json', import.meta.url), 'utf8'));
-const webGpuIssue = metadata.upstreamIssues.find((issue) => issue.id === 'pixi-webgpu-types-lib-conflict');
+// Fixture mirroring the retired pixi/@webgpu/types exception; it keeps the per-compiler code mapping covered.
+const webGpuIssue = {
+    id: 'pixi-webgpu-types-lib-conflict',
+    diagnosticCodes: ['TS2403', 'TS2687', 'TS2717', 'TS6200'],
+    diagnosticCodesByTypeScriptVersion: { '7.0.2': ['TS2300', 'TS2403', 'TS2687', 'TS2717'] },
+    filePrefixes: ['@webgpu/types/', 'typescript/lib/lib.dom.d.ts'],
+};
 
 for (const [version, allowed, rejected] of [['6.0.3', 'TS6200', 'TS2300'], ['7.0.2', 'TS2300', 'TS6200']]) {
     test(`bounds the WebGPU diagnostic code mapping to TypeScript ${version}`, () => {
