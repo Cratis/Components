@@ -167,7 +167,7 @@ Known upstream failures are bounded in `Source/scripts/verify-public-types.excep
 
 The current exception is:
 
-- **`@cratis/arc.react@22.153.1`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler and NodeNext consumers of Core command/dialog subpaths (`TS2503`). Tracked upstream in https://github.com/Cratis/Arc/issues/3588.
+- **`@cratis/arc.react@22.153.1`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler and NodeNext consumers of Core command/dialog subpaths (`TS2503`). Tracked upstream in [Cratis/Arc#3588](https://github.com/Cratis/Arc/issues/3588).
 
 A `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: these upstream diagnostics remain reproducible with the pinned releases. The gate reports them rather than disabling declaration checks, and fails on any additional or Components-owned regression.
 
