@@ -15,6 +15,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { ButtonImplementation } from './ButtonImplementation';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { buttonDescriptor } from './buttonDescriptor';
 
 /** Visual treatment of a {@link Button}. */
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link';
@@ -133,5 +135,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     ref,
 ) {
     const declaration = unstable_useSlot('common.button', coreButtonDeclaration);
-    return renderSlot(declaration, props, ref);
+    const [presented, marker] = useComponentPresentation(buttonDescriptor, props, props.id);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });

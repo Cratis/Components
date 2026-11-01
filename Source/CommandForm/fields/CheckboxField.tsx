@@ -52,6 +52,7 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-cratis-component='CheckboxField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-selected={props.value || undefined}

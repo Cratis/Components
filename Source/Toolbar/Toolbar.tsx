@@ -88,6 +88,7 @@ export const Toolbar = ({
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='root'
+                data-cratis-component='Toolbar'
                 data-orientation={orientation}
             >
                 <ToolbarRovingContext.Provider value={roving}>

@@ -95,6 +95,7 @@ export const Tabs = ({
         isDisabled={disabled}
         className={classNames('cratis-tabs', pt?.root?.className, className)}
         data-cratis-part='root'
+        data-cratis-component='Tabs'
         data-disabled={disabled || undefined}
     >
         <AriaTabList

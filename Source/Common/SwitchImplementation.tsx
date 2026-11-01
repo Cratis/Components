@@ -48,6 +48,7 @@ export const SwitchImplementation = forwardRef<HTMLInputElement, SwitchProps>(
                     .join(' ')}
                 style={{ ...pt?.root?.style, ...style }}
                 data-cratis-part='root'
+                data-cratis-component='Switch'
                 data-disabled={effectiveDisabled || undefined}
                 data-invalid={effectiveInvalid || undefined}
                 data-readonly={effectiveReadOnly || undefined}

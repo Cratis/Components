@@ -31,6 +31,7 @@ export const Avatar = ({
     <span
         className={['cratis-avatar', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='Avatar'
         data-size={size}
     >
         {image ? (

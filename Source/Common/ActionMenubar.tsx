@@ -94,6 +94,7 @@ export const ActionMenubar = ({
         role='toolbar'
         className={['cratis-action-menubar', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='ActionMenubar'
         aria-label={ariaLabel}
     >
         <ToolbarRovingContext.Provider value={roving}>

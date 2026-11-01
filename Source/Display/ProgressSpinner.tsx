@@ -22,6 +22,7 @@ export const ProgressSpinner = ({
     <span
         className={['cratis-progress-spinner', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='ProgressSpinner'
         data-busy='true'
         data-loading='true'
         style={style}

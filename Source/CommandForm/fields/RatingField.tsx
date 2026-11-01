@@ -66,6 +66,7 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                     .join(' ')}
                 onBlur={props.onBlur}
                 data-cratis-part='root'
+                data-cratis-component='RatingField'
                 data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
             >

@@ -35,6 +35,7 @@ export const Badge = ({
     <span
         className={['cratis-badge', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='Badge'
         data-severity={severity}
         data-size={size}
         data-shape={shape}

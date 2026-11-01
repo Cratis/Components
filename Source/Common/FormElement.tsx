@@ -42,7 +42,7 @@ export interface FormElementProps {
  */
 export const FormElement = (props: FormElementProps) => {
     return (
-        <div className='cratis:flex cratis:flex-col cratis:md:flex-row cratis:gap-3'>
+        <div className='cratis:flex cratis:flex-col cratis:md:flex-row cratis:gap-3' data-cratis-component='FormElement'>
             <div className='cratis-form-element'>
                 <span className='cratis-form-element__addon'>{props.icon}</span>
                 {props.children}

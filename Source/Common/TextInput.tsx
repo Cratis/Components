@@ -9,6 +9,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { TextInputImplementation } from './TextInputImplementation';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { textInputDescriptor } from './textFieldDescriptors';
 
 /** Native text-like input types supported by {@link TextInput}. */
 export type TextInputType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
@@ -53,6 +55,11 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             'common.textInput',
             coreTextInputDeclaration,
         );
-        return renderSlot(declaration, props, ref);
+        const [presented, marker] = useComponentPresentation(
+            textInputDescriptor,
+            props,
+            props.id ?? props.name,
+        );
+        return renderSlot(declaration, { ...presented, ...marker }, ref);
     },
 );

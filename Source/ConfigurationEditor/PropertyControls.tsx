@@ -100,6 +100,7 @@ export const PropertyControls = ({
             aria-labelledby={ariaLabelledBy}
             className={['cratis-property-controls', pt?.root?.className, className].filter(Boolean).join(' ')}
             data-cratis-part='root'
+            data-cratis-component='PropertyControls'
         >
             {groups.map((group) => {
                 const titleId = `${baseId}-${group.id.replace(/[^A-Za-z0-9_-]/gu, '_')}`;

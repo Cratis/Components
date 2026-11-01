@@ -125,6 +125,7 @@ export const ToggleGroup = ({
             aria-describedby={ariaDescribedBy}
             className={classNames('cratis-toggle-group', pt?.root?.className, className)}
             data-cratis-part='root'
+            data-cratis-component='ToggleGroup'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
         >

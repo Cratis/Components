@@ -257,6 +257,7 @@ export const DataTableCore = <TData extends object>({
             )}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
+            data-cratis-component='DataTableCore'
             data-busy={isBusy || undefined}
         >
             {!!globalFilterFields?.length && (

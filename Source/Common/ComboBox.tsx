@@ -360,6 +360,7 @@ export const ComboBox = ({
             aria-describedby={describedBy}
             className={classNames('cratis-combobox', pt?.root?.className, className)}
             data-cratis-part='root'
+            data-cratis-component='ComboBox'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}

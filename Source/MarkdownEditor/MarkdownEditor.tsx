@@ -225,6 +225,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
             )}
             style={{ minHeight, ...props.pt?.root?.style }}
             data-cratis-part='root'
+            data-cratis-component='MarkdownEditor'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}

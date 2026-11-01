@@ -83,6 +83,7 @@ export const Breadcrumbs = ({
             {...pt?.root}
             className={classNames('cratis-breadcrumbs', pt?.root?.className, className)}
             data-cratis-part='root'
+            data-cratis-component='Breadcrumbs'
         >
         {items.map((item, index) => {
             const current = index === items.length - 1;

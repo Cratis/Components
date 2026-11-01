@@ -365,6 +365,7 @@ export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>({
             onPointerDownCapture={() => { pending.current = null; }}
             onFocusCapture={() => { if (!restoring.current) pending.current = null; }}
             data-cratis-part='root'
+            data-cratis-component='OrderedItemEditor'
         >
             {fixedItems.length > 0 && (
                 <section

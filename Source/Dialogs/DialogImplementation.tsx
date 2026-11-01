@@ -21,6 +21,8 @@ import {
 } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
 import { classNames } from '../ClassNames/classNames';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { dialogDescriptor } from './dialogDescriptor';
 
 // Inline rather than in Dialog.css: the packed aggregate stylesheet has a reviewed size budget.
 const visuallyHidden: React.CSSProperties = {
@@ -47,35 +49,37 @@ const useIsBrowser = () =>
  * A modal dialog with Arc host integration, typed footer actions, busy/validity
  * state, controlled dismissal, and stable Cratis-owned styling parts.
  */
-export const DialogImplementation = ({
-    title,
-    subtitle,
-    placement = 'center',
-    closeIcon,
-    visible = true,
-    onClose,
-    onConfirm,
-    onCancel,
-    buttons = DialogButtons.OkCancel,
-    initialFocus = DialogInitialFocus.Confirm,
-    children,
-    width = '450px',
-    style,
-    contentStyle,
-    isValid,
-    isBusy = false,
-    okLabel,
-    cancelLabel,
-    yesLabel,
-    noLabel,
-    closeAriaLabel,
-    dismissable,
-    dismissOnOutsideClick,
-    closeOnEscape,
-    showCloseButton,
-    className,
-    pt,
-}: DialogProps) => {
+export const DialogImplementation = (incomingProps: DialogProps) => {
+    const [props, marker] = useComponentPresentation(dialogDescriptor, incomingProps);
+    const {
+        title,
+        subtitle,
+        placement = 'center',
+        closeIcon,
+        visible = true,
+        onClose,
+        onConfirm,
+        onCancel,
+        buttons = DialogButtons.OkCancel,
+        initialFocus = DialogInitialFocus.Confirm,
+        children,
+        width = '450px',
+        style,
+        contentStyle,
+        isValid,
+        isBusy = false,
+        okLabel,
+        cancelLabel,
+        yesLabel,
+        noLabel,
+        closeAriaLabel,
+        dismissable,
+        dismissOnOutsideClick,
+        closeOnEscape,
+        showCloseButton,
+        className,
+        pt,
+    } = props;
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const { messages } = useCratisComponentsConfig();
     const dialogMessages = messages?.dialog;
@@ -480,6 +484,7 @@ export const DialogImplementation = ({
                         )}
                         style={dialogStyle}
                         data-cratis-part='root'
+                        {...marker}
                         data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}
@@ -532,6 +537,7 @@ export const DialogImplementation = ({
                         )}
                         style={dialogStyle}
                         data-cratis-part='root'
+                        {...marker}
                         data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}

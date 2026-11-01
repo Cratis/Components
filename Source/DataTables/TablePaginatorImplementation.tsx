@@ -56,6 +56,7 @@ export const TablePaginatorImplementation = ({
             role='navigation'
             aria-label={labels.navigation}
             data-cratis-part='root'
+            data-cratis-component='TablePaginator'
             className={['cratis-table-paginator', pt?.root?.className, className]
                 .filter(Boolean)
                 .join(' ')}

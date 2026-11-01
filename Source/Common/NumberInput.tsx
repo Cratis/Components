@@ -328,6 +328,7 @@ export const NumberInput = ({
             className={classNames('cratis-number-input', pt?.root?.className, className)}
             style={pt?.root?.style as CSSProperties | undefined}
             data-cratis-part='root'
+            data-cratis-component='NumberInput'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}

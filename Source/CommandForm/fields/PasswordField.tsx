@@ -60,6 +60,7 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 .filter(Boolean)
                 .join(' ')}
             data-cratis-part='root'
+            data-cratis-component='PasswordField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-readonly={props.pt?.input?.readOnly || undefined}

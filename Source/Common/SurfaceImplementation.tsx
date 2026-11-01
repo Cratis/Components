@@ -27,6 +27,7 @@ export const SurfaceImplementation = forwardRef<HTMLElement, SurfaceProps>(
                     .join(' ')}
                 style={{ ...pt?.root?.style, ...style }}
                 data-cratis-part='root'
+                data-cratis-component='Surface'
             />
         );
     },
