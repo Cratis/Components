@@ -44,7 +44,7 @@ While the first result is loading without rows, the table shows `Loading…`. A 
 | Unauthorized query | `You are not authorized to view this data.` | Authentication and backend authorization |
 | Refresh with existing rows | Rows remain; table is busy | Wait for the next result, not a new initial-empty screen |
 
-Failure and authorization status take priority over loading and empty status. A custom detail panel using a query hook must handle those states itself.
+Denied access takes priority, followed by exceptions or invalid query arguments. A performing or not-ready result is loading; once it settles, an unsuccessful result is a failure even without exceptions. None of these states means a successful empty result. A custom panel using a query hook must handle these states itself.
 
 ## Prefer the hook when you need the data, not a table
 
@@ -56,11 +56,16 @@ import { AllAuthors } from './Authors/Author';
 export const AuthorCount = () => {
     const [authors] = AllAuthors.use();
     if (!authors.isAuthorized) return <p>You don't have access to the author list.</p>;
-    if (authors.hasExceptions) return <p role='alert'>Couldn't load authors.</p>;
-    if (authors.isPerforming && !authors.hasData) return <p>Loading…</p>;
+    const isLoading = authors.isPerforming || authors.isReady === false;
+    if (authors.hasExceptions || authors.isValid === false || (!isLoading && authors.isSuccess === false)) {
+        return <p role='alert'>Couldn't load authors.</p>;
+    }
+    if (isLoading && !authors.hasData) return <p>Loading…</p>;
     return <p>{authors.data.length} authors</p>;
 };
 ```
+
+The initial not-ready result shows **Loading…**, not zero authors. Existing data stays visible during a refresh; zero authors means a successful empty result. If the query fails, check its arguments and the backend response before retrying. For denied access, check sign-in and permissions.
 
 ## List-and-detail with DataPage
 

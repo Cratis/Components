@@ -28,8 +28,11 @@ The selected `Author.id` has two jobs: it becomes `BooksForAuthor`'s `authorId` 
     const Books = ({ authorId }: { authorId: Guid }) => {
         const [books] = BooksForAuthor.use({ authorId });
         if (!books.isAuthorized) return <p role='alert'>You cannot view these books.</p>;
-        if (books.hasExceptions) return <p role='alert'>Could not load books.</p>;
-        if (books.isPerforming && !books.hasData) return <p>Loading books…</p>;
+        const isLoading = books.isPerforming || books.isReady === false;
+        if (books.hasExceptions || books.isValid === false || (!isLoading && books.isSuccess === false)) {
+            return <p role='alert'>Could not load books.</p>;
+        }
+        if (isLoading && !books.hasData) return <p>Loading books…</p>;
         if (books.data.length === 0) return <p>No books yet.</p>;
         return (
             <ul>
@@ -48,7 +51,7 @@ The selected `Author.id` has two jobs: it becomes `BooksForAuthor`'s `authorId` 
     );
     ```
 
-    The query is scoped to one author and observable, so the list stays current while the panel is open. The panel owns its loading, unauthorized, failed, and empty states because it runs its own query. A denied or failed query is not an empty book list.
+    The query is scoped to one author and observable, so the list stays current while the panel is open. The panel owns its status because it runs its own query: denied access takes priority, followed by exceptions or invalid arguments. A performing or not-ready result is still loading; existing books stay visible during a refresh. Once loading ends, an unsuccessful result is a failure even without exceptions. Only a successful empty result shows **No books yet.** For failures, check the query arguments and backend response before retrying; for denied access, check sign-in and permissions.
 
     The `key` matters. `DataPage` keeps the details component mounted when the selection moves to another row, and a query hook keeps its last result when its arguments change until the new result arrives. Without the key, selecting another author briefly shows the previous author's books under the new name. Keying the child by author id mounts a fresh query per author, so the panel shows *Loading books…* instead.
 
