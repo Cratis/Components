@@ -1,8 +1,8 @@
 # @cratis/components
 
-React components for CQRS and event-sourced applications built with
-[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
-query-backed data tables, and higher-order application surfaces.
+The React UI component of **Cratis Platform**, published as `@cratis/components`:
+command dialogs, typed forms, query-backed tables, and application surfaces composed around
+[Cratis Arc](https://github.com/Cratis/Arc). Chronicle is not required.
 
 The package provides React components for Arc commands, queries, dialogs,
 forms, and application surfaces. Components owns its public markup, TypeScript
@@ -13,6 +13,21 @@ interaction primitives internally; consumers do not import or style React Aria.
 - [Renderer adapters and coexistence](https://github.com/Cratis/Components/tree/main/Documentation/renderers)
 - [Migration guide](./MIGRATION.md)
 - [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
+
+## Choose your first surface
+
+- **A generated command or query:** follow [Getting started](https://www.cratis.io/components/getting-started/)
+  for peers, CSS, and both providers. Then [build the library screen](https://www.cratis.io/components/tutorial/)
+  against the linked Arc backend and generated proxies. Components does not supply those contracts.
+- **Already-loaded rows or local UI state:** choose `DataTableCore` or a controlled control from
+  the [decision guide](https://www.cratis.io/components/choosing-a-component/). That surface need not
+  call an Arc backend; the required Arc package peers below do not become optional.
+- **An existing Components 3 application:** use the [migration guide](./MIGRATION.md) before copying
+  Components 4 imports into it.
+
+The tutorial continues from a table to an add-author dialog and a selected author's books.
+A command's success closes its dialog; a row appears when the query delivers updated data.
+For failures, start with the [symptom guide](https://www.cratis.io/components/troubleshooting/).
 
 ## Install
 
@@ -29,10 +44,10 @@ The current package manifest declares these peer dependencies:
 - `reflect-metadata` `0.2.2`
 - optional `tsyringe` `4.10.0` (Arc React installs it as its own dependency)
 
-Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This repository builds and tests against Arc 22.16.0:
+Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This checkout pins its Arc development dependencies to 22.153.1; use the version matching your generated proxies:
 
 ```bash
-ARC_VERSION=22.16.0
+ARC_VERSION=22.153.1
 npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \

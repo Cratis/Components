@@ -5,7 +5,7 @@ description: Put the library's authors on screen with a data table that binds to
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-A library screen starts with a list. We have an `AllAuthors` query from the backend, generated into a typed proxy — so the first job is to get its results onto the screen in a table. And because that query is **observable**, the table will stay current on its own.
+Start with the read side: render the generated observable `AllAuthors` query as a table. Complete the [tutorial prerequisites](./index.md#before-you-start) first: this chapter needs the running Arc library backend, generated `src/Authors/Author.ts`, and the providers and CSS from [Getting started](/components/getting-started/). An empty result is fine; you will add an author in the next chapter.
 
 <Steps>
 
@@ -17,7 +17,7 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
     import { AllAuthors } from './Authors/Author'; // generated observable query proxy
 
     export const Authors = () => (
-        <Page title='Authors'>
+        <Page title='Authors' showTitle>
             <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet'>
                 <Column field='name' header='Name' sortable />
             </DataTableForObservableQuery>
@@ -29,11 +29,23 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
 
 </Steps>
 
-That's the whole screen. `Page` is the layout root for a routable view: a column that fills its parent. Its `title` is rendered, as a heading, only when you add `showTitle`; it doesn't set the browser tab title. The table does the rest.
+`Page` is the layout root for a routable view: a column that fills its parent. Here `showTitle` renders **Authors** as a level-one heading. Without it, `title` alone is not visible; neither prop sets the browser tab title.
+
+## Check the first result
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `Loading…` with no rows | The first result is pending | If it persists, inspect the query request and backend connection |
+| `No authors yet` | A successful query returned no authors | Continue to the add-author chapter |
+| Author names | A successful result supplied rows | Compare them with your library data |
+| `Could not load data.` | The query failed | Inspect the failed request and backend error, not the empty-state text |
+| `You are not authorized to view this data.` | The query is unauthorized | Check application authentication and backend authorization |
+
+For connection failures, use [Commands or queries do not reach the backend](/components/troubleshooting/#commands-or-queries-do-not-reach-the-backend). An unstyled table is a separate [CSS setup problem](/components/troubleshooting/#components-render-without-styles), not evidence that the query failed.
 
 ## What you didn't write
 
-Notice everything that's _absent_. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new query result down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
+There is no application `fetch`, `useEffect`, or subscription to maintain here. `DataTableForObservableQuery` uses Arc's observable-query runtime and renders the delivered rows and query status. When that observable delivers a changed result, the table re-renders. Registering an author is a separate operation; the next chapter lets you observe the command and the subsequent query update.
 
 <Aside type='note' title='Live, because the query is observable'>
     The liveness comes from the query being observable on the C# side: `AllAuthors` returns
@@ -51,6 +63,6 @@ The generated query and its row values are typed, but `Column.field` is currentl
 
 - A library screen that lists every author in a table,
 - bound to the `AllAuthors` query with **no subscription or fetch code**,
-- that will update itself the instant the data behind it changes.
+- that re-renders when the observable query delivers a new result.
 
 A read-only list isn't a back office, though — a librarian needs to _add_ authors. Next we'll give the screen a command. [Let's act on the list →](./act-on-it.mdx)

@@ -5,15 +5,17 @@ description: Install Components, mount the providers, and open your first type-s
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` query—and `dotnet build` generated typed proxies for both. Components turns those proxies into forms, dialogs, and data views that already know how to validate, execute, and show query results. By the end of this page you'll click **Add author**, type a name, and watch the dialog run `RegisterAuthor` and close on success.
+Configure **Components**, the React UI component of Cratis Platform, then open an add-author dialog against a running Arc backend. By the end of this page you can enter a name, execute the generated `RegisterAuthor` command, and distinguish success from a rejected command. To build the list and selected author's books around it, continue with the [library tutorial](/components/tutorial/).
+
+This page follows the generated-proxy path. Components does not generate proxies or start a backend. For local arrays or controlled input without backend requests, [choose a local-data surface](/components/choosing-a-component/) instead; the package peer requirements still apply. Chronicle is not required.
 
 ## Prerequisites
 
 - A React 19 application built with TypeScript. Components declares `react` and `react-dom` `^19.0.0` as peers.
 - An Arc frontend with generated proxies and `experimentalDecorators`/`emitDecoratorMetadata` enabled. The [Arc tutorial's first slice](/arc/tutorial/first-slice/) sets up the project, `tsconfig.json`, and Vite proxy that this page assumes.
-- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <23`. This repository builds and tests against Arc **22.16.0**; other versions in the range are accepted by the peer declaration but are not all exercised here.
+- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <23`. This checkout pins its Arc development dependencies to **22.153.1**. The wider peer range is not a claim that every accepted version is exercised.
 
-The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a required `id` and a `name`, and `AllAuthors` is an observable query on the `Author` read model in `./Authors/Author`.
+Keep the Arc backend running and retain the Arc tutorial's development-server routing. Check that `src/Authors/RegisterAuthor.ts` exports the generated `RegisterAuthor` command with required `id` and `name`. The later table chapter also needs `AllAuthors` from `src/Authors/Author.ts`. If an export is missing, finish the backend slice and regenerate proxies rather than writing a substitute command class.
 
 ## Install and wire it up
 
@@ -30,7 +32,7 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
     The package requires React, Arc, Fundamentals, and `reflect-metadata` as peers. `tsyringe` is an optional peer: Components never imports it, and Arc React installs it as its own dependency. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. A strict installer can install the required peers explicitly (replace the Arc version with the one your backend uses):
 
     ```bash title="Install explicit peers"
-    ARC_VERSION=22.16.0
+    ARC_VERSION=22.153.1
     npm install @cratis/components@^4 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
@@ -41,13 +43,19 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
 
     `pixi.js@^8.20.0` is another **optional** peer, needed only if you use `Canvas` or `PivotViewer`. Every other component needs nothing beyond the required peers above; install Pixi later, when you reach a spatial workspace or card-grid screen. See [Choosing a component](/components/choosing-a-component/#spatial-workspaces).
 
-2. **Import the stylesheets once**, at your application entry point, after `reflect-metadata`:
+2. **Create the CSS entry file**, keeping the package imports in this order:
+
+    ```css title="src/index.css"
+    @import '@cratis/components/tokens';
+    @import '@cratis/components/styles';
+    @import '@cratis/components/theme'; /* optional baseline appearance */
+    ```
+
+    Import that local file once from your application entry, alongside `reflect-metadata`:
 
     ```tsx title="src/main.tsx"
     import 'reflect-metadata';
-    import '@cratis/components/tokens';
-    import '@cratis/components/styles';
-    import '@cratis/components/theme'; // optional baseline appearance
+    import './index.css';
     import { createRoot } from 'react-dom/client';
     import { App } from './App';
 
@@ -65,7 +73,9 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
         semantic variables.
     </Aside>
 
-    The stylesheet subpaths ship no type declarations. If TypeScript reports `TS2882: Cannot find module or type declarations for side-effect import`, declare them once, for example in `src/cratis-components-styles.d.ts`:
+    This CSS-first path avoids TypeScript 6's `TS2882` for direct side-effect imports of the package's stylesheet subpaths, which ship no type declarations. Keep your bundler's CSS module types enabled; Vite projects normally reference `vite/client`. If a non-Vite setup needs a declaration for the local CSS import, add `declare module '*.css';` in a project-included `.d.ts` file.
+
+    Existing applications can retain direct TypeScript imports of the three package stylesheets if they declare those subpaths once, for example in `src/cratis-components-styles.d.ts`. These declarations are an alternative to the CSS-first path, not an extra step required by it:
 
     ```typescript title="src/cratis-components-styles.d.ts"
     declare module '@cratis/components/tokens';
@@ -73,7 +83,7 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
     declare module '@cratis/components/theme';
     ```
 
-3. **Mount both providers** around your application. `<Arc>` supplies the command and query runtime the generated proxies use; `CratisComponentsProvider` supplies Components' locale, labels, and optional toast region. The Components provider does not replace `<Arc>`:
+3. **Mount both providers** around your application. `<Arc>` supplies the command and query runtime the generated proxies use; `CratisComponentsProvider` supplies Components' locale, labels, and optional toast region. The Components provider does not replace `<Arc>` or configure the backend URL. Keep the Arc connection settings from your application. `Library` below is the handwritten component you will create later on this page:
 
     ```tsx title="src/App.tsx"
     import { Arc } from '@cratis/arc.react';
@@ -201,7 +211,9 @@ export const Library = () => {
 
 Run the app, click **Add author**, and type a name. **Add** enables, the dialog executes `RegisterAuthor` when you confirm, and it closes once the backend reports success. If the backend rejects the command, the dialog stays open and shows the validation messages against the fields. **Cancel**, the close button, and Escape close it without executing.
 
-No `isExecuting` state, button wiring, or duplicate validation logic is required. If the C# command changes, the regenerated proxy makes this component fail compilation until you update it.
+Before continuing, check three outcomes: an empty required name prevents confirmation; **Cancel** closes without executing; a valid submission closes only on command success. Also try the flow with a keyboard and check the title, field label, and return focus in your application. A rejection is not a success: the dialog remains open, and server validation can be displayed against the fields.
+
+No application `isExecuting` state or duplicate client validation logic is required for this flow. Generated types help detect contract changes; regenerate proxies when C# changes and update affected accessors. The next tutorial adds an observable table: seeing its new row is a separate query-result checkpoint, not something closing this dialog guarantees.
 
 ## Choose how it looks
 
@@ -216,7 +228,7 @@ Do not target React Aria class names or internal DOM structure. See [Styling](/c
 
 ## If something doesn't work
 
-- **Add never enables** — a required command value is missing from `initialValues`. See [Troubleshooting](/components/troubleshooting/#the-command-submit-button-stays-disabled).
+- **Add never enables** — check client validation and every required value, including hidden ids in `initialValues`. See [Troubleshooting](/components/troubleshooting/#the-command-submit-button-stays-disabled).
 - **Components render unstyled** — the `tokens` and `styles` imports are missing or run after your product CSS in the wrong order. See [Troubleshooting](/components/troubleshooting/#components-render-without-styles).
 - **Commands or queries never reach the backend** — check that `<Arc>` wraps the app and that its settings and your dev-server proxy match the backend routes. See [Troubleshooting](/components/troubleshooting/#commands-or-queries-do-not-reach-the-backend).
 

@@ -3,9 +3,20 @@ title: Choosing a component
 description: Choose among Components command, data, action, filtering, feedback, structured-data, history, and conversation surfaces.
 ---
 
-Several Components solve similar-looking problems, and it's not always obvious which one to reach for.
-This page is the decision guide: pick by what you're building, then follow the link to the recipe or
-reference.
+Choose by the state your screen owns, not by the widget's appearance. Start with the integration boundary, then use the task tables below.
+
+## Do you need a backend for this surface?
+
+| Your starting point | Start with | Runtime boundary |
+| --- | --- | --- |
+| A generated command that should execute on confirm | `CommandDialog`, or inline `CommandForm` | Arc runtime and the application's backend |
+| A generated query whose results belong on screen | Query-backed `DataTables` or `DataPage` | Arc runtime; live updates require an observable query |
+| An array already loaded by the application | `DataTableCore` | The host supplies rows and owns data updates |
+| Local input, display, or structured content | Controlled controls and presentational/editor surfaces | The host owns values, callbacks, and persistence |
+
+Arc's npm packages are required peers even when the chosen surface does not make Arc requests. Chronicle is not required: an Arc backend can write directly to a database. Capability profiles describe purpose and adoption cost, not maturity or accessibility tiers; see [UI foundation](ui-foundation.md#capability-profiles).
+
+For your first command/query screen, [configure the package and providers](getting-started.mdx), then follow the [library tutorial](tutorial/index.md). For an existing application, the recipes below show the smaller compositions.
 
 ## Collecting input
 
@@ -26,9 +37,9 @@ The question is whether confirming the form **runs a command**, and whether it's
 | Configure a component: ordered items, layout settings, a component-specific editor | [`ConfigurationEditor`](./ConfigurationEditor/index.md) | Controlled editors that emit validated proposals while the host owns capabilities, templates and persistence. |
 
 Rule of thumb: **if confirming the dialog executes a generated command, it's a `CommandDialog`** (or its
-stepper variant). If it just gathers values and returns them, it's a `Dialog`. Never reach for
-an application-owned modal — these wrappers handle validation timing, loading state, focus, and footers
-consistently.
+stepper variant). If it just gathers values and returns them, it's a `Dialog`. Use these wrappers
+when their contracts fit, so validation timing, loading state, focus, and footers stay consistent.
+An inline field or local control does not need to become a modal just to use Components.
 
 ## Displaying data
 
@@ -85,6 +96,13 @@ Use [`ActionMenubar`](./Common/action-menubar.md) or an ordinary product action 
 Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes, or [`PivotViewer`](./PivotViewer/index.md) for a faceted, zoomable card grid over a large dataset. Both belong to the [Spatial capability profile](./ui-foundation.md#capability-profiles) and install the optional `pixi.js` peer — see [UI foundation: Optional Pixi, clean no-Pixi core](./ui-foundation.md#optional-pixi-clean-no-pixi-core). Spatial ships at the same version and quality bar as every other component; the profile label describes what it is for and what it costs to adopt, not a lower support tier.
 
 Canvas and PivotViewer own interaction and rendering primitives; the application owns persistence and behavior. Arc can provide commands, queries, validation, authorization, and generated bindings on its own. Applications using Arc plus Chronicle can additionally project event streams into read models — neither component has a direct Chronicle dependency; see the [UI foundation capability matrix](./ui-foundation.md#capability-matrix).
+
+## Check the choice before composing
+
+- A query-backed table handles query status and delivered results; it does not persist rows or guarantee immediate visibility after a write.
+- A `CommandDialog` executes the generated command. A `Dialog` returns a result for the caller to interpret; it does not infer a command from its fields.
+- `DataPage` adds selection, actions, and a detail layout. Supply a definite height and your own visible heading; `title` alone does not render one.
+- Choose server query arguments for full-result filtering. Loaded-page filtering is not a search across every server page.
 
 ## Putting it together
 

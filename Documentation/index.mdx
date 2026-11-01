@@ -1,6 +1,6 @@
 ---
 title: Components
-description: The React component library for CQRS and event-sourced applications with Cratis — command dialogs, typed forms, and query-backed data tables that consume Arc's generated proxies.
+description: Components is Cratis Platform's React UI library. Choose a surface, configure providers and styles, then build an Arc-backed command/query screen.
 ---
 
 import { CardGrid } from '@astrojs/starlight/components';
@@ -12,13 +12,21 @@ import TopicHero from '@components/TopicHero.astro';
     eyebrow='Components'
     title='React components wired to your proxies'
 >
-    Command dialogs, forms, tables, and application surfaces that consume [Arc's](/arc/)
-    generated proxies. Components owns its public contracts, semantic parts, and built-in
-    renderer, with optional MUI, PrimeReact 11, and PrimeReact 10 adapters released under
-    the repository's shared version.
+    Components is the React UI component of **Cratis Platform**. Build command dialogs,
+    forms, and query-backed tables around [Arc's](/arc/) generated proxies, or use
+    local-data surfaces with application-owned state. Components owns its public React
+    contracts, semantic parts, tokens, and built-in renderer.
 </TopicHero>
 
 ## Start here
+
+Building a command/query screen? First [choose the surface](/components/choosing-a-component/),
+then [install and configure](/components/getting-started/), then [build the library screen](/components/tutorial/).
+The tutorial requires a running Arc backend and generated proxies; installing the UI package
+alone does not create them. Chronicle is optional behind Arc, not a prerequisite for this screen.
+
+Already have rows in memory? Choose a local-array table or controlled control instead. That
+workflow need not run an Arc request, although Arc's npm packages remain required peers.
 
 <CardGrid>
     <SimpleCard title='Tutorial' icon='open-book' link='/components/tutorial/'>
@@ -38,7 +46,7 @@ import TopicHero from '@components/TopicHero.astro';
     <SimpleCard
         title='Choose a component area'
         icon='list-format'
-        link='#component-areas'
+        link='/components/choosing-a-component/'
     >
         Start from the screen job rather than a raw component inventory.
     </SimpleCard>
@@ -49,13 +57,20 @@ import TopicHero from '@components/TopicHero.astro';
 
 ## Minimal setup
 
-Components 4 runs on React 19 with `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`; this repository builds and tests against Arc 22.16.0. After `npm install @cratis/components@^4`, import the stylesheets once and mount Components' provider inside Arc's:
+Components 4 runs on React 19 with `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`; this checkout pins its Arc development dependencies to 22.153.1. After `npm install @cratis/components@^4`, put the stylesheets in your CSS entry file:
+
+```css title="src/index.css"
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
+@import '@cratis/components/theme'; /* optional baseline */
+```
+
+Then import that file once and mount Components' provider inside Arc's. This is a setup excerpt;
+`YourApp` stands for your application's root component:
 
 ```tsx title="Excerpt: application entry"
 import 'reflect-metadata';
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import '@cratis/components/theme'; // optional built-in baseline
+import './index.css';
 import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 
@@ -68,7 +83,10 @@ export const App = () => (
 );
 ```
 
-[Getting started](/components/getting-started/) walks through the peers, the TypeScript setup, and a first command dialog. The package root is setup-only: import the provider and configuration helpers there, then import
+`<Arc>` supplies the runtime used by generated commands and queries; `CratisComponentsProvider`
+supplies UI configuration, not a backend connection. Importing styles from CSS also avoids
+TypeScript 6's `TS2882` for the package's untyped stylesheet subpaths. [Getting started](/components/getting-started/)
+includes the peer installation, CSS module typing, and first command dialog. The package root is setup-only: import the provider and configuration helpers there, then import
 every component from its explicit subpath, such as `@cratis/components/CommandDialog` or
 `@cratis/components/DataTables`. The built-in renderer is zero-configuration. Optional renderer
 packages are selected explicitly; the application retains their provider, peer, SSR, styling, and
