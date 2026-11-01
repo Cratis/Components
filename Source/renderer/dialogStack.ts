@@ -69,3 +69,7 @@ export const dialogZIndexForTier = (tier: number): string =>
  */
 export const zIndexAboveDialog = (dialogZIndex: string, offset: number): string =>
     `calc(${dialogZIndex} + ${offset})`;
+
+/** The tier of the most recently opened dialog that is still open, or `null` when none is open. */
+export const topDialogTier = (): number | null =>
+    openDialogTiers.size === 0 ? null : Math.max(...openDialogTiers);

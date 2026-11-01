@@ -56,6 +56,8 @@
   href: Dropdown/toc.yml
 - name: IconPicker
   href: IconPicker/toc.yml
+- name: ComponentPicker
+  href: ComponentPicker/toc.yml
 - name: MarkdownEditor
   href: MarkdownEditor/toc.yml
 - name: Display

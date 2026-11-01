@@ -337,6 +337,20 @@ export const partDefinitions = {
             'cancel',
         ],
     },
+    ComponentPicker: {
+        parts: ['overlay', 'frame', 'name'],
+        sources: ['ComponentPicker/HighlightFrame.tsx'],
+        ptKeys: [],
+    },
+    ComponentHighlight: {
+        aliasOf: 'ComponentPicker',
+        sources: ['ComponentPicker/ComponentHighlight.tsx'],
+    },
+    PresentationPropertyEditor: {
+        parts: ['root', 'empty', 'property', 'label', 'input', 'description'],
+        sources: ['ComponentPicker/PresentationPropertyEditor.tsx'],
+        ptKeys: [],
+    },
     CommandDialog: {
         aliasOf: 'Dialog',
         sources: ['CommandDialog/CommandDialog.tsx'],
@@ -1041,6 +1055,19 @@ export const partStateDefinitions = {
         footer: [],
         confirm: ['disabled', 'busy'],
         cancel: ['disabled', 'busy'],
+    },
+    ComponentPicker: {
+        overlay: [],
+        frame: [],
+        name: [],
+    },
+    PresentationPropertyEditor: {
+        root: [],
+        empty: [],
+        property: [],
+        label: [],
+        input: [],
+        description: [],
     },
     CommandStepper: {
         root: ['invalid', 'busy'],
