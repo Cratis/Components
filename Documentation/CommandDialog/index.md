@@ -198,11 +198,14 @@ The form is treated as invalid until its first validation finishes, so confirm s
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width (default: `'450px'`)
+- `headerActions`: Actions rendered in the dialog header before the close button
+- `hideGlobalHeaderActions`: Leaves out the app-wide header actions registered on `CratisComponentsProvider`
+- `sliceLocation`: The `{ module, feature, slice }` the dialog was opened from, handed to app-wide header actions
 - `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts
 - `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 
 :::note
-`isBusy` is managed internally while the command executes, so `CommandDialog` does not accept it. The `Dialog` props `subtitle`, `placement`, and `closeIcon` type-check on `CommandDialog`, but it does not forward them to the dialog, so they have no effect.
+`isBusy` is managed internally while the command executes, so `CommandDialog` does not accept it. The `Dialog` presentation props `subtitle`, `placement`, `closeIcon` and `headerActions` are forwarded to the dialog. See [Header actions](../Dialogs/dialog.md#header-actions).
 :::
 
 ## Callback Behavior

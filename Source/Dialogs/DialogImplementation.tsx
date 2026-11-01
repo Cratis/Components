@@ -21,6 +21,7 @@ import {
 } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
 import { classNames } from '../ClassNames/classNames';
+import { DialogGlobalHeaderActions } from './DialogGlobalHeaderActions';
 import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 import { dialogDescriptor } from './dialogDescriptor';
 
@@ -36,6 +37,18 @@ const visuallyHidden: React.CSSProperties = {
     whiteSpace: 'nowrap',
     border: 0,
 };
+
+// Header actions sit in the close button's grid column, to its left. Inline rather than in Dialog.css:
+// the packed aggregate stylesheet has a reviewed size budget.
+const headerActionsStyle = (hasCloseButton: boolean): React.CSSProperties => ({
+    display: 'inline-flex',
+    gridColumn: 2,
+    gridRow: 1,
+    justifySelf: 'end',
+    alignItems: 'center',
+    gap: '0.25rem',
+    marginInlineEnd: hasCloseButton ? '2.25rem' : undefined,
+});
 
 const subscribeToBrowserEnvironment = () => () => undefined;
 const useIsBrowser = () =>
@@ -56,6 +69,10 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
         subtitle,
         placement = 'center',
         closeIcon,
+        headerActions,
+        hideGlobalHeaderActions = false,
+        sliceLocation,
+        isCommandDialog = false,
         visible = true,
         onClose,
         onConfirm,
@@ -81,7 +98,8 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
         pt,
     } = props;
     const overlayEnvironment = unstable_useOverlayEnvironment();
-    const { messages } = useCratisComponentsConfig();
+    const { messages, dialogHeaderActions } = useCratisComponentsConfig();
+    const dialogId = useId();
     const dialogMessages = messages?.dialog;
     const resolvedOkLabel = okLabel ?? dialogMessages?.ok ?? 'Ok';
     const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
@@ -101,6 +119,8 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
         contextCloseDialog = undefined;
     }
 
+    const hasHeaderActions =
+        headerActions != null || (dialogHeaderActions !== undefined && !hideGlobalHeaderActions);
     const isBrowser = useIsBrowser();
     const subtitleId = useId();
     const hasSubtitle = subtitle !== undefined && subtitle !== null && subtitle !== false;
@@ -366,6 +386,25 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
                             {subtitle}
                         </p>
                     )}
+                    {hasHeaderActions && (
+                        <div
+                            {...pt?.headerActions}
+                            className={classNames(
+                                'cratis-dialog__header-actions',
+                                pt?.headerActions?.className,
+                            )}
+                            style={{ ...headerActionsStyle(showsCloseButton), ...pt?.headerActions?.style }}
+                            data-cratis-part='header-actions'
+                        >
+                            {headerActions}
+                            {dialogHeaderActions && !hideGlobalHeaderActions && (
+                                <DialogGlobalHeaderActions
+                                    render={dialogHeaderActions}
+                                    context={{ dialogId, title, isCommandDialog, sliceLocation }}
+                                />
+                            )}
+                        </div>
+                    )}
                     {showsCloseButton && (
                         <button
                             {...pt?.close}
@@ -375,6 +414,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
                                 'cratis-dialog__close',
                                 pt?.close?.className,
                             )}
+                            style={hasHeaderActions ? { justifySelf: 'end', ...pt?.close?.style } : pt?.close?.style}
                             data-cratis-part='close'
                             data-disabled={isBusy || undefined}
                             data-busy={isBusy || undefined}
@@ -485,6 +525,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
                         style={dialogStyle}
                         data-cratis-part='root'
                         {...marker}
+                        data-cratis-dialog-id={dialogId}
                         data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}
@@ -538,6 +579,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
                         style={dialogStyle}
                         data-cratis-part='root'
                         {...marker}
+                        data-cratis-dialog-id={dialogId}
                         data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}

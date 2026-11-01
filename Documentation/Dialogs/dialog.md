@@ -104,6 +104,9 @@ const [visible, setVisible] = useState(false);
 - `placement`: `'center'` (default), `'start'` or `'end'` — see [Placement](#placement)
 - `closeIcon`: Glyph for the header close (X). Defaults to a multiplication sign; pass your icon set's
   close icon to match the rest of the product
+- `headerActions`: Actions rendered in the header before the close button — see [Header actions](#header-actions)
+- `hideGlobalHeaderActions`: Leaves out the app-wide header actions registered on the provider for this dialog
+- `sliceLocation`: Where the dialog's opener sits in the application (`{ module, feature, slice }`); handed to app-wide header actions
 - `visible`: Controls visibility (defaults to `true`)
 - `onConfirm`: Callback for confirm actions; return `true` to close. See [How the dialog closes](#how-the-dialog-closes)
 - `onCancel`: Callback for cancel actions, the X, `Escape`, and a backdrop click; return `true` to close
@@ -140,6 +143,46 @@ const [visible, setVisible] = useState(false);
   `cancelLabel` for its optional footer Cancel.
 - `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
 - `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
+
+## Header actions
+
+Some actions belong in the header of a dialog: a help button, a "give feedback" button, a "copy link" button. The `headerActions` slot renders them in a `header-actions` part, before the close button, so keyboard and screen-reader order reaches them first and focus management is unchanged.
+
+```tsx
+<Dialog title='Edit details' headerActions={<Button variant='ghost' size='small' label='Help' />}>
+    Details go here.
+</Dialog>
+```
+
+`CommandDialog` and `StepperCommandDialog` accept the same `headerActions`, `hideGlobalHeaderActions` and `sliceLocation` props.
+
+### Register actions for every dialog
+
+An application that wants the same action in every dialog registers it once on `CratisComponentsProvider`:
+
+```tsx
+import { CratisComponentsProvider, type DialogHeaderContext } from '@cratis/components';
+
+const feedbackAction = (dialog: DialogHeaderContext) =>
+    dialog.isCommandDialog ? null : <FeedbackButton about={dialog.title} />;
+
+<CratisComponentsProvider dialogHeaderActions={feedbackAction}>
+    <App />
+</CratisComponentsProvider>;
+```
+
+The renderer is mounted as a component for every dialog, so it can use hooks. It receives a `DialogHeaderContext`:
+
+| Field | Meaning |
+| --- | --- |
+| `dialogId` | Identifies this dialog instance. Also rendered as `data-cratis-dialog-id` on the dialog root. |
+| `title` | The dialog title. |
+| `isCommandDialog` | `true` for `CommandDialog` and `StepperCommandDialog`. |
+| `sliceLocation` | The `{ module, feature, slice }` the host or Arc supplied through the dialog's `sliceLocation` prop, when there is one. |
+
+Return `null` to show nothing for a dialog. A dialog's own `headerActions` render first, next to the app-wide ones, and `hideGlobalHeaderActions` leaves the app-wide actions out of one dialog.
+
+The dialog slot (`dialogs.dialog`) renders the region, so adapter-based dialogs show it too. Style it through the `headerActions` pass-through key (`pt={{ headerActions: { className: '...' } }}`).
 
 ## Dismissing
 

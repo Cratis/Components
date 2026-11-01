@@ -118,6 +118,9 @@ Required values that no step shows, such as the id of the item being edited, bel
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `dialogClassName`: Extra CSS class name for the outer dialog root
+- `headerActions`: Actions rendered in the dialog header before the close button — see [Header actions](../Dialogs/dialog.md#header-actions)
+- `hideGlobalHeaderActions`: Leaves out the app-wide header actions registered on `CratisComponentsProvider`
+- `sliceLocation`: The `{ module, feature, slice }` the dialog was opened from, handed to app-wide header actions
 - `dialogPt`: Cratis-owned stable part attributes for the **outer** dialog; inherited `pt` targets the **inner** stepper
 - `dialogPtOptions` / `dialogUnstyled` / inherited `ptOptions` / inherited `unstyled`: Retained temporarily for source compatibility; ignored because part attributes always merge and styling is CSS-owned
 - `onFieldValidate`: Custom validation function for fields

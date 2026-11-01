@@ -11,6 +11,7 @@ import type { CratisRendererSetup, unstable_UiLibrary } from '../renderer/manife
 import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from '../configuration/CratisComponentsContext';
 import { cratisDefaults } from '../configuration/CratisComponentsDefaults';
+import type { DialogHeaderActionsRenderer } from '../configuration/DialogHeaderActionsRenderer';
 
 const RendererRoot = unstable_RendererRoot;
 
@@ -257,6 +258,11 @@ export interface CratisComponentsConfig {
     /** Cratis-owned icon vocabulary replacing the built-in glyphs the library draws. */
     icons?: CratisComponentsIcons;
     /**
+     * App-wide dialog header actions, set through the provider's `dialogHeaderActions` prop. Read by
+     * `Dialog`, `CommandDialog` and `StepperCommandDialog`.
+     */
+    dialogHeaderActions?: DialogHeaderActionsRenderer;
+    /**
      * @deprecated Use {@link messages}; React Aria supplies its own locale data.
      */
     locales?: Record<string, LegacyLocaleMessages>;
@@ -266,6 +272,13 @@ export interface CratisComponentsConfig {
 export interface CratisComponentsProviderProps {
     /** Locale and Components-owned messages. */
     value?: CratisComponentsConfig;
+    /**
+     * Registers header actions once for every dialog. The renderer receives each dialog's
+     * `DialogHeaderContext`, and may return `null` to hide itself for that dialog. The result
+     * renders before the close button, next to any per-dialog `headerActions`; a dialog opts out
+     * with `hideGlobalHeaderActions`.
+     */
+    dialogHeaderActions?: DialogHeaderActionsRenderer;
     /** Mounts the global toaster with defaults or explicit options. */
     toaster?: boolean | ToasterProps;
     /**
@@ -372,6 +385,7 @@ const validLocale = (locale: string | undefined) => {
 /** Application root for locale, labels, and the optional app-wide toaster. */
 export const CratisComponentsProvider = ({
     value,
+    dialogHeaderActions,
     toaster,
     library,
     libraryMode,
@@ -380,11 +394,11 @@ export const CratisComponentsProvider = ({
     rendererSetup,
     children,
 }: CratisComponentsProviderProps) => {
-    const resolved = useMemo(
-        () =>
-            withLegacyLocaleMessages(mergeCratisComponentsConfig(value), value?.messages),
-        [value],
-    );
+    const resolved = useMemo(() => {
+        const config = withLegacyLocaleMessages(mergeCratisComponentsConfig(value), value?.messages);
+        const headerActions = dialogHeaderActions ?? value?.dialogHeaderActions;
+        return headerActions ? { ...config, dialogHeaderActions: headerActions } : config;
+    }, [value, dialogHeaderActions]);
 
     const content = (
         <I18nProvider locale={validLocale(resolved.locale)}>
