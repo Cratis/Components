@@ -181,6 +181,7 @@ describe('root namespace maps', () => {
             './ConfigurationEditor',
             './IconPicker',
             './MarkdownEditor',
+            './ComponentPicker',
             // Per-area CSS entry points (feat/per-area-stylesheets): side-effect stylesheet
             // imports, not symbol imports, so the codemod has nothing to rewrite for them —
             // same as the pre-existing aggregate './styles' above.
