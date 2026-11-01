@@ -125,7 +125,7 @@ export const PresentationPropertyEditor = ({ picked, onChange, preview = false, 
     }
 
     return (
-        <div data-cratis-part='root' data-cratis-picker-editor='true' className={className}>
+        <div data-cratis-part='root' data-cratis-component='PresentationPropertyEditor' className={className}>
             {picked.presentationProperties.map((property) => {
                 const id = `${prefix}-${property.name}`;
                 const value = property.name in draft ? draft[property.name] : property.value;
