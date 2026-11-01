@@ -9,6 +9,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { IconButtonImplementation } from './IconButtonImplementation';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { iconButtonDescriptor } from './buttonDescriptor';
 
 /** Stable Cratis-owned parts for styling an {@link IconButton}. */
 export type IconButtonParts = ButtonParts;
@@ -45,6 +47,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             'common.iconButton',
             coreIconButtonDeclaration,
         );
-        return renderSlot(declaration, props, ref);
+        const [presented, marker] = useComponentPresentation(iconButtonDescriptor, props, props.id);
+        return renderSlot(declaration, { ...presented, ...marker }, ref);
     },
 );

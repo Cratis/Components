@@ -20,6 +20,7 @@ export const ProgressBarImplementation = ({
         <div
             className={['cratis-progress-bar', className].filter(Boolean).join(' ')}
             data-cratis-part='root'
+            data-cratis-component='ProgressBar'
             data-mode={mode}
             data-busy={isBusy || undefined}
             data-loading={mode === 'indeterminate' || undefined}

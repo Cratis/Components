@@ -70,6 +70,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='root'
+                data-cratis-component='RadioGroupField'
                 data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
             >

@@ -155,6 +155,7 @@ export const IconPicker = (props: IconPickerProps) => {
             {...props.pt?.root}
             className={classNames('cratis-icon-picker', props.className, props.pt?.root?.className)}
             data-cratis-part='root'
+            data-cratis-component='IconPicker'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}

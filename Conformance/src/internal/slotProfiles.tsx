@@ -523,6 +523,7 @@ export const createSlotProfiles = (
             'header',
             'title',
             'subtitle',
+            'headerActions',
             'close',
             'content',
             'footer',
@@ -538,6 +539,7 @@ export const createSlotProfiles = (
             const props = {
                 title: 'Example dialog',
                 subtitle: 'Example subtitle',
+                headerActions: <button type='button'>Example action</button>,
                 children: 'Dialog content',
                 buttons: 2,
                 dismissable: true,

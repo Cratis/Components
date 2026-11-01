@@ -84,6 +84,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                     commit();
             }}
             data-cratis-part='root'
+            data-cratis-component='ChipsField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-readonly={props.pt?.input?.readOnly || undefined}

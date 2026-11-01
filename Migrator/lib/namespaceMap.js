@@ -87,6 +87,9 @@ export const approvedRootSymbols = new Set([
     'CratisFilterMessages',
     'CratisColumnFilterMessages',
     'CratisComponentsIcons',
+    'DialogHeaderActionsRenderer',
+    'DialogHeaderContext',
+    'DialogSliceLocation',
     'CratisIconResolver',
     'useCratisIcon',
 ]);

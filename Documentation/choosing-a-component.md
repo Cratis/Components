@@ -21,6 +21,7 @@ The question is whether confirming the form **runs a command**, and whether it's
 | Edit ordinary local React state                            | [`Common` basic controls](./Common/basic-controls.md)      | Native text and choice controls expose semantic values without binding an Arc command.                 |
 | Select one or more values in ordinary local React state    | [`Dropdown`](./Dropdown/index.md)                         | Binds a value or array to local options without binding an Arc command.                               |
 | Choose an icon from a host-supplied catalog                  | [`IconPicker`](./IconPicker/index.md)                     | A controlled popout with search, categories, provider filtering, and qualified `library`/`key`/`variant` values. |
+| Let a user point at a component on screen and read what it is and which presentation properties it has | [`ComponentPicker`](./ComponentPicker/index.md) | An overlay and hook that highlight, name and return the component under the pointer or keyboard cursor, with a property editor that proposes changes. |
 | Write markdown with formatting, a preview, and completion   | [`MarkdownEditor`](./MarkdownEditor/index.md)             | A controlled editor with a toolbar, host-rendered preview, configurable triggers, and file uploads.   |
 | Configure a component: ordered items, layout settings, a component-specific editor | [`ConfigurationEditor`](./ConfigurationEditor/index.md) | Controlled editors that emit validated proposals while the host owns capabilities, templates and persistence. |
 

@@ -47,6 +47,7 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
             {...props.pt?.root}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-cratis-component='NumberField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-readonly={props.pt?.input?.readOnly || undefined}

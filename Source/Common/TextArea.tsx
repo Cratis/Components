@@ -9,6 +9,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { TextAreaImplementation } from './TextAreaImplementation';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { textAreaDescriptor } from './textFieldDescriptors';
 
 /** Stable Cratis-owned parts for styling a {@link TextArea}. */
 export interface TextAreaParts {
@@ -45,6 +47,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             'common.textArea',
             coreTextAreaDeclaration,
         );
-        return renderSlot(declaration, props, ref);
+        const [presented, marker] = useComponentPresentation(
+            textAreaDescriptor,
+            props,
+            props.id ?? props.name,
+        );
+        return renderSlot(declaration, { ...presented, ...marker }, ref);
     },
 );

@@ -1,7 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactElement, ReactNode, RefObject } from 'react';
+import { cloneElement, type ReactElement, type ReactNode, type RefObject } from 'react';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+import { columnDescriptor } from './columnDescriptor';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import { classNames } from '../ClassNames/classNames';
@@ -39,7 +41,7 @@ export interface DataTableHeaderCellProps {
 
 /** One column header: its label, sort control, filter menu, and select-all or selection label. */
 export const DataTableHeaderCell = ({
-    column,
+    column: declaredColumn,
     parts: pt,
     sort,
     onSort,
@@ -53,6 +55,12 @@ export const DataTableHeaderCell = ({
     sortAscendingIcon,
     sortDescendingIcon,
 }: DataTableHeaderCellProps) => {
+    const [columnProps, marker] = useComponentPresentation(
+        columnDescriptor,
+        declaredColumn.props,
+        declaredColumn.props.field,
+    );
+    const column = columnProps === declaredColumn.props ? declaredColumn : cloneElement(declaredColumn, columnProps);
     const field = column.props.filterField ?? column.props.field;
     const ariaSort =
         sort && sort.field === column.props.field ? sort.direction : undefined;
@@ -75,6 +83,7 @@ export const DataTableHeaderCell = ({
                 column.props.headerClassName,
             )}
             data-cratis-part='header-cell'
+            {...marker}
             data-selected={Boolean(ariaSort) || undefined}
         >
             <div

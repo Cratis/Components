@@ -48,6 +48,7 @@ export const CheckboxImplementation = forwardRef<
                 .join(' ')}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
+            data-cratis-component='Checkbox'
             data-disabled={effectiveDisabled || undefined}
             data-invalid={effectiveInvalid || undefined}
             data-readonly={effectiveReadOnly || undefined}

@@ -367,6 +367,7 @@ export const CommandStepperContent = ({
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='root'
+                data-cratis-component='CommandStepper'
                 data-part='root'
                 data-value={currentStep}
                 data-orientation={orientation}

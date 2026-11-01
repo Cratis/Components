@@ -61,6 +61,7 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                     .join(' ')}
                 onBlur={props.onBlur}
                 data-cratis-part='root'
+                data-cratis-component='ColorPickerField'
                 data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
                 data-inline={props.inline || undefined}

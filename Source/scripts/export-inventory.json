@@ -15,6 +15,7 @@
         "./CommandStepper/styles",
         "./Common",
         "./Common/styles",
+        "./ComponentPicker",
         "./ConfigurationEditor",
         "./ConfigurationEditor/styles",
         "./DataPage",

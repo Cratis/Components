@@ -291,6 +291,7 @@ export const DropdownImplementation = <T = unknown,>({
                     {...pt?.root}
                     className={rootClassName}
                     data-cratis-part='root'
+                    data-cratis-component='Dropdown'
                     data-invalid={effectiveInvalid || undefined}
                     data-disabled={disabled || undefined}
                     data-open={isOpen || undefined}
@@ -442,6 +443,7 @@ export const DropdownImplementation = <T = unknown,>({
                 {...pt?.root}
                 className={rootClassName}
                 data-cratis-part='root'
+                data-cratis-component='Dropdown'
                 data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
                 data-selected={selectedKeys.length > 0 || undefined}
@@ -528,6 +530,7 @@ export const DropdownImplementation = <T = unknown,>({
                 {...pt?.root}
                 className={rootClassName}
                 data-cratis-part='root'
+                data-cratis-component='Dropdown'
                 data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
                 data-open={isOpen || undefined}
@@ -658,6 +661,7 @@ export const DropdownImplementation = <T = unknown,>({
             {...pt?.root}
             className={rootClassName}
             data-cratis-part='root'
+            data-cratis-component='Dropdown'
             data-invalid={effectiveInvalid || undefined}
             data-disabled={disabled || undefined}
             data-open={isOpen || undefined}

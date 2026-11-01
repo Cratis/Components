@@ -18,6 +18,7 @@ import {
     type ConfirmCallback,
     type CancelCallback,
 } from '../Dialogs/Dialog';
+import type { DialogSliceLocation } from '../configuration/DialogSliceLocation';
 import type { StepperCustomizationProps } from './CommandStepper';
 import { CommandStepperContent } from './CommandStepperContent';
 import type { BeforeExecuteCallback } from './applyBeforeExecute';
@@ -63,6 +64,12 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** Dialog title text. */
     title: string;
+    /** Actions rendered in the dialog header before the close button. */
+    headerActions?: React.ReactNode;
+    /** Suppresses the app-wide header actions registered on `CratisComponentsProvider` for this dialog. */
+    hideGlobalHeaderActions?: boolean;
+    /** Where this dialog's opener sits in the application; passed to app-wide header actions. */
+    sliceLocation?: DialogSliceLocation;
     /** Controls dialog visibility. Defaults to `true`. */
     visible?: boolean;
     /** Dialog width. */
@@ -121,6 +128,9 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
 
 type StepperCommandDialogWrapperProps<TCommand extends object, TResponse = object> = {
     title: string;
+    headerActions?: React.ReactNode;
+    hideGlobalHeaderActions?: boolean;
+    sliceLocation?: DialogSliceLocation;
     visible?: boolean;
     width?: string;
     style?: CSSProperties;
@@ -151,6 +161,9 @@ type StepperCommandDialogWrapperProps<TCommand extends object, TResponse = objec
 
 const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object>({
     title,
+    headerActions,
+    hideGlobalHeaderActions,
+    sliceLocation,
     visible = true,
     width = '600px',
     style,
@@ -366,6 +379,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     return (
         <Dialog
             title={title}
+            headerActions={headerActions}
+            hideGlobalHeaderActions={hideGlobalHeaderActions}
+            sliceLocation={sliceLocation}
+            isCommandDialog
             visible={visible}
             width={width}
             style={style}
@@ -500,6 +517,9 @@ const StepperCommandDialogComponent = <
 ) => {
     const {
         title,
+        headerActions,
+        hideGlobalHeaderActions,
+        sliceLocation,
         visible,
         width,
         style,
@@ -537,6 +557,9 @@ const StepperCommandDialogComponent = <
         <CommandForm<TCommand, TResponse> {...commandFormProps}>
             <StepperCommandDialogWrapper<TCommand, TResponse>
                 title={title}
+                headerActions={headerActions}
+                hideGlobalHeaderActions={hideGlobalHeaderActions}
+                sliceLocation={sliceLocation}
                 visible={visible}
                 width={width}
                 style={style}

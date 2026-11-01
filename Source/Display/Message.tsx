@@ -49,6 +49,7 @@ export const Message = ({
     <div
         className={['cratis-message', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='Message'
         data-severity={severity}
         role={live ? (severity === 'error' ? 'alert' : 'status') : undefined}
     >

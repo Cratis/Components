@@ -16,7 +16,10 @@ const schema: JsonSchema = {
 };
 
 /** Generated ids differ between two mounts; everything else must match. */
-const stable = (markup: string) => markup.replace(/(react-aria|:r)[\w-]*:?/g, 'id');
+const stable = (markup: string) =>
+    markup
+        .replace(/data-cratis-component-instance="[^"]*"/g, '')
+        .replace(/(react-aria|:r)[\w-]*:?/g, 'id');
 
 describe('when the layout is not given', () => {
     let withoutLayout: TableMount;

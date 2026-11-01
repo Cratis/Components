@@ -56,6 +56,7 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-cratis-component='RadioButtonField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-selected={selected || undefined}

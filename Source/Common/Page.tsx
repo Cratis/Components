@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { HTMLAttributes, ReactNode } from 'react';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /**
  * Props for {@link Page}. Extends the standard `div` attributes so callers can
@@ -33,6 +35,13 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
     panel?: boolean
 }
 
+/** Presentation props of {@link Page}. */
+const pageDescriptor = describeComponent<PageProps>('Page', [
+    { name: 'title', label: 'Title', type: 'string', description: 'The page title, shown when showTitle is on.' },
+    { name: 'showTitle', label: 'Show title', type: 'boolean', defaultValue: false },
+    { name: 'panel', label: 'Panel', type: 'boolean', defaultValue: false },
+]);
+
 /**
  * Top-level page layout primitive. Renders a flex column that fills its parent
  * vertically, with an optional title heading and a `panel` class hook on the
@@ -46,9 +55,11 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
  *
  * @param props - {@link PageProps}.
  */
-export const Page = ({ title, showTitle = false, children, panel, className, ...rest }: PageProps) => {
+export const Page = (incomingProps: PageProps) => {
+    const [props, marker] = useComponentPresentation(pageDescriptor, incomingProps, incomingProps.id);
+    const { title, showTitle = false, children, panel, className, ...rest } = props;
     return (
-        <div className={`cratis:flex cratis:flex-col cratis:h-full cratis:flex-1${className ? ` ${className}` : ''}`} {...rest}>
+        <div {...marker} className={`cratis:flex cratis:flex-col cratis:h-full cratis:flex-1${className ? ` ${className}` : ''}`} {...rest}>
             {showTitle && <h1 className='cratis:text-3xl cratis:mt-3 cratis:mb-4'>{title}</h1>}
             <main className={`cratis:overflow-hidden cratis:h-full cratis:flex cratis:flex-col cratis:flex-1 ${panel ? 'panel' : ''}`}>
                 {children}

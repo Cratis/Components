@@ -149,6 +149,7 @@ export const TagGroup = ({
             {...pt?.root}
             className={classNames('cratis-tag-group', pt?.root?.className, className)}
             data-cratis-part='root'
+            data-cratis-component='TagGroup'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
         >

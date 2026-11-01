@@ -32,7 +32,7 @@ import {
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
     extends
         Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
-        Omit<DialogProps, 'children' | 'isBusy'> {
+        Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'> {
     /**
      * A transformer invoked with the current command values immediately before
      * the command executes on confirm. It **must return** the values to run with
@@ -67,8 +67,8 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
 }
 
 // Requiring each key here makes a newly added Dialog prop fail compilation until it is routed.
-type ForwardedDialogProps = Omit<DialogProps, 'children' | 'isBusy'> &
-    Record<keyof Omit<DialogProps, 'children' | 'isBusy'>, unknown>;
+type ForwardedDialogProps = Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'> &
+    Record<keyof Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'>, unknown>;
 
 const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     isValid,
@@ -172,6 +172,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             onConfirm={handleConfirm}
             isValid={isDialogValid}
             isBusy={submission.isSubmitting}
+            isCommandDialog
         >
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}
@@ -305,6 +306,9 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         subtitle,
         placement,
         closeIcon,
+        headerActions,
+        hideGlobalHeaderActions,
+        sliceLocation,
         visible,
         width,
         style,
@@ -340,6 +344,9 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         subtitle,
         placement,
         closeIcon,
+        headerActions,
+        hideGlobalHeaderActions,
+        sliceLocation,
         visible,
         width,
         style,

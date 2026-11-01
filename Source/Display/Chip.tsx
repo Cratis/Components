@@ -34,6 +34,7 @@ export const Chip = ({
         <span
             className={['cratis-chip', className].filter(Boolean).join(' ')}
             data-cratis-part='root'
+            data-cratis-component='Chip'
         >
             {icon && (
                 <span className='cratis-chip__icon' data-cratis-part='icon'>

@@ -87,6 +87,10 @@
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./CommandForm/fields/styles": "./dist/esm/styles.CommandForm.css",
+        "./ComponentPicker": {
+            "types": "./dist/esm/ComponentPicker/index.d.ts",
+            "import": "./dist/esm/ComponentPicker/index.js"
+        },
         "./ConfigurationEditor": {
             "types": "./dist/esm/ConfigurationEditor/index.d.ts",
             "import": "./dist/esm/ConfigurationEditor/index.js"

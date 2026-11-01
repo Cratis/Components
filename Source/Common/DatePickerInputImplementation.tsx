@@ -139,6 +139,7 @@ export const DatePickerInputImplementation = ({
             className={rootClassName}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
+            data-cratis-component='DatePickerInput'
             data-invalid={effectiveInvalid || undefined}
             data-disabled={effectiveDisabled || undefined}
             data-readonly={effectiveReadOnly || undefined}

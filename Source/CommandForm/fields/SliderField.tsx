@@ -56,6 +56,7 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-cratis-component='SliderField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
         >

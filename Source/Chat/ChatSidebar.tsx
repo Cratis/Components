@@ -471,6 +471,7 @@ export const ChatSidebar = <
                 )}
                 style={{ width, ...pt?.root?.style }}
                 data-cratis-part='root'
+                data-cratis-component='ChatSidebar'
                 data-position={position}
                 data-open={open || undefined}
                 data-selected={openTopicId !== undefined || undefined}
@@ -509,6 +510,7 @@ export const ChatSidebar = <
                     )}
                     style={{ width, ...pt?.root?.style }}
                     data-cratis-part='root'
+                    data-cratis-component='ChatSidebar'
                     data-position={position}
                     data-open={open || undefined}
                     data-selected={openTopicId !== undefined || undefined}

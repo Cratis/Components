@@ -584,7 +584,7 @@ const DataPage = <
 
     return (
         <DataPageContext.Provider value={context}>
-            <Page title={props.title} panel={true} style={pageStyle}>
+            <Page title={props.title} panel={true} style={pageStyle} data-cratis-component='DataPage'>
                 {props.detailsComponent ? (
                     <Allotment className='cratis:h-full' proportionalLayout={false}>
                         <Allotment.Pane>

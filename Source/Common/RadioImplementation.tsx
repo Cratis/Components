@@ -51,6 +51,7 @@ export const RadioImplementation = forwardRef<HTMLInputElement, RadioProps>(
                     .join(' ')}
                 style={{ ...pt?.root?.style, ...style }}
                 data-cratis-part='root'
+                data-cratis-component='Radio'
                 data-disabled={effectiveDisabled || undefined}
                 data-invalid={effectiveInvalid || undefined}
                 data-readonly={effectiveReadOnly || undefined}

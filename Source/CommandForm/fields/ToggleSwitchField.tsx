@@ -52,6 +52,7 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-cratis-component='ToggleSwitchField'
             data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-selected={props.value || undefined}

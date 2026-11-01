@@ -39,6 +39,7 @@ export const Tag = ({
     <span
         className={['cratis-tag', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='Tag'
         data-severity={severity}
         data-rounded={rounded || undefined}
     >

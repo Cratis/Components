@@ -11,6 +11,7 @@ import type {
 import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
+import type { DialogSliceLocation } from '../configuration/DialogSliceLocation';
 import type { DialogInitialFocus } from './DialogInitialFocus';
 import { DialogImplementation } from './DialogImplementation';
 
@@ -53,6 +54,8 @@ export interface DialogParts {
     title?: DialogPartAttributes<HTMLHeadingElement>;
     /** Secondary line under the heading, rendered only when `subtitle` is set. */
     subtitle?: DialogPartAttributes<HTMLParagraphElement>;
+    /** Region before the close button holding per-dialog and app-wide header actions. */
+    headerActions?: DialogPartAttributes<HTMLDivElement>;
     /** Header close button. */
     close?: DialogButtonAttributes;
     /** Dialog content region. */
@@ -80,6 +83,21 @@ export interface DialogProps {
      * are identical across placements.
      */
     placement?: DialogPlacement;
+    /**
+     * Actions rendered in the header before the close button, in a `header-actions` part. Use it
+     * for a help, feedback or copy-link action that belongs to this dialog. Rendered next to the
+     * app-wide actions registered on `CratisComponentsProvider`.
+     */
+    headerActions?: ReactNode;
+    /** Suppresses the app-wide header actions registered on `CratisComponentsProvider` for this dialog. */
+    hideGlobalHeaderActions?: boolean;
+    /** Where this dialog's opener sits in the application. Passed to app-wide header actions as `sliceLocation`. */
+    sliceLocation?: DialogSliceLocation;
+    /**
+     * Set by `CommandDialog` and `StepperCommandDialog` so app-wide header actions can tell a command
+     * dialog from a plain one. Defaults to `false`.
+     */
+    isCommandDialog?: boolean;
     /**
      * Glyph for the header close button. Names this one dialog and wins over the provider's
      * `icons.close`; defaults to a multiplication sign when neither is set.

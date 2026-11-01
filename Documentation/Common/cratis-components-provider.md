@@ -433,6 +433,16 @@ through the parts they publish.
 trigger. Registering `expand` makes both consistent; registering nothing leaves each as it is, so no
 existing rendering changes.
 
+## Register dialog header actions
+
+`dialogHeaderActions` adds the same action to the header of every `Dialog`, `CommandDialog` and `StepperCommandDialog`. It is a function that receives a `DialogHeaderContext` (`dialogId`, `title`, `isCommandDialog` and an optional `sliceLocation`) and returns a node, or `null` to hide itself for that dialog. See [Header actions](../Dialogs/dialog.md#header-actions).
+
+```tsx
+<CratisComponentsProvider dialogHeaderActions={(dialog) => <HelpButton topic={dialog.title} />}>
+    <App />
+</CratisComponentsProvider>
+```
+
 ## Mount the toaster
 
 Pass `toaster` to mount the app-wide notification region:

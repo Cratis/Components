@@ -26,6 +26,7 @@ export const Skeleton = ({
     <span
         className={['cratis-skeleton', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
+        data-cratis-component='Skeleton'
         data-circle={circle || undefined}
         aria-hidden='true'
         style={{

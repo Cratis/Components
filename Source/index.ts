@@ -38,6 +38,9 @@ export {
     type CratisColumnFilterMessages,
     type CratisComponentsIcons,
 } from './Common/CratisComponentsProvider';
+export type { DialogHeaderContext } from './configuration/DialogHeaderContext';
+export type { DialogHeaderActionsRenderer } from './configuration/DialogHeaderActionsRenderer';
+export type { DialogSliceLocation } from './configuration/DialogSliceLocation';
 export {
     useCratisIcon,
     type CratisIconResolver,

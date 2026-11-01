@@ -13,6 +13,7 @@ import {
     useDialogContext,
 } from '@cratis/arc.react/dialogs';
 import { Button } from '../Common/Button';
+import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof Dialog> = {
@@ -432,5 +433,82 @@ export const WithSubtitleAndCloseIcon: Story = {
                 <DescribedDialogComponent />
             </>
         );
+    },
+};
+
+const helpAction = (
+    <Button variant='ghost' size='small' label='Help' onClick={() => undefined} />
+);
+
+const HeaderActionsExample = ({
+    hideGlobalHeaderActions,
+    withOwnAction,
+}: {
+    hideGlobalHeaderActions?: boolean;
+    withOwnAction?: boolean;
+}) => {
+    const [visible, setVisible] = useState(false);
+    return (
+        <CratisComponentsProvider
+            dialogHeaderActions={(dialog) =>
+                dialog.title === 'Hidden for this dialog' ? null : (
+                    <Button
+                        variant='ghost'
+                        size='small'
+                        label='Give feedback'
+                        onClick={() => undefined}
+                    />
+                )
+            }
+        >
+            <Button onClick={() => setVisible(true)}>Open Dialog</Button>
+            <Dialog
+                title={hideGlobalHeaderActions ? 'Opted out' : 'Dialog with header actions'}
+                visible={visible}
+                hideGlobalHeaderActions={hideGlobalHeaderActions}
+                headerActions={withOwnAction ? helpAction : undefined}
+                onClose={() => setVisible(false)}
+                dismissable
+            >
+                <p>The header actions render before the close button.</p>
+            </Dialog>
+        </CratisComponentsProvider>
+    );
+};
+
+const headerActions = () => within(document.body).findAllByRole('button');
+
+/**
+ * An action registered once on `CratisComponentsProvider` through `dialogHeaderActions` appears
+ * in the header of every dialog, before the close button. The renderer receives the dialog's title,
+ * id, whether it is a command dialog and its slice location, and may return `null` to hide itself.
+ */
+export const WithAppWideHeaderActions: Story = {
+    render: () => <HeaderActionsExample />,
+    play: async (context) => {
+        await openDialog(context);
+        await expect(await within(document.body).findByRole('button', { name: 'Give feedback' })).toBeTruthy();
+    },
+};
+
+/** A dialog's own `headerActions` render next to the app-wide ones. */
+export const WithOwnAndAppWideHeaderActions: Story = {
+    render: () => <HeaderActionsExample withOwnAction />,
+    play: async (context) => {
+        await openDialog(context);
+        const buttons = await headerActions();
+        const names = buttons.map((button) => button.getAttribute('aria-label') || button.textContent);
+        await expect(names.indexOf('Help')).toBeLessThan(names.indexOf('Close'));
+        await expect(names.indexOf('Give feedback')).toBeLessThan(names.indexOf('Close'));
+    },
+};
+
+/** `hideGlobalHeaderActions` leaves the app-wide actions out of one dialog. */
+export const WithoutAppWideHeaderActions: Story = {
+    render: () => <HeaderActionsExample hideGlobalHeaderActions withOwnAction />,
+    play: async (context) => {
+        await openDialog(context);
+        await expect(within(document.body).queryByRole('button', { name: 'Give feedback' })).toBeNull();
+        await expect(await within(document.body).findByRole('button', { name: 'Help' })).toBeTruthy();
     },
 };
