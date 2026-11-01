@@ -497,7 +497,7 @@ export const WithOwnAndAppWideHeaderActions: Story = {
     play: async (context) => {
         await openDialog(context);
         const buttons = await headerActions();
-        const names = buttons.map((button) => button.textContent || button.getAttribute('aria-label'));
+        const names = buttons.map((button) => button.getAttribute('aria-label') || button.textContent);
         await expect(names.indexOf('Help')).toBeLessThan(names.indexOf('Close'));
         await expect(names.indexOf('Give feedback')).toBeLessThan(names.indexOf('Close'));
     },
