@@ -41,30 +41,37 @@ on:
     pull_request:
         branches:
             - '**'
-        paths:
-            - 'Source/**'
-            - 'Migrator/**'
-            - 'ESLint/**'
-            - 'Conformance/**'
-            - 'Adapters/**'
-            - 'Storybook/**'
-            - 'scripts/**'
-            - 'compat-manifest.json'
-            - 'README.md'
-            - 'release.md'
-            - 'run-task-on-workspaces.js'
-            - 'package.json'
-            - 'rollup.config.mjs'
-            - 'yarn.lock'
-            - '.yarnrc.yml'
-            - '.yarn/releases/yarn-4.17.1.cjs'
-            - '.github/workflows/javascript-build.yml'
-            - '.github/workflows/publish.yml'
 
 permissions:
     contents: read
 
 jobs:
+    changes:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+        outputs:
+            relevant: ${{ steps.detect.outputs.relevant }}
+        steps:
+            - name: Checkout PR test merge
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 2
+                  persist-credentials: false
+
+            - name: Setup node
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 24.x
+
+            - name: Test build gate
+              run: node --test scripts/javascript-build-gate.test.mjs
+
+            - name: Detect relevant changes
+              id: detect
+              run: node scripts/javascript-build-gate.mjs detect
+
     # Cratis/Components#303: the ten-workspace `yarn ci` pipeline used to run as one serial
     # step (~12.7 min), followed by the Storybook axe matrix as a later step in the same job
     # (~6 min more). Split below into independent jobs so wall clock falls to roughly
@@ -81,6 +88,8 @@ jobs:
     # "Build the published artifact" step. Each of the three Storybook shards builds its own
     # previews, then runs a deterministic partition of the story, manager, and viewport checks.
     source:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -123,6 +132,8 @@ jobs:
 
     # Generate the same parts as the Source build, then partition all specs by file.
     source-specs:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         name: Source specs (shard ${{ matrix.shard }}/3)
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -173,6 +184,8 @@ jobs:
     # Conformance's own internal `prepare-core`) instead of once - a deliberate, bounded cost
     # matrix isolation requires, not a new build step design.
     adapters:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         name: Workspace checks (${{ matrix.name }})
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -231,6 +244,8 @@ jobs:
     # Root-level policy/tooling/evidence self-tests and the ESLint and Migrator workspace
     # pipelines need no adapter builds. Packed-consumer checks run separately below.
     tooling:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 25
 
@@ -287,6 +302,8 @@ jobs:
     # peers, pixi.js absent) and the spatial consumer check (optional pixi.js peer, one
     # instance, ./Canvas type-checks) here, so no separate jobs repeat them.
     typescript-consumers:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         name: TypeScript consumers (${{ matrix.typescript }})
         runs-on: ubuntu-latest
         timeout-minutes: 25
@@ -335,6 +352,8 @@ jobs:
     # `typescript-consumers`) so each composed Storybook has the packed output it imports. All stories and auxiliary
     # checks run exactly once across the three shards; preflight and index checks run in each.
     storybook:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         name: Storybook (shard ${{ matrix.shard }}/3)
         strategy:
             fail-fast: false
@@ -411,12 +430,16 @@ jobs:
 
     # Aggregates every other job in this workflow, including every Source, TypeScript, public-types,
     # Storybook, release-evidence, package-verification, Arc-consumer and renderer-adapter matrix leg,
-    # into the single `Build` check. A failed or cancelled leg fails `Build`, so one required check
-    # means "every leg passed" without per-leg rules kept in sync by hand. Add any new job here.
+    # into the single `Build` check. Every leg must succeed for relevant changes; only a verified
+    # documentation-only diff permits all legs to skip. Add any new job here and in the gate helper.
     build:
         name: Build
         runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
         needs:
+            - changes
             - source
             - source-specs
             - adapters
@@ -433,17 +456,26 @@ jobs:
             - verify-renderer-adapters
         if: always()
         steps:
-            - name: Require every shard to have succeeded
-              run: |
-                  if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
-                    echo "One or more JavaScript Build shards did not succeed:" >&2
-                    echo '${{ toJSON(needs) }}' >&2
-                    exit 1
-                  fi
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup node
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 24.x
+
+            - name: Require complete build evidence
+              env:
+                  NEEDS_JSON: ${{ toJSON(needs) }}
+              run: node scripts/javascript-build-gate.mjs aggregate
 
     # Builds and retains exact archives and SBOM evidence. This job is read-only; publication
     # authority remains isolated to the Publish workflow's OIDC-enabled npm job.
     release-evidence:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 20
         permissions:
@@ -508,6 +540,8 @@ jobs:
     # graph and into the `./styles` entry point). Both are resolved as of 3.0.0; all 25
     # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
     verify-published-exports:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
@@ -554,6 +588,8 @@ jobs:
     # Source/scripts/verify-public-types.exceptions.json; any Components-owned or otherwise
     # unlisted diagnostic fails this job, as does an exception that stops reproducing.
     verify-public-types:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
@@ -612,6 +648,8 @@ jobs:
     # pixi.js; and pixi.js must never be imported directly by any emitted file outside
     # those two directories, regardless of exports-map reachability.
     verify-package-graph:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
@@ -663,6 +701,8 @@ jobs:
     # imports would trivially share one module graph regardless of how the published
     # entry points are structured, so only the packed boundary can exercise this risk.
     verify-provider-context-identity:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -701,6 +741,8 @@ jobs:
               run: node scripts/verify-provider-context-identity.mjs
 
     verify-arc-consumers:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
@@ -773,6 +815,8 @@ jobs:
                   NODE
 
     verify-package-managers:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 20
         strategy:
@@ -888,6 +932,8 @@ jobs:
     # and the adapter (`--manager all`, stopping at the first failing manager), instead of repeating
     # the build and pack per package manager (#453). The Node 22 engine legs stay npm-only.
     verify-renderer-adapters:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
         name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }}, Node ${{ matrix.node }})
         runs-on: ubuntu-latest
         timeout-minutes: 25
