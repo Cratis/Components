@@ -179,12 +179,12 @@ Unauthorized takes precedence over failure, which takes precedence over loading.
 - `title`: Page title. Required, but not rendered visibly.
 - `query`: Constructor of the generated query (`IQueryFor` or `IObservableQueryFor`)
 - `emptyMessage`: Message to display when no rows are available
-- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to the provider's `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`, because only the loaded page is searched) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
-- `onGlobalFilterChange`: Called with the search text each time it changes, so the page can tell a search is active
 - `children`: `<DataPage.MenuItems>` and `<DataPage.Columns>`
 
 ### Optional Props
 
+- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to the provider's `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`, because only the loaded page is searched) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
+- `onGlobalFilterChange`: Called with the search text each time it changes, so the page can tell a search is active
 - `queryArguments`: Arguments to pass to the query. An observable query resubscribes when any argument changes; a snapshot query re-runs when a required argument changes.
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the query states, passed to the bound table
 - `dataKey`: Row property used as stable identity for selection
