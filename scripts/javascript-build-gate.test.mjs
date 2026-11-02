@@ -22,6 +22,7 @@ const relevant = [
     '.github/workflows/javascript-build.yml', '.github/workflows/publish.yml',
     '.github/workflows/new.yml', 'NewRoot/example.md', 'Documentation/verify-markdown.sh',
     'Documentation/unknown.xyz', 'Documentation/toc.yaml', 'Documentation/image.PNG',
+    'Documentation/storybook.mdx', 'Documentation/Migration/3-to-4.md',
 ];
 const merge = 'a'.repeat(40);
 const base = 'b'.repeat(40);

@@ -18,6 +18,11 @@ const documentationFiles = new Set([
     '.github/workflows/markdown-verification.yml',
     '.markdownlint.json',
 ]);
+// Documentation files that build or spec steps read; a change to them must run full validation.
+const buildInputDocumentation = new Set([
+    'Documentation/storybook.mdx',
+    'Documentation/Migration/3-to-4.md',
+]);
 const documentationExtensions = ['.md', '.mdx', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'];
 const shaPattern = /^[a-f0-9]{40}$/;
 
@@ -39,6 +44,7 @@ function validatePath(path) {
 
 export function isRelevant(path) {
     validatePath(path);
+    if (buildInputDocumentation.has(path)) return true;
     if (documentationFiles.has(path)) return false;
     return !(path.startsWith('Documentation/') &&
         (documentationExtensions.some(extension => path.endsWith(extension)) || path.endsWith('/toc.yml')));
