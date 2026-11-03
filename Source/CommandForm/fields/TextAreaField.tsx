@@ -51,6 +51,7 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
             data-disabled={props.pt?.root?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-readonly={props.pt?.root?.readOnly || undefined}
+            data-cratis-component='TextAreaField'
             data-cratis-part='textarea'
             className={[
                 'cratis-field-input',
