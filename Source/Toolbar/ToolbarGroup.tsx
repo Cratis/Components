@@ -201,6 +201,7 @@ export const ToolbarGroup = ({
             {...pt?.root}
             className={`toolbar-group cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl ${pt?.root?.className ?? ''}`}
             data-cratis-part='toolbar-group'
+            data-cratis-component='ToolbarGroup'
             data-orientation={orientation}
         >
             {children}

@@ -16,6 +16,9 @@ import { useToolbarFolderMode } from './ToolbarFolderContext';
 import { useToolbarItemVisibility } from './ToolbarItemVisibilityContext';
 import { useRovingTool } from '../Common/ToolbarRovingContext';
 
+// SAFETY: A data-* attribute is not part of the typed button attributes; the drawer tile spreads it onto its button root.
+const drawerTileMarker = { 'data-cratis-component': 'ToolbarButton' } as ButtonHTMLAttributes<HTMLButtonElement>;
+
 /** Stable part attributes for {@link ToolbarButton}. */
 export interface ToolbarButtonParts {
     /** Native button root. */
@@ -118,6 +121,7 @@ const ToolbarButtonContent = ({
                 onDragStart={isDraggable ? handleDragStart : undefined}
                 className={`toolbar-button toolbar-button--list cratis:h-10 cratis:px-3 cratis:w-full cratis:flex cratis:items-center cratis:justify-start cratis:gap-2 cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
+                data-cratis-component='ToolbarButton'
                 data-active={active || undefined}
                 data-selected={active || undefined}
             >
@@ -180,6 +184,7 @@ const ToolbarButtonContent = ({
                 onDragStart={isDraggable ? handleDragStart : undefined}
                 className={`toolbar-button ${buttonSizeClass} cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
+                data-cratis-component='ToolbarButton'
                 data-active={active || undefined}
                 data-selected={active || undefined}
             >
@@ -214,7 +219,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
             onClick={props.onClick}
             onDragStart={props.onDragStart}
             className={props.className}
-            root={props.pt?.root}
+            root={{ ...props.pt?.root, ...drawerTileMarker }}
             iconPart={props.pt?.icon}
             label={props.pt?.label}
         />

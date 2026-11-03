@@ -327,6 +327,7 @@ export const ToolbarFolder = ({
                 {...pt?.root}
                 className={`toolbar-folder-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='toolbar-folder'
+                data-cratis-component='ToolbarFolder'
                 data-open={isExpanded || undefined}
                 ref={containerRef}
             >
