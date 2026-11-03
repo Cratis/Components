@@ -59,6 +59,7 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             data-disabled={props.pt?.root?.disabled || undefined}
             data-invalid={props.invalid || undefined}
             data-readonly={props.pt?.root?.readOnly || undefined}
+            data-cratis-component='InputTextField'
             data-cratis-part='input'
             className={[
                 'cratis-field-input',
