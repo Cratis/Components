@@ -273,16 +273,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:22.153.1":
-  version: 22.153.1
-  resolution: "@cratis/arc.react@npm:22.153.1"
+"@cratis/arc.react@npm:22.156.2":
+  version: 22.156.2
+  resolution: "@cratis/arc.react@npm:22.156.2"
   dependencies:
-    "@cratis/arc": "npm:22.153.1"
+    "@cratis/arc": "npm:22.156.2"
     "@cratis/fundamentals": "npm:^7.27.0"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/d275bab16e177931e1c1b001425c4aba7af9b39399d7da7b2dd7084f11ab07c1c6c8e6bca142cf6eac8479a34569165d4f1fc47a9cd2ed40772659b15363ca31
+  checksum: 10/61bd75168494c76577865f76db1a7e595415ad4e16a3b4024942094a83ff414b5b62981a3b2a5d0fb66680eba04c5019e3a0a344fb627addf049fdbe6670c67b
   languageName: node
   linkType: hard
 
@@ -321,13 +321,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc@npm:22.153.1":
-  version: 22.153.1
-  resolution: "@cratis/arc@npm:22.153.1"
+"@cratis/arc@npm:22.156.2":
+  version: 22.156.2
+  resolution: "@cratis/arc@npm:22.156.2"
   dependencies:
     "@cratis/fundamentals": "npm:^7.27.0"
     rxjs: "npm:^7.8.2"
-  checksum: 10/2b8cddbef0ff44b944c13ef263c5824a77f8c2d7ded92a52fbf86647724951799df5ea3c60f8cfc4e5428d875e2e061ea2f87fec4b1a7c76cc72a9e8579a49ad
+  checksum: 10/9e970980c142dec35b6141694325b2260ee350d4d1ea744e7bbbe4993da97b59ae70039bad6e5490ab6ecbe97a6dce09beafacdf055764bb996b1dd9911569cf
   languageName: node
   linkType: hard
 
@@ -6940,8 +6940,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:22.153.1"
-    "@cratis/arc.react": "npm:22.153.1"
+    "@cratis/arc": "npm:22.156.2"
+    "@cratis/arc.react": "npm:22.156.2"
     "@cratis/arc.vite": "npm:22.122.1"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"

@@ -8,8 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 export const expensiveJobs = Object.freeze([
     'source', 'source-specs', 'adapters', 'tooling', 'typescript-consumers',
-    'verify-public-types', 'storybook', 'release-evidence', 'verify-published-exports',
-    'verify-package-graph', 'verify-provider-context-identity', 'verify-arc-consumers',
+    'published-artifact', 'storybook', 'verify-arc-consumers',
     'verify-package-managers', 'verify-renderer-adapters',
 ]);
 export const maxGitOutput = 32 * 1024 * 1024;
