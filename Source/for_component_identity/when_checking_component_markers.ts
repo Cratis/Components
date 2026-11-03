@@ -40,7 +40,7 @@ const declaresMarker = (source: string, component: string) => {
     );
 };
 
-const PENDING_CEILING = 31;
+const PENDING_CEILING = 27;
 
 const markersDeclaredInSource = (): Set<string> => {
     const declared = new Set<string>();

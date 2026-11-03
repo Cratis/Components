@@ -119,11 +119,11 @@ export function CheckboxListFilter({
     );
 
     if (!hasOptions) {
-        return <p className='pv-option-list-empty'>{emptyMessage}</p>;
+        return <p className='pv-option-list-empty' data-cratis-component='CheckboxListFilter'>{emptyMessage}</p>;
     }
 
     return (
-        <div className='pv-option-list' ref={containerRef}>
+        <div className='pv-option-list' ref={containerRef} data-cratis-component='CheckboxListFilter'>
             {showSearch && (
                 <div className='pv-filter-group-search pv-option-list-search'>
                     <input
