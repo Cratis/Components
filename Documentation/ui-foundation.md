@@ -165,11 +165,9 @@ The repository compiles and emits declarations with TypeScript 7.0.2, installed 
 
 Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact installed package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, version/metadata drift, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate. A diagnostic anchored in a Components declaration is never covered by message matching alone: the same compiler run must also contain the reviewed TS2834/TS2835 root cause under the exact upstream package named by that diagnostic. Synthetic specs prove absent and unrelated root causes remain failures.
 
-The current exception is:
+No upstream exception is currently listed. `@cratis/arc.react` 22.156.2 ([Cratis/Arc#3588](https://github.com/Cratis/Arc/issues/3588)) stopped publishing its test-only global JSX declarations, so every public subpath passes as a strict external Bundler and NodeNext consumer with the dev/test pin. The peer range still admits earlier Arc releases; strict (`skipLibCheck: false`) consumers on those releases can still see `TS2503` for unresolved `JSX` identifiers in the command/dialog subpaths and should use 22.156.2 or later.
 
-- **`@cratis/arc.react@22.153.1`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler and NodeNext consumers of Core command/dialog subpaths (`TS2503`). Tracked upstream in [Cratis/Arc#3588](https://github.com/Cratis/Arc/issues/3588).
-
-A `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: these upstream diagnostics remain reproducible with the pinned releases. The gate reports them rather than disabling declaration checks, and fails on any additional or Components-owned regression.
+When an exception is listed, a `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: those upstream diagnostics remain reproducible with the pinned releases. The gate reports them rather than disabling declaration checks, and fails on any additional or Components-owned regression.
 
 ### Why the Canvas Pixi surface remains public
 
