@@ -194,6 +194,7 @@ export const ToolbarSection = ({
             className={`toolbar-section ${isTransitioning ? 'toolbar-section--transitioning' : ''} ${pt?.root?.className ?? ''}`}
             style={{ ...pt?.root?.style, ...(size ? { width: size.width, height: size.height } : {}) }}
             data-cratis-part='toolbar-section'
+            data-cratis-component='ToolbarSection'
             data-transitioning={isTransitioning || undefined}
             data-orientation={orientation}
         >

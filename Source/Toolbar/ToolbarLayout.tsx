@@ -215,6 +215,7 @@ export const ToolbarLayout = ({
             {...pt?.root}
             className={`toolbar-layout cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.root?.className ?? ''}`}
             data-cratis-part='toolbar-layout'
+            data-cratis-component='ToolbarLayout'
             data-layout-name={name}
             data-orientation={orientation}
         >
