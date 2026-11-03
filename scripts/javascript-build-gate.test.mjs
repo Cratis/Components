@@ -169,7 +169,7 @@ test('Git exit, spawn, signal, timeout, overflow and partial-output failures nev
 
 for (const mode of ['true', 'false']) {
     test(`aggregate accepts only the complete intentional ${mode} truth-table row`, () => {
-        assert.match(aggregate(needsFixture(mode)), /^Verified 14 jobs:/);
+        assert.match(aggregate(needsFixture(mode)), /^Verified 10 jobs:/);
     });
     for (const job of expensiveJobs) {
         test(`aggregate ${mode} rejects every inconsistent or missing result for ${job}`, () => {
@@ -291,8 +291,8 @@ test('workflow has unfiltered ordinary PRs and preserves the original push filte
 `);
 });
 
-test('every one of the 14 expensive job groups is guarded and directly required by Build', () => {
-    assert.equal(expensiveJobs.length, 14);
+test('every one of the 10 expensive job groups is guarded and directly required by Build', () => {
+    assert.equal(expensiveJobs.length, 10);
     assert.deepEqual(Object.keys(jobs).sort(), ['changes', 'build', ...expensiveJobs].sort());
     for (const job of expensiveJobs) {
         assert.match(jobs[job], /^        needs: \[changes\]$/m);
@@ -304,6 +304,56 @@ test('every one of the 14 expensive job groups is guarded and directly required 
     assert.match(jobs.build, /^        name: Build$/m);
     assert.match(jobs.build, /^        if: always\(\)$/m);
     assert.doesNotMatch(jobs.build, /strategy:/);
+});
+
+test('published-artifact runs every packed-artifact check from one build per leg', () => {
+    const block = jobs['published-artifact'];
+    assert.ok(block);
+    assert.equal(block.split('yarn run prepare').length - 1, 1);
+    const ordered = [
+        'yarn verify-packed-production',
+        'node scripts/verify-exports.mjs',
+        'scripts/verify-package-graph.mjs --report',
+        'scripts/verify-provider-context-identity.mjs',
+        'scripts/verify-public-types.mjs --report',
+        'yarn test-release-evidence',
+        'yarn generate-release-evidence',
+    ];
+    const positions = ordered.map(text => {
+        assert.ok(block.includes(text), text);
+        return block.indexOf(text);
+    });
+    const lastVerify = Math.max(...positions.slice(0, 5));
+    assert.ok(positions[5] > lastVerify && positions[6] > lastVerify, 'release evidence runs after every verify- command');
+    for (const text of [
+        'CRATIS_TYPESCRIPT_VERSION: ${{ matrix.typescript }}',
+        'name: components-v4-release-evidence-${{ github.sha }}',
+        'name: verify-public-types-report-ts${{ matrix.typescript }}',
+        'name: verify-package-graph-report',
+        "typescript: ['6', '7']",
+    ]) {
+        assert.ok(block.includes(text), text);
+    }
+    assert.match(block, /^        permissions:\n            contents: read$/m);
+    assert.doesNotMatch(block, /continue-on-error/);
+});
+
+test('the Yarn package cache is restore-only with exactly one saver', () => {
+    const restore = 'uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9';
+    const key = "key: ${{ runner.os }}-yarn-cache-v3-${{ hashFiles('yarn.lock', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}";
+    for (const job of expensiveJobs) {
+        assert.ok(jobs[job].includes(restore), `${job} restores`);
+        assert.match(jobs[job], /^                  path: \.yarn\/cache$/m, job);
+        assert.ok(jobs[job].includes(key), `${job} key`);
+        assert.match(jobs[job], /restore-keys: \|\n\s+\$\{\{ runner\.os \}\}-yarn-cache-v3-\n/, job);
+    }
+    assert.doesNotMatch(workflow, /\*\*\/node_modules|eslintcache/);
+    assert.equal(workflow.split('actions/cache/save@').length - 1, 1);
+    assert.ok(jobs.tooling.includes('uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9'));
+    assert.ok(jobs.tooling.includes('key: ${{ steps.yarn-cache.outputs.cache-primary-key }}'));
+    assert.ok(jobs.tooling.includes("if: steps.yarn-cache.outputs.cache-hit != 'true'"));
+    assert.equal(workflow.split('uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9').length - 1, 1);
+    assert.ok(jobs.storybook.includes('uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9'));
 });
 
 test('cheap jobs use pinned read-only hosted checkout and Node without install, secrets, or credentials', () => {
