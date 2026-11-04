@@ -22,6 +22,10 @@ Typing `@` opens the candidate list. Feed it one of two ways — or both. In the
 
 A `MentionCandidate` has a string `id`, `name`, `hasAvatar`, `kind`, and an optional `avatarVersion`. People and agents are offered side by side — a candidate's `kind` (`ChatAuthorKind.User` | `ChatAuthorKind.Agent`) decides its avatar and how the mention is marked when rendered. Omit both props to turn mentions off.
 
+## Keyboard use
+
+Focus stays in the message box while the suggestions are open. The arrow keys move the highlight, and the box points at the highlighted option with `aria-activedescendant`. Enter or Tab picks it. Escape closes the suggestions without touching the draft or the caret, and without reaching a dialog around the composer; editing the text after the `@` opens them again. With the suggestions closed, Enter sends the draft as written.
+
 ## How mentions travel
 
 The body stays plain readable text — a mention is written into it as `@Name`. Alongside the text, the send callback reports _who_ the body actually mentions:
