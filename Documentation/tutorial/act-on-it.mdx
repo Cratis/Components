@@ -1,11 +1,11 @@
 ---
 title: '2. Act on the list'
-description: Add authors with a typed command dialog, initialize required values correctly, and watch the live table update itself the moment a command lands.
+description: Register an author with a typed command dialog, initialize its required id, and distinguish command success from the observable table update.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-The table lists authors; now a librarian needs to _change_ the list. Every change is an Arc command, and Components turns each one into a form-with-a-button without you binding a single field. We'll start with `RegisterAuthor`.
+Continue from [List the authors](./list-it.mdx), keeping the backend, providers, and table working. This chapter adds the write side with the generated `RegisterAuthor` command from `src/Authors/RegisterAuthor.ts`. The librarian supplies `name`; the dialog supplies `id`. Components binds the typed field, validates the command through Arc, and executes it when the user confirms.
 
 ## Add an author
 
@@ -53,7 +53,7 @@ The table lists authors; now a librarian needs to _change_ the list. Every chang
     export const Authors = () => {
         const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
         return (
-            <Page title='Authors'>
+            <Page title='Authors' showTitle>
                 <Button label='Add author' onClick={() => void showAddAuthor()} />
                 <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet'>
                     <Column field='name' header='Name' sortable />
@@ -77,9 +77,17 @@ The table lists authors; now a librarian needs to _change_ the list. Every chang
     value the user doesn't type — ids, a parent id, the selected row — in `initialValues`.
 </Aside>
 
-## The payoff: it updates itself
+## Check command success, then the query result
 
-Add an author and the new row appears in the table **immediately** — and you wrote nothing to make that happen. There's no "reload the list after saving," because there's nothing to reload: the command stored the author, the observable `AllAuthors` query pushed its new result, and the table you built in chapter 1 re-rendered on its own. The write side and the read side meet in the data, and the screen just follows.
+Use a recognizable synthetic name, such as **Sample Author**, so you can find the new row.
+
+1. Open **Add author**, leave **Name** empty, and check that **Add** is disabled. Enter a name; confirm becomes available once client validation passes.
+2. Choose **Cancel** once. The dialog closes without executing. Reopen it and submit the name. While execution is pending, the dialog is busy; on success it closes.
+3. Watch the table for the new name. It appears when `AllAuthors` delivers the updated result, not because closing the dialog inserts a local row.
+
+A closed dialog and a visible row are different checkpoints. If the command is rejected, the dialog stays open; inspect validation messages or the failed request. If it succeeds but no row arrives, inspect the observable query connection and backend read-model update before submitting again. Retrying a successful registration creates another command with a fresh id, not a refresh.
+
+For a Chronicle-backed application, also check that its projection has updated the queried read model. The table does not provide a write/read consistency or timing guarantee.
 
 <Aside type='tip' title='Validation flows through'>
     Rules the backend shares with the client — like the blank-name `ConceptValidator` from
@@ -105,12 +113,12 @@ Editing isn't a different mechanism — it's another command. The Arc tutorial d
 </CommandDialog>
 ```
 
-A remove command with nothing but the id is often a confirmation rather than a form; pass `initialFocus={DialogInitialFocus.Cancel}` (from `@cratis/components/Dialogs`) so a stray Enter doesn't confirm it. The table updates itself after every one of these, the same way it did for adding. In the next chapter you'll get the selected row from `DataPage` and pass it to a real command from the Arc tutorial, `AddBook`.
+A remove command with nothing but the id is often a confirmation rather than a form; pass `initialFocus={DialogInitialFocus.Cancel}` (from `@cratis/components/Dialogs`) so a stray Enter doesn't confirm it. The table reflects these changes when its observable query delivers the updated result. In the next chapter you'll get the selected row from `DataPage` and pass it to a real command from the Arc tutorial, `AddBook`.
 
 ## What you built
 
 - An **Add author** dialog generated from the `RegisterAuthor` command, opened with `useDialog`, with its required `id` in `initialValues`,
-- a table that **updates live** the moment the command lands — no refresh code,
+- a table that renders the subsequent observable result without application refresh code,
 - and the pattern for every other change: model it as a command, open it in a dialog, let the list follow.
 
 These actions hang off a button above the table, but a real list screen lets you _select_ a row and act on it — and often shows that row's details beside the list. That's exactly what `DataPage` is for. [Let's build the list-and-detail screen →](./list-and-detail.mdx)

@@ -9,11 +9,13 @@ Components separates behavior from product appearance through three independentl
 2. `@cratis/components/styles` supplies component structure and only the internal utility rules Components uses. It contains no token copy and no Tailwind Preflight or global reset.
 3. `@cratis/components/theme` optionally adds document/subtree foreground and background, automatic or explicit dark mode, and forced-colors behavior.
 
-```ts
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import '@cratis/components/theme';
+```css title="src/index.css"
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
+@import '@cratis/components/theme'; /* optional baseline */
 ```
+
+Import `./index.css` once from your application entry. Prefer this CSS-first path on TypeScript 6: the package stylesheet subpaths have no type declarations, so direct TypeScript imports can produce `TS2882`. Keep your bundler's types for local CSS imports enabled. [Set up styling](getting-started.md) covers this and the alternative declarations for existing direct imports.
 
 A product design system omits `theme`, maps its canonical values directly onto `--cratis-*`, and uses stable parts for component-specific treatment.
 
@@ -47,13 +49,19 @@ Declaring the same names again later, as the `styles` bundle does, never changes
 
 Import product mappings and overrides after Components:
 
-```ts
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import './product-components.css';
+```css title="src/index.css"
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
+@import './product-components.css';
 ```
 
 React Aria is internal. Never style React Aria class names or undocumented DOM structure.
+
+## Verify the chosen posture
+
+Check a field, table, and dialog in the application rather than judging tokens in isolation. With the baseline, test light, dark, and forced-colors states. With product-owned mappings, check foreground/background pairs, visible focus, disabled controls, and validation errors. The token and stable-part contracts make these customizations possible; they do not establish application-wide accessibility conformance.
+
+If there is no structure, verify the CSS entry is loaded. If product utilities lose, inspect the first cascade-layer declaration before increasing specificity. If tokens change but structure does not, check whether you imported the surface's structural CSS. Use [Troubleshooting](../troubleshooting.md) to separate these symptoms from query or provider failures.
 
 ## See also
 

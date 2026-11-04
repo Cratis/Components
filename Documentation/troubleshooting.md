@@ -6,7 +6,19 @@ description: Find the owning guidance for common Components installation, stylin
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-Start from the symptom you can observe. Each entry points to the page that owns the current contract and remedy.
+Start with the observable failure, not the widget you suspect. For the [library tutorial](tutorial/index.md), check these boundaries in order:
+
+| Symptom | Inspect first |
+| --- | --- |
+| Generated import is missing | Backend slice and proxy generation |
+| Components render but are unstyled | CSS entry and bundle |
+| No command/query request leaves the browser | Arc provider and runtime configuration |
+| Request fails or is unauthorized | Request result and backend/authentication logs |
+| Confirm stays disabled | Client validity, visible fields, and hidden required values |
+| Command succeeds but a row is absent | Observable query connection and read-model update |
+| Only layout or product overrides fail | Ancestor height or cascade-layer order |
+
+Keep command success, query success, and appearance separate. An empty-state message does not diagnose a failed query, and removing validation or styles to silence a symptom does not repair its cause.
 
 ## The command submit button stays disabled
 
@@ -18,11 +30,27 @@ Components executes commands and runs queries through the generated proxies, whi
 
 ## Components render without styles
 
-Import `@cratis/components/tokens` and `@cratis/components/styles` (or `styles/base` plus the per-area entries) once at the application entry point, with `tokens` first. Without them, components render semantic markup with no Cratis structure or appearance. If TypeScript rejects those side-effect imports with `TS2882`, declare the stylesheet modules as shown in [Getting started](getting-started.mdx#install-and-wire-it-up); do not remove the imports.
+Use a local CSS entry with `@import '@cratis/components/tokens';` followed by `@import '@cratis/components/styles';` (or `styles/base` plus all mounted per-area entries). Import that local file once from the application entry. Add `theme` only for the Cratis baseline. Without structural CSS, semantic markup can render without the intended structure or appearance.
+
+On TypeScript 6, direct TypeScript imports of package stylesheet subpaths can report `TS2882` because they have no type declarations. Prefer the CSS-first setup above with your bundler's local CSS types, or retain direct imports with the explicit module declarations in [Getting started](getting-started.mdx#install-and-wire-it-up). Do not remove the styles, suppress checking globally, or add a vendor theme to fix this. See [Set up styling](Styling/getting-started.md).
 
 ## A DataPage collapses or its paginator falls off the screen
 
 `DataPage` fills the height it is given, so an ancestor must have a definite height, such as a sized router outlet, a flex child with `min-height: 0`, or `height: 100vh`. Without one it falls back to a small minimum height. See [DataPage](DataPage/index.md).
+
+## A successful command does not appear in the list
+
+First confirm the command result is successful; a disabled submit button or rejected request is a different branch. The dialog closes on success, but an observable table only changes when its query delivers a result containing the row. Check that the table uses the intended observable query, its arguments match the new data, and its connection is active.
+
+Then inspect the backend read-model update. With Chronicle behind Arc, a projection must process the event into that model before the query can report it. Components neither subscribes directly to Chronicle nor guarantees an immediate read after a successful command. Do not keep registering the same author to force a refresh; each fresh dialog generates another id. See [Displaying data](displaying-data.md#interpret-query-status).
+
+## A detail panel shows the previous author's books
+
+Compare the selected author with the detail component's `item.id`, the `authorId` passed to `BooksForAuthor.use`, and the books result you render. They must refer to the same author. The tutorial's `key={String(item.id)}` remounts the `Books` child when the author changes, resetting its React state; it does not guarantee a loading screen or a fresh query result. See [List and detail](tutorial/list-and-detail.mdx) for the argument wiring and status checks. A custom panel must also distinguish failed and unauthorized results from a successful empty book list.
+
+## A row action has no selected item
+
+`MenuItem.command` receives no arguments. Save the typed row from `onSelectionChange`, read that state in the callback, and pass its id to the dialog. `disableOnUnselected` controls whether the action is enabled; it does not inject a row. Without a typed details component, supply the explicit `DataPage` type arguments shown in [A list screen with actions](list-screen-with-actions.md).
 
 ## Yarn PnP cannot resolve `rxjs` from Arc React
 

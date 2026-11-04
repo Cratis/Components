@@ -7,7 +7,9 @@ The `CommandForm` component provides form field components for building command 
 
 ## Purpose
 
-CommandForm offers a complete set of form field components designed to work seamlessly with Cratis Arc commands. It handles different data types, validation, and integration with command execution.
+Use the Components `CommandForm` module for typed fields inside Arc's `CommandForm` or a Components command surface. Arc owns command execution and validation results; the fields supply controls, binding, and error associations. Import the inline `CommandForm` container from `@cratis/arc.react/commands`, and Components fields from `@cratis/components/CommandForm`.
+
+For the surrounding providers, CSS, running backend, and generated proxies, start with [Getting started](../getting-started.mdx). For a complete add-author flow, use [Building a form](../building-a-form.md). A local controlled input need not execute an Arc command.
 
 ## Key Features
 
@@ -65,6 +67,18 @@ import {
 ```
 
 `title` is required on `CommandDialog`. Outside `useDialog`, close the dialog yourself from `onSuccess` and `onCancel`; see [CommandDialog](../CommandDialog/index.md#controlled-visibility).
+
+## Choose the execution container
+
+| Screen requirement | Use | Completion responsibility |
+| --- | --- | --- |
+| Input inside the current page | Arc `CommandForm` plus Components fields | The host decides what to show or navigate to after execution |
+| One command in a modal | `CommandDialog` | Closes on success through `useDialog`, or through host callbacks in controlled mode |
+| One command gathered across steps | `CommandStepper` or `StepperCommandDialog` | Keep required values and validation timing aligned across steps |
+
+A field accessor selects a generated command member; it does not supply missing context such as a parent id. Set required hidden values through `initialValues` before validation. `onBeforeExecute` cannot repair a missing value that prevents reaching submit.
+
+Check an empty required field, a valid initial command, a server rejection, and a successful execution. An observable list follows a later query result; command success alone does not insert its row.
 
 ## Field defaults and command values
 

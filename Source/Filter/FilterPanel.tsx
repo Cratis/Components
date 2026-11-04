@@ -278,6 +278,7 @@ export function FilterPanel({
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
                     data-open={isOpen || undefined}
+                    data-cratis-component='FilterPanel'
                 >
                     <div className='pv-filter-dropdown-content'>
                         {onSearchChange && (

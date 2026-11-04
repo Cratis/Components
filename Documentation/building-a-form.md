@@ -7,6 +7,17 @@ description: Execute a command from a typed form using CommandDialog and Command
 
 **Prerequisites:** the providers and styles from [Getting started](getting-started.mdx), and a generated command proxy. The examples use the Arc tutorial's `RegisterAuthor`, which has a required `id` and a `name`.
 
+## Identify values before fields
+
+This recipe expects the running Arc library backend and generated `src/Authors/RegisterAuthor.ts` from [Getting started](getting-started.mdx). It is the write half of the [library tutorial](tutorial/index.md), not a standalone form backed by a placeholder class.
+
+| Required value | Supplied by | Where it goes |
+| --- | --- | --- |
+| `RegisterAuthor.id` | The dialog creates a fresh `Guid` | `initialValues` |
+| `RegisterAuthor.name` | The user types it | `InputTextField`'s typed accessor |
+
+A valid initial command may enable confirm immediately; validity is not a dirty-state check. For an add-book dialog, apply the same split: the caller supplies `authorId`, the dialog creates `bookId`, and the user types `title`.
+
 ## Use CommandDialog
 
 `CommandDialog` takes your generated command constructor, instantiates it, renders the fields you supply plus the OK/Cancel footer, and executes on confirm:
@@ -78,6 +89,14 @@ export const AuthorsToolbar = () => {
 ```
 
 `CommandDialog` closes itself through the `useDialog` context: with `DialogResult.Ok` after a successful command, and with `DialogResult.Cancelled` from **Cancel**, the close button, or Escape. You don't need to call `closeDialog` yourself. `useDialog` mounts the dialog only while it is open, so the `id` created in `AddAuthor` is fresh for every registration.
+
+## Verify both sides of completion
+
+Open the dialog and leave **Name** empty: confirm should be disabled. Type a name, then cancel once and check that no command ran. Reopen and submit; the dialog becomes busy and closes on success. A backend rejection keeps it open. Check field messages, and distinguish validation, authorization, and exception results using the callbacks above.
+
+A closed dialog does not mean a separate query already contains the author. An observable table renders the new row when it receives the updated result. If command success is confirmed but the row is absent, inspect the query connection and backend read-model update before resubmitting; another registration receives a new id.
+
+Use a keyboard to open, name, submit, and cancel the dialog, and check return focus in your application. For a destructive confirmation, deliberately select initial focus, for example `DialogInitialFocus.Cancel` from `@cratis/components/Dialogs`. These are application checks, not a conformance claim.
 
 ## Tips
 

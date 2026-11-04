@@ -422,6 +422,7 @@ export const ColumnFilterMenu = ({
                 data-selected={hasConstraint || undefined}
                 data-open={isOpen || undefined}
                 data-cratis-part='filter-trigger'
+                data-cratis-component='ColumnFilterMenu'
             >
                 <svg
                     className='cratis-filter-trigger__icon'

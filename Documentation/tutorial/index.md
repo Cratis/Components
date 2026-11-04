@@ -1,56 +1,54 @@
 ---
 title: "Tutorial: Build the library screen"
-description: Build the front end for the library app one screen at a time — a live table, command-driven actions, and a list-and-detail layout — using Components on top of your Arc proxies.
+description: Build an Arc-backed library screen with an observable author table, command dialogs, and a selection-aware books panel.
 ---
 
-In the [Arc tutorial](/arc/tutorial/) you built a library backend: a `RegisterAuthor` command, an `AllAuthors` query, and books that belong to authors. Now we'll build the screen a librarian actually uses — and we'll do it the Cratis way, where the UI rides directly on the generated proxies and updates itself.
+Build a library screen where a librarian can list authors, register an author, select one to see their books, and add a book to that author. This is the command/query UI path through **Cratis Platform**: Arc supplies the backend contracts and generated browser proxies; Components supplies the React forms, tables, dialogs, and page composition.
 
-Here's the thing to hold onto as we go: **you won't write the wiring between the screen and the backend.** No `fetch`, no loading flags, no "refresh the list after saving," no hand-bound form fields. Components already knows how to render a command as a form and a query as a live table — so each screen is a few declarative lines, type-checked against the C# it came from. We'll build it up in three short chapters, stopping at each step to see what just happened.
+You will write the fields, columns, actions, and selection handoff. Components handles form binding and query subscriptions. It does not create your backend, generate its proxies, or make a successful command and an updated query result the same event.
 
-Each generated proxy maps to one Components widget. A query becomes a live table, a command becomes a dialog:
+## Before you start
+
+1. Complete the [Arc library tutorial through Relate your slices](/arc/tutorial/books-and-relationships/). Keep its backend running and regenerate the TypeScript proxies after backend changes. This tutorial uses that application's contracts, not mock classes that you should copy into a new React project.
+2. Follow [Getting started](/components/getting-started/) for the package peers, CSS entry file, and the nested `<Arc>` / `CratisComponentsProvider` setup. Keep the Arc host and development-server routing configuration from your application.
+3. Check the generated files below in your frontend's `src/` directory. Names and paths are part of the handoff between the two tutorials.
+
+| Generated file | Exports used here | Contract |
+| --- | --- | --- |
+| `src/Authors/Author.ts` | `Author`, `AllAuthors` | Author rows with `id` and `name`; an observable list query |
+| `src/Authors/RegisterAuthor.ts` | `RegisterAuthor` | Command with required `id` and `name` |
+| `src/Books/Book.ts` | `BooksForAuthor` | Observable books query taking `{ authorId }`; rows include `id` and `title` |
+| `src/Books/AddBook.ts` | `AddBook` | Command with required `authorId`, `bookId`, and `title` |
+
+If these files or exports are missing, return to the Arc tutorial and proxy generation before writing the screen. The handwritten files below live alongside the generated folders; do not edit generated files to repair an import.
+
+## Follow the data through the screen
 
 ```mermaid
 flowchart LR
-    subgraph Backend["Arc proxies (generated)"]
-        Q["AllAuthors · BooksForAuthor"]
-        C["RegisterAuthor · AddBook"]
-    end
-    Q -->|live| T["DataTable / DataPage"]
-    C -->|CommandDialog| D["dialogs + forms"]
-    T --> S["the library screen"]
-    D --> S
+    Form["CommandDialog in React"] --> Command["Generated command proxy"]
+    Command --> Backend["Arc backend"]
+    Backend --> Read["Read model and observable query"]
+    Read --> Query["Generated query proxy"]
+    Query --> Table["DataTable / DataPage in React"]
+    Table --> Selection["Selected Author.id"]
+    Selection --> Books["BooksForAuthor / AddBook.authorId"]
 ```
 
-The commands write to the database, the observable queries push the new results, and the screen follows. You never connect the two sides yourself.
+The proxies execute in the browser, using runtime configuration from `<Arc>`. The backend owns validation, authorization, writes, and query results. Components renders the state delivered by those proxies.
 
-## What you'll build
+Command success closes the command dialog. The author or book becomes visible separately, when the observable query delivers a result containing it. There is no fixed delay promised by the UI.
 
-A working library admin screen where a librarian can:
-
-- **see every author in a live table** that updates the instant one is added — no refresh,
-- **add authors** through a typed command dialog,
-- and **select an author to see their books** in a resizable detail panel beside the list, then **add a book** to the selected author.
-
-## What you'll learn
-
-- How a **live data table** binds to an observable query and re-renders itself.
-- How `CommandDialog` and `useDialog` turn a command into a form-with-a-button, validation included, and why required values go in `initialValues`.
-- How `DataPage` gives you a **list-and-detail** layout — selection, columns, menu actions, and a detail panel — out of the box.
-- Why you point each screen at a **purpose-built query** rather than one shared model.
-
-## What you'll need
-
-- The library backend from the Arc tutorial through [chapter 3, Relate your slices](/arc/tutorial/books-and-relationships/): `RegisterAuthor` and the observable `AllAuthors` query from chapter 1, and `AddBook` and the observable `BooksForAuthor` query from chapter 3. The generated proxies live in `src/Authors/` and `src/Books/`.
-- Components installed, the styles imported, and `<Arc>` plus `CratisComponentsProvider` mounted. The [Getting started](/components/getting-started/) page does this in three steps. If you followed the Arc tutorial, its first chapter already did it.
-
-:::note[Components works with any Arc backend]
-The Arc tutorial writes directly to MongoDB or EF Core, so the tables in this tutorial update because the observable queries report database changes. With a Chronicle backend the same screens update when a projection changes the read model. The frontend code does not change.
+:::note[Chronicle is not required]
+The Arc tutorial uses MongoDB or EF Core directly and observes database changes. With an Arc backend using Chronicle, a projection must update the read model before its query can report the new row. Components does not subscribe directly to Chronicle. A local-array or presentational Components surface can also be used without this backend workflow; see [Choosing a component](/components/choosing-a-component/).
 :::
 
-## The tour
+## Build in three checkpoints
 
-1. **[List the authors](./list-it.mdx)** — a live table from the `AllAuthors` query.
-2. **[Act on the list](./act-on-it.mdx)** — add authors with a command dialog and watch the table follow.
-3. **[List and detail](./list-and-detail.mdx)** — swap the plain table for a `DataPage`, show each author's books, and add a book to the selected author.
+1. **[List the authors](./list-it.mdx).** Create `src/Authors.tsx`, mount it inside the providers, and distinguish loading, empty, failed, unauthorized, and populated results.
+2. **[Act on the list](./act-on-it.mdx).** Create `src/AddAuthor.tsx`, open it with `useDialog`, and supply the hidden command `id` before validation. Confirm command completion and later row visibility separately.
+3. **[List and detail](./list-and-detail.mdx).** Create `src/AuthorDetails.tsx` and `src/AddBook.tsx`, then replace `src/Authors.tsx` with a `DataPage`. Pass the selected author's `id` to both the books query and the add-book command.
 
-By the end you'll have a real screen, and the pattern for every other one in your app. Ready? [Let's put the authors on screen →](./list-it.mdx)
+Each chapter replaces or adds the named files; it is not a second application. At the end, use the [list-screen recipe](/components/list-screen-with-actions/) as a compact reminder rather than maintaining another copy of the screen.
+
+If the first checkpoint fails, start with [Troubleshooting](/components/troubleshooting/): provider/routing failures belong to the Arc connection, unstyled output to the CSS entry, and a disabled submit button to command values and validity. [Start with the author table →](./list-it.mdx)

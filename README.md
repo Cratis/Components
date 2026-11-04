@@ -1,8 +1,9 @@
 # Cratis Components
 
-React components for CQRS and event-sourced applications built with
-[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
-query-backed data tables, and higher-order application surfaces.
+The React UI component of **Cratis Platform**: command dialogs, typed forms,
+query-backed data tables, and application surfaces for
+[Cratis Arc](https://github.com/Cratis/Arc). Arc works with direct database writes or
+an event-sourced backend; Components does not require Chronicle.
 
 This is the owning source repository for `@cratis/components`. The current
 package uses Cratis-owned React markup, public TypeScript types, design tokens,
@@ -17,7 +18,9 @@ dependency for selected interaction primitives.
 
 - [Browse the canonical Components documentation](https://www.cratis.io/components/)
 - [Install and mount the provider](#minimal-setup)
-- [Choose a component area](#what-components-owns)
+- [Choose by the screen you need](https://www.cratis.io/components/choosing-a-component/)
+- [Build the library list-and-detail screen](https://www.cratis.io/components/tutorial/)
+- [Find a setup or runtime symptom](https://www.cratis.io/components/troubleshooting/)
 - [Inspect the package source](https://github.com/Cratis/Components/tree/main/Source)
 
 ## What Components owns
@@ -43,6 +46,16 @@ remove friction and boilerplate from the UI layer. The ecosystem is designed for
 quality, reliability, and AI-assisted development, with free [AI skills](https://github.com/Cratis/AI)
 for building with the stack.
 
+Choose the integration per surface: a generated-proxy command dialog or observable table
+needs an Arc runtime and backend; a local-array table or controlled presentational surface can
+use application-supplied data without executing an Arc command or query. The Arc npm peers
+remain required in either case. See the [component decision guide](https://www.cratis.io/components/choosing-a-component/).
+
+For a first command/query screen, bring the running Arc library backend and generated proxies
+listed in the [tutorial prerequisites](https://www.cratis.io/components/tutorial/#before-you-start).
+Install and configure below, render the author table, then add the command dialog and selected
+author's books. Command completion and a later observable result are separate checkpoints.
+
 Applications may use Arc without Components. Components does not by itself
 establish design-system completeness, accessibility conformance, browser
 coverage, or compatibility with every Arc/React/package-version combination.
@@ -59,7 +72,7 @@ npm install @cratis/components@^4
 Components 4 needs React 19 and Arc. Its peers are `react` and `react-dom` `^19.0.0`,
 `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`, `@cratis/fundamentals` `^7.10.3`,
 and `reflect-metadata` `0.2.2`. `tsyringe` `4.10.0` is an optional peer that Arc React already
-installs, and `pixi.js` `^8.20.0` is an optional peer needed only by `Canvas` and `PivotViewer`. This repository builds and tests against Arc 22.16.0.
+installs, and `pixi.js` `^8.20.0` is an optional peer needed only by `Canvas` and `PivotViewer`. This checkout pins its Arc development dependencies to 22.156.2; the declared consumer peer range is wider.
 The package does not depend on PrimeReact; the optional MUI and PrimeReact renderer adapters are
 separate packages.
 

@@ -5,9 +5,15 @@ description: Swap the plain table for DataPage to get selection, menu actions, a
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Our screen lists authors and adds them, but the action hangs off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with an action bar that knows whether a row is selected. That layout has enough moving pieces to deserve a component; `DataPage` hands it to you whole.
+Replace the table-and-button screen from [Act on the list](./act-on-it.mdx) with `DataPage`: an author list, a selection-aware action row, and a resizable books panel. Keep `src/AddAuthor.tsx` from that chapter.
 
-The detail panel shows the selected author's books with `BooksForAuthor`, the filtered observable query from [the Arc tutorial's chapter 3](/arc/tutorial/books-and-relationships/), and the action bar adds a book to that author with `AddBook`.
+This chapter also requires the generated `BooksForAuthor` query in `src/Books/Book.ts` and `AddBook` command in `src/Books/AddBook.ts` from [Arc's Relate your slices](/arc/tutorial/books-and-relationships/). If they are missing, complete that backend chapter and regenerate proxies first. The final screen imports icons directly, so declare `react-icons` in your frontend package before using its imports:
+
+```bash
+npm install react-icons
+```
+
+The selected `Author.id` has two jobs: it becomes `BooksForAuthor`'s `authorId` query argument and `AddBook`'s `authorId` command value. A new `bookId` identifies the book, not its author.
 
 <Steps>
 
@@ -21,7 +27,12 @@ The detail panel shows the selected author's books with `BooksForAuthor`, the fi
 
     const Books = ({ authorId }: { authorId: Guid }) => {
         const [books] = BooksForAuthor.use({ authorId });
-        if (books.isPerforming && !books.hasData) return <p>Loading books…</p>;
+        if (!books.isAuthorized) return <p role='alert'>You cannot view these books.</p>;
+        const isLoading = books.isPerforming || books.isReady === false;
+        if (books.hasExceptions || books.isValid === false || (!isLoading && books.isSuccess === false)) {
+            return <p role='alert'>Could not load books.</p>;
+        }
+        if (isLoading && !books.hasData) return <p>Loading books…</p>;
         if (books.data.length === 0) return <p>No books yet.</p>;
         return (
             <ul>
@@ -40,9 +51,9 @@ The detail panel shows the selected author's books with `BooksForAuthor`, the fi
     );
     ```
 
-    The query is scoped to one author and observable, so the list stays current while the panel is open. The panel owns its own loading and empty states because it runs its own query.
+    The query is scoped to one author and observable, so the list stays current while the panel is open. The panel owns its status because it runs its own query: denied access takes priority, followed by exceptions or invalid arguments. A performing or not-ready result is still loading; existing books stay visible during a refresh. Once loading ends, an unsuccessful result is a failure even without exceptions. Only a successful empty result shows **No books yet.** The panel's heading identifies the selected author; the books beneath it come from this separate query, not an automatic related-data fetch by `DataPage`.
 
-    The `key` matters. `DataPage` keeps the details component mounted when the selection moves to another row, and a query hook keeps its last result when its arguments change until the new result arrives. Without the key, selecting another author briefly shows the previous author's books under the new name. Keying the child by author id mounts a fresh query per author, so the panel shows *Loading books…* instead.
+    The `key` ties the `Books` component's React state to the selected author. Selecting another author changes the key and remounts that child. That author's books may already be available; expect **Loading books…** only while the query has no ready result.
 
 2. **Add the book dialog.** It is the same shape as `AddAuthor`, with two required values the user doesn't type: the author the book belongs to and a new book id. Both go in `initialValues`:
 
@@ -68,7 +79,7 @@ The detail panel shows the selected author's books with `BooksForAuthor`, the fi
     };
     ```
 
-    If the Arc tutorial's `src/AddBook.tsx` already exports this component, reuse it.
+    `authorId` comes from the selected author; `bookId` is created once per dialog mount. `initialValues` puts both on the command even though neither has a visible field. The user supplies only the title. If the Arc tutorial's `src/AddBook.tsx` already exports this component, reuse it.
 
 3. **Assemble the page.** `DataPage` takes the query, the columns, the menu actions, and the detail component. Selection, the resizable split, and hiding the panel when nothing is selected come built in. Menu item commands take no arguments, so the page records the selected author through `onSelectionChange` and reads it when **Add book** runs:
 
@@ -92,6 +103,7 @@ The detail panel shows the selected author's books with `BooksForAuthor`, the fi
                 <DataPage
                     title='Authors'
                     query={AllAuthors}
+                    dataKey='id'
                     emptyMessage='No authors yet'
                     detailsComponent={AuthorDetails}
                     onSelectionChange={(event) => setSelected(event.value)}
@@ -124,39 +136,66 @@ The detail panel shows the selected author's books with `BooksForAuthor`, the fi
     };
     ```
 
+    `DataPage` keeps track of the selected row. `onSelectionChange` copies it into `selected` so **Add book** can use it; this does not make the selection controlled. `dataKey='id'` uses the author's unique, stable id to retain selection when a ready query result replaces that row with a new object. It cannot retain an author absent from the returned page.
+
     The icons come from `react-icons`. Components depends on it internally, but add `react-icons` to your own `package.json` when your code imports it, so strict package managers resolve it.
 
-4. **Try it.** Select an author and their books appear on the right. Drag the divider to resize. **Add book** is disabled until a row is selected — `disableOnUnselected` wires that to selection for you. With a row selected, add a book: the dialog closes on success and the new title appears in the detail panel without a refresh.
+4. **Try it.** Add a book to one of your authors:
+
+    1. With no selection, confirm that **Add book** is disabled.
+    2. Select an author. Check that the action enables and the right-hand heading names that author. Wait for the books query to show their titles or a successful **No books yet.** result.
+    3. Open **Add book** and enter a synthetic title such as **Sample Book**. Submit it. The dialog closes when the command succeeds. Check for the new title when `BooksForAuthor` sends an updated list too: closing the dialog does not mean the list has updated yet.
+    4. Select a different author. Check that the heading and books belong to that author. If their result is not ready, expect a loading message instead. Drag the divider with a pointer to check the available space.
+
+    <Aside type='caution' title='Recover a missing books result'>
+    If the new title is missing, follow `authorId` through the table below: from `selected.id` to `showAddBook`, then to the dialog's `initialValues`. Compare it with the author id passed to `BooksForAuthor.use({ authorId })`.
+
+    Check `books.isAuthorized` for denied access and the failure branch above for query errors. For denial, check sign-in and permissions; for failure, check the query arguments and backend response. Neither means the author has no books. See [Interpret query status](../displaying-data.md#interpret-query-status) for these result checks. If the dialog closed successfully but the title is still missing, follow [A successful command does not appear in the list](../troubleshooting.md#a-successful-command-does-not-appear-in-the-list) to check the observable query and its connection. For a rejected command, use `CommandDialog`'s [result callbacks](../CommandDialog/index.md#optional-props): `onFailed`, `onUnauthorized`, and `onValidationFailure` let you handle the reported problem.
+
+    If an author is removed or leaves the returned page, selection can clear, closing the pane and disabling **Add book**. Select an available author and check that author's books.
+    </Aside>
 
 </Steps>
 
 <Aside type='caution' title='Give DataPage a height'>
-    `DataPage` fills the height it is given and splits it between the action bar and the
-    table, so some ancestor needs a definite height. The wrapper above uses
-    `height: '100vh'`; inside an application shell, a sized router outlet or a flex child
-    with `min-height: 0` works too. Without one, the page falls back to a small minimum
-    height. `DataPage` does not render its `title` prop, so add your own heading if the screen needs one.
+`DataPage` fills the height it is given and splits it between the action bar and the
+table, so some ancestor needs a definite height. The wrapper above uses
+`height: '100vh'`; inside an application shell, a sized router outlet or a flex child
+with `min-height: 0` works too. Without one, the page falls back to a small minimum
+height. `DataPage` does not render its `title` prop, so add your own heading if the screen needs one.
 </Aside>
 
 <Aside type="tip" title="One read model per screen">
-The detail panel reads books through `BooksForAuthor`, a query *built for this job*: one author's books, filtered on the server. Resist the urge to make one giant read model serve every view. A list query, a detail query, and a dashboard query can each read their own purpose-built model; they're cheap to add and they never fight each other. With Chronicle, see [Read Models](/chronicle/read-models/).
+`BooksForAuthor` returns one author's books, filtered on the server, so the detail panel does not need every book to find the ones it displays. Keep queries focused on what each screen needs: the author list, this books panel, and a dashboard can use different read models without making one model serve all three. If your backend uses Chronicle, see [Read Models](/chronicle/read-models/).
 </Aside>
+
+## Check the selection handoff
+
+| Value | Comes from | Goes to |
+| --- | --- | --- |
+| `selected` | `onSelectionChange(event).value` | The no-argument `MenuItem.command` closure |
+| `authorId` | `selected.id` when **Add book** runs | `showAddBook({ authorId })`, then `initialValues` |
+| `bookId` | `Guid.create()` on each dialog mount | `AddBook.initialValues` |
+| Books query argument | The details component's `item.id` | `BooksForAuthor.use({ authorId })` |
+
+`disableOnUnselected` controls action availability; it does not pass a row into the callback. Keep the `if (selected)` guard and selection state. The backend must still authorize the command and validate its current target; a visible author or enabled action grants no permission. Here the typed `AuthorDetails` supplies row-type inference; without a typed details component, use explicit `DataPage` generics as in the [list-screen recipe](/components/list-screen-with-actions/).
+
+If **Add** stays disabled, check that `initialValues` supplies `authorId` and `bookId` and that `title` has a value. Follow [CommandDialog validation](../CommandDialog/index.md#validation-and-when-confirm-enables) for the rules that enable the button. If books appear under the wrong name, compare the selected author, `item.id`, the query's `authorId`, and the result being displayed; see [A detail panel shows the previous author's books](../troubleshooting.md#a-detail-panel-shows-the-previous-authors-books). For a collapsed layout, use the height warning above. Check that your application shell supplies a visible page heading; `DataPage.title` alone does not.
 
 ## Look back at what you built
 
 Three chapters ago we had generated proxies and no screen. Now we have a real library back office:
 
 - **Chapter 1** — a live table from `AllAuthors`, bound to an observable query with no fetch or subscription code.
-- **Chapter 2** — add authors through `CommandDialog` + `useDialog`, with required values in `initialValues` and the table updating itself the instant a command lands.
+- **Chapter 2** — add authors through `CommandDialog` + `useDialog`, with required values in `initialValues` and the table rendering subsequent query updates.
 - **Chapter 3** — a `DataPage` list-and-detail layout: selection, menu actions, a resizable panel showing each author's books, and a selection-aware **Add book** action.
 
-The pattern under all of it is the same one Components exists to give you: **point a component at a generated proxy, and the wiring is already done.** A query becomes a live table; a command becomes a validated form; a selected row becomes a detail panel — and every one of them stays type-checked against the C# it came from.
+The reusable pattern is a query-backed list plus command dialogs, with the selected row's stable id passed explicitly to the next query or command. Field accessors and row-property access are typed against generated contracts; `Column.field` remains a plain string that you must keep aligned with the read model.
 
 ## Where to go next
 
-- **[Building a form](/components/building-a-form/)** and **[Displaying data](/components/displaying-data/)** — the two halves in full, including every field type and table option.
-- **[A list screen with actions](/components/list-screen-with-actions/)** — the same screen as a quick recipe to copy.
-- **[Choosing a component](/components/choosing-a-component/)** — a decision guide from "what's on the screen" to the right component.
-- **[Build a full-stack feature](/build-a-full-app/)** — the backend and this front end, assembled end to end.
+To adapt the right-hand view, start with [Details Panel](../DataPage/details-panel.md) for related-data loading, sizing, and narrow-screen alternatives. When adding another selection-aware action, use [Accessing Selected Item](../DataPage/menu-items.md#accessing-selected-item) for reading the selected row in your handler and keeping the null guard.
 
-You've built a screen, and you have the pattern for every other one. That's Components doing its job — go build the rest of your app.
+When the next task is to collect more book information, continue with [Building a form](/components/building-a-form/) to choose fields and handle command values.
+
+Before reusing the pattern, check the screen with a keyboard: reach the actions, open a dialog, identify its title and field labels, then cancel and check where focus returns. Check a rejected command's visible field messages as well. These are application checks, not an accessibility-conformance claim. Use [Troubleshooting](/components/troubleshooting/) for connection, styling, validity, and layout failures.

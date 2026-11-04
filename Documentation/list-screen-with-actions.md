@@ -7,9 +7,17 @@ description: Combine a live table with command dialogs to build the everyday "li
 
 **Prerequisites:** the providers and styles from [Getting started](/components/getting-started/), an observable query proxy (`AllAuthors`), and a `CommandDialog` component for each action. `AddAuthor` comes from the [form recipe](/components/building-a-form/); `AddBookDialog` takes an `authorId` prop and passes it to `AddBook` through `initialValues`, as in the [tutorial](/components/tutorial/list-and-detail/).
 
+Before copying, check the generated contracts listed in the [tutorial prerequisites](tutorial/index.md#before-you-start): `Author`/`AllAuthors`, `RegisterAuthor`, `BooksForAuthor`, and `AddBook`. Keep the Arc backend running. This compact recipe reuses the dialog files from the tutorial; it does not define replacement proxies.
+
+Declare `react-icons` in the frontend package when importing its icons directly, even though Components also uses it internally:
+
+```bash
+npm install react-icons
+```
+
 ## The shape
 
-- A **live table** reads an observable query, so it reflects changes the instant a command lands.
+- A **live table** reads an observable query and renders changed results as they arrive.
 - An **action bar** item opens an "add" `CommandDialog`.
 - **Selection-aware actions** are disabled until a row is selected, then open a command dialog for that row.
 
@@ -65,9 +73,16 @@ export const Authors = () => {
 
 `MenuItem.command` receives no arguments, so the screen keeps the selected row from `onSelectionChange`. The explicit type arguments make `event.value` an `Author`; without them, and without a typed `detailsComponent`, TypeScript infers the row as `object`. `DataPage` still tracks the selection itself for `disableOnUnselected` and the optional details panel. Give `DataPage` an ancestor with a definite height; the wrapper above uses `100vh`.
 
-## Why it stays simple
+## Check selection and completion
 
-You never write the glue between the write and the read: the command changes the data, the observable query pushes its new result, and the table re-renders — automatically. With Chronicle, the new result arrives once the projection has updated the read model. There's no "refresh the list after saving" code because there's nothing to refresh.
+1. With no selection, **Add author** is available and **Add book** is disabled.
+2. Select a row. `onSelectionChange` saves its typed `Author`; the no-argument action reads that state and passes `selected.id` as `authorId` to the dialog.
+3. Confirm a valid book title. The dialog closes on command success. The observable result updates separately; this recipe has no books panel, so inspect that author's books using the [tutorial's details component](tutorial/list-and-detail.mdx).
+4. Change selection and open **Add book** again. Check that it targets the newly selected author, not a captured id from the previous dialog.
+
+`disableOnUnselected` only controls availability; it does not pass a row to `command`. Keep the selected-state guard. The example also assumes your shell supplies a visible heading: `DataPage.title` alone is not rendered.
+
+There is no application refresh handler for the observable table, but command success is not a read-after-write timing guarantee. If a command succeeds and a row is absent, inspect the query connection and read-model update before retrying. With Chronicle behind Arc, projection progress belongs to that check.
 
 ## Tips
 

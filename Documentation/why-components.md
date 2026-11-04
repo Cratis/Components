@@ -5,7 +5,7 @@ description: Why Components owns React composition around Arc proxies and select
 
 You can connect an Arc-generated command or query to any React UI. Without Components, every application repeatedly builds command execution state, validation display, dialogs, observable subscriptions, paging, selection, empty/pending states, localization, and accessibility behavior.
 
-Components centralizes that integration behind Components-owned React APIs and documented package subpaths.
+As the React UI component of **Cratis Platform**, Components centralizes that integration behind Components-owned APIs and documented package subpaths. Arc owns command/query execution and generated contracts; Components owns how the React screen collects input and presents results. Chronicle can supply event-sourced storage behind Arc, but it is not required.
 
 ## What it removes
 
@@ -39,6 +39,14 @@ This avoids coupling a product design system to a renderer preset, proprietary p
 Use Components for Cratis application surfaces that consume generated commands, queries, dialogs, forms, tables, notifications, or shared interaction patterns.
 
 Use native HTML or a product-owned presentational component for a one-off element that has no Cratis behavior. The two approaches compose naturally because Components uses semantic HTML and consumer-owned CSS. For a proposed new generic primitive, see the [generic primitive admission decision](decisions/0005-generic-primitive-admission.md): show reuse and a Components-owned interaction contract or a need from an established Components contract. Markup and tokens alone do not qualify.
+
+## Decide whether this fits your screen
+
+For a list with add/edit actions, use a query-backed table or `DataPage` with `CommandDialog`. Start with [Choosing a component](choosing-a-component.md), then follow [Getting started](getting-started.mdx) and the [library tutorial](tutorial/index.md). You bring the running backend and generated proxies; the tutorial names the exact files and identifiers it uses.
+
+For already-loaded rows or controlled local UI state, use local-data surfaces without inventing a command or backend. Those surfaces do not need to execute Arc requests, although Arc remains a required package peer. Applications may also use Arc with another UI library.
+
+Components removes repeated subscription and execution UI code, not application decisions. You still choose query scope, pass selected ids, handle backend failures, and check labels, focus, contrast, and layout in your application. Command success is not a guarantee that a separate read model is already current. See [Displaying data](displaying-data.md) for that boundary.
 
 ## Why the foundation changed
 
