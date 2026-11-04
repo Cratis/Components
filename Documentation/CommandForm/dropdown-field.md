@@ -53,6 +53,10 @@ const roles = [
 />;
 ```
 
+The accessor selects a command member in the surrounding dialog or Arc `CommandForm`. Bind a single string or number, not the option object. `optionLabel` and `optionValue` name properties on each option object; they do not transform the command value.
+
+In the core Dropdown renderer, a selection resolves back to the configured option value and writes that primitive unchanged. Selection matching uses `Object.is`: the number `1` does not match the string `'1'`. Keep values unique and use the same primitive type in your options and command. The field's string-or-number cast does not parse numeric strings.
+
 ## Props
 
 | Prop                     | Type                                | Default | Description                                                                                                                                                     |
@@ -66,12 +70,16 @@ const roles = [
 | `pt`                     | `DropdownParts`                     | —       | Attributes for the Cratis-owned Dropdown's stable parts.                                                                                                        |
 | `ptOptions` / `unstyled` | —                                   | —       | Retained temporarily for source compatibility; ignored.                                                                                                         |
 
-`DropdownField` deliberately does not surface `multiple`, `filter` or `showClear` — use [`MultiSelectField`](multi-select-field.md) for multi-select, or the [`Dropdown`](../Dropdown/index.md) wrapper directly outside a command form.
+`DropdownField` deliberately does not surface `multiple`, `filter` or `showClear` — use [`MultiSelectField`](multi-select-field.md) for multi-select, or the [`Dropdown`](../Dropdown/index.md) wrapper directly outside a command form. It also does not declare or forward top-level `disabled` or `readOnly` props. A disabled button part is not a whole-widget disabled contract; do not treat it as an authorization boundary.
 
 Every field also accepts Arc's shared field props, such as `title`, `description`, `initialValue`, and `noInitialValue`, and the accessibility props `id`, `aria-label`, and `aria-describedby`. See [Accessible names and validation errors](index.md#accessible-names-and-validation-errors).
 
 ## Behavior
 
-- Shows an empty string while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
+- Uses an empty-string display fallback when the bound property is `undefined`; it does not initialize the command. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
+
+A placeholder is not a selected command value. Seed an initial choice through `initialValues`, or use `currentValues` for a choice the parent keeps changing; see [Initialize command values](../CommandDialog/index.md#initialize-command-values). An unmatched command value can leave no matching option displayed: the core renderer does not automatically select the first option or clear that value from the command.
+
+The field passes its accessible name, error descriptions and invalid state to Dropdown. The [Dropdown parts reference](../Dropdown/index.md) covers trigger/popover styling and the legacy `pt.input` alias; `ptOptions` and `unstyled` do not select a different styling system. Dropdown uses the `dropdown.select` renderer slot, with a React Aria core implementation. Keep command values as strings or numbers rather than copying that implementation's internal selection keys; an optional renderer does not change the field's binding API.

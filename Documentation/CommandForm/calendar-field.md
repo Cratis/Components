@@ -29,6 +29,8 @@ import { CalendarField } from '@cratis/components/CommandForm';
 </CommandDialog>;
 ```
 
+The accessor selects a date-valued member on the command owned by the surrounding dialog or Arc `CommandForm`; it does not supply an initial value. The field's public boundary is `Date | null`, not a date string or a React Aria calendar value. It does not define how the command serializes dates for transport.
+
 ## Props
 
 | Prop          | Type                              | Default | Description                                                                                                                                                     |
@@ -47,6 +49,16 @@ Every field also accepts Arc's shared field props, such as `title`, `description
 
 ## Behavior
 
-- Shows `null` while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
+- Uses a `null` display fallback when the bound property is `undefined`, without initializing the command. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
+
+Clearing the picker writes `null`. If a date is required, supply an acceptable initial `Date` through `initialValues`, or use `currentValues` when the parent keeps changing it. A field's `noInitialValue` opts out of query/source population, not those explicit form values. See [Initialize command values](../CommandDialog/index.md#initialize-command-values).
+
+The `display.datePicker` renderer slot supplies DatePickerInput's implementation. Its core React Aria renderer converts a `Date` into calendar values using the browser's local time zone and converts edits back into a local-zone `Date`. With `showTime` off, editing uses only the calendar date and can discard the original time of day; it is not a way to preserve a UTC instant. `showTime` enables time editing, and `hourFormat` selects the hour cycle. Locale controls display formatting; `dateFormat` is a legacy mask, not a free-form parser or storage format.
+
+In the core picker, `minDate` and `maxDate` limit calendar selection. Today emits local midnight and is disabled when that value falls outside the range, including a same-day minimum with a later time when `showTime` is enabled. These UI bounds do not replace command/server validation.
+
+The field has no top-level `disabled` or `readOnly` props. The core picker consumes `pt.input.disabled` and `pt.input.readOnly` as picker state and disables its mutation actions accordingly. Accessible naming and error descriptions follow the shared field rules above. An optional renderer must be considered separately before relying on core-specific interaction details.
+
+Keep the default `isNonModal={false}` unless outside controls should receive the first click that dismisses the popover. Setting it to true changes outside interaction; it is not an authorization setting. See [DatePickerInput](../Common/date-picker-input.md) for the underlying parts and picker behavior.

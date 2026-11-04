@@ -33,9 +33,9 @@ The button submits Arc's form, which executes the command and runs the result ca
 `CommandDialog`, `CommandStepper`, and `StepperCommandDialog` each create their own command instance. An `AutoCommandForm` placed inside them binds its fields to a second instance, so the values the user types never reach the command the dialog executes. Write the fields by hand inside those components.
 :::
 
-A property whose type has no registered provider - a nested object, an array, an enum - is left out of the generated list. Write the form by hand when that property needs a field, or register a provider for its type (see below).
+The generated fields keep the command's property-descriptor order, after removing `exclude` entries and properties without a matching provider. A property whose type has no registered provider - a nested object, an array, an enum - is left out of the generated list. When you need a custom layout or a field the registry cannot supply, use Arc's ordinary `CommandForm` and declare the fields inside it, or register a provider for the type (see below). A manual field beside `AutoCommandForm` is outside its command context; it does not edit the same command just because it appears on the same page.
 
-A property you exclude, or one that has no provider, is still part of the command. If it is non-optional, seed it through `initialValues`, or the form stays invalid and the command's validation rejects the submit.
+A property you exclude, or one that has no provider, is still part of the command. If it is non-optional, seed it through `initialValues`, or the form stays invalid. A generated number showing `0` or an unchecked checkbox does not seed a value either. See [Field defaults and command values](index.md#field-defaults-and-command-values) and [Initialize command values](../CommandDialog/index.md#initialize-command-values). If your submit control is disabled while the form is invalid, `onBeforeExecute` cannot supply the missing initial value.
 
 ## Props
 
@@ -45,7 +45,7 @@ A property you exclude, or one that has no provider, is still part of the comman
 | `exclude` | `(keyof TCommand)[]` | — | Property names to leave out of the generated field list. |
 | `footer` | `React.ReactNode` | — | Optional content after the generated fields, inside the native Arc form and command context. |
 
-`AutoCommandForm` also accepts every other `CommandForm` prop (`initialValues`, `populateFromQuery`, `onSuccess`, `validateOn`, and so on) except `children`, which it generates itself.
+`AutoCommandForm` also accepts every other `CommandForm` prop (`initialValues`, `populateFromQuery`, `onSuccess`, `validateOn`, and so on) except `children`, which it generates itself. Use `initialValues` for the baseline and `currentValues` for values the parent keeps changing; changes to that overlay revalidate the command. Excluding a field only removes its editor, not its validation requirements or the server's responsibility to authorize the submitted values.
 
 ## Adding an action inside the form
 
@@ -83,11 +83,11 @@ For Fundamentals `Guid` properties, register the opt-in [GuidField](guid-field.m
 
 Register once, in module code that runs before any `AutoCommandForm` renders. Providers are consulted most-recently-registered first, so registering a provider for a type the built-in defaults already cover overrides that default.
 
-`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title` (plus `resetKey` when the component is `GuidField` itself). A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; write that property's field by hand instead.
+`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title` (plus `resetKey` when the component is `GuidField` itself). A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; use an ordinary Arc `CommandForm` with manually declared fields instead.
 
 ## Behavior
 
-- Field titles are generated from the property name by splitting on capitals and uppercasing the first letter (`dueDate` becomes "Due Date"); there is no way to override an individual generated field's title other than excluding it and writing that one field by hand.
+- Field titles are generated from the property name by splitting on capitals and uppercasing the first letter (`dueDate` becomes "Due Date"). For individual field titles or custom placement, use an ordinary Arc `CommandForm` with manually declared fields; `exclude` does not create a place to insert a replacement editor.
 - `AutoCommandForm` does not set `required` on the fields it generates. Whether a value is required is enforced by the command's own validation (every non-optional property must have a value), not by a field prop.
 - Each generated field binds to its descriptor's property name; editing one property leaves the other properties unchanged.
 - Every generated field participates in `CommandForm`'s validation, change tracking and initial-value population exactly as a hand-written field does - `AutoCommandForm` only decides *which* fields to render, not how they behave once rendered.
