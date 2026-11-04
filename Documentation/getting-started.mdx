@@ -13,7 +13,7 @@ This page follows the generated-proxy path. Components does not generate proxies
 
 - A React 19 application built with TypeScript. Components declares `react` and `react-dom` `^19.0.0` as peers.
 - An Arc frontend with generated proxies and `experimentalDecorators`/`emitDecoratorMetadata` enabled. The [Arc tutorial's first slice](/arc/tutorial/first-slice/) sets up the project, `tsconfig.json`, and Vite proxy that this page assumes.
-- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <23`. This checkout pins its Arc development dependencies to **22.153.1**. The wider peer range is not a claim that every accepted version is exercised.
+- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <23`. This checkout pins its Arc development dependencies to **22.156.2**. The wider peer range is not a claim that every accepted version is exercised.
 
 Keep the Arc backend running and retain the Arc tutorial's development-server routing. Check that `src/Authors/RegisterAuthor.ts` exports the generated `RegisterAuthor` command with required `id` and `name`. The later table chapter also needs `AllAuthors` from `src/Authors/Author.ts`. If an export is missing, finish the backend slice and regenerate proxies rather than writing a substitute command class.
 
@@ -32,7 +32,7 @@ Keep the Arc backend running and retain the Arc tutorial's development-server ro
     The package requires React, Arc, Fundamentals, and `reflect-metadata` as peers. `tsyringe` is an optional peer: Components never imports it, and Arc React installs it as its own dependency. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. A strict installer can install the required peers explicitly (replace the Arc version with the one your backend uses):
 
     ```bash title="Install explicit peers"
-    ARC_VERSION=22.153.1
+    ARC_VERSION=22.156.2
     npm install @cratis/components@^4 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \

@@ -72,7 +72,7 @@ npm install @cratis/components@^4
 Components 4 needs React 19 and Arc. Its peers are `react` and `react-dom` `^19.0.0`,
 `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`, `@cratis/fundamentals` `^7.10.3`,
 and `reflect-metadata` `0.2.2`. `tsyringe` `4.10.0` is an optional peer that Arc React already
-installs, and `pixi.js` `^8.20.0` is an optional peer needed only by `Canvas` and `PivotViewer`. This checkout pins its Arc development dependencies to 22.153.1; the declared consumer peer range is wider.
+installs, and `pixi.js` `^8.20.0` is an optional peer needed only by `Canvas` and `PivotViewer`. This checkout pins its Arc development dependencies to 22.156.2; the declared consumer peer range is wider.
 The package does not depend on PrimeReact; the optional MUI and PrimeReact renderer adapters are
 separate packages.
 

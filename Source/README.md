@@ -44,10 +44,10 @@ The current package manifest declares these peer dependencies:
 - `reflect-metadata` `0.2.2`
 - optional `tsyringe` `4.10.0` (Arc React installs it as its own dependency)
 
-Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This checkout pins its Arc development dependencies to 22.153.1; use the version matching your generated proxies:
+Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This checkout pins its Arc development dependencies to 22.156.2; use the version matching your generated proxies:
 
 ```bash
-ARC_VERSION=22.153.1
+ARC_VERSION=22.156.2
 npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
