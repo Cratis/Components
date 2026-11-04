@@ -165,6 +165,7 @@ export const ToolbarFanOutItem = ({
             {...pt?.root}
             className={`toolbar-fanout-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
             data-cratis-part='fanout-root'
+            data-cratis-component='ToolbarFanOutItem'
             data-open={isExpanded || undefined}
             ref={containerRef}
         >

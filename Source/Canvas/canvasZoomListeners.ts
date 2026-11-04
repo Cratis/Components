@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ZOOM_INTENSITY } from './canvasGestureTuning';
+import { isClaimedByAnotherSurface } from './isClaimedByAnotherSurface';
 import { isWithinScrollableContent } from './isWithinScrollableContent';
 import type { PointerPosition } from './pinchGesture';
 import type { WebKitGestureEvent } from './WebKitGestureEvent';
@@ -71,7 +72,12 @@ export const attachCanvasZoomListeners = ({
         );
     };
 
+    // A gesture over another canvas, or over a modal dialog this canvas is not in, is that surface's to
+    // handle; this canvas neither zooms nor pans for it.
+    const claimedElsewhere = (event: Event) => isClaimedByAnotherSurface(event.target, container);
+
     const handleWheel = (event: WheelEvent) => {
+        if (claimedElsewhere(event)) return;
         // A plain scroll landing over a scrollable overlay (a chat's message list and similar)
         // scrolls that content instead of panning the board. A zoom gesture (ctrl/cmd) always wins.
         if (
@@ -112,10 +118,12 @@ export const attachCanvasZoomListeners = ({
         lastScale = gesture.scale;
     };
     const handleGestureStart = (event: Event) => {
+        if (claimedElsewhere(event)) return;
         event.preventDefault();
         lastScale = (event as WebKitGestureEvent).scale || 1;
     };
     const handleGestureChange = (event: Event) => {
+        if (claimedElsewhere(event)) return;
         event.preventDefault();
         applyGestureChange(event, gestureFocus(event));
     };
@@ -128,6 +136,7 @@ export const attachCanvasZoomListeners = ({
     const reachesContainerListeners = (event: Event) =>
         event.target instanceof Node && container.contains(event.target);
     const handleWindowWheel = (event: WheelEvent) => {
+        if (claimedElsewhere(event)) return;
         if (
             (event.ctrlKey || event.metaKey) &&
             isWithinCanvas({ x: event.clientX, y: event.clientY })
@@ -136,19 +145,19 @@ export const attachCanvasZoomListeners = ({
         }
     };
     const handleWindowGestureStart = (event: Event) => {
-        if (!isWithinCanvas(gestureFocus(event))) return;
+        if (claimedElsewhere(event) || !isWithinCanvas(gestureFocus(event))) return;
         event.preventDefault();
         lastScale = (event as WebKitGestureEvent).scale || 1;
     };
     const handleWindowGestureChange = (event: Event) => {
         const focus = gestureFocus(event);
-        if (!isWithinCanvas(focus)) return;
+        if (claimedElsewhere(event) || !isWithinCanvas(focus)) return;
         event.preventDefault();
         if (reachesContainerListeners(event)) return;
         applyGestureChange(event, focus);
     };
     const handleWindowGestureEnd = (event: Event) => {
-        if (isWithinCanvas(gestureFocus(event))) event.preventDefault();
+        if (!claimedElsewhere(event) && isWithinCanvas(gestureFocus(event))) event.preventDefault();
     };
 
     // Everything is explicitly non-passive: WebKit treating an options-less listener as passive

@@ -2,60 +2,6 @@
     "$comment": "Machine-readable, bounded allow-list for Cratis/Components#176. Every entry names exact installed upstream package versions, diagnostic codes, resolution modes, source prefixes, and an objective removal condition. Components-owned diagnostics are covered only as explicitly paired cascades when the same compiler run contains the matching TS2834/TS2835 root cause in that exact upstream package; message similarity alone is insufficient. The verifier fails on unlisted diagnostics, metadata/version drift, unpaired owned diagnostics, and exceptions that stop reproducing.",
     "typeScriptVersions": ["6.0.3", "7.0.2"],
     "trackingIssue": "https://github.com/Cratis/Components/issues/176",
-    "upstreamIssues": [
-        {
-            "id": "arc-react-global-jsx-namespace",
-            "summary": "@cratis/arc.react ships a global.d.ts that declares `namespace JSX` referencing test-only ambient types (vitest/globals, chai, sinon-chai) as part of its published package instead of scoping that augmentation to its own test build. A strict external consumer that does not also install those test packages cannot resolve the bare `JSX` identifiers arc.react's dialog/command declaration files reference. This defect also surfaces under NodeNext since the extensionless specifiers were fixed.",
-            "reason": "external - @cratis/arc.react's own shipped .d.ts, not a Components declaration; Components has no `namespace JSX` augmentation of its own.",
-            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.153.1" }],
-            "resolutionModes": ["bundler", "nodenext"],
-            "diagnosticCodes": ["TS2503"],
-            "filePrefixes": ["@cratis/arc.react/"],
-            "removalCondition": "A published @cratis/arc.react release removes (or properly scopes to its own test build) the global `namespace JSX` augmentation in global.d.ts, so `JSX.Element` in its public dialog/command declaration files resolves through @types/react's module-scoped JSX types instead."
-        }
-    ],
-    "exceptions": [
-        {
-            "subpath": "./CommandDialog",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        },
-        {
-            "subpath": "./CommandStepper",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        },
-        {
-            "subpath": "./CommandForm",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        },
-        {
-            "subpath": "./CommandForm/fields",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        },
-        {
-            "subpath": "./Dialogs",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        },
-        {
-            "subpath": "./renderer",
-            "resolutionModes": {
-                "bundler": ["arc-react-global-jsx-namespace"],
-                "nodenext": ["arc-react-global-jsx-namespace"]
-            }
-        }
-    ]
+    "upstreamIssues": [],
+    "exceptions": []
 }

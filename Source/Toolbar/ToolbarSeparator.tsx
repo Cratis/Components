@@ -33,6 +33,7 @@ export const ToolbarSeparator = ({
         aria-orientation={orientation === 'horizontal' ? 'vertical' : 'horizontal'}
         className={`${orientation === 'horizontal' ? 'toolbar-separator toolbar-separator--in-horizontal' : 'toolbar-separator toolbar-separator--in-vertical'} ${pt?.root?.className ?? ''}`}
         data-cratis-part='toolbar-separator'
+        data-cratis-component='ToolbarSeparator'
         data-orientation={orientation}
     />
 );

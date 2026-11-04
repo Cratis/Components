@@ -44,7 +44,7 @@
         "test-renderer-adapter-matrix": "node --test ./scripts/verify-renderer-adapter-matrix.test.mjs",
         "verify-renderer-adapters": "node ./scripts/verify-renderer-adapters.mjs",
         "publish-version": "node ./run-task-on-workspaces.js publish-version",
-        "test-tooling": "node --test scripts/parse-npm-pack-result.test.mjs scripts/typescript-compiler.test.mjs scripts/verify-typescript-consumers.test.mjs scripts/typescript-diagnostics.test.mjs scripts/run-task-on-workspaces.test.mjs scripts/evidence-inventory.test.mjs scripts/cleanup-pr-artifacts.test.mjs",
+        "test-tooling": "node --test scripts/parse-npm-pack-result.test.mjs scripts/typescript-compiler.test.mjs scripts/verify-typescript-consumers.test.mjs scripts/typescript-diagnostics.test.mjs scripts/run-task-on-workspaces.test.mjs scripts/evidence-inventory.test.mjs scripts/cleanup-pr-artifacts.test.mjs scripts/javascript-build-gate.test.mjs",
         "verify-typescript-consumers": "node scripts/verify-typescript-consumers.mjs",
         "ci": "yarn test-tooling && yarn verify-compat-manifest && yarn test-release-policy && yarn test-release-evidence && yarn test-renderer-adapter-matrix && node ./run-task-on-workspaces.js ci && yarn verify-typescript-consumers",
         "up": "node ./run-task-on-workspaces.js up"
@@ -53,8 +53,8 @@
     "version": "0.0.0",
     "packageManager": "yarn@4.17.1",
     "devDependencies": {
-        "@cratis/arc": "22.153.1",
-        "@cratis/arc.react": "22.153.1",
+        "@cratis/arc": "22.156.2",
+        "@cratis/arc.react": "22.156.2",
         "@cratis/arc.vite": "22.122.1",
         "@cyclonedx/yarn-plugin-cyclonedx": "3.4.0",
         "@eslint-react/eslint-plugin": "5.19.0",

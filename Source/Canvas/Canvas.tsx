@@ -25,6 +25,7 @@ import { useLatestRef } from './useLatestRef';
 import { usePixiApplication } from './usePixiApplication';
 import { usePixiItems } from './usePixiItems';
 import { isMultiTouchCapableDevice, shouldUseCssZoom } from './zoomMechanism';
+import { CANVAS_SURFACE_CLASS } from './isClaimedByAnotherSurface';
 
 export type { CanvasCaptureAttributes } from './CanvasCaptureAttributes';
 export type { CanvasContext } from './CanvasContext';
@@ -258,7 +259,7 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     return (
         <div
             ref={containerRef}
-            className={`canvas-surface cratis:relative cratis:overflow-hidden${className ? ` ${className}` : ''}`}
+            className={`${CANVAS_SURFACE_CLASS} cratis:relative cratis:overflow-hidden${className ? ` ${className}` : ''}`}
             style={{ cursor: 'default', ...style }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
