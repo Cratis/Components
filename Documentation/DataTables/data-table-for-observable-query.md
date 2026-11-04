@@ -47,21 +47,21 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 
 - `query`: Constructor of the generated observable query (derives from `ObservableQueryFor`)
 - `emptyMessage`: Message shown when there are no rows to display
-- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
-- `onGlobalFilterChange`: Called with the search text each time it changes
 
 ### Optional Props
 
 - `children`: `Column` elements
 - `queryArguments`: Arguments for the query. The table resubscribes when any argument changes.
+- `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
-- `dataKey`: Row property used as stable identity for selection
+- `dataKey`: Stable row identity for selection; supports dotted property paths
 - `selection`: Currently selected row (controlled)
-- `onSelectionChange`: Called with `{ value, originalEvent }` when the user selects a row
+- `onSelectionChange`: Called for user selection or query-row reconciliation. `value` is the row or `null`; `originalEvent` is optional
 - `selectionMode`: `'single'` (default) or `'multiple'`. Multiple selection also needs a `Column` with `selectionMode='multiple'`; see [Column Configuration: Selection](column-configuration.md#selection)
 - `selectedItems`: Currently selected rows in multiple mode (controlled)
 - `onSelectedItemsChange`: Called with the full selected set when a multiple selection changes
 - `globalFilterFields`: Row fields searched by a search box above the table. The box is shown only when this is set.
+- `onGlobalFilterChange`: Called with the search text each time it changes
 - `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
 - `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
@@ -86,7 +86,9 @@ The table subscribes to the observable query when it mounts and unsubscribes whe
 - Existing items are modified
 - Items are removed
 
-Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows.
+When a pushed result is ready, the table reconciles the single `selection` against the current query page's rows. If an update replaces the selected object, a matching `dataKey` lets `onSelectionChange` report the new row object. If no row matches on this page, it reports `value: null`; this does not mean the row was deleted from the complete result set. An unchanged selected object produces no callback. Sorting and filters are kept and applied to the new rows.
+
+Use a stable, unique `dataKey` present on every row; dotted paths are supported and key values are compared as strings. Without it, only the same object instance matches. Accept `event.value` in state to update or clear the controlled selection, as in [With Selection](#with-selection). The table leaves the supplied value unchanged without a callback, and reconciliation events have no `originalEvent`. Loading, failed, and unauthorized results do not trigger reconciliation. These rules apply to single `selection`, not `selectedItems`; see [Selection](data-table-for-query.md#selection) for the shared contract.
 
 ## Real-Time Dashboard Example
 
