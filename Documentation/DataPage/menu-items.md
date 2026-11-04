@@ -40,7 +40,7 @@ Every prop is optional in the type, but an item without `label` renders an unnam
 | `disabled` | `boolean` | `false` | Disables the item regardless of selection |
 | `disableOnUnselected` | `boolean` | `false` | Disables the item while no row is selected (in `selectionMode='multiple'`, while the selected set is empty) |
 
-That is the whole surface. `MenuItem` is Cratis-owned; navigation/menu-specific props such as nested `items`, `separator`, `url`, and renderer templates are not accepted.
+These are the only props supported by the Cratis `MenuItem`. It does not accept navigation-menu props such as nested `items`, `separator`, `url`, or renderer templates.
 
 ## Context-Aware Actions
 
@@ -60,7 +60,7 @@ import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 </DataPage.MenuItems>;
 ```
 
-`disableOnUnselected` follows the same selection DataPage uses for its table and details pane, including a controlled `selection`. Combine it with `disabled` when an action has another precondition, for example `disabled={!canArchive}`; either condition disables the item.
+In single-selection mode, `disableOnUnselected` follows the selected item, including a controlled `selection`. In multiple-selection mode, it follows whether `selectedItems` is empty; the single item used for details does not determine action availability in that mode. Combine it with `disabled` when an action has another precondition, for example `disabled={!canArchive}`. The conditions are ORed: `disabled={false}` does not force-enable a selection-dependent item while its selection is empty.
 
 ## Icons
 
@@ -124,6 +124,14 @@ export function Authors() {
 
 The explicit type arguments give `event.value` the type `Author | null`; without them it is `object | null`. If you also need to set or clear the selection yourself, pass `selection={selected}` as well to make it controlled. See [DataPage selection](index.md#selection).
 
+:::note[Selection is not a command argument]
+The handler closes over your state; DataPage does not pass the selected row to `command`. Keep the null guard even when the button uses `disableOnUnselected`.
+:::
+
+For multiple selection, retain the set from `onSelectedItemsChange`, use `selectedItems` if controlling it, and guard an empty set in the handler. That set is independent of the single item shown in the details pane.
+
+For a selection-aware dialog, follow the [Add book handoff](../tutorial/list-and-detail.mdx#check-the-selection-handoff) from the selected author id to the dialog's `initialValues`.
+
 ## The menu is flat — no separators, no submenus
 
 `DataPage.MenuItems` renders a single row of action buttons, in the order you declare them:
@@ -139,7 +147,7 @@ import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
 </DataPage.MenuItems>;
 ```
 
-There are no separators and no submenus. A `MenuItem` with `MenuItem` children does not nest — the children are ignored, with no error to tell you — and `<MenuItem separator />` is not a thing. Children of `DataPage.MenuItems` that are not `MenuItem` elements, such as a wrapper component that renders a `MenuItem`, are ignored too.
+There are no separators or submenus. Nested `MenuItem` children are silently ignored, and `<MenuItem separator />` is unsupported. Put each `MenuItem` directly inside `DataPage.MenuItems`. Wrapping items in a fragment or custom component hides them from DataPage, so their buttons do not appear. A condition that returns a `MenuItem` directly works; an absent child adds no action.
 
 The action bar is a flat Button toolbar because a navigation menubar is not the correct semantic pattern for a row of commands. When a page genuinely needs grouped actions, put the grouping in a dialog opened from one item, or split the page.
 
@@ -171,6 +179,8 @@ const handleEdit = () => {
 ```
 
 ### Confirmation Dialogs
+
+A confirmation dialog lets the user reconsider; it does not authorize the command. The backend must still authorize the operation and validate its current target, even if the action was enabled and the user confirmed it. Hiding or disabling the action is not a security check either.
 
 ```tsx
 const handleDelete = () => {

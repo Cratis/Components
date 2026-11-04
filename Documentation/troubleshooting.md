@@ -46,7 +46,7 @@ Then inspect the backend read-model update. With Chronicle behind Arc, a project
 
 ## A detail panel shows the previous author's books
 
-Keep the selected row and query argument aligned. In the tutorial, `DataPage` keeps the detail component mounted when selection changes, while the query hook retains its last result until new arguments resolve. The keyed `Books` child, `key={String(item.id)}`, starts a fresh query instance per author. See [List and detail](tutorial/list-and-detail.mdx). A custom panel must also distinguish failed and unauthorized results from an empty book list.
+Compare the selected author with the detail component's `item.id`, the `authorId` passed to `BooksForAuthor.use`, and the books result you render. They must refer to the same author. The tutorial's `key={String(item.id)}` remounts the `Books` child when the author changes, resetting its React state; it does not guarantee a loading screen or a fresh query result. See [List and detail](tutorial/list-and-detail.mdx) for the argument wiring and status checks. A custom panel must also distinguish failed and unauthorized results from a successful empty book list.
 
 ## A row action has no selected item
 

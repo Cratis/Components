@@ -7,7 +7,7 @@ description: Combine query-backed tables, actions, selection, and optional detai
 
 ## Purpose
 
-DataPage combines a menu bar, data table, and optional detail view into a single component for building data-driven pages. You declare the pieces as children and props; DataPage wires selection between them.
+You declare the columns, actions, and details component as children and props. DataPage connects them through the selected row.
 
 ## Key Features
 
@@ -117,7 +117,7 @@ export function Authors() {
 }
 ```
 
-A typed `detailsComponent` is enough for TypeScript to infer the row type, so this example needs no explicit type arguments. See [Details Panel](details-panel.md) for loading related data, sizing, and narrow screens.
+A typed `detailsComponent` is enough for TypeScript to infer the row type, so this example needs no explicit type arguments. To load the selected author's books, handle loading, and size the pane, continue with [Details Panel](details-panel.md#complex-details-example). To act on that author, use [Accessing Selected Item](menu-items.md#accessing-selected-item).
 
 ## Selection
 
@@ -126,9 +126,11 @@ The table uses single-row selection by default. A user selects a row by clicking
 - **Uncontrolled (default):** leave `selection` out. DataPage keeps the selected row in its own state and still calls `onSelectionChange` on every change.
 - **Controlled:** pass `selection` and update it from `onSelectionChange`. Pass `null` to clear the selection, which also closes the details pane. Passing `undefined` switches back to uncontrolled mode.
 
-The table itself never clears a selection: clicking the selected row again selects the same row. If users need to deselect, for example to close the details pane, use controlled mode and offer an action that sets `selection` to `null`.
+Activating the selected row again selects the same row; it does not toggle selection off. To let users deselect, for example to close the details pane, use controlled mode and offer an action that sets `selection` to `null`.
 
-Provide `dataKey` (for example `'id'`) whenever rows can be replaced by new objects, which happens on every observable-query update and every page change. Without it, the table matches the selected row by object identity and loses the highlight when the row objects change.
+Query results can also change selection. After a successful, ready result, the table matches the selected row against the returned rows. If the same object is still present, selection stays unchanged. Otherwise the table reports the refreshed row matching `dataKey`, or `null` if none matches, through `onSelectionChange`. In uncontrolled mode, DataPage updates its internal selection automatically. In controlled mode, your handler decides whether to update `selection`. Clearing the single selection also closes the details pane.
+
+Provide a unique, stable `dataKey` (for example `'id'`) when results can replace row objects. Key values are compared as strings. Without a key, matching uses object identity, so a replacement object for the same row is not a match. A key cannot retain a row absent from the returned page. Loading, failed, and unauthorized results do not reconcile selection; neither does a snapshot query waiting for required arguments.
 
 ### Multiple selection
 
@@ -154,7 +156,7 @@ Set `selectionMode='multiple'` and add a `<Column selectionMode='multiple' />` i
 </DataPage>
 ```
 
-This is an excerpt: `selected`/`setSelected` are `useState<Author[]>` state and `removeSelected` is your handler. `onSelectionChange` is not called in multiple mode, so the details pane, which follows the single selection, stays closed. Select-all acts only on the rows visible after search and filtering. See [Column Configuration: Selection](../DataTables/column-configuration.md#selection).
+This is an excerpt: `selected`/`setSelected` are `useState<Author[]>` state and `removeSelected` is your handler. Row activation changes the set through `onSelectedItemsChange`, not the single item through `onSelectionChange`. The set does not choose a details item: the pane still follows the separate single `selection`, including one supplied by a controlled caller in multiple mode. In this excerpt no single item is supplied, so the pane stays closed. Select-all acts only on the rows visible after search and filtering. See [Column Configuration: Selection](../DataTables/column-configuration.md#selection).
 
 ## Loading, empty, and failed queries
 
@@ -238,7 +240,7 @@ DataPage uses Allotment for the resizable split when a `detailsComponent` is pro
 
 Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. From 3.0 it is **vendored into `@cratis/components/styles`**, so importing that one file at your app entry point is all it takes — you do not need `allotment/dist/style.css` yourself, and if you were importing it you can drop it. Without `@cratis/components/styles` the details pane grows to its content and clips the paginator. If you import [per-area stylesheets](../Styling/per-area-stylesheets.md) instead of the aggregate, `@cratis/components/DataPage/styles` carries those vendored Allotment rules. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
 
-Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally. Given an ancestor with a real height — the condition described next — the paginator therefore sits at the bottom of the page rather than below its edge, however many rows the query returns, and whether or not the page is split.
+Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs, and the table takes the remaining space and scrolls its rows internally. With a definite-height ancestor, the paginator stays at the bottom of the page even as the row count grows. This also applies when the page has a details pane.
 
 The split does not adapt to narrow viewports: the details pane opens beside the table at every width. See [Narrow screens](details-panel.md#narrow-screens).
 
