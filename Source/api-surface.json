@@ -86,7 +86,7 @@
     "MentionRange": "export interface MentionRange<TCandidate extends { name: string; }> { start: number; end: number; candidate: TCandidate; }",
     "MentionSegment": "export interface MentionSegment<TCandidate extends { name: string; }> { text: string; mention?: TCandidate; }",
     "MentionSuggestions": "MentionSuggestions: (props: MentionSuggestionsProps) => import(\"react\").JSX.Element",
-    "MentionSuggestionsProps": "export interface MentionSuggestionsProps { candidates: MentionCandidate[]; highlightedIndex: number; onSelect: (candidate: MentionCandidate) => void; onHighlight: (index: number) => void; 'aria-label'?: string; buildAvatarUrl?: (params: BuildAvatarUrlParams) => string; }",
+    "MentionSuggestionsProps": "export interface MentionSuggestionsProps { candidates: MentionCandidate[]; highlightedIndex: number; onSelect: (candidate: MentionCandidate) => void; onHighlight: (index: number) => void; id?: string; 'aria-label'?: string; buildAvatarUrl?: (params: BuildAvatarUrlParams) => string; }",
     "MessageReactions": "MessageReactions: (props: MessageReactionsProps) => import(\"react\").JSX.Element | null",
     "MessageReactionsProps": "export interface MessageReactionsProps { reactions: ChatMessageReaction[]; }",
     "MinimapItem": "export interface MinimapItem { x: number; y: number; width: number; height: number; color?: string; }",

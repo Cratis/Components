@@ -4,7 +4,7 @@
 import { useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Guid } from '@cratis/fundamentals';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import { PersonAvatarCircle } from './Avatar/PersonAvatarCircle';
 import { ChatAuthorKind } from './ChatAuthorKind';
@@ -129,6 +129,34 @@ export const Avatar: Story = {
 
 export const Composer: Story = {
     render: () => <ChatComposer mentionCandidates={candidates} onSend={fn()} />,
+};
+
+export const ComposerMentionKeyboard: Story = {
+    render: () => <ChatComposer mentionCandidates={candidates} onSend={fn()} />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const input = canvas.getByRole('textbox');
+        await userEvent.type(input, '@');
+
+        // The highlight is exposed to assistive technology while focus stays in the textarea.
+        const listbox = canvas.getByRole('listbox');
+        await expect(input).toHaveAttribute('aria-controls', listbox.id);
+        const options = canvas.getAllByRole('option');
+        await expect(input).toHaveAttribute('aria-activedescendant', options[0].id);
+        await userEvent.keyboard('{ArrowDown}');
+        await expect(input).toHaveAttribute('aria-activedescendant', options[1].id);
+
+        // Escape closes the list and keeps the text; editing the query reopens it.
+        await userEvent.keyboard('{Escape}');
+        await expect(canvas.queryByRole('listbox')).toBeNull();
+        await expect(input).toHaveValue('@');
+        await userEvent.keyboard('S');
+        await expect(canvas.getByRole('listbox')).toBeVisible();
+
+        // Tab picks the highlighted option.
+        await userEvent.keyboard('{Tab}');
+        await expect(input).toHaveValue('@Sample User ');
+    },
 };
 
 export const MessageBubble: Story = {
