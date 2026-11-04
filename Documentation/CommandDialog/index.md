@@ -3,11 +3,11 @@ title: CommandDialog
 description: Execute Arc commands in a dialog with automatic form state, validation, and result handling.
 ---
 
-The `CommandDialog` component provides a dialog interface for executing commands with built-in form handling and validation.
+Use `CommandDialog` to collect values for one Cratis Arc command and execute it from a modal dialog.
 
 ## Purpose
 
-CommandDialog simplifies the process of presenting a command form to users within a modal dialog. It handles command execution, validation, and result management automatically.
+A create or rename dialog needs more than input fields: it must keep required values in sync, decide when submission is allowed, and handle the command's result. `CommandDialog` connects those fields to one command instance and manages validation and execution. Your application decides what to do with a successful response, such as returning the new project's id to the caller.
 
 ## Key Features
 
@@ -81,10 +81,12 @@ export const Projects = () => {
 };
 ```
 
+The response travels from `onSuccess` to the code that opened the dialog. Calling `closeDialog` with the response is what makes it available to `Projects`; the automatic close reports success but does not return a value.
+
 What happens when the user clicks **Create**:
 
-1. The command runs. While it is in flight the dialog is busy (see [Busy State](#busy-state)).
-2. On failure the matching result callbacks fire, field errors from the server appear on the form, and the dialog stays open.
+1. The command runs. While it is in flight the dialog is busy (see [Busy State](#busy-state)). That busy state ends when the command settles, before result callbacks run.
+2. On failure `onFailed` runs first, followed by the matching specialized callbacks. After those callbacks complete, field errors from the server appear on the form, and the dialog stays open.
 3. On success `onSuccess` receives the typed response. Here it calls `closeDialog(DialogResult.Ok, response)`, which closes the dialog and resolves the caller's `await` with the response. `CommandDialog` then also closes through the dialog context with `DialogResult.Ok`; `useDialog` has already resolved, so that second close changes nothing.
 
 **Cancel**, the header close (X), `Escape`, and a backdrop click close the dialog with `DialogResult.Cancelled` without any callback. You only need `onSuccess` here because the caller wants the response; a dialog whose caller only needs to know that it succeeded can leave out every callback.
@@ -157,7 +159,7 @@ The form is treated as invalid until its first validation finishes, so confirm s
 
 `validateOn` (`'blur'` by default, or `'change'` / `'both'`) and `validateOnInit` only control **when error messages appear**. They do not change when confirm enables. Set `autoServerValidate` to also ask the server's validate endpoint once client validation passes (throttled by `autoServerValidateThrottle`, 500 ms by default); its result also enables or disables confirm.
 
-`onFieldValidate` messages appear on the field, but they do not disable confirm. Use a command validator, `autoServerValidate`, or the `isValid` prop for rules that must block submission. See [Advanced Features](advanced-features.md#field-validation).
+Use `onFieldValidate` for immediate feedback tied to a field edit. In `@cratis/arc.react` 22.153.1, its error message both appears on the field and disables confirm until that custom error is cleared. Older versions can display the message without blocking submission, so do not rely on this gate for an older version without checking its behavior. A command validator, `autoServerValidate`, or an external `isValid` gate can enforce the submission rule there. Client-side checks do not replace server validation or authorization. See [Advanced Features](advanced-features.md#field-validation).
 
 ## Props
 
@@ -220,7 +222,11 @@ The form is treated as invalid until its first validation finishes, so confirm s
 - `onUnauthorized()`: Invoked when authorization fails.
 - `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
 
-Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors. If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open. A rejection from `confirmBeforeExecute` also keeps the dialog open and skips execution; it calls `onException` with the error message and stack trace (or logs the error if no callback is supplied), not `onFailed`.
+Result callbacks are awaited in order, after the command's busy state has ended. For a failed command, `onFailed` runs first, then `onException`, `onUnauthorized`, and `onValidationFailure` when their conditions apply. A validation failure therefore reaches both `onFailed` and `onValidationFailure`. On success, `onSuccess` completes before `onConfirm` or the `onClose` fallback decides whether to close.
+
+Handle errors from your notification, navigation, or other client work inside the callback. `CommandDialog` does not catch result-callback errors: a rejected `onFailed` skips the specialized callbacks and the update that puts server errors on the form. A rejected `onSuccess` skips the subsequent automatic close path, though a callback that already called `closeDialog` has already closed the dialog. Neither rejection changes the command's outcome. If the command succeeded but a notification failed, recover that client action without submitting the command again.
+
+Failures before execution follow a different path. If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open. A rejection from `confirmBeforeExecute` also keeps the dialog open and skips execution; it calls `onException` with the error message and stack trace (or logs the error if no callback is supplied), not `onFailed`.
 
 ### Dialog Callbacks
 
@@ -232,6 +238,8 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 | Confirm, `confirmBeforeExecute` returns `false` | Not called; dialog stays open | Not called; dialog stays open | Dialog stays open |
 | Confirm, command fails | Not called; dialog stays open | Not called; dialog stays open | Dialog stays open |
 | Cancel, X, `Escape`, backdrop | `onCancel()` runs; closes only if it returns `true` | `onClose(DialogResult.Cancelled)` runs; closes unless it returns `false` | Closes with `DialogResult.Cancelled` |
+
+On the success path, these close decisions follow completion of `onSuccess`. The dialog awaits each callback before continuing, so returning a promise delays the next callback or automatic close. It does not keep the dialog busy.
 
 A callback that calls `closeDialog(...)` itself closes the dialog regardless of its return value. Use `closeDialog(DialogResult.Ok, value)` when the caller needs a value; the automatic close never passes one.
 
@@ -352,9 +360,10 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 - The header close and secondary buttons are disabled and the primary button shows a loading spinner. The primary button stays focusable but is `aria-disabled` and ignores activation, so focus stays inside the dialog while the command runs.
 - The form fields are disabled and inert, so values cannot change while the command runs.
 - Escape and backdrop dismissal are ignored while work is in flight.
-- Once execution completes (success or failure), the buttons return to their normal state.
-- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit closes the dialog as before.
-- This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
+- Once execution settles (success or failure), the busy state is cleared before result callbacks run. Button availability then follows the dialog's busy and validity checks; confirm still requires a valid form.
+- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit follows the result callbacks and close rules above.
+
+These protections prevent duplicate submissions and accidental dismissal during execution. Awaiting a notification or navigation in a result callback can delay automatic closure, but it does not keep the execution spinner running or the fields locked. Treat that work as client completion of an already settled command.
 
 ## Context
 

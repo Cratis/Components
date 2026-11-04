@@ -3,11 +3,11 @@ title: CommandDialog advanced features
 description: Handle typed responses and failures, validate and track fields, and transform values before a CommandDialog executes its command.
 ---
 
-The snippets on this page are excerpts. They assume generated command proxies such as `CreateUser`, and app helpers such as `showNotification` and `navigate`. For the dialog lifecycle and how to open and close the dialog, start with [CommandDialog](index.md).
+Once the dialog has the values it needs, choose how to validate edits, transform the submitted values, and use the command's response. The snippets on this page are excerpts. They assume generated command proxies such as `CreateUser`, and app helpers such as `showNotification` and `navigate`. For the dialog lifecycle and how to open and close the dialog, start with [CommandDialog](index.md).
 
 ## Response Type Handling
 
-`CommandDialog` supports typed command responses and provides callbacks for different execution outcomes:
+The second type parameter describes the command's response. Here `onSuccess` uses the new user's id for navigation and the response message for a notification; the failure callbacks handle unsuccessful command results instead:
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
@@ -51,9 +51,11 @@ type CreateUserResponse = {
 </CommandDialog>
 ```
 
+The `CreateUser` command has already succeeded when `onSuccess` receives this response. The notification and navigation are client work that follows creation, not part of the command's outcome. In this excerpt those helpers are called without awaiting a result. If your helpers return promises and later work depends on them, await or return those promises from the callback.
+
 ### Callback Execution Order
 
-Multiple callbacks may fire for the same command execution:
+The busy state ends before result callbacks run, and each callback is awaited before the next begins. Success takes the `onSuccess` path; failure takes `onFailed` followed by each matching specialized callback in this order:
 
 1. **onSuccess**: Only fires when `commandResult.isSuccess` is `true`
 2. **onFailed**: Fires for any failure (validation, exception, unauthorized, etc.)
@@ -61,7 +63,11 @@ Multiple callbacks may fire for the same command execution:
 4. **onUnauthorized**: Fires specifically when authorization fails
 5. **onValidationFailure**: Fires specifically when validation fails
 
-For example, a validation failure will trigger both `onFailed` and `onValidationFailure`. On failure the dialog stays open and server validation messages appear on the matching fields.
+For example, a validation failure reaches `onFailed` before `onValidationFailure`. After the failure callbacks complete, the result is applied to the form so server validation messages appear on the matching fields; the dialog stays open. On success, `onSuccess` completes before `onConfirm` or the `onClose` fallback and the subsequent automatic close.
+
+There is no catch around these result callbacks. If `onFailed` rejects, the remaining failure callbacks and the form's result update are skipped. If `onSuccess` rejects, the subsequent automatic close path is skipped; a dialog explicitly closed inside the callback is already closed. The command's success or failure does not change because a callback failed.
+
+Catch notification or navigation errors where you handle that client work, and decide how to report or recover the failed client action. Do not retry an already successful `CreateUser` command just because its notification failed. Awaiting client work controls callback order and automatic closure, but does not keep the dialog busy or the fields disabled; confirm still follows the dialog's validity and busy checks.
 
 ### Response Type Inference
 
@@ -89,7 +95,7 @@ The response type parameter is optional and defaults to `object`:
 
 ## Field Validation
 
-Provide custom validation logic for individual fields. `onFieldValidate` runs synchronously each time a field value changes and returns the message to show, or `undefined`:
+Use `onFieldValidate` for a rule tied to a field edit. It runs synchronously each time a field value changes and returns the message to show, or `undefined` to clear that field's custom error. In this example an email edit without `@` produces a message; a later edit that includes `@` clears it:
 
 ```tsx
 <CommandDialog<CreateUser>
@@ -106,13 +112,15 @@ Provide custom validation logic for individual fields. `onFieldValidate` runs sy
 </CommandDialog>
 ```
 
-:::caution[onFieldValidate does not disable confirm]
-The message appears on the field, but the confirm button follows the command's own validation. To block submission, express the rule as a validator on the command, enable `autoServerValidate` so the server's verdict counts before submit, or pass `isValid={false}` while the rule fails.
+:::caution[Custom field errors block confirm in Arc React 22.153.1]
+With `@cratis/arc.react` 22.153.1, an `onFieldValidate` error makes the form invalid and disables confirm until the custom error is cleared. Older versions can show the message without disabling confirm. When using an older version, check this behavior before relying on it to block submission; use a command validator, `autoServerValidate`, or an external `isValid` gate if needed.
+
+Choose command validators for rules that belong to the command, and enable `autoServerValidate` when the server's validation verdict should count before submit. `isValid={false}` can add a separate submission gate, but `isValid={true}` cannot override an invalid form. Keep validation and authorization on the server too: custom client errors are not a security boundary.
 :::
 
 ## Pre-execution Transformation
 
-Transform command values before execution. `onBeforeExecute` receives the current command values and must return the values to run with. It may be async, and it runs inside the busy state:
+Use `onBeforeExecute` for final normalization, such as trimming an email address before sending it. It receives the current command values and must return the values to run with. It may be async, and it runs inside the busy state:
 
 ```tsx
 <CommandDialog<CreateUser>
@@ -198,6 +206,8 @@ const validateField = (command: CreateUser, fieldName: string, oldValue: unknown
 };
 ```
 
+The password branch reports the first rule that fails, so fixing the length can reveal the uppercase or number requirement on the next edit. Returning `undefined` clears the changed field's custom error; it does not clear errors on other fields.
+
 ## Cross-field Validation
 
 Validate fields based on other field values. The `command` argument already holds the new value:
@@ -216,7 +226,7 @@ const validateField = (command: CreateUser, fieldName: string, oldValue: unknown
 };
 ```
 
-A cross-field message is attached to the field that changed. Editing `password` afterwards does not re-run the check for `confirmPassword`.
+A cross-field message is attached to the field that changed. Editing `password` afterwards does not re-run the check for `confirmPassword`, so the confirmation message can remain out of date until that field is edited again. Put rules that must hold across the whole command in a command validator rather than relying only on the last field edit.
 
 ## Dynamic Field Updates
 
@@ -258,7 +268,7 @@ Once client validation passes, the form calls the command's validate endpoint, w
 
 ## Pre-execution Data Transformation
 
-Common transformation scenarios:
+The same pre-execution hook can normalize more than one property. This example trims and lowercases the email address and converts the date value before returning the values to execute:
 
 ```typescript
 const transformBeforeExecute = (values: CreateUser): CreateUser => {
