@@ -252,6 +252,7 @@ export function RangeHistogramFilter({
             className='pv-range-histogram'
             ref={containerRef}
             data-selected={selectedRange !== null || undefined}
+            data-cratis-component='RangeHistogramFilter'
         >
             <div className='pv-histogram-bars'>
                 {histogram.map((bucket, i) => {
