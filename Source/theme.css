@@ -188,6 +188,7 @@
     .cratis-theme:not(.cratis-light) {
         --cratis-primary-color: Highlight;
         --cratis-primary-color-text: HighlightText;
+        --cratis-primary-600: Highlight;
         --cratis-primary-600-text: HighlightText;
         --cratis-action-background: Highlight;
         --cratis-action-text: HighlightText;

@@ -302,9 +302,10 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // gzip holds. A consumer that does not mount a table imports per-area sheets and pays nothing.
 // Measured when the SchemaEditor type menu gained the unique identifier type: raw 248651 (181 bytes over), one more declaration
 // block for its glyph color. Raw moves by the overage and blocks by one; gzip holds.
+// Measured when the New topic button gained its paired hover foreground: raw 248694 (43 bytes over). Raw moves by the overage; blocks and gzip hold.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 248651,
+    rawBytes: 248694,
     gzipBytes: 38 * 1024,
     declarationBlocks: 1388,
 };

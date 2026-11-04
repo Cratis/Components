@@ -30,6 +30,7 @@
 
 .cratis-chat-topics__start:hover:not(:disabled) {
     background: var(--cratis-primary-600);
+    color: var(--cratis-primary-600-text);
 }
 
 .cratis-chat-topics__start:disabled {
