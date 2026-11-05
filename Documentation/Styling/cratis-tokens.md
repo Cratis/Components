@@ -1,6 +1,6 @@
 ---
 title: Cratis token reference
-description: Stable semantic CSS variables consumed by Components markup and structural styles.
+description: Cratis Components uses semantic CSS tokens for colors, surfaces, controls, shadows, and overlay stacking, with defaults you can override.
 ---
 
 The `--cratis-*` variables are the supported theming boundary. The `tokens` entry supplies conservative light defaults so an unthemed surface remains usable. A product design system overrides them directly; the optional `theme` entry adds dark, forced-colors, and scoped-subtree behavior.

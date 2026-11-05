@@ -1,6 +1,6 @@
 ---
 title: BusyIndicatorDialog
-description: Block the screen with a host-rendered spinner dialog while a long-running operation completes.
+description: BusyIndicatorDialog in Cratis Components blocks interaction with a host-rendered spinner until your asynchronous operation closes it.
 ---
 
 Dialog with a loading spinner for long-running operations.

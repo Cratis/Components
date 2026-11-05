@@ -1,6 +1,6 @@
 ---
 title: NumberField
-description: Bind a number property on an Arc command to a native numeric input.
+description: NumberField in Cratis Components binds an Arc command's number to a native numeric input with min, max, step, and clear-to-zero behavior.
 ---
 
 `NumberField` renders a Cratis-owned native numeric input with optional constraints.

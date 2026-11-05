@@ -1,15 +1,15 @@
 ---
-title: StepperCommandDialog advanced features
-description: Handle typed responses and failures, validate fields across steps, and transform values before a StepperCommandDialog executes its command.
+title: StepperCommandDialog validation and callbacks
+description: StepperCommandDialog shares command values across steps so you can compare fields, handle typed responses, and transform values before submission.
 ---
 
-All advanced features described here apply to every step in the wizard, because all steps share a single underlying command instance.
+`StepperCommandDialog` in Cratis Components shares one Cratis Arc command instance across all steps, so a field can be checked against a value entered earlier in the workflow. Use its callbacks to handle the final result, apply field rules, or transform values before execution without managing a separate command for each step.
 
-The snippets are excerpts. They assume a generated command proxy such as `CreateProject`, field imports from `@cratis/components/CommandForm`, and app helpers such as `showNotification` and `navigate`. For opening and closing the dialog, start with [StepperCommandDialog](index.md).
+Start with [the multi-step dialog example](index.md#basic-usage) if you have not yet connected the dialog to its caller. The excerpts here assume a generated command proxy such as `CreateProject`, field imports from `@cratis/components/CommandForm`, and application helpers such as `showNotification` and `navigate`.
 
 ## Response Type Handling
 
-`StepperCommandDialog` supports typed command responses and provides callbacks for different execution outcomes:
+Pass the command's response type as the second type parameter when the next action needs data returned by the server. Here, `CreateProjectResponse` gives `onSuccess` a typed `projectId` and message; a failed result follows the failure callbacks instead.
 
 ```tsx
 import { StepperCommandDialog, StepperPanel } from '@cratis/components/CommandDialog';
@@ -58,19 +58,20 @@ type CreateProjectResponse = {
 
 ### Callback Execution Order
 
-Multiple callbacks may fire for the same command execution:
+A successful result calls `onSuccess(response)`, then follows the dialog's [close callbacks](index.md#dialog-callbacks). The dialog waits for `onSuccess` to finish before attempting that close.
 
-1. **onSuccess**: Only fires when `commandResult.isSuccess` is `true`
-2. **onFailed**: Fires for any failure (validation, exception, unauthorized, etc.)
-3. **onException**: Fires specifically when an exception occurs
-4. **onUnauthorized**: Fires specifically when authorization fails
-5. **onValidationFailure**: Fires specifically when validation fails
+An unsuccessful result leaves the dialog open and calls callbacks in this order:
 
-For example, a validation failure will trigger both `onFailed` and `onValidationFailure`. On failure the dialog stays open, server validation messages appear on their fields, and the steps holding those fields turn red.
+1. `onFailed(commandResult)` for every unsuccessful result.
+2. `onException(messages, stackTrace)` if the result contains exceptions.
+3. `onUnauthorized()` if the result is not authorized.
+4. `onValidationFailure(validationResults)` if the result is invalid.
+
+Only applicable callbacks run. A validation failure therefore calls both `onFailed` and `onValidationFailure`; messages that identify command fields appear on those fields and mark their steps red. A rejected `confirmBeforeExecute` guard takes a different path: it calls `onException`, or logs the error if that callback is absent, without calling `onFailed`.
 
 ### Response Type Inference
 
-The response type parameter is optional and defaults to `object`:
+The response type parameter defaults to `object`; it is not inferred from the command type. Supply it explicitly when `onSuccess` needs to access response properties:
 
 ```tsx
 // Explicit response type
@@ -102,7 +103,7 @@ The response type parameter is optional and defaults to `object`:
 
 ## Field Validation
 
-Provide custom validation logic for individual fields. `onFieldValidate` runs synchronously each time a field value changes and returns the message to show, or `undefined`:
+Use `onFieldValidate` for immediate feedback on an edited field. It runs synchronously each time that field's value changes, receiving the shared command, field name, old value, and new value. Return an error message to show on the field, or `undefined` to clear its custom error:
 
 ```tsx
 <StepperCommandDialog<CreateProject>
@@ -121,11 +122,11 @@ Provide custom validation logic for individual fields. `onFieldValidate` runs sy
 </StepperCommandDialog>
 ```
 
-A message from `onFieldValidate` shows on the field, turns its step red, and disables Next on that step. It does not hide Submit, which follows the command's own validation. Express rules that must block submission as a validator on the command, enable `autoServerValidate`, or pass `isValid={false}` while the rule fails.
+A message from `onFieldValidate` shows on the field, marks its step red, disables Next on that step, and prevents Submit from appearing while the custom error remains. This callback runs on field changes, not when the dialog first opens. Keep required and business rules on the command so they are checked even when a user never edits the field.
 
 ## Pre-execution Transformation
 
-Transform command values before execution. The transformation runs after Submit is clicked on the last step, inside the busy state, and immediately before the command executes. It must return the values to run with and may be async:
+Use `onBeforeExecute` for a final adjustment, such as trimming an email address. It runs after Submit is clicked on the valid last step, while the dialog is busy, and before any `confirmBeforeExecute` guard. Return the values to execute; the transformer may be asynchronous:
 
 ```tsx
 <StepperCommandDialog<CreateProject>
@@ -142,11 +143,11 @@ Transform command values before execution. The transformation runs after Submit 
 </StepperCommandDialog>
 ```
 
-Because it runs after validation, it cannot make Submit appear. Seed required values through `initialValues`.
+The email must already pass validation for Submit to appear, so this transform cannot repair a value that keeps the button hidden. Seed required values through `initialValues`, or use `currentValues` when they arrive after the dialog opens.
 
 ## Custom Inputs
 
-When steps contain custom controls instead of `CommandForm` fields, keep the command instance synchronized with the custom input values. `StepperCommandDialog` still uses command-form validity as the source of truth, and `isValid` is only an additional external gate.
+If a step uses custom controls instead of `CommandForm` fields, send their values to the command before submission so validation can see them. `isValid` adds a gate to command-form validity; setting it to `true` cannot make an invalid command submittable.
 
 Prefer `currentValues` for externally managed values so client validation sees the same command values that will be submitted. `onBeforeExecute` can still perform final transformations, but values populated only in `onBeforeExecute` are not visible to client validation before the final Submit button is clicked:
 
@@ -165,7 +166,7 @@ Prefer `currentValues` for externally managed values so client validation sees t
 
 ## Field Change Tracking
 
-React to field value changes across any step:
+Use `onFieldChange` to react to edits in any panel. The callback receives the shared command alongside the field name and its old and new values, so it can read values from other steps:
 
 ```tsx
 <StepperCommandDialog<CreateProject>
@@ -181,9 +182,11 @@ React to field value changes across any step:
 </StepperCommandDialog>
 ```
 
+With `validateOn='blur'` or `'both'`, `onFieldChange` also runs after blur validation, even if the value did not change. Check the old and new values before treating a call as a new edit.
+
 ## Complex Validation Example
 
-Combining multiple validation patterns across fields:
+Keep several custom field rules in one function when the dialog needs them. Pass this function as `onFieldValidate`; its switch selects the rule for the field being edited and returns the first message for that field:
 
 ```typescript
 const validateField = (command: CreateProject, fieldName: string, oldValue: unknown, newValue: unknown) => {
@@ -223,7 +226,7 @@ const validateField = (command: CreateProject, fieldName: string, oldValue: unkn
 
 ## Cross-step Validation
 
-Because all steps share the same command instance, you can validate a field on one step against a value entered on a different step:
+A later field can read an earlier step's value from the shared command. Pass the following function as `onFieldValidate` to compare `endDate` with `startDate`, or `confirmPassword` with `password`:
 
 ```typescript
 const validateField = (command: CreateProject, fieldName: string, oldValue: unknown, newValue: unknown) => {
@@ -240,15 +243,15 @@ const validateField = (command: CreateProject, fieldName: string, oldValue: unkn
 };
 ```
 
-The message is attached to the field that changed, and it stays until that field changes again. Going back and editing `startDate` does not re-check `endDate`.
+The custom error belongs to the field that changed and remains until that field is edited again. Going back and changing `startDate` does not rerun the `endDate` callback. It can leave a stale message, or leave a now-invalid date range without a custom error.
 
-:::note
-The step indicator circles reflect per-step validation state, so errors in step 1 remain visible (red circle) even after the user navigates to step 3.
-:::
+Put relationships that must remain valid on the command validator. To refresh displayed command validation errors across fields as users type, set `validateOn='change'` and `validateAllFieldsOnChange`. That refresh does not rerun `onFieldValidate` for other fields.
+
+Step indicators help users find errors in earlier panels: a displayed field error keeps its step red even while another panel is active.
 
 ## Dynamic Field Updates
 
-React to one field changing, regardless of which step it is on:
+An `onFieldChange` handler can read another step's values when calculating a result or choosing which data to load. This handler logs a possible country lookup and calculates a total; it does not update another command property:
 
 ```typescript
 const handleFieldChange = (command: CreateOrder, fieldName: string, oldValue: unknown, newValue: unknown) => {
@@ -265,11 +268,11 @@ const handleFieldChange = (command: CreateOrder, fieldName: string, oldValue: un
 };
 ```
 
-To change another command property as a result, keep the value in component state and pass it through `currentValues`.
+To write a derived value back to the command, keep it in component state and pass it through `currentValues`. The destination must be a declared command property. If that value controls which panels apply, use the [conditional-step pattern](index.md#conditional-steps); hiding a panel does not clear its values or waive command rules.
 
 ## Async Validation
 
-`onFieldValidate` is synchronous: a returned promise is not awaited. For a rule that needs the server, such as checking that a project name is still free, write it as a validator on the backend command and enable server validation while the user edits:
+`onFieldValidate` cannot await a server check. Put a rule such as project-name uniqueness on the backend command and enable `autoServerValidate` to surface it before submission:
 
 ```tsx
 <StepperCommandDialog<CreateProject>
@@ -284,11 +287,11 @@ To change another command property as a result, keep the value in component stat
 </StepperCommandDialog>
 ```
 
-Once client validation passes, the form calls the command's validate endpoint `autoServerValidateThrottle` milliseconds (500 by default) after the last change. The server result is shown on the fields and also decides whether Submit appears.
+Once client validation passes, the form schedules a call to the command's validate endpoint after `autoServerValidateThrottle` milliseconds (500 by default). A later edit restarts that delay. The returned validity affects Submit, and messages identifying fields appear beside them. Client-side validation remains the default while editing; command execution still performs server-side validation without this option.
 
 ## Pre-execution Data Transformation
 
-Common transformation scenarios run just before the command executes:
+For several final adjustments, pass a named transformer as `onBeforeExecute`. This example normalizes email casing and whitespace, converts the start date, and returns the command values. It has the same timing limits as the earlier email transform:
 
 ```typescript
 const transformBeforeExecute = (values: CreateProject): CreateProject => {
@@ -302,4 +305,6 @@ const transformBeforeExecute = (values: CreateProject): CreateProject => {
 };
 ```
 
-The returned values are copied onto the command by property name, and only properties the command declares are sent. A key the command does not have, such as a `timestamp` or a total derived from several steps, has no effect; add it to the backend command if the server needs it. Do not set a required property to `undefined` to drop a UI-only field: the command validates again before the request and rejects it.
+The returned values are copied onto declared command properties by name; an extra key does not become part of the request. Add a property to the backend command if the server needs it. Do not set a required property to `undefined` to drop a UI-only field: the command validates again before the request and rejects the missing value.
+
+For the next part of the workflow, use [dialog close callbacks](index.md#dialog-callbacks) to decide when the caller resumes, or [confirm before submitting](index.md#confirm-before-submitting) to ask for approval after transformation.

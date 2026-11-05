@@ -1,13 +1,13 @@
 ---
-title: Drag and drop
-description: Let people drag toolbar tools onto a canvas or other drop surface.
+title: Toolbar drag and drop
+description: Transfer toolbar tool data to your canvas with native HTML5 drag and drop, while keeping click and keyboard activation available.
 ---
 
-Toolbar buttons can be dragged onto a canvas or other surface. This enables canvas-based applications to let users select tools by dragging them from the toolbar directly onto the work surface. Use the `draggable` prop either on individual `ToolbarButton` elements or on the `Toolbar` container itself to make every button draggable at once.
+Cratis Components toolbar buttons can transfer tool data to a canvas through native HTML5 drag and drop. Your application handles the drop and decides what to create or select at that position. Make dragging a shortcut, not a requirement: provide activation that performs the same task without a drag.
 
 ## Making All Buttons Draggable
 
-Set `draggable` on the `Toolbar` to make every child `ToolbarButton` draggable. Use `onItemDragStart` to react when any button starts being dragged:
+Set `draggable` on the `Toolbar` so child `ToolbarButton` elements inherit it. A button can opt out with `draggable={false}`, which is useful for actions such as Undo that have nothing to place on a canvas. Use `onItemDragStart` to receive drag starts from those buttons:
 
 ```tsx
 <Toolbar
@@ -43,16 +43,13 @@ Set `draggable` and an optional `onDragStart` callback directly on a `ToolbarBut
 
 ## Associating Data with a Button
 
-Use the `data` prop to attach any value to a button. This data is:
+Use `data` to attach a payload to a button. The button's `onDragStart` runs before the toolbar's `onItemDragStart`; both receive the original value and the drag event.
 
-- Passed to `onDragStart` and `onItemDragStart` callbacks.
-- Serialized with `JSON.stringify` as `application/json` onto the HTML5 `DataTransfer` object so the drop target can read it. A draggable button without `data` transfers the string `null`.
-
-Dragging also sets `effectAllowed` to `copy`. The data must be JSON-serializable: functions and class instances do not survive the transfer.
+The drop target receives a serialized copy, not that object reference. The button writes `JSON.stringify(data ?? null)` to the `application/json` entry of the HTML5 `DataTransfer` and sets `effectAllowed` to `copy`. A button without `data` transfers the string `null`. Use JSON-serializable data; functions and class behavior do not survive this transfer.
 
 ## Handling the Drop on a Surface
 
-Register a `drop` handler on the canvas or surface element and read the transferred data:
+Allow drops by calling `preventDefault()` in the surface's `dragover` handler, then read the transferred JSON in its `drop` handler. The example logs the tool identifier; replace that line with your selection or insertion logic:
 
 ```tsx
 function Canvas() {
@@ -78,6 +75,10 @@ function Canvas() {
 }
 ```
 
+The type assertion in this example does not validate incoming data. If the surface accepts drops from elsewhere, handle malformed JSON and check the payload shape before using it. The toolbar transfers data but does not validate targets or perform insertion.
+
 ## Keyboard and pointer alternatives
 
-Drag and drop uses native HTML5 dragging. Keyboard users cannot drag a tool, and touch support for HTML5 dragging varies by browser. Keep an `onClick` on every draggable button that does the same job, such as selecting the tool or placing it at a default position, so dragging is a shortcut rather than the only way in.
+Native HTML5 dragging does not provide keyboard dragging here, and touch support varies by browser. Give each draggable button an `onClick` that selects the tool or inserts at the current selection or a default position. Native button activation also supports Enter and Space, so users can complete the task without dragging.
+
+For a data-driven palette, a [headed drawer](drawer.md) exposes `onActivate(item)` alongside its drag callbacks. Wire both paths to the same application operation, with the drop position supplied only by the drag path.

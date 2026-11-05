@@ -1,15 +1,15 @@
 ---
-title: PivotViewer
-description: Explore large datasets through interactive grouping, filtering, zooming, and spatial rendering.
+title: PivotViewer collection exploration
+description: Use PivotViewer in Cratis Components to explore a collection as cards, narrow it with filters and search, and open details for a selected item.
 ---
 
-The `PivotViewer` component draws a collection of items as cards that users can sort, group, filter, search, zoom, and pan, with a detail drawer for the selected card.
-
-PivotViewer belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside [`Canvas`](../Canvas/index.md) — the only two subpaths that install the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
+`PivotViewer` in Cratis Components lets users explore a collection as cards, narrow it with filters and search, and open a selected item's details. Use it when users need to compare groups or find an item visually, rather than work through rows in a table.
 
 ## Purpose
 
-PivotViewer enables users to explore and analyze collections of data items through an intuitive, visual interface with pivot-style grouping and filtering.
+Start with a collection your application has already loaded. Define the values users can sort, group, and filter by, then choose the text that helps them recognize each card. PivotViewer handles the card layout, zoom, and pan; your application supplies the data and detail content.
+
+PivotViewer belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside [`Canvas`](../Canvas/index.md). Both use the optional `pixi.js` peer, which you must install when using PivotViewer.
 
 ## Install the optional Pixi peer
 
@@ -19,17 +19,13 @@ PivotViewer renders cards with `pixi.js`, an optional peer rather than a nested 
 npm install pixi.js@^8.20.0
 ```
 
-Keep exactly one compatible Pixi resolution across the application and Components — see [Canvas: Single Pixi peer](../Canvas/index.md#single-pixi-peer) for why. Unlike `Canvas`, PivotViewer does not expose Pixi types on its own public props, so consuming it does not require writing against `PIXI.*` types directly; the peer is still required at install time because PivotViewer's own rendering depends on it.
+Keep one compatible Pixi resolution across the application and Components; [Canvas: Single Pixi peer](../Canvas/index.md#single-pixi-peer) explains why. You do not need to write against `PIXI.*` types to use PivotViewer's public props, but its rendering still requires the peer.
 
 ## Key Features
 
-- Cards drawn with Pixi (WebGL); only cards near the viewport get a sprite
-- Filtering, grouping, and sorting answered by a Web Worker when one is available, with an in-thread fallback
-- Collection view (one sorted grid) and grouped view (one column per dimension value)
-- Categorical and numeric range filters, plus free-text search over `searchFields`
-- Zoom from 10% to 300% and drag or scroll panning
-- Card layout that reflows to the container width
-- Text-only cards through `cardRenderer`, and custom detail content through `detailRenderer`
+Collection view puts the cards in one sorted grid. Grouped view separates them into columns for the active dimension, such as category or price range. Filters and search narrow the collection in either view, while zoom from 10% to 300% and drag or scroll panning let users move through it.
+
+Cards show structured text from `cardRenderer`; `detailRenderer` supplies React content for the selected item. Pixi draws cards near the viewport, and a Web Worker handles filtering, grouping, and sorting when available. These mechanisms reduce drawing and main-thread computation, but collection size still needs an application-specific [performance budget](performance.md#establish-an-application-performance-budget).
 
 ## Quick Start
 
@@ -89,18 +85,18 @@ export function ProductViewer({ products }: { products: Product[] }) {
 
 The viewer opens in collection view, sorted by category. Choose **Grouped** in the toolbar to see one column per category, open the filter button to narrow by category or price and to search, and click a card to open its details.
 
-Three details in this example are easy to get wrong:
+The array type annotations keep `type: 'number'` from widening to `string`, which would not type-check. Defining the arrays outside the component keeps the definitions and their `getValue` functions stable between renders. Recreating those functions makes PivotViewer rebuild its columns and indexes; [Performance](performance.md#reduce-re-renders) explains which changes trigger that work.
 
-- **Typed definitions.** Annotate the arrays as `PivotDimension<T>[]` and `PivotFilter<T>[]`. An untyped array literal widens `type: 'number'` to `string`, which does not type-check.
-- **Stable definitions.** `dimensions` and `filters` live outside the component. A new array on every render makes PivotViewer rebuild its column store and indexes each time; see [Performance](performance.md#reduce-re-renders).
-- **A sized parent.** PivotViewer fills its parent (`flex: 1`, `max-height: 100%`) and sets no height of its own. Give the parent a height and `display: flex; flex-direction: column`, as above.
+The parent gives the viewer room to draw. PivotViewer fills its parent (`flex: 1`, `max-height: 100%`) and sets no height of its own, so keep the height and flex layout shown above.
 
 ## Core Concepts
 
-- **Dimensions**: Values to sort by in collection view and to group by in grouped view
-- **Filters**: Facets in the filter panel that narrow the dataset
-- **Cards**: Fixed-size text cards, one per visible item
-- **Details**: Your `detailRenderer` content in a component-owned drawer for the selected card
+| Concept | Role |
+| --- | --- |
+| Dimension | A value to sort by in collection view and group by in grouped view |
+| Filter | A selection in the filter panel that narrows the collection |
+| Card | A fixed-size text summary of one visible item |
+| Details | Your `detailRenderer` content in the selected card's component-owned drawer |
 
 ## Loading, empty, and error states
 
@@ -113,27 +109,25 @@ Three details in this example are easy to get wrong:
 
 ## Worker and search architecture
 
-PivotViewer keeps each dimension and filter value in a columnar store. When `data`, `dimensions`, or `filters` change, it extracts those values and builds the store and indexes on the main thread. When a Web Worker is available, it also posts that store to a dedicated worker (`pivot.worker.ts`), which builds its own indexes and answers filter, grouping, and sort requests. The `usePivotEngine` hook posts each request and resolves a promise when the result comes back, so recomputing a filter or grouping does not block interaction.
+PivotViewer builds a columnar store: one column of extracted values per unique dimension or filter key. It builds the store and indexes on the main thread when `data`, the keys, or the `getValue` functions change. When a Web Worker is available, it copies the store to that worker, which builds its own indexes and answers filtering, grouping, and sorting requests.
 
-The store posted to the worker includes the original `data` items, so items must be structured-cloneable plain data: no functions or other values `postMessage` cannot copy.
+The copy includes the original `data` items. Use structured-cloneable data, without functions or other values `postMessage` cannot copy. The option counts and numeric ranges in the filter panel, free-text search, layout, and rendering still run on the main thread.
 
-Two computations always run on the main thread: the option counts and numeric ranges shown in the filter panel, and free-text search.
+The worker is optional; Pixi is not. If browser worker APIs are absent, the worker-script probe fails, or the worker reports an error, the engine uses synchronous in-thread computation. That fallback does not replace the browser canvas needed to draw cards. For worker diagnostics and sizing the client collection, follow [Performance](performance.md).
 
-The worker is optional infrastructure, not a hard requirement: `usePivotEngine` checks `typeof window === 'undefined' || typeof Worker === 'undefined'` before creating it, and separately probes that the worker script actually serves as JavaScript before instantiating it. Either check failing — including during server rendering, where `window` and `Worker` do not exist — falls back to the equivalent synchronous, in-thread computation instead of failing. PivotViewer therefore degrades gracefully rather than crashing in SSR or restrictive environments; it simply loses the off-main-thread benefit there.
-
-`searchFields` drives PivotViewer's free-text search: an array of property-accessor functions (`PropertyAccessor<TItem>[]`, i.e. `(item: TItem) => value`), one per field the search box should match against. A search term matches an item when it matches the value returned by any accessor in the array — there is no default set of searched fields, so search is a no-op until `searchFields` is supplied.
+`searchFields` defines where free-text search looks: an array of property-accessor functions (`PropertyAccessor<TItem>[]`, with each accessor written as `(item: TItem) => value`). Each accessor identifies a field path, and a match in any of those fields includes the item. There is no default set of searched fields, so search has no effect until you supply `searchFields`.
 
 :::caution[Search needs plain property accessors and at least one filter]
 - PivotViewer does not call the accessors. It reads the property path from each accessor's source text (`item => item.address.city` becomes `address.city`) and looks that path up on each item. Computed accessors such as `item => item.name.toUpperCase()` or `item => format(item)` match nothing.
 - The search box lives in the filter panel, and the toolbar shows the filter button only when `filters` has at least one entry. With `searchFields` but no `filters`, users have no way to search.
 :::
 
-Facet/range filtering and grouping run in the worker when available. Free-text search is then applied on the main thread only to the already-visible item IDs returned by that engine step, with accessor paths resolved once per search pass. This keeps worker/fallback behavior identical while avoiding a second scan of records that filters already excluded.
+Search is a case-insensitive substring match over the values at those paths. It runs after categorical and range filtering, over the remaining item IDs, so users can search within an already-narrowed collection.
 
 ## See Also
 
-- [Configuration](configuration.md) - Props and options
-- [Dimensions and Filters](dimensions-and-filters.md) - Setting up data access
-- [Renderers](renderers.md) - Customizing card and detail views
-- [Interactions](interactions.md) - Zoom, pan, filter, select
-- [Performance](performance.md) - Optimization for large datasets
+- [Dimensions and Filters](dimensions-and-filters.md): choose how users divide and narrow the collection.
+- [Renderers](renderers.md): put identifying text on cards and actions in the detail drawer.
+- [Configuration](configuration.md): look up props, defaults, and search options.
+- [Interactions](interactions.md): understand zoom, pan, filtering, and selection.
+- [Performance](performance.md): measure the working set your application can support.

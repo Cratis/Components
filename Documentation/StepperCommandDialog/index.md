@@ -1,32 +1,23 @@
 ---
-title: StepperCommandDialog
-description: Execute Arc commands through a multi-step dialog with validation-aware navigation.
+title: StepperCommandDialog multi-step command workflows
+description: StepperCommandDialog collects one Arc command across modal steps, keeps values together, and submits when the whole command is valid.
 ---
 
-The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `CommandStepper` when the wizard belongs inline; the dialog additionally owns dismissal.
+`StepperCommandDialog` is a Cratis Components React component for collecting one Cratis Arc command across several steps in a modal dialog. Use it when users need to work through groups of fields before submitting once. Choose [`CommandStepper`](../CommandStepper/index.md) for an inline workflow, or [`CommandDialog`](../CommandDialog/index.md) when the form fits on one step.
 
 ## Purpose
 
-`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when the user has reached the last step and the command passes client validation across every step.
+Split the fields into named `StepperPanel` children without splitting the command itself. Values entered on an earlier step remain available when users move forward or go back. Submit appears only on the last step, once the whole command is valid and the optional `isValid` gate is not `false`.
 
 ## Key Features
 
-- Multi-step wizard navigation with Previous and Next buttons
-- All steps share a single command form — one command is submitted at the end
-- Submit button only appears on the last step when all fields are valid
-- Previous button hidden on the first step; Next button hidden on the last step
-- Cancel via the X button in the dialog header, the Escape key, or a backdrop click, and — with `showCancel` — a Cancel button in the footer
-- Step number circles change color to indicate validation state (red = errors shown, green = visited and valid)
-- Non-active steps are visually dimmed to keep focus on the current step
-- Busy state management during command execution
-- Stepper customization (`orientation`, `headerPosition`, `linear`, `start`, `end`, `pt`, …) available directly on the dialog
-- Conditional steps (`{condition && <StepperPanel/>}`) are counted correctly — only the steps that actually render
-- Supports any `CommandForm` field types inside each `StepperPanel`
-- Full integration with Cratis Arc command system
+Previous and Next let users review the form without executing it. Step number circles identify fields with displayed errors, so users can find the step that needs attention. The final Submit action executes the shared command; a failed result leaves the dialog open for correction.
+
+Users can dismiss through the header X, Escape, or a backdrop click. Add `showCancel` for a footer action. Dismissal is blocked while a submission is in progress, including an asynchronous transform or confirmation. Conditional panels participate in navigation only while they render.
 
 ## Basic Usage
 
-The example assumes `CreateProject` is a generated Arc command proxy whose `Handle()` returns a `CreateProjectResponse`.
+This example gathers a project's contact details and budget in two steps, then returns the created project's id to the caller. It assumes `CreateProject` is a generated Arc command proxy whose `Handle()` returns a `CreateProjectResponse`. Both panels bind fields to that same proxy instance.
 
 ```tsx
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
@@ -82,7 +73,9 @@ export const Projects = () => {
 };
 ```
 
-`useDialogContext` takes the request type first and the result type second. `closeDialog(DialogResult.Ok, response)` resolves the caller's `await` with the response; after `onSuccess`, the dialog also closes itself through the dialog context, which changes nothing once the caller has been resolved. The header X, `Escape`, and a backdrop click close the dialog with `DialogResult.Cancelled` without any callback.
+Clicking Create on the valid final step executes `CreateProject`. The `onSuccess` callback passes the response to `closeDialog(DialogResult.Ok, response)`, resolving the caller's `await` so it can use `response.projectId`. `useDialogContext` takes the request type first and the result type second; `useDialog` takes the result type first.
+
+Without a custom close callback, a successful submission closes through the dialog context with `DialogResult.Ok` but no response value. Closing from `onSuccess`, as above, lets the caller receive the response before that automatic close. The header X, Escape, and a backdrop click resolve with `DialogResult.Cancelled` unless `onCancel` or `onClose` prevents dismissal.
 
 Required values that no step shows, such as the id of the item being edited, belong in `initialValues`. See [Initialize command values](../CommandDialog/index.md#initialize-command-values); the same rules apply to every step.
 
@@ -97,11 +90,11 @@ Required values that no step shows, such as the id of the item being edited, bel
 ### Dialog Props
 
 - `visible`: Boolean controlling dialog visibility (defaults to `true`)
-- `initialValues`: Initial values for the command form
-- `currentValues`: Current values to populate the form
+- `initialValues`: Initial command values and the baseline for change tracking; an `undefined` value does not clear an existing value
+- `currentValues`: Reactive values owned outside the form; present keys update the command, including `null` or explicit `undefined` to clear a property
 - `onSuccess`: Callback invoked on successful command execution with the typed response
 - `onFailed`: Callback invoked when command execution fails with the full `CommandResult<TResponse>`
-- `onException`: Callback invoked when the command throws an exception with error messages and stack trace
+- `onException`: Callback receiving messages and stack trace when a command result contains exceptions; also handles a rejected `confirmBeforeExecute` guard
 - `onUnauthorized`: Callback invoked when authorization fails
 - `onValidationFailure`: Callback invoked on validation errors with the validation results
 - `onConfirm`: Confirm callback — called only after successful command execution
@@ -134,7 +127,7 @@ Required values that no step shows, such as the id of the item being edited, bel
 
 - `orientation`: `'horizontal'` (default) or `'vertical'`
 - `headerPosition`: `'top'` (default) or `'bottom'`
-- `linear`: Whether the wizard is linear (default: `true`). In linear mode the step headers are not directly clickable — the user advances through Previous / Next. Set it to `false` to let the user jump between steps by clicking their headers.
+- `linear`: Whether the wizard is linear (default: `true`). In linear mode users move with Previous and Next, not header clicks. Set it to `false` to allow header navigation; forward moves still stop when the current step shows a field error.
 - `onChangeStep`: Called once after each successful move to a different step through Previous, Next, or a clickable header. Receives `{ index }` (zero-based); blocked moves and clicks on the current header do not call it.
 - `start`: Content rendered before the stepper
 - `end`: Content rendered after the stepper
@@ -146,15 +139,15 @@ Required values that no step shows, such as the id of the item being edited, bel
 
 ### Result Callbacks
 
-`StepperCommandDialog` supports the following result callbacks that are invoked based on the command execution outcome:
+Use result callbacks to react to the submitted command, not to movement between steps:
 
 - `onSuccess(response: TResponse)`: Invoked when the command executes successfully. Receives the typed response.
-- `onFailed(commandResult: CommandResult<TResponse>)`: Invoked when command execution fails for any reason.
-- `onException(messages: string[], stackTrace: string)`: Invoked when the command throws an exception.
+- `onFailed(commandResult: CommandResult<TResponse>)`: Invoked when execution returns an unsuccessful command result.
+- `onException(messages: string[], stackTrace: string)`: Invoked when the result contains exceptions.
 - `onUnauthorized()`: Invoked when authorization fails.
 - `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
 
-Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors.
+On an unsuccessful result, `onFailed` runs first, followed by the applicable `onException`, `onUnauthorized`, and `onValidationFailure` callbacks in that order. A successful result calls `onSuccess` instead, then follows the close rules below. See [validation and callbacks](advanced-features.md) for typed responses and rules that compare fields across steps.
 
 ### Dialog Callbacks
 
@@ -213,7 +206,7 @@ The step number circles in the wizard navigation bar reflect the validation stat
 | **Green** | The step has been visited (navigated through) and none of its fields shows an error |
 | **Default** | The step has not been visited and none of its fields shows an error |
 
-Steps that are not currently active are dimmed to keep visual focus on the current step.
+Inactive step headers are dimmed; only the current panel's fields are visible.
 
 To show validation indicators immediately on open — before the user has touched any fields — pass the `validateOnInit` prop:
 
@@ -244,7 +237,7 @@ The Submit button is hidden, not disabled, until the user reaches the last step 
 
 ## Cancelling
 
-Dismissal is always reachable from the X button in the dialog header, from the Escape key, and from a backdrop click, except while the command runs. Each one runs `onCancel`; the dialog closes with `DialogResult.Cancelled` when `onCancel` returns `true` or calls `closeDialog` itself. Without `onCancel`, `onClose(DialogResult.Cancelled)` decides, and with neither the dialog closes through the dialog context.
+The header X, Escape, and a backdrop click offer dismissal except while a submission is in progress. Each one runs `onCancel`; the dialog closes with `DialogResult.Cancelled` when `onCancel` returns `true` or calls `closeDialog` itself. Without `onCancel`, `onClose(DialogResult.Cancelled)` decides, and with neither the dialog closes through the dialog context.
 
 Set `showCancel` to add a Cancel button to the footer as well. It leads the footer on every step — on the dismissal side of the divider, opposite Next and Submit — and takes exactly the same path as the header X. Use it for a wizard whose dismissal should be as reachable as its submit: a destructive or long flow, or one presented without a visible header. `cancelLabel` renames it.
 
@@ -279,12 +272,9 @@ The excerpt assumes `closeDialog` comes from `useDialogContext()` and `environme
 
 ## Busy State
 
-`StepperCommandDialog` automatically manages a busy state during command execution:
+Busy state starts as soon as Submit is pressed, before an asynchronous `onBeforeExecute` transform or `confirmBeforeExecute` guard finishes. Submit shows a spinner, footer navigation and Cancel are disabled, and the header X is hidden. Escape and backdrop clicks cannot dismiss the dialog during this window.
 
-- When Submit is clicked, the Submit button shows a loading spinner and all navigation buttons are disabled.
-- Every route out of the dialog is withdrawn for the same window: the footer Cancel is disabled, the header X is not rendered, and neither Escape nor a backdrop click dismisses. A dialog can therefore never report cancellation for a command that goes on to execute anyway.
-- The window opens the moment Submit is pressed — including while an `async` `onBeforeExecute` transform or `confirmBeforeExecute` guard is still resolving, before the command has been sent.
-- Once execution completes (success or failure), the buttons and every dismissal route return to their normal state.
+Busy state ends before result callbacks run, whether execution succeeds or fails. With `confirmBeforeExecute`, fields are also disabled until the guarded submission settles; without that guard, fields remain editable.
 
 ## Step Structure
 
@@ -302,7 +292,7 @@ CommandForm fields placed inside a `StepperPanel` are automatically bound to the
 
 ## Conditional steps
 
-A step that only applies sometimes is written the obvious way, and it is counted the obvious way:
+Render a `StepperPanel` conditionally when a group of fields applies only to some users. In this example, `isBusiness` is a boolean owned by the surrounding component; it decides whether the Company step appears.
 
 ```tsx
 <StepperCommandDialog<RegisterCustomer> command={RegisterCustomer} title='New customer'>
@@ -326,9 +316,9 @@ A step that only applies sometimes is written the obvious way, and it is counted
 </StepperCommandDialog>
 ```
 
-**Only the steps that actually render are counted.** `{condition && <StepperPanel/>}` leaves a `false` child behind when the condition does not hold, and `null` / `undefined` children are just as common; all of them are filtered out before the step count, the per-step validation state and the rendered panels are derived — from the same one list, so they cannot drift apart. With `isBusiness` false the wizard above has two steps, and Submit appears on "Confirm" where the user expects it.
+Only rendered panels count as steps; `false`, `null`, and `undefined` children are ignored. With `isBusiness` false, the example has Customer and Confirm steps, and Submit appears on Confirm once the command is valid.
 
-The count is not fixed for the lifetime of the dialog either. A late-resolving query or a `currentValues` overlay can flip the condition _after_ the user has advanced past that step, so the active step is clamped into the set that still renders — an index left stranded above the end resolves to the last surviving step rather than a step that is neither last nor navigable.
+If the condition changes while the dialog is open, navigation uses the remaining panels. An active index beyond the new last step moves to that last step. Removing a panel does not clear its command values or remove command validation rules: a required `organizationNumber` still needs a valid value or a conditional rule that permits its absence.
 
 :::caution[A fragment is one step]
 A `<>…</>` fragment wrapping several panels counts as **one** step. Give each step its own `StepperPanel` child.
@@ -336,14 +326,9 @@ A `<>…</>` fragment wrapping several panels counts as **one** step. Give each 
 
 ## Integration
 
-`StepperCommandDialog` integrates with:
-
-- `@cratis/arc/commands` for command execution
-- `@cratis/arc.react/commands` for form handling
-- the private `CommandStepperContent` rendering primitive and public `StepperPanel` marker for the wizard UI
-- The Cratis [`Dialog`](../Dialogs/dialog.md) for the modal wrapper
+`StepperCommandDialog` uses `@cratis/arc/commands` for execution and `@cratis/arc.react/commands` for the shared form. The Cratis [`Dialog`](../Dialogs/dialog.md) supplies the modal wrapper, while `StepperPanel` names each group of fields.
 
 ## See Also
 
-- [Advanced Features](advanced-features.md) - Field validation, transformation, and change tracking across steps
+- [Validate fields and handle responses](advanced-features.md) when the workflow needs cross-step rules, custom inputs, or value transformations
 - [CommandStepper](../CommandStepper/index.md) — render an executing command wizard inline without a modal dialog

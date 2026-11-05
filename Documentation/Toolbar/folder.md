@@ -1,13 +1,11 @@
 ---
-title: Expandable folder
-description: Reveal a grid or list of extra tools from a ToolbarFolder trigger.
+title: Toolbar folders for extra tools
+description: Group extra toolbar tools in a compact grid or labeled list with ToolbarFolder, and choose how the panel opens and closes.
 ---
 
-`ToolbarFolder` replaces a regular button with one that reveals a dynamically sized grid of buttons when clicked. The folder animates open to reveal its contents and closes when you click the trigger again, press anywhere outside the panel, or press Escape; Escape also returns focus to the trigger.
+Use `ToolbarFolder` in Cratis Components to keep less frequent tools behind one trigger without removing them from the toolbar. It opens a compact grid by default. Choose a labeled list when users need to read tool names, or a [headed drawer](drawer.md) for a category of labeled tiles.
 
-`icon`, `title`, and `children` are required. `title` is the trigger's accessible name and tooltip, and also names the panel, which renders as a `role='group'`. The trigger exposes `aria-expanded` and `aria-controls`, and the collapsed panel is `inert`.
-
-The grid automatically balances rows and columns based on item count, keeping the folder compact for small sets while naturally expanding for larger collections.
+For a compact folder, supply `icon`, `title`, and `children`. The title names both the trigger and its `role='group'` panel, and serves as the trigger's tooltip. The grid balances its rows and columns from the number of children.
 
 ```tsx
 import { Toolbar, ToolbarButton, ToolbarFolder } from '@cratis/components/Toolbar';
@@ -23,6 +21,8 @@ import { Toolbar, ToolbarButton, ToolbarFolder } from '@cratis/components/Toolba
 </Toolbar>
 ```
 
+Click the trigger again, click outside the folder, or press Escape to close it. Escape returns focus to the trigger; an outside press does not. Opening the panel does not move focus into it, and activating a child button does not automatically close a compact folder. The trigger exposes `aria-expanded` and `aria-controls`; the collapsed panel is `inert` and `aria-hidden`, keeping its tools out of keyboard navigation.
+
 By default the folder opens to the right. Use `folderDirection='left'` when the toolbar is positioned on the right side of the screen:
 
 ```tsx
@@ -36,11 +36,13 @@ By default the folder opens to the right. Use `folderDirection='left'` when the 
 
 The folder uses the square root of the item count, rounded up, as the column count, capped by `maxColumns`:
 
-- **1 item:** 1 column × 1 row
-- **2–4 items:** 2 columns
-- **5–9 items:** 3 columns
-- **10–16 items:** 4 columns
-- **17 or more items:** 5 columns (the default `maxColumns`), with as many rows as needed
+| Items | Columns with the default maximum |
+|---|---|
+| 1 | 1 |
+| 2–4 | 2 |
+| 5–9 | 3 |
+| 10–16 | 4 |
+| 17 or more | 5, with as many rows as needed |
 
 Use `maxColumns` to customize the maximum column count:
 
@@ -82,7 +84,7 @@ Set `mode='list'` to change the folder's panel layout from a grid into a vertica
 </ToolbarFolder>
 ```
 
-The `maxColumns` prop is ignored in list mode — the panel always uses a single column.
+The `maxColumns` prop is ignored in list mode because the panel always uses a single column.
 
 | Mode | Layout | Best for |
 |---|---|---|
@@ -91,4 +93,4 @@ The `maxColumns` prop is ignored in list mode — the panel always uses a single
 
 ## Headed drawer
 
-Set `presentation='drawer'` for a headed panel with a visible title, a close button and labeled tiles that can be driven by a data catalogue. The icon-only grid and the list above remain the defaults. See [Headed drawer](drawer.md).
+Set `presentation='drawer'` when the category needs a visible heading, a close button, and labeled tiles supplied from data. Follow [Headed drawer](drawer.md) to wire activation and optional dragging to your application. For a simple strip of related buttons that can open in four directions, use a [fan-out panel](fan-out.md).

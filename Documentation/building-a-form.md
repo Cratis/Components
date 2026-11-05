@@ -1,15 +1,15 @@
 ---
-title: 'Recipe: Building a form'
-description: Execute a command from a typed form using CommandDialog and CommandForm fields, with validation handled for you.
+title: 'Build a command form with Cratis Components'
+description: Use CommandDialog in Cratis Components to collect typed input, validate an Arc command, and handle success or rejection in a React form.
 ---
 
-**Goal:** collect input and run an Arc command — with the confirm button disabled until the form is valid and while it executes, validation wired up, and no manual fetch.
+Use `CommandDialog` in Cratis Components when an action needs a small form before it can run an Arc command. The dialog binds fields to the generated command, checks client validity, and executes on confirmation without application fetch code. It keeps the form open if the backend rejects the command.
 
-**Prerequisites:** the providers and styles from [Getting started](getting-started.mdx), and a generated command proxy. The examples use the Arc tutorial's `RegisterAuthor`, which has a required `id` and a `name`.
+Start with the providers and styles from [Getting started](getting-started.mdx) and a generated command proxy, the TypeScript class that calls the backend command. This example uses the Arc tutorial's `RegisterAuthor`, which has a required `id` and a `name`.
 
 ## Identify values before fields
 
-This recipe expects the running Arc library backend and generated `src/Authors/RegisterAuthor.ts` from [Getting started](getting-started.mdx). It is the write half of the [library tutorial](tutorial/index.md), not a standalone form backed by a placeholder class.
+Keep the Arc library backend running and use the generated `src/Authors/RegisterAuthor.ts` from [Getting started](getting-started.mdx). The [library tutorial](tutorial/index.md) supplies that backend and proxy; this recipe builds the form that submits to it.
 
 | Required value | Supplied by | Where it goes |
 | --- | --- | --- |
@@ -50,14 +50,11 @@ export const AddAuthor = () => {
 };
 ```
 
-The `value={(command) => command.name}` accessor is **typed against the command** — rename `Name` in C#, rebuild, and this line stops compiling until you fix it. Every field component in [CommandForm](CommandForm/index.md) binds the same way.
+The `value={(command) => command.name}` accessor connects the field to a typed command property. Rename `Name` in C# and regenerate the proxy, and this line stops compiling until you update it. Every field component in [CommandForm](CommandForm/index.md) binds the same way.
 
-What happens at each stage:
+**Add** stays disabled until client validation passes: every required property has a value and every rule the backend shared with the proxy is satisfied. Field messages appear on blur by default. Here, `validateOn='change'` shows them as the user types; `'both'` validates on change and blur.
 
-- **While editing** — **Add** stays disabled until client validation passes: every required property has a value and every rule the backend shared with the proxy is satisfied. Field messages appear on blur by default; `validateOn='change'` shows them as the user types, and `'both'` does both.
-- **On confirm** — every button is disabled while the command executes.
-- **On success** — `onSuccess` receives the command's response and the dialog closes.
-- **On rejection** — the dialog stays open; server validation messages appear against their fields, and `onValidationFailure`, `onFailed`, `onException`, and `onUnauthorized` report the result.
+Confirming disables every button while the command executes. On success, `onSuccess` receives the response and the dialog closes. If the backend rejects the command, the dialog stays open and server validation messages appear against their fields. Use `onValidationFailure`, `onFailed`, `onException`, and `onUnauthorized` to handle the corresponding results.
 
 ## Show the dialog
 
@@ -100,10 +97,9 @@ Use a keyboard to open, name, submit, and cancel the dialog, and check return fo
 
 ## Tips
 
-- **Injected (non-input) values** — set required values the user doesn't type, like a new id or a parent id, via `initialValues`, not `onBeforeExecute`. `onBeforeExecute` runs only on submit, after validation, so a required value set there arrives too late and the confirm button stays disabled. Use `onBeforeExecute` only for transforms that don't affect validity, and return the values from it.
-- **Multi-step forms** — reach for `StepperCommandDialog` when one command needs to be gathered across several stages.
-- **Inline forms** — use [`CommandForm`](CommandForm/index.md) directly when the fields belong on the page rather than in a dialog.
-- Use the Cratis dialog wrappers so execution, validation timing, focus behavior, and footers stay consistent.
+Set required values the user doesn't type, such as a new id or parent id, through `initialValues`. `onBeforeExecute` runs only on submit, after validation, so setting a required value there leaves the confirm button disabled. Reserve it for transforms that don't affect validity, and return the transformed values.
+
+For input gathered across several stages, follow the [multi-step form recipe](multi-step-form.md). If the fields belong on the page, use [`CommandForm`](CommandForm/index.md) directly. The Cratis dialog wrappers keep execution, validation timing, focus behavior, and footers together when you do need a modal form.
 
 ## Next
 

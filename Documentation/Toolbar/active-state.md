@@ -1,9 +1,9 @@
 ---
-title: Active state
-description: Highlight the selected tool in a Toolbar and expose that state to assistive technology.
+title: Toolbar active tool selection
+description: Keep Toolbar selection in application state and pass active to each tool. Selected tools expose aria-pressed; one-time actions leave it unset.
 ---
 
-Use the `active` prop on `ToolbarButton` to highlight the selected tool. The toolbar does not track selection: keep the active tool in your own state and set `active` on the matching button.
+Use `active` on `ToolbarButton` to show which tool controls the canvas and expose that selection to assistive technology. Keep the selected tool in application state: `Toolbar` neither stores the selection nor toggles it when a button is clicked.
 
 ```tsx
 import { useState } from 'react';
@@ -32,15 +32,17 @@ export function DrawingToolbar() {
 }
 ```
 
-`active` adds the `toolbar-button--active` class and the `data-active` and `data-selected` attributes, which drive the built-in highlight and any product CSS. Passing `active` also sets `aria-pressed` to `true` or `false` so screen readers can identify the selected tool. If you omit `active`, the button has no `aria-pressed` attribute and remains a plain action button. You can still override `aria-pressed` through `pt.root` when needed.
+The example starts with Select pressed and Draw unpressed. Clicking Draw changes `activeTool`, so the next render highlights Draw and clears Select. Use that same state when deciding how the canvas responds to input.
+
+When `active` is true, the button adds `toolbar-button--active`, `data-active`, and `data-selected` for highlighting. Passing either `true` or `false` also sets `aria-pressed`, allowing screen readers to distinguish selected and unselected tools. Omitting `active` leaves `aria-pressed` unset, as appropriate for an ordinary action button.
 
 ## Selection and actions
 
-Set `active={false}` on unselected tools in a selection set, rather than omitting the prop. This keeps the pressed/unpressed relationship explicit for assistive technology. For an immediate action such as Undo that is not a persistent mode, omit `active` so it remains an ordinary action button.
+Pass `active={false}` to unselected tools in a selection set, as the comparisons above do. This keeps the pressed/unpressed relationship explicit for assistive technology. For an immediate action such as Undo, omit `active`: performing an action does not leave the canvas in an Undo mode.
 
-Clicking a button calls `onClick`; it does not toggle `active` automatically. In the example, the state update causes a render that marks the selected tool and clears the other one. If several toolbars control the same canvas mode, pass the same application state to each instead of maintaining unrelated selections.
+Keyboard focus and selection are separate. Arrow keys move focus between tools; your `onClick` handler changes the selected mode. If several palettes control the same canvas, give them the same application state so they show the same selection.
 
-The pressed-state behavior also applies when a button appears in a folder's list presentation. An explicit `pt.root` override changes the announced pressed state, not your application selection, so keep it consistent with the visual highlight.
+The pressed-state behavior also applies to buttons in a folder's list presentation. You can override `aria-pressed` through `pt.root`, but that changes the announcement, not the application state or visual selection. Keep them consistent.
 
 ## See also
 

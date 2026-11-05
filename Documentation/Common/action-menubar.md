@@ -1,6 +1,6 @@
 ---
 title: ActionMenubar
-description: Render a horizontal toolbar of page-level command actions.
+description: Render page-level actions with ActionMenubar in Cratis Components, using keyboard navigation, button states, and custom item templates.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->

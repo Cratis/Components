@@ -1,33 +1,33 @@
 ---
-title: TimeMachine
-description: Explore versions, events, and read-model changes along an interactive timeline.
+title: TimeMachine version and event exploration
+description: TimeMachine displays version snapshots and related events supplied by your React app. Load history yourself; the component does not compare values.
 ---
 
-The `TimeMachine` component provides an interactive timeline visualization for exploring the evolution of data over time through events and state changes.
+`TimeMachine` is a React component for browsing version snapshots and their related events on an interactive timeline. Use it to let readers inspect a past state and the events you associate with it. Your application supplies the history; TimeMachine does not retrieve it or compare values between versions.
 
-TimeMachine belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
+TimeMachine belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles). It renders with React and the DOM and does not require Pixi.
 
 ## Purpose
 
-TimeMachine allows users to navigate through different versions of data, viewing the read model state and associated events at each point in time.
+When someone needs to investigate a product's price history, the current price alone is not enough. TimeMachine lets them step through snapshots of the data shown by your application, called a read model, and flip a snapshot's card to inspect its related events. The events view brings the supplied events together in one list.
 
 ## Transport neutrality
 
-TimeMachine has no built-in fetch, HTTP client, or WebSocket — its entire data contract is the `versions: Version[]` prop and the optional `onVersionChange` callback. The component owns scrubbing, gesture, and selection UI state only; it never requests data on its own.
+Load or construct the history in your application, then map each snapshot to a `Version` with its rendered `content` and optional `events`. Pass those entries through `versions: Version[]`. TimeMachine handles timeline navigation and selection; the optional `onVersionChange` callback reports the selected index to your application.
 
-This means TimeMachine is transport-neutral by construction: a host application can populate `versions` from an Arc query, from a Chronicle-backed read model plus its event history (a natural fit, since `Version.events` already models a per-version event list), from a plain REST endpoint, or from static/local state. TimeMachine has no Chronicle awareness or coupling — an event-sourced application maps its own event/read-model history into the `Version` shape before rendering; TimeMachine does not know, or need to know, where that data came from.
+The source of that history is your choice. TimeMachine has no built-in fetch, HTTP client, or WebSocket, and it does not reconstruct earlier states from events. Supply both the snapshots you want readers to inspect and the events you want to show beside them. [Configuration](configuration.md) describes the `Version` and `Event` shapes.
 
 ## Key Features
 
-- A timeline of versions, with a magnifying effect around the hovered entry
-- A stack of version cards showing your rendered state for each version
-- A card flip that lists the events behind a version
-- An events view listing every event across all versions
-- Selection through the timeline, previous/next buttons, clicking a card, or wheel and trackpad scrolling
-- Hover or focus preview of a version without selecting it
-- Localizable accessible names through `labels`
+- Browse snapshots through the timeline, previous/next buttons, stacked cards, or wheel and trackpad scrolling
+- Preview a snapshot by hovering or focusing its timeline entry without selecting it; entries magnify around the pointer or focus
+- Flip a card to inspect the events supplied for that version
+- Switch to the events view to read the events across all supplied versions
+- Localize accessible names through `labels`
 
 ## Quick Start
+
+This example supplies two product snapshots and their events from local data. Import `@cratis/components/TimeMachine/styles` or the aggregate `@cratis/components/styles` for its CSS.
 
 ```tsx
 import { useState } from 'react';
@@ -77,9 +77,9 @@ export function ProductHistory() {
 }
 ```
 
-TimeMachine opens on the latest version, with its card in front and a vertical timeline along the right edge. Click the other timeline entry, press the previous button at the bottom, or scroll over the background to move between versions. The list icon in the switcher at the top opens the events view.
+The example sets the initial index to the last entry, so the price-updated snapshot opens in front. Click the earlier timeline entry, press the previous button at the bottom, or scroll over the background to see the original price. Flip the front card to inspect its event, or use the list icon at the top to open the events view. The `oldPrice` and `newPrice` fields come from the supplied event payload; TimeMachine does not calculate them.
 
-`content` is whatever you render for that version. The exported `Properties` component renders a plain key/value table and is the usual choice; see [Views](views.md).
+Each version's `content` is rendered as supplied. Here, `Properties` turns the snapshot data into a key/value table. Use [Views](views.md) to choose how to present your own snapshots and event payloads.
 
 ## Size and appearance
 
@@ -87,7 +87,7 @@ The `.time-machine` root is `100vh` tall and `100%` wide, with its own dark them
 
 ## Empty, loading, and error states
 
-TimeMachine has none of its own. It renders whatever `versions` contains and never fetches. Show your own loading and error UI while you build `versions`, and render a message instead of TimeMachine until there is at least one version.
+Handle loading and errors in your application while you build `versions`. TimeMachine has no loading, error, or empty-state UI and does not fetch data. Render a message instead of TimeMachine until there is at least one version.
 
 ## See Also
 

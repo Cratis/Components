@@ -1,36 +1,31 @@
 ---
-title: SchemaEditor
-description: Create and edit supported JSON Schema structures in an interactive table.
+title: SchemaEditor for editing JSON Schema in React
+description: Use SchemaEditor to edit JSON Schema properties in a table or inline tree. Choose the layout, handle changes, and persist schemas in your application.
 ---
 
-The `SchemaEditor` component provides an interactive table-based interface for creating and editing JSON schemas.
+SchemaEditor lets users define a JSON Schema's properties in a React application without editing JSON by hand. Choose the table layout for an Edit, Save and Cancel workflow, or the tree layout to edit nested properties inline. Your application decides when to persist the result.
 
-SchemaEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
+SchemaEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles). It uses React and DOM rendering without Pixi; the package's declared peer requirements still apply.
 
 ## Purpose
 
-SchemaEditor lets users define data structures by adding properties, choosing supported types and formats, and navigating nested object/array schemas in a table interface.
+Use SchemaEditor when a form or design tool needs users to add fields, choose their types, and define nested objects or arrays. It edits the schema that describes data, not the data itself. To edit values against a schema, use [ObjectContentEditor](../ObjectContentEditor/index.md).
 
 ## Key Features
 
-- Interactive property editing
-- Type selection from JSON schema types
-- Format specification for common patterns
-- `required` array tracking per object schema, kept consistent across renames and deletes (see [Editing Properties](editing.md#required-properties) — no in-table toggle control yet)
-- Array and object type support
-- Inline editing with validation
-- Add/remove properties
-- Read-only mode support
+Both layouts let users add, rename, retype and remove properties. Optional Required and Key controls mark which properties must be present and which one identifies an object. Renaming or deleting a property keeps its object's `required` list consistent.
+
+The layouts differ in how users navigate and commit edits. Pick that workflow first, then add name validation or property restrictions through [Extending the editor](extending.md).
 
 ## Which layout
 
-`SchemaEditor` has two layouts, chosen with the optional `layout` prop. Existing code keeps the first one without changing anything.
+Set `layout` to choose the editing workflow. Omitting it selects the table.
 
 | | `layout='table'` (default) | `layout='tree'` |
 | --- | --- | --- |
 | Shape | A table that drills into nested objects and lists, with breadcrumbs | One tree with nested properties inline |
-| Editing | Edit, Save and Cancel; `onChange` reports each change and Cancel reports a reset | Every edit applies at once through `onChange` |
-| Typical use | Reviewing and editing a schema document | Designing a property shape inside a larger form or product |
+| Editing | Edit opens a draft; `onChange` reports edits before Save. Cancel can report a reset | Edits apply immediately; with `schema`, `onChange` reports the complete result |
+| Typical use | Reviewing one object at a time before saving | Seeing and editing nested properties together inside a larger form |
 | Extras | `allowRequired` and `allowKeyProperty` columns, `isPropertyProtected`, `validatePropertyName`, `header`, `footer` | Concepts, Generated toggle (`allowGeneratedProperty`), controlled mode, per-row slots, selection, read-only, `pt`. See [Tree layout](tree-layout.md) |
 
 Props that belong to one layout are ignored by the other. [Extending the editor](extending.md) lists exactly which apply where.
@@ -56,9 +51,11 @@ export function MySchemaEditor() {
 }
 ```
 
+The example starts in table view mode. Choose Edit to change `name` or `age`; `onChange={setSchema}` keeps React state up to date, but does not store anything outside the application. Before adding persistence, read [Save and Cancel](editing.md#save-and-cancel): passing each change back as `schema` also refreshes the table's cancellation baseline.
+
 ## Basic Schema Structure
 
-The component works with JSON schemas following the JSON Schema specification:
+An object schema puts named fields in `properties`. Its `required` array names fields that must be present in that same object:
 
 ```json
 {
@@ -75,20 +72,19 @@ The component works with JSON schemas following the JSON Schema specification:
 
 ## JSON Schema support
 
-SchemaEditor and [`ObjectContentEditor`](../ObjectContentEditor/index.md) share one `JsonSchema`/`JsonSchemaProperty` contract (`@cratis/components/types`), and it is a **pragmatic authoring subset of JSON Schema, not a general-purpose validator**. The supported shape is exactly what the types declare:
+SchemaEditor and [ObjectContentEditor](../ObjectContentEditor/index.md) share the `JsonSchema` and `JsonSchemaProperty` types from `@cratis/components/types`. These describe an authoring subset of JSON Schema, not a general-purpose validator. The contract declares `title`, `name`, `$id`, `$ref`, `type`, `format`, `description`, `properties`, `items`, `required` and `definitions`. Carrying a keyword does not mean the editor offers a control for it or validates its meaning.
 
-- `title`, `name`, `$id`, `$ref`, `type`, `format`, `description`
-- `properties` and `items` (recursively, for `object` and `array`)
-- `required` (a string array on every object schema, including an object-valued property, naming required children in that same `properties` object)
-- `definitions`, for schemas reused via `$ref`
+The table offers `string`, `integer`, `number`, `boolean`, `object` and `array`. Its built-in `DEFAULT_TYPE_FORMATS` catalog adds `guid`, `date-time`, `date` and `time` for strings; `int16`, `int32` and `int64` for integers; and `float` and `double` for numbers. See [Types and Formats](types-formats.md) to configure the table's catalog.
 
-The type editor offers `string`, `integer`, `number`, and `boolean` as leaf types, plus `array` and `object` as container types, with the built-in format catalog (`DEFAULT_TYPE_FORMATS`, also exported from `types`): `guid`, `date-time`, `date`, and `time` for `string`; `int16`, `int32`, and `int64` for `integer`; `float` and `double` for `number`.
+The tree has its own type menu: text, number, boolean, date, time, unique identifier, object, and lists of text, numbers or objects. It also supports domain concepts. It does not use the table's `typeFormats` catalog; see [Tree layout](tree-layout.md).
 
-What is deliberately **not** supported: JSON Schema composition keywords (`oneOf`, `anyOf`, `allOf`, `not`), `enum`/`const`, numeric or string constraints (`minimum`, `maximum`, `minLength`, `maxLength`, `pattern`), `additionalProperties`/`patternProperties`, and boolean schemas (`true`/`false` in place of a schema object). SchemaEditor does not display, edit, or validate these keywords. Unrelated unknown properties are generally preserved by its clone-and-spread mutation paths, but a targeted type change intentionally rewrites fields such as `type`, `format`, `items`, or `properties` and may leave richer external constraints inconsistent. Validate edited schemas with the application's authoritative validator, or use a dedicated editor when richer vocabulary support is required.
+Neither layout offers controls to author or validate composition keywords such as `oneOf`, value constraints such as `enum`, or limits such as `minimum` and `minLength`. These keywords can survive edits without being understood by the editor. Type changes can remove constraints or nested structure that no longer apply. Boolean schemas (`true` or `false` in place of a schema object) are outside the supported shape.
+
+Use your application's validator to check edited schemas and the data they describe. If you need to edit richer vocabulary, use a dedicated schema editor. [JSON Schema mapping](json-schema.md) explains what survives conversion and what changes when a property is retyped.
 
 ## Table Interface
 
-Properties are displayed in a table:
+In the default layout, each row shows a property of the current object:
 
 | Property  | Type      |
 | --------- | --------- |
@@ -97,10 +93,7 @@ Properties are displayed in a table:
 | age       | number    |
 | createdAt | date-time |
 
-The Type column shows the property's format when one is set, falling back to
-its JSON type otherwise. There is no separate Required column unless you pass `allowRequired` (and `allowKeyProperty` for a Key column); see
-[Editing Properties](editing.md#required-properties) for how `required` is
-tracked.
+The Type column shows the property's format when one is set, falling back to its JSON type otherwise. Pass `allowRequired` to add a Required column, or `allowKeyProperty` to add a Key column. Both are editable in edit mode. Continue with [Editing Properties](editing.md) to wire the table's changes and Save action into your application.
 
 ## See Also
 

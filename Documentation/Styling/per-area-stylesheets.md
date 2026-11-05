@@ -1,14 +1,13 @@
 ---
-title: Per-area stylesheets
-description: Import only the CSS for the Components surfaces an application actually mounts.
+title: Choose Cratis Components per-area stylesheets
+description: Load Cratis Components CSS for selected surfaces with a shared base and per-area imports, while keeping the same tokens and styling hooks.
 ---
 
-`@cratis/components/styles` is the whole library's CSS in one file. That is the right default, and it
-is unchanged. It is the wrong default for an application that mounts two dialogs and a data table: a
-`PivotViewer`, a `TimeMachine` and a `Canvas` it will never render are downloaded and parsed anyway.
+Per-area stylesheets let you load CSS for the Cratis Components surfaces your application mounts instead of the whole library. Use them when a page needs only a few surfaces, such as dialogs and a data table, or when a specialist surface loads with a route. Keep `@cratis/components/styles` for the simplest first setup.
 
-Every JavaScript subpath therefore also publishes its own stylesheet at `<subpath>/styles`, alongside
-one shared base:
+Replace the aggregate with `@cratis/components/styles/base` and the published `<subpath>/styles` entries you need. Keep `tokens`, and retain `theme` if you want the baseline appearance.
+
+For a new setup, put the package imports in a local CSS file as shown in [Set up styling](getting-started.md#import-only-the-surfaces-you-mount). The equivalent direct TypeScript imports are below. These stylesheet subpaths have no type declarations; if your compiler reports `TS2882`, declare each imported package subpath in a project-included `.d.ts` file or use the CSS-first setup.
 
 ```ts
 import '@cratis/components/tokens';       // the --cratis-* seam (always)
@@ -18,8 +17,7 @@ import '@cratis/components/DataTables/styles';
 import '@cratis/components/theme';        // optional baseline look
 ```
 
-Nothing else changes: the same class names, the same `data-cratis-part` hooks, the same `--cratis-*`
-tokens, the same cascade layers.
+The choice changes which component rules you load. Class names, `data-cratis-part` hooks, `--cratis-*` tokens, and cascade-layer names stay the same.
 
 ## Which one to use
 
@@ -29,72 +27,53 @@ tokens, the same cascade layers.
 | The app mounts a handful of surfaces and its CSS payload matters | `@cratis/components/styles/base` plus one `<subpath>/styles` per surface |
 | A specialist surface is loaded lazily (`PivotViewer`, `Canvas`, `Chat`, `TimeMachine`) | Load `<subpath>/styles` with the route or chunk that mounts it |
 
-Mixing is fine. The aggregate and the per-area sheets contain the same rules in the same cascade
-layer and the same order, so importing both is redundant rather than wrong.
+Avoid loading the aggregate and area sheets together: they duplicate component rules without narrowing the CSS selection. They use the same cascade layer, so adding an area sheet does not create a separate styling priority.
 
 ## The two rules
 
-**Always import `@cratis/components/styles/base` exactly once.** It carries the internal
-Tailwind-generated utilities every component's markup uses, and the `@layer cratis-theme,
-cratis-components, cratis-utilities` statement that fixes cascade order. It is deliberately not
-copied into each area sheet — that would duplicate it once per surface and let two sheets disagree
-about layer order. Without it, components lose the utility rules their markup relies on and the
-Cratis layer order is left to whichever sheet happens to load first. The aggregate already contains
-it, so an application using `@cratis/components/styles` must not import it as well.
+Load `@cratis/components/styles/base` once before the area sheets. It supplies the internal Tailwind-generated utilities and the `@layer cratis-theme, cratis-components, cratis-utilities` ordering statement. Area sheets do not include that shared base. Without it, controls can lose layout utilities and the layer order depends on which sheet loads first. The aggregate already includes the base, so it needs no separate base import.
 
-**Each `<subpath>/styles` is self-contained for that subpath.** An area sheet contains the rules of
-every Components directory that subpath actually reaches, not just its own folder, because the split
-is derived from the built module graph rather than from a maintained list. `PivotViewer` renders a
-`FilterPanel`, so `@cratis/components/PivotViewer/styles` contains `Filter`'s rules too;
-`@cratis/components/DataPage/styles` contains the vendored Allotment split-view rules. There is never
-a second import to remember. Each published sheet names its areas in its first comment
-(`/* @cratis/components/Dialogs/styles — … Areas: Dialogs, Display, Notifications. */`), so you can
-check what an entry point carries in the installed package.
+An area sheet includes its internal structural dependencies. The package derives those dependencies from the built JavaScript module graph: the modules reachable from that entry point. For example, `PivotViewer` renders `FilterPanel`, so its stylesheet includes Filter rules; `DataPage` includes the vendored Allotment split-view rules. You do not need separate area imports for those internal dependencies, but you do need entries for other surfaces your application mounts.
+
+Each published stylesheet includes an `Areas:` comment listing its coverage. Check that comment in your installed package when you need the exact dependency set.
 
 ## Entry points
 
-| Entry point | Covers |
+| Entry point | Surface or role |
 | --- | --- |
 | `@cratis/components/styles/base` | Internal utilities and cascade-layer order — required by every entry point below |
-| `@cratis/components/Canvas/styles` | Canvas, Chat, Common, Dialogs, Notifications |
+| `@cratis/components/Canvas/styles` | Canvas |
 | `@cratis/components/Chat/styles` | Chat |
-| `@cratis/components/CommandDialog/styles` | CommandDialog, CommandForm, Common, Dialogs, Notifications |
-| `@cratis/components/CommandStepper/styles` | CommandDialog, CommandForm, Common, Notifications |
-| `@cratis/components/CommandForm/styles` | CommandForm, Common, Dropdown, Notifications |
+| `@cratis/components/CommandDialog/styles` | CommandDialog |
+| `@cratis/components/CommandStepper/styles` | CommandStepper |
+| `@cratis/components/CommandForm/styles` | CommandForm |
 | `@cratis/components/CommandForm/fields/styles` | Same sheet as `CommandForm/styles` |
-| `@cratis/components/Common/styles` | Common, Notifications |
-| `@cratis/components/ConfigurationEditor/styles` | ConfigurationEditor, IconPicker |
-| `@cratis/components/DataPage/styles` | Common, DataPage (Allotment), DataTables, Dropdown, Notifications |
-| `@cratis/components/DataTables/styles` | Common, DataTables, Dropdown, Notifications |
-| `@cratis/components/Dialogs/styles` | Dialogs, Display, Notifications |
-| `@cratis/components/Display/styles` | Common, Display |
-| `@cratis/components/Dropdown/styles` | Common, Dropdown, Notifications |
-| `@cratis/components/Filter/styles` | Filter |
+| `@cratis/components/Common/styles` | Common controls |
+| `@cratis/components/ConfigurationEditor/styles` | ConfigurationEditor |
+| `@cratis/components/DataPage/styles` | DataPage, including Allotment split-view rules |
+| `@cratis/components/DataTables/styles` | Data tables |
+| `@cratis/components/Dialogs/styles` | Dialogs |
+| `@cratis/components/Display/styles` | Display components |
+| `@cratis/components/Dropdown/styles` | Dropdown |
+| `@cratis/components/Filter/styles` | FilterPanel |
 | `@cratis/components/IconPicker/styles` | IconPicker |
+| `@cratis/components/MarkdownEditor/styles` | MarkdownEditor |
 | `@cratis/components/Notifications/styles` | Notifications |
-| `@cratis/components/ObjectContentEditor/styles` | Common, Notifications, ObjectNavigationalBar |
-| `@cratis/components/ObjectNavigationalBar/styles` | Common, ObjectNavigationalBar |
-| `@cratis/components/PivotViewer/styles` | Filter, PivotViewer |
-| `@cratis/components/renderer/builtin/styles` | Common, DataTables, Dialogs, Display, Dropdown, Notifications |
-| `@cratis/components/SchemaEditor/styles` | Common, DataTables, Display, Dropdown, Notifications, SchemaEditor |
+| `@cratis/components/ObjectContentEditor/styles` | ObjectContentEditor |
+| `@cratis/components/ObjectNavigationalBar/styles` | ObjectNavigationalBar |
+| `@cratis/components/PivotViewer/styles` | PivotViewer, including Filter rules |
+| `@cratis/components/renderer/builtin/styles` | Built-in renderer controls |
+| `@cratis/components/SchemaEditor/styles` | SchemaEditor |
 | `@cratis/components/TimeMachine/styles` | TimeMachine |
-| `@cratis/components/Toolbar/styles` | Common, Notifications, Toolbar |
+| `@cratis/components/Toolbar/styles` | Toolbar |
 
 ## What it saves
 
-Indicative gzip transfer measured on the published 4.14.0 package, against roughly 32 KiB for the
-aggregate: about 2 KiB for the shared base, 2.9 KiB for `Dialogs`, 6.3 KiB for `DataTables`,
-6.7 KiB for `PivotViewer`, 4.4 KiB for `TimeMachine`, 2.7 KiB for `Filter`. An application that
-mounts dialogs and data tables transfers roughly a third of the aggregate. Exact sizes move with the
-components; each entry point has its own reviewed ceiling in the published-archive gate, so none of
-them can grow unnoticed.
+Per-area imports leave out component rules outside the selected entry points' dependency graphs. They still load the shared base, and area sheets can overlap where surfaces share dependencies. The final saving depends on your package version, selected surfaces, and bundler output; compare the resulting application CSS before choosing imports solely for size.
 
 ## Cascade and ordering
 
-Import order between area sheets does not matter. They all write into the single `cratis-components`
-layer in the library's own authoring order, and only `styles/base` establishes layer precedence — so
-the [cascade contract](index.md#cascade-contract) is identical whichever entry points are used. A
-product that names the Cratis layers in its own first `@layer` statement keeps doing so unchanged.
+Every area sheet writes into `cratis-components`; none establishes the order of the Cratis layers. The shared base establishes that order unless your product has already declared it. Keep the same [cascade contract](index.md#cascade-contract) as the aggregate setup, including the Cratis names in your product's first layer declaration when it has one.
 
 ## See also
 

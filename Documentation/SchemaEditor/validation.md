@@ -1,6 +1,6 @@
 ---
 title: SchemaEditor validation
-description: What SchemaEditor validates while editing, and what an application must still validate itself.
+description: SchemaEditor checks structure in table layout and property names in both layouts; applications must validate richer schema rules and instance data.
 ---
 
 SchemaEditor validates the subset it actively edits. It prevents malformed schema structure and invalid property names from being saved, but it is not a general-purpose JSON Schema validator.
@@ -71,7 +71,7 @@ SchemaEditor preserves required semantics while properties are edited:
 - Nested required arrays remain scoped to their own nested object.
 - Replacing an object's type or property set removes required names that no longer describe that property.
 
-SchemaEditor does not currently provide a Required column or an interactive required/optional toggle. Set initial required names in the schema, or transform the schema in application code. See [Editing Properties](editing.md#required-properties).
+The `allowRequired` option is off by default. Set it to `true` to show a Required column in table layout, with required/optional checkboxes editable in edit mode. Each toggle updates the current object's `required` array, so nested required arrays remain scoped to their own object. You can also set initial required names in the schema or transform the schema in application code. See [Editing Properties](editing.md#required-properties).
 
 ## Type and format normalization
 

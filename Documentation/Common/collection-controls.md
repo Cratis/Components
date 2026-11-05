@@ -1,13 +1,15 @@
 ---
-title: Collection controls
-description: Choose a value, switch a view, edit a set of values, and show a breadcrumb trail with ToggleGroup, Tabs, TagGroup and Breadcrumbs.
+title: Collection controls for values and navigation
+description: Use ToggleGroup for a value, Tabs for content panels, TagGroup for removable values, and Breadcrumbs for navigation through a hierarchy.
 ---
 
-Four controls for choosing among a set, moving through a set, editing a set, and showing where you
-are in one: `ToggleGroup`, `Tabs`, `TagGroup` and `Breadcrumbs`. Each is a thin Cratis surface over
-its React Aria equivalent, so the keyboard behavior and the roles come from the foundation and the
-appearance is entirely yours through parts. All four are controlled and import from the `Common`
-subpath:
+Use `ToggleGroup` to choose a value, `Tabs` to reveal a content panel, `TagGroup` to edit removable
+values, and `Breadcrumbs` to show the current page in a hierarchy. Choose by what the user needs to
+change: selecting a filter value is different from opening a panel or following a link.
+
+These controls use React Aria for keyboard interaction and accessibility roles, with Cratis parts
+for styling. Your component owns the selected value for `ToggleGroup` and `Tabs`, the list of values
+for `TagGroup`, and the navigation items for `Breadcrumbs`. Import them from the `Common` subpath:
 
 ```tsx
 import { Breadcrumbs, Tabs, TagGroup, ToggleGroup } from '@cratis/components/Common';
@@ -15,20 +17,22 @@ import { Breadcrumbs, Tabs, TagGroup, ToggleGroup } from '@cratis/components/Com
 
 ## Choosing one: `ToggleGroup` or `Tabs`
 
-These two look alike and mean different things, so pick by what the choice *does*:
+Use `ToggleGroup` for a small set of exclusive values, such as a reporting period. Use `Tabs` when
+each choice has its own content panel:
 
 | | `ToggleGroup` | `Tabs` |
 |---|---|---|
-| The choice is | a **value** — a period, a mode, a filter | a **view** — which panel of content is shown |
+| The choice is | a value: a period, a mode, or a filter | a panel of content to show |
 | Roles | `radiogroup` / `radio` | `tablist` / `tab` / `tabpanel` |
 | Arrow keys | move focus; Space or Enter commits | move the selection, and the panel follows |
 | Belongs in a form | yes — it is an input | no |
 
-The distinction matters to a screen-reader user, who is told which of the two they have. A segmented
-control built out of `tablist` announces a panel switcher that switches nothing.
+The roles tell screen-reader users whether they are changing an input or switching panels.
+`ToggleGroup`'s arrow keys move focus without calling `onChange`; Space or Enter selects the focused
+option. If your change handler starts a query, moving focus past `Week` on the way to `Month` does
+not start a query for `Week`.
 
-`ToggleGroup`'s arrow keys move focus rather than selecting, because a segmented control often drives
-a query: arrowing from `Day` to `Month` must not run the month query on the way past.
+In this example, `period` is the current value and `setPeriod` updates your component's state:
 
 ```tsx
 <ToggleGroup
@@ -43,9 +47,12 @@ a query: arrowing from `Day` to `Month` must not run the month query on the way 
 />
 ```
 
-A group has no single labelable element, so an external `<label>` associates with
-`aria-labelledby` rather than `htmlFor`. `invalid` and `aria-describedby` wire it to a field's error
-text.
+Provide a visible label element with `id='period-label'` for this example. A group has no single
+labelable element, so use `aria-labelledby` instead of `htmlFor`. Your application supplies any
+validation message; use `invalid` to mark the group invalid and `aria-describedby` to reference that
+message.
+
+For panels, supply each tab's content and keep the selected tab's ID in your component's state:
 
 ```tsx
 <Tabs
@@ -59,14 +66,15 @@ text.
 />
 ```
 
-Every tab owns a panel and is wired to it through `aria-controls`. That is why `content` is required:
-the selected tab names its panel, so a tab set without panels would point at an element that is not
-there. When the choice drives a view rendered elsewhere it is a **value**, not a panel — use
-`ToggleGroup`, which tells assistive technology exactly that.
+Each tab's required `content` supplies its panel, linked to the tab through `aria-controls`. Selecting
+`Closed` displays `ClosedRequests` in that panel. If a choice instead changes a view rendered
+elsewhere, use `ToggleGroup`: that choice changes a value without owning a panel.
 
 ## Editing a set: `TagGroup`
 
-A group of removable values with an optional text entry — the control behind a tag or chips field.
+Use `TagGroup` when users need to add or remove string values, such as skills. In this example,
+`skills` holds the current list and `setSkills` accepts the next list. Provide a visible label with
+`id='skills-label'` to name the control.
 
 ```tsx
 <TagGroup
@@ -86,12 +94,19 @@ A group of removable values with an optional text entry — the control behind a
 | `Backspace` or `Delete` on a tag | removes that tag |
 | paste containing a separator | splits and adds each value |
 
-Duplicates are refused unless `allowDuplicates` is set. `editable={false}` drops the entry and leaves
-a read-only set of removable tags. Give `removeLabel` a localized builder — the remove buttons are
-the one place this control needs words of its own — and `removeIcon` your icon set's close icon,
-which replaces the default `×` without touching the button or its accessible name.
+The control trims added values, ignores empty entries, and refuses duplicates unless `allowDuplicates`
+is set. Leaving the input also commits a nonempty draft. Your application handles any domain-specific
+validation and persistence in addition to updating the list.
+
+`editable={false}` hides the entry but still allows removal; it does not make the tags read-only.
+Use `disabled` to prevent both adding and removing values. Give `removeLabel` a localized function
+that names each remove action. Set `removeIcon` to use your icon set's close icon instead of the
+default `×`; this changes the glyph without changing the button or its accessible name.
 
 ## Showing where you are: `Breadcrumbs`
+
+Supply the trail in hierarchy order, starting with the outermost page. Your application builds the
+items for the current route; `Breadcrumbs` does not discover the hierarchy.
 
 ```tsx
 <Breadcrumbs
@@ -104,10 +119,10 @@ which replaces the default `×` without touching the button or its accessible na
 />
 ```
 
-The **last item is the current page**: it carries `aria-current="page"`, has no destination and is
-out of the tab order. That is what tells a screen-reader user where the trail ends, and it is why
-every segment renders as a link — React Aria hands the current state down to the last one, and a
-segment rendered as plain text would lose it.
+The last item is always the current page. It carries `aria-current="page"`, has no destination, and
+is out of the tab order, even if you supply an `href`. Earlier items use their `href` as the destination.
+Internally, every segment uses React Aria's link component so the final segment receives the current-page
+state.
 
 For client-side navigation, configure [provider routing](cratis-components-provider.md#connect-a-client-side-router)
 and keep plain `href` items as above. Ordinary same-origin activations use the configured router;
@@ -129,6 +144,10 @@ Every control is styled through its parts — see the [pass-through cheat sheet]
 | `TagGroup` | `root`, `list`, `tag`, `remove`, `input` |
 | `Breadcrumbs` | `root`, `item`, `link`, `separator` |
 
-The selected option, tab, current breadcrumb and their disabled/invalid states are exposed as
-`data-selected`, `data-disabled` and `data-invalid`, so a stylesheet never needs to know the
-component's internals.
+Use `data-selected` to style the selected option, selected tab and panel, or current breadcrumb.
+`ToggleGroup`, `Tabs`, and `TagGroup` expose `data-disabled` where applicable; `ToggleGroup` and
+`TagGroup` also expose `data-invalid`. These attributes let your styles follow state through the
+published parts without depending on internal markup.
+
+For a value bound to an Arc command, continue with [CommandForm fields](../CommandForm/index.md).
+For app-wide navigation callbacks, follow the [provider routing setup](cratis-components-provider.md#connect-a-client-side-router).

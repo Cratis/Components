@@ -1,17 +1,23 @@
 ---
-title: Canvas chat bubble
-description: Compose a chat thread, composer, reactions, and chat heads from the Canvas chat kit.
+title: Canvas chat — add a conversation to a board
+description: Add a conversation panel or avatar chat head to a Canvas board, with application-owned messages, reactions, and persistence.
 ---
 
-The `ChatBubble` kit is a full commenting/chat system — a message thread, a composer with `@`-mentions and emoji, quick reactions, a typing indicator, and a failed-turn affordance. It is a much larger surface than the name "ChatBubble" suggests: `ChatBubble` itself is only the floating avatar "chat head" that opens a conversation; the conversation panel itself is the `Chat` component.
+Use `Chat` from Cratis Components to place a conversation beside an item on a Canvas board. It displays the messages you supply and calls `onSend` when someone submits text. Your application updates the thread and saves it. `ChatBubble` is a separate avatar marker for representing a conversation on the board.
 
-Like `Note` and `Region`, none of these components live inside a `CanvasItem` by requirement — `Chat` is a normal floating/docked panel, most often placed inside a `CanvasItem` so it can sit next to whatever it is commenting on, or rendered outside the `Canvas` entirely for a docked sidebar.
+Wrap a panel in `CanvasItem` when it should pan and zoom with the item it discusses. Render it outside Canvas for a sidebar that stays in place. Neither `Chat` nor `ChatBubble` requires a `CanvasItem`; your layout decides where each appears.
 
-The kit's source is generic and does not use Pixi — it lives in source at `Source/Chat/Kit`, the shared, non-spatial implementation both `@cratis/components/Canvas` (below) and `@cratis/components/Chat` build on. Import it from `@cratis/components/Canvas` as shown here; `@cratis/components/Chat`'s [conversation components](../Chat/index.md) build their own higher-level `ChatConversation`/`ChatSidebar` on top of the same kit.
+The examples below use the lower-level chat kit exported by `@cratis/components/Canvas`. For a higher-level conversation or sidebar outside a spatial board, see the [Chat conversation components](../Chat/index.md).
 
 :::caution[Importing the kit from Canvas needs pixi.js]
 `Chat`, `ChatBubble`, `ChatComposer`, and the other kit primitives are exported only from `@cratis/components/Canvas`. That subpath's module imports `pixi.js` when it loads, so the optional `pixi.js` peer must be installed even when you use only the chat kit. If you want a chat without Pixi, use `ChatConversation` or `ChatSidebar` from `@cratis/components/Chat` instead.
 :::
+
+## Place a `ChatBubble` on the board
+
+Use `ChatBubble` for a compact avatar marker, with `authorId`, `authorName`, and `hasAvatar`. Wrap it in a `CanvasItem` to position it. Supply `previewMessage`, `previewTimestamp`, and `replyCount` for its hover summary; `selected` and `showThinkingBubbles` reflect your application's selection and work state.
+
+The marker does not open a panel itself. Handle activation in your own surrounding control and render the corresponding `Chat` panel when selected. Use `suppressPreview` if the hover summary would compete with an open conversation.
 
 ## `Chat` — the conversation panel
 
@@ -66,9 +72,11 @@ function Conversation() {
 }
 ```
 
-While `messages` is empty, the panel shows "No comments yet. Be the first!"; override that text with `labels.noComments`. `Chat` has no loading or error state of its own: show those around it, and represent a failed turn as a message with `failureDetail` (see [Failed turns](#failed-turns)).
+Render `Conversation` and send a message to append it to the local thread. The `send` callback owns that update; Chat does not append messages itself. This example keeps messages only in React state and logs reaction requests, so neither survives a reload. In your application, connect those callbacks to your persistence flow and pass the updated messages back into Chat.
 
-`messages`, `onSend`, and `onClose` are the only required props — everything else is opt-in, and each opt-in feature is gated on its own prop rather than a single "mode" switch:
+While `messages` is empty, the panel shows "No comments yet. Be the first!"; override it with `labels.noComments`. Show loading and thread-loading errors around the panel. To represent an individual turn that failed, supply a message with `failureDetail` (see [Failed turns](#failed-turns)).
+
+`messages`, `onSend`, and `onClose` are required. Enable other interactions only when your application can handle them:
 
 | Feature                                                               | Enabled by                                                       |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -84,33 +92,37 @@ While `messages` is empty, the panel shows "No comments yet. Be the first!"; ove
 
 ## Opt-in messaging — `id`
 
-`Chat` accepts an optional `id`. When given, every send additionally publishes a `ChatMessageAdded` (carrying `chatId` and `text`) over the `@cratis/arc.react` messenger, at the same moment `onSend` fires — `onSend` remains the primary contract either way. Omit `id` for exactly the previous behavior: nothing published. See [Messaging](messaging.md) for the full catalog, the opt-in rules, and why this is silently inert without Arc.
+Give `Chat` an `id` when other components need to observe sends. After calling `onSend`, Chat publishes a local `ChatMessageAdded` with `chatId` and `text` through the `@cratis/arc.react` messenger. Omitting `id` disables this announcement; it does not change the callback. The message reports a send, not a successful save. See [Messaging](messaging.md) to subscribe on the same messenger.
 
 ## Avatars — `buildAvatarUrl`
 
-No component in this kit stores or fetches avatar images itself. Every place an avatar appears (`Chat`, `ChatBubble`, `ChatComposer`'s mention list, the typing indicator) accepts an optional `buildAvatarUrl` callback:
+Supply `buildAvatarUrl` to tell the kit where your application serves avatar images. Chat messages, `ChatBubble`, mention suggestions, and the typing indicator use this callback to build image URLs:
 
 ```tsx
 buildAvatarUrl={({ userId, ownerType, avatarSize, version }) =>
     `/api/avatars/${ownerType}/${userId}?size=${avatarSize}&v=${version ?? 0}`}
 ```
 
-Omit it and every avatar falls back to the person's initials on a color deterministically derived from their identifier — the same person always gets the same fallback color, with no image request ever attempted.
+Without the callback, avatars use initials and a color derived from the person's identifier, with no image request. The same identifier produces the same fallback color.
 
 ## Reactions
 
-Reactions are quick emoji given to a message (`ChatMessage.reactions: ChatMessageReaction[]`, each grouping the users who gave that emoji). The reaction button opens a `ReactionPicker`: a row of recently-used emoji (remembered per-browser in `localStorage` by default, or wherever a `memory: EmojiMemory` you pass points instead) plus a button that opens the full `EmojiPicker`. Picking the emoji already given is how a reaction is taken back — `onReact` is called either way and the caller decides give/change/revoke from what was clicked.
+Each message's `ChatMessage.reactions: ChatMessageReaction[]` groups reactions by emoji and records who gave them. The reaction button opens a `ReactionPicker` with recently used emoji and a button for the full `EmojiPicker`. Recent choices use browser `localStorage` by default; a standalone picker accepts `memory: EmojiMemory` for another storage location.
+
+`onReact` reports every selection, including the person's existing emoji when they want to withdraw it. Your application decides whether to give, change, or revoke the reaction, then supplies the updated message. Remembering recently used emoji does not persist reactions on messages.
 
 Applications that own those give/change/revoke commands can import `findOwnReaction(reactions, currentUserId)` from `@cratis/components/Canvas`. It returns the current person's `reactionId` and emoji, or `undefined`, so application command logic can follow the same one-reaction-per-person rule as the built-in chat composition.
 
 ## Mentions
 
-Passing `mentionCandidates` (people and agents who can be `@`-mentioned) turns on mention suggestions in the composer: typing `@` opens a filtered `MentionSuggestions` list, navigable with the arrow keys and committed with `Enter`/`Tab`.
+Pass `mentionCandidates` for a known list of people and agents, or `resolveMentionCandidates` to look them up as someone types. Typing `@` opens filtered suggestions; arrow keys move through the list and `Enter`/`Tab` selects a candidate.
 
 ## Typing indicator
 
-`typingAuthors: ChatTypingAuthor[]` renders the classic jumping-dots row with the given authors' avatars, composing an "X is typing" / "X and Y are typing" / "Several people are typing" label automatically. A person typing and an agent working on its answer are represented the same way on purpose.
+Supply `typingAuthors: ChatTypingAuthor[]` from your application's presence or agent-work state. Chat renders their avatars with animated dots and an "X is typing" / "X and Y are typing" / "Several people are typing" label. The prop controls the display; Chat does not detect another user's activity itself.
 
 ## Failed turns
 
-A message whose `failureDetail` is set (the turn ended in failure rather than an answer) never renders as a normal bubble — `Chat` renders a `FailedReply` line for it instead, saying plainly that the answer never came. It offers a "See error" link that opens the raw failure detail in a dialog, and — only when `buildReportUrl` is supplied — a "Report a bug" link built from the failure's details. There is no built-in retry action; re-sending is left to whatever a host's own composer/send flow already does.
+Set `failureDetail` when a turn ends without an answer. Chat renders a `FailedReply` line instead of a message bubble, with a "See error" link that opens the raw detail in a dialog. Supplying `buildReportUrl` also adds a "Report a bug" link. Your application owns any retry or re-send flow; Chat supplies no retry action.
+
+To connect board conversations to other interactions, continue to [Canvas messaging](messaging.md). Use the [Canvas API reference](index.md#included-shapes) to look up the kit's other components.

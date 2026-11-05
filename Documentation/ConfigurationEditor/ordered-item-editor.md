@@ -1,6 +1,6 @@
 ---
 title: Ordered item editor
-description: Edit an ordered collection of labeled items with an icon and a destination, with fixed items and per-operation restrictions.
+description: OrderedItemEditor in Cratis Components edits ordered items with stable IDs, fixed entries, operation capabilities and host-controlled change proposals.
 ---
 
 `OrderedItemEditor` edits an ordered collection, such as the entries of a navigation component. Each item has a label, an optional icon and an optional destination; items can be added, removed and reordered.
@@ -60,7 +60,7 @@ Allowing the add operation does not allow editing or removing fixed items, and d
 
 ## Proposals
 
-`onChange` receives a validated proposal. The union is discriminated by `kind`:
+`onChange` receives a proposal for an allowed operation. The union is discriminated by `kind`:
 
 | `kind` | Extra properties |
 |---|---|
@@ -71,7 +71,9 @@ Allowing the add operation does not allow editing or removing fixed items, and d
 
 Every proposal also carries `items`, the collection as it would be, so accepting one is a single assignment as in the example. To cancel, ignore it: the editor keeps showing the `items` it was given, and a text entry that the host did not accept is restored when the person leaves the field or presses Escape.
 
-Proposals are only emitted for entries that pass validation. A blank label is never proposed. Add your own rules with `validate(item, items)`, which runs on the item as it would be and returns messages by field (`label`, `icon`, `destination`) or for the item as a whole (`item`). Feedback that arrives from elsewhere, such as a server check, goes in `validation`, keyed by item id.
+Update proposals are only emitted for entries that pass item validation. When the label field is editable, an update that leaves the item's label blank is rejected. Add your own update rules with `validate(item, items)`, which runs on the item as it would be and returns messages by field (`label`, `icon`, `destination`) or for the item as a whole (`item`). Feedback that arrives from elsewhere, such as a server check, goes in `validation`, keyed by item id.
+
+Add, move and remove proposals check the operation's capability but do not run item validation or `validate`. Adding also requires `createItem` and room below `maxItems`; moving and removing require valid item indices, and a move must change position. An add proposal carries the item returned by `createItem` directly, even if its label is blank. The host decides whether to accept each proposal.
 
 ## Adding items
 
@@ -104,13 +106,13 @@ After any move, focus returns to the control that was used, and a status region 
 />
 ```
 
-- `allowedIcons` restricts what can be picked. Other icons are still listed, marked unavailable with a dashed border and text, and the editor never proposes one, even from a custom chooser.
+- `allowedIcons` restricts what can be picked in the built-in picker. Other icons are still listed, marked unavailable with a dashed border and text. For a custom chooser, the editor's field guard rejects disallowed catalog entries only when `iconCatalog` is also supplied; it does not reject values absent from that catalog.
 - The field follows the item's `icon` access in `capabilities`. A `'readonly'` icon, and every icon of a locked fixed item, is shown in a trigger that stays focusable but does not open; a `'hidden'` icon is not rendered. A pick becomes a validated `update` proposal for the `icon` field, and the picker closes and returns focus to its trigger.
 - An icon the catalog no longer contains is shown by its identity with a warning, never as another library's icon of the same name. `isIconAvailable(icon)` lets the host flag an icon for its own reasons, for example one that is retired but still in the catalog.
 - Pass `iconPickerLabels` to localize the picker. The picker's own message appears under the trigger, so the editor adds no second one.
 - Import `@cratis/components/ConfigurationEditor/styles`; it includes the icon picker's rules.
 
-**Own chooser.** `renderIconField` replaces the picker with the host's own chooser and takes precedence over `iconCatalog`. It receives the item, the current `value`, `onChange(icon)`, `readOnly`, an accessible name that includes the item, and the validation state. The editor still validates every pick and ignores it when the field is not editable or the icon is not allowed. With neither `iconCatalog` nor `renderIconField`, the icon is shown as text only.
+**Own chooser.** `renderIconField` replaces the picker with the host's own chooser and takes precedence over `iconCatalog`. It receives the item, the current `value`, `onChange(icon)`, `readOnly`, an accessible name that includes the item, and the validation state. The editor still runs item validation for updates and ignores picks when the field is not editable. The `allowedIcons` field guard applies only when `iconCatalog` is also supplied and the picked icon is found in it. With neither `iconCatalog` nor `renderIconField`, the icon is shown as text only.
 
 
 ## Localization and styling

@@ -1,13 +1,15 @@
 ---
-title: Styling
-description: Style Components with Cratis tokens, structural CSS, and stable parts.
+title: Cratis Components styling choices
+description: Style Cratis Components with CSS tokens and structural styles, then choose the baseline theme or map your product's own design system.
 ---
 
-Components separates behavior from product appearance through three independently published Cratis-owned layers:
+Cratis Components needs token defaults and structural CSS to lay out its controls. Add the optional baseline theme for Cratis appearance and dark mode, or map your design system onto the same CSS variables to keep your product's appearance.
 
-1. `@cratis/components/tokens` defines the semantic `--cratis-*` seam with conservative light defaults.
-2. `@cratis/components/styles` supplies component structure and only the internal utility rules Components uses. It contains no token copy and no Tailwind Preflight or global reset.
-3. `@cratis/components/theme` optionally adds document/subtree foreground and background, automatic or explicit dark mode, and forced-colors behavior.
+The package publishes these separately so you can choose who owns the design:
+
+- `@cratis/components/tokens` defines the semantic `--cratis-*` tokens: CSS variables for roles such as action colors, surfaces, and focus rings, with light defaults.
+- `@cratis/components/styles` supplies component structure and internal utility rules. It contains no token copy, Tailwind Preflight, or global reset.
+- `@cratis/components/theme` adds document and subtree foreground/background values, automatic or explicit dark mode, and forced-colors behavior.
 
 ```css title="src/index.css"
 @import '@cratis/components/tokens';
@@ -17,9 +19,9 @@ Components separates behavior from product appearance through three independentl
 
 Import `./index.css` once from your application entry. Prefer this CSS-first path on TypeScript 6: the package stylesheet subpaths have no type declarations, so direct TypeScript imports can produce `TS2882`. Keep your bundler's types for local CSS imports enabled. [Set up styling](getting-started.md) covers this and the alternative declarations for existing direct imports.
 
-A product design system omits `theme`, maps its canonical values directly onto `--cratis-*`, and uses stable parts for component-specific treatment.
+If your product already has a design system, omit `theme` and map its values onto `--cratis-*`. For individual component treatments, use stable parts: named elements exposed through `data-cratis-part` attributes and the `pt` prop.
 
-`styles` is the whole library's CSS. An application that mounts only a few surfaces can instead import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per surface it uses, and pay for nothing else — see [Per-area stylesheets](per-area-stylesheets.md). Everything below applies unchanged either way.
+`styles` contains the whole library's CSS. An application using only a few surfaces can instead load `@cratis/components/styles/base` and one `<subpath>/styles` entry per surface. Each area includes its internal structural dependencies; the shared base still contains the library's internal utilities. See [Per-area stylesheets](per-area-stylesheets.md) before choosing the narrower imports.
 
 ## Choose a path
 
@@ -30,13 +32,15 @@ A product design system omits `theme`, maps its canonical values directly onto `
 | Existing app migrating gradually from PrimeReact    | `tokens`, `styles`, optional `theme`, plus the product's existing Prime CSS | Mount Components and Prime providers independently. Keep Prime styling and licensing only for direct Prime surfaces until they are removed.   |
 | Independently themed embedded surface               | `tokens`, `styles`, `theme`                                                 | Put `cratis-theme` on the subtree and add `cratis-dark` or `cratis-light` there.                                                              |
 
-Read [Use the baseline theme](baseline-theme.md), [Build a product theme](themed.md), [Own all styling](unstyled.md), and [Stable component parts](pass-through.md) for the corresponding implementation. Any row may substitute [per-area stylesheets](per-area-stylesheets.md) for `styles`.
+For a first setup, follow [Set up styling](getting-started.md). Then use [the baseline theme](baseline-theme.md) for Cratis appearance or [build a product theme](themed.md) from your existing design tokens. [Own all styling](unstyled.md) explains the responsibilities you take on without the baseline, and [Stable component parts](pass-through.md) covers individual controls. Any row may substitute [per-area stylesheets](per-area-stylesheets.md) for `styles`.
 
 ## Cascade contract
 
-The structural bundle declares `cratis-theme`, `cratis-components`, and `cratis-utilities` layers. Internal Tailwind-generated utility selectors are prefixed (`cratis:*`) and are not public styling hooks. Product CSS written outside a layer wins over all three without specificity tricks. Components does not inject Preflight, reset headings/forms/lists, or copy token values into `styles`.
+The structural bundle declares three CSS cascade layers: `cratis-theme`, `cratis-components`, and `cratis-utilities`. Layers set precedence before selector specificity is considered. For normal declarations, product CSS outside a layer takes precedence over all three. Internal Tailwind-generated utility selectors are prefixed (`cratis:*`) and are not public styling hooks. Components does not apply Preflight or reset headings, forms, and lists.
 
-The three layers are low-priority only where the product says so. Cascade-layer order is the order of first declaration, so a product that declares its own layers — a Tailwind host, for example, with `@layer properties, theme, base, components, utilities;` parsed before any stylesheet — and then imports `styles` gets the `cratis-*` layers appended *after* its own, which ranks a component stylesheet above every product utility. A `pt` class then loses to the component's own rule. Name the Components layers in that first `@layer` statement, in the position you want them: above the product reset so Preflight cannot strip a component, below the product utilities so a `pt` utility wins.
+If your product uses layers too, establish their order together. The first declaration fixes precedence; later layers win for normal declarations. For example, a Tailwind host that declares `@layer properties, theme, base, components, utilities;` before loading Components puts the subsequently declared Cratis layers after its own utilities. A utility class passed through `pt` can then lose to a component rule.
+
+Include the Cratis names in that first declaration. Put them after the product reset and before product components and utilities:
 
 ```css
 /* Parsed before any stylesheet, e.g. an inline <style> in the host document. */
@@ -45,7 +49,7 @@ The three layers are low-priority only where the product says so. Cascade-layer 
 
 Declaring the same names again later, as the `styles` bundle does, never changes an order already fixed. The per-area entry points declare no order at all: only `@cratis/components/styles/base` establishes it, and every area sheet just reopens `cratis-components`.
 
-`tokens` and `theme` are different: they are plain, unlayered custom-property rules. A product value for a `--cratis-*` token therefore wins by specificity and source order, not by layer. A `:root` override placed after `tokens` wins when `theme` is not imported. With `theme` imported, its scheme selectors (`:root.cratis-dark`, `.cratis-theme`, the `prefers-color-scheme: dark` rule, …) are more specific than `:root`, so a plain `:root` override holds only for a light root outside any `.cratis-theme` subtree. [Customize the palette](custom-palette.md) shows the selectors that win in every scheme.
+Token overrides follow a different rule. `tokens` and `theme` declare their CSS variables outside cascade layers. Write product token overrides outside layers too; selector specificity then decides which value wins, followed by source order when specificity ties. Without `theme`, a later `:root` mapping overrides the defaults. With `theme`, a plain `:root` override does not cover explicit scheme selectors or themed subtrees. [Customize the palette](custom-palette.md) shows how to match the baseline selectors in light and dark mode.
 
 Import product mappings and overrides after Components:
 
@@ -59,9 +63,9 @@ React Aria is internal. Never style React Aria class names or undocumented DOM s
 
 ## Verify the chosen posture
 
-Check a field, table, and dialog in the application rather than judging tokens in isolation. With the baseline, test light, dark, and forced-colors states. With product-owned mappings, check foreground/background pairs, visible focus, disabled controls, and validation errors. The token and stable-part contracts make these customizations possible; they do not establish application-wide accessibility conformance.
+Check a field, table, and dialog in the application. With the baseline, include light, dark, and forced-colors states. With product-owned mappings, check foreground/background pairs, visible focus, disabled controls, and validation errors. These checks remain application responsibilities; the styling contracts do not establish accessibility conformance.
 
-If there is no structure, verify the CSS entry is loaded. If product utilities lose, inspect the first cascade-layer declaration before increasing specificity. If tokens change but structure does not, check whether you imported the surface's structural CSS. Use [Troubleshooting](../troubleshooting.md) to separate these symptoms from query or provider failures.
+If a surface has no layout, verify that its structural CSS is loaded. If product utilities lose, inspect the first cascade-layer declaration before increasing specificity. If a brand color disappears in dark mode, compare your token selectors with the baseline's selectors. [Troubleshooting](../troubleshooting.md) helps distinguish styling symptoms from query or provider failures.
 
 ## See also
 

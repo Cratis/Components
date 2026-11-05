@@ -1,13 +1,15 @@
 ---
-title: Toolbar slots
-description: Inject toolbar items from anywhere in the React tree with ToolbarSlotProvider and ToolbarSlot.
+title: Toolbar slots for feature-owned tools
+description: Let features contribute toolbar tools through a shared ToolbarSlotProvider, with named hosts controlling placement and ordered contributions.
 ---
 
-The slot system lets any component in the React tree inject toolbar items into a named slot without prop drilling. The slot host (a `ToolbarGroup` or `ToolbarContext` with `slotName`, or a [`ToolbarLayout`](toolbar-layout.md) with `name`) declares the slot name; any number of independent contributors can register items into it. The registry is managed by a `ToolbarSlotProvider` that must wrap both the toolbar and the contributors.
+Use toolbar slots in Cratis Components when a feature should supply its own tools without passing them through every parent component. The application shell declares where tools appear, and each feature registers what belongs there through `ToolbarSlot`. Both must share the same `ToolbarSlotProvider`.
+
+A slot host is the component that renders registered content. Give `ToolbarGroup` or `ToolbarContext` a `slotName` to append contributed tools after its own children. Use a [`ToolbarLayout`](toolbar-layout.md) with a matching `name` when a feature needs to replace a whole region, including groups and separators.
 
 ## Quick Start
 
-Wrap the relevant part of the tree in a `ToolbarSlotProvider`, give a `ToolbarGroup` a `slotName`, and use `ToolbarSlot` anywhere inside the provider to inject items:
+Wrap the toolbar and its contributing features in one `ToolbarSlotProvider`. In this example, Draw belongs to the host group and remains first; the matching `ToolbarSlot` adds Favorite after it. `MyFeatureComponent` stands for your own feature component, which can register more tools in the same way:
 
 ```tsx
 import {
@@ -43,7 +45,7 @@ export const MyCanvas = () => (
 
 ### `ToolbarSlotProvider`
 
-Creates the slot registry and makes it available to the rest of the tree. Place it as high as needed so that both the toolbar and all contributing components fall inside it.
+Creates the registry of named contributions. Place it above both the toolbar and the features supplying tools. The nearest provider owns a contribution; sharing a slot name does not connect separate providers.
 
 ```tsx
 <ToolbarSlotProvider>{children}</ToolbarSlotProvider>
@@ -59,11 +61,11 @@ Renders nothing in the DOM — its only purpose is to register its `children` in
 </ToolbarSlot>
 ```
 
-The component registers on mount and unregisters on unmount, so conditional rendering works naturally.
+The component registers on mount and unregisters on unmount. Mount it with the feature that owns the tools so those tools disappear when the feature leaves the tree. Registration does not require a host to be present at that moment; a matching host in the same provider can render the content later.
 
 `ToolbarSlot` needs a `ToolbarSlotProvider` above it. Without one, its content is dropped without an error and hosts render only their own children. Each provider is an isolated registry, so a slot inside a nested provider does not reach a host outside it.
 
-The slot re-registers after every render and notifies hosts when its `children` reference changes. Children written inline create a new reference on each render of the contributing component, so hosts re-render with it. Wrap larger slot content in `useMemo`, as the [Toolbar layout](toolbar-layout.md) example does, when the contributor re-renders often.
+The slot updates its registration after every render. Hosts are notified when the content reference or `order` changes. Inline children create a new reference on each render of the contributor. For larger contributions that change infrequently, use `useMemo` with the appropriate dependencies, as in the [Toolbar layout](toolbar-layout.md) example.
 
 ## Props
 
@@ -75,7 +77,7 @@ The slot re-registers after every render and notifies hosts when its `children` 
 
 ## Slot Hosts
 
-Both `ToolbarGroup` and `ToolbarContext` can act as slot hosts via the `slotName` prop. Injected items are appended after the host's own children, sorted by `order`.
+Both `ToolbarGroup` and `ToolbarContext` can act as slot hosts via `slotName`. Their own children render first, followed by contributions sorted by `order`. A name identifies content in the provider's registry, not one exclusive destination: if two hosts use the same name in that provider, both render the contributions. Use distinct names for regions that should have different tools.
 
 ### Injecting into a `ToolbarGroup`
 
@@ -95,7 +97,7 @@ Both `ToolbarGroup` and `ToolbarContext` can act as slot hosts via the `slotName
 
 ### Injecting into a `ToolbarContext`
 
-Items injected into a `ToolbarContext` slot are only visible when that context is active. The slot items participate in the context's fade-in/out animation.
+A context slot lets a feature add tools to one editing mode. Contributed tools follow the context's fade transition and are only available when it is active. Inactive contexts stay mounted but are `inert` and `aria-hidden`; registration alone does not make their tools reachable. See [Context switching](context-switching.md) for mode selection and focus considerations.
 
 ```tsx
 <ToolbarSlotProvider>
@@ -153,4 +155,6 @@ const MyCustomHost = ({ slotName }: { slotName: string }) => {
 };
 ```
 
-The hook uses `useSyncExternalStore` internally and only triggers re-renders when the slot's content actually changes.
+The hook uses `useSyncExternalStore` internally and returns a stable array until that slot's registrations change. Without a provider or matching registrations, it returns an empty array.
+
+To let a feature supply complete toolbar groups rather than append buttons to an existing group, continue with [Toolbar layout](toolbar-layout.md).

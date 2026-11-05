@@ -1,7 +1,7 @@
 ---
 id: '0003'
 title: Repository-owned kernel boundary
-description: The explicit React-free and browser-DOM-free computation kernel enforced in Components source and emitted package graphs.
+description: Cratis Components keeps its computation kernel free of React and browser DOM dependencies, enforced in source and emitted package graphs.
 status: accepted
 stage: implemented
 class: contract

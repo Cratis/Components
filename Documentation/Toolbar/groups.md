@@ -1,11 +1,11 @@
 ---
-title: Toolbar groups
-description: Cluster related tools into ToolbarGroup pills, with optional slot injection.
+title: Toolbar groups for related tools
+description: Use ToolbarGroup to place related tools in separate pills. Match group orientation to the toolbar and add tools from other components through slots.
 ---
 
-`ToolbarGroup` is a formal logical sub-group of toolbar items. Where a plain sequence of buttons is a flat list, a group gives a cluster of related buttons a shared boundary. Each group renders as its own pill, and a `Toolbar` with a `ToolbarGroup` as a direct child drops its own background, border, and padding and spaces the pills apart. The gap between pills shows the structure without explicit `ToolbarSeparator` elements.
+`ToolbarGroup` puts related tools in a shared pill-shaped container so users can distinguish clusters such as navigation, drawing, and history. Use groups for separate visual clusters, or [separators](sections.md) when a dividing line inside one palette is enough.
 
-Because the toolbar's own pill disappears as soon as it has a group child, put every tool of such a toolbar inside a group; a button placed directly beside the groups has no background of its own.
+When a `ToolbarGroup` is a direct child of `Toolbar`, the toolbar removes its own background, border, and padding. Each group supplies its own pill, with a gap between adjacent groups. Put every tool in a group when using this layout: a button placed directly beside the groups has no pill background of its own.
 
 ```tsx
 import { Toolbar, ToolbarButton, ToolbarGroup } from '@cratis/components/Toolbar';
@@ -27,9 +27,11 @@ import { Toolbar, ToolbarButton, ToolbarGroup } from '@cratis/components/Toolbar
 </Toolbar>
 ```
 
+The example separates navigation tools from drawing tools and history actions. These are visual boundaries: `ToolbarGroup` renders a styled `div` without an ARIA grouping role, and it does not manage tool selection. Keep meaningful names on the buttons and connect persistent modes through [Active state](active-state.md).
+
 ## Orientation
 
-Use the `orientation` prop to control how the group lays out its children. The default is `'vertical'`, matching a vertical toolbar.
+Set `orientation` on each group as well as the enclosing toolbar. A group defaults to `'vertical'`; it does not inherit the root's direction. For a horizontal palette, use `'horizontal'` on both:
 
 ```tsx
 <ToolbarGroup orientation='horizontal'>
@@ -45,7 +47,7 @@ Use the `orientation` prop to control how the group lays out its children. The d
 
 ## Slot Injection
 
-A group can act as a **slot host**: other components anywhere in the React tree can inject buttons into it without prop drilling. Set `slotName` on the group and wrap the tree in a `ToolbarSlotProvider`.
+When a feature needs to contribute tools without passing them through every parent component, give the group a named slot. Wrap the toolbar and contributing components in the same `ToolbarSlotProvider`, then match the group's `slotName` in a `ToolbarSlot`:
 
 ```tsx
 // toolbar.tsx — the toolbar declares a slot host
@@ -63,7 +65,7 @@ A group can act as a **slot host**: other components anywhere in the React tree 
 </ToolbarSlotProvider>
 ```
 
-Injected items appear after the group's own children, sorted by their `order` value. `ToolbarGroup` adds no ARIA grouping role; it is a styled `div` inside the toolbar. See [Slots](./slots.md) for the full slot API.
+Here, Draw stays in the group and Favorite is added after it through the `canvas-tools` slot. Contributions appear after the group's own children, sorted by ascending `order`. The name connects the contribution to its host; both must share the provider. Continue with [Slots](./slots.md) when more than one feature contributes tools or their order needs to change.
 
 ## Props
 

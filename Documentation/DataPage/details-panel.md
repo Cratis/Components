@@ -1,15 +1,15 @@
 ---
-title: DataPage details panel
-description: Show the selected row in a resizable side pane, load related data for it, and handle refresh and narrow screens.
+title: DataPage details panel for selected rows
+description: Show a selected DataPage row beside the list, query related records by its id, and choose a layout that works when the side pane cannot fit.
 ---
 
 ## Overview
 
-The details panel shows information about the selected row in a resizable pane to the right of the table. It is optional: without a `detailsComponent`, DataPage renders the table on its own and mounts no split view.
+The DataPage details panel lets users inspect the selected record beside the list without navigating away. Pass a `detailsComponent` to show it in a resizable right-hand pane; omit that prop for a table-only page. Your component decides what to show and queries any related records.
 
 ## Enabling Details Panel
 
-Pass a component to the `detailsComponent` prop. Type it with `IDetailsComponentProps<T>` from `@cratis/components/DataPage` so `item` has your row type:
+Start by displaying fields from the selected row. Type your component with `IDetailsComponentProps<T>` from `@cratis/components/DataPage` so `item` has your row type, then pass it as `detailsComponent`:
 
 ```tsx
 import { DataPage, Column, type IDetailsComponentProps } from '@cratis/components/DataPage';
@@ -41,9 +41,9 @@ export function Authors() {
 }
 ```
 
-Select a row and the pane opens beside the table with that author's name. The details component's markup and styling are yours: Components does not add padding or typography inside the pane, and it does not ship utility classes such as `p-4`, so use your own CSS or inline styles.
+Select an author and the pane opens with that author's name and id. The typed props make `item` an `Author`; an untyped `({ item }) => …` would leave it implicitly `any` under strict TypeScript.
 
-An untyped `({ item }) => …` component does not compile under `strict` TypeScript, because `item` is implicitly `any`.
+The named `section` gives screen reader users a region they can find. Padding and typography belong to your component: Components adds neither inside the pane and does not ship utility classes such as `p-4`. Use your own CSS or inline styles.
 
 ## Detail Component Props
 
@@ -59,13 +59,13 @@ interface IDetailsComponentProps<TDataType> {
 }
 ```
 
-Calling `onRefresh` runs the callback you passed to DataPage; it does not reload the query by itself. For a snapshot query, your callback must request fresh data. With an observable query, the table updates as the query delivers new results, so you usually do not need a refresh callback.
+Treat `onRefresh` as a handoff to the page, not a built-in reload. Calling it runs your callback unchanged. If the list uses a snapshot query, that callback must request fresh data; an observable list receives updates as its query delivers results. Related queries inside the pane have their own data lifecycle.
 
 ## Complex Details Example
 
-The pane receives only the selected row. To show related data, run another query from inside the details component, keyed by the row's id. This example lists the selected author's books with a generated `BooksForAuthor` observable query that takes an `authorId` argument.
+An author's row need not contain all their books. Run a related query inside the pane and pass the selected author's id as its argument. Here, the generated `BooksForAuthor` observable query accepts `authorId`.
 
-This example shows how to load related books, but it does not check for errors or denied access before showing an empty list. Use the [list-and-detail tutorial](../tutorial/list-and-detail.mdx) to handle loading, denied access, failure, and a successful empty result.
+This excerpt focuses on that argument handoff. Before using it as a complete result view, add the [list-and-detail tutorial's](../tutorial/list-and-detail.mdx) checks for denied access and failure; otherwise those states can look like an empty book list.
 
 ```tsx
 import { type Guid } from '@cratis/fundamentals';
@@ -94,13 +94,15 @@ const AuthorDetails = ({ item }: IDetailsComponentProps<Author>) => (
 );
 ```
 
-When the user selects another author, `item.id` supplies that author's id to `BooksForAuthor.use`. The `key` remounts the `Books` child for that author, resetting the child's React state. It does not guarantee a loading screen: the query may already have a result for that author. Render the query's status and data for the current `authorId`, using the tutorial's checks for errors and denied access too.
+Selecting another author passes a new `item.id` to `BooksForAuthor.use`. The `key` also remounts the `Books` child, so its local React state starts over for that author. A cached query result can appear immediately, so do not rely on seeing a loading screen to know the author changed. Render status and data for the current `authorId`, including the tutorial's error and access checks.
 
 ## Panel Layout
 
-The pane opens at a preferred width of `450px` and the table takes the remaining width. It is mounted only while a row is selected, so its state (for example the `useState` values in your component) resets when the selection is cleared. Changing from one selected row to another keeps the same component mounted and passes it a new `item`.
+DataPage gives the pane a preferred width of `450px`, leaving the rest for the table. This is a preferred size for the split layout, not a guarantee that both panes will be readable at every viewport width.
 
-The pane is a direct child of the split view and fills its height. Keep DataPage in a bounded-height container, as in the first example, and load the Components stylesheet described in [Getting started](../getting-started.mdx). If your details content is taller than the page, give your component its own scrolling, for example `style={{ height: '100%', overflow: 'auto' }}` on its root element.
+Your details component mounts only while a row is selected. Clearing selection unmounts it and discards its local state. Moving directly to another row keeps it mounted with a new `item`, so reset row-specific state yourself or key a child by the row id, as the books example does.
+
+The pane fills the split view's height. Keep DataPage in a bounded-height container, as in the first example, and load the Components stylesheet described in [Getting started](../getting-started.mdx). Give tall details their own scrolling, for example `style={{ height: '100%', overflow: 'auto' }}` on the root element, so controls below the fold remain reachable.
 
 ## Interactive Details
 
@@ -132,13 +134,13 @@ export const AuthorDetails = ({ item, onRefresh }: IDetailsComponentProps<Author
 };
 ```
 
-**Reload list** calls the `onRefresh` callback you pass to DataPage. Without that callback, the button does nothing. Your details component must query any related data, and the server must authorize that query.
+**Reload list** calls the page's `onRefresh` callback; without one, it does nothing. The **Show id** toggle belongs to the details component's local state, so it stays in its current state when another author is selected unless you reset it.
 
-To change data from the pane, execute a generated Arc command, for example through a [CommandDialog](../CommandDialog/index.md), rather than editing `item` in place. `item` is the row object from the query result; mutating it changes nothing on the server. The server must authorize the command and its target even when the row is visible in the pane.
+To change a record, execute a generated Arc command, for example through a [CommandDialog](../CommandDialog/index.md). Editing `item` in place changes no server data: it is only a row object from the query result. The server must authorize related queries and commands, including their targets, even when the row is already visible.
 
 ## Resizable Panels
 
-Users can resize the split by dragging the divider between the table and the pane. The divider is operated with a pointer only; it is not reachable or adjustable from the keyboard. DataPage does not remember the width between selections or visits.
+Users can drag the divider to give either the table or the details more room. The divider is pointer-only: it is not reachable or adjustable from the keyboard. DataPage exposes no width-persistence setting.
 
 ### Disable Resizing
 
@@ -147,9 +149,9 @@ DataPage has no prop to disable resizing or to change the pane's preferred width
 ## Narrow screens
 
 :::caution[Choose a narrow-screen alternative]
-The split does not respond to the viewport: at every width the pane opens beside the table at its preferred `450px`, and the table gets what is left. On a narrow screen that can leave the table too narrow to read. DataPage does not switch to a stacked view or dialog for you.
+DataPage keeps the table and details side by side; it does not switch to a stacked view or dialog at a breakpoint. With a preferred pane width of `450px`, that layout can leave too little room to read the table.
 
-For small viewports, leave out `detailsComponent` and show the selected row somewhere that suits the space, such as a dialog or a separate route, driven by `onSelectionChange`. You can switch between the two approaches with your own media query.
+For small viewports, omit `detailsComponent` and use `onSelectionChange` to open a dialog or a separate route. Your own media query can choose between that layout and the side pane. Keep selection in the parent if the same selected row needs to carry across the change.
 :::
 
 ## No Selection State
@@ -164,11 +166,6 @@ Multiple selection is a separate channel, through `selectedItems` and `onSelecte
 
 ## Best Practices
 
-1. **Keep it focused**: Display essential details, not everything
-2. **Load additional data**: Use the item id to query related data, as in [Complex Details Example](#complex-details-example)
-3. **Provide actions**: Put row-specific actions such as edit and remove in the pane or in the toolbar with `disableOnUnselected`
-4. **Name the region**: Give the pane's root element an accessible name, for example `aria-label`, so screen reader users can find it
-5. **Plan for narrow screens**: Decide where details go when there is no room for a side pane
-6. **Consider performance**: The pane re-renders on every selection change; defer heavy content until it is needed
+Choose details that help the user decide what to do with the selected record. [Query related data by its id](#complex-details-example) rather than putting every related record in the list result, and defer expensive content until it is needed.
 
-To add an action for the row shown here, use [Accessing Selected Item](menu-items.md#accessing-selected-item) for keeping selection state and reading the selected row in your handler.
+Before relying on the pane, check that users can find its named region, reach controls in tall content, and inspect the same record on a narrow screen. If the next step is editing or removing that record, follow [Accessing Selected Item](menu-items.md#accessing-selected-item) to connect selection state to a toolbar action.

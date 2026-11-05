@@ -1,15 +1,15 @@
 ---
-title: Toolbar
-description: Build canvas-style tool palettes with groups, contexts, slots, folders, and fan-out panels.
+title: Cratis Components Toolbar tool palettes
+description: Use Toolbar for canvas tool selection, with named controls, keyboard navigation, and grouped palettes. Use ActionMenubar for page commands.
 ---
 
-The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces, and headed drawers of labeled tiles.
+`Toolbar` in Cratis Components is a tool palette for canvas-style interfaces where users choose a mode such as Select or Draw. Give tools accessible names, keep selection in application state, and arrange related tools into groups so users can find and switch tools with a pointer or keyboard.
 
-Toolbar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency, despite its canvas-adjacent purpose.
+For page commands such as Add or Edit, use [`ActionMenubar`](../Common/action-menubar.md) from `@cratis/components/Common`, or your own action row. `DataPage` already uses `ActionMenubar` for its built-in actions. Choose `Toolbar` when the interface needs a tool palette, with selected tools or expandable sets of tools. See [Choosing a component: Actions and tool palettes](../choosing-a-component.md#actions-and-tool-palettes).
 
-**`Toolbar` is not a default page action row.** It is built for a canvas/tool-palette interaction — active tools, groups, slots, folders, and fan-out panels — not for an ordinary page's list of commands. `DataPage`'s built-in action row renders [`ActionMenubar`](../Common/action-menubar.md) (from `@cratis/components/Common`), not `Toolbar`. Reach for `ActionMenubar`, or a product-owned action row, for flat page-level actions; reach for `Toolbar` only when the surface is genuinely a spatial tool palette. See [Choosing a component: Actions and tool palettes](../choosing-a-component.md#actions-and-tool-palettes).
+Toolbar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles). It renders React and DOM elements and has no Pixi dependency; using it beside a canvas does not require the Spatial profile.
 
-Pass React icon nodes or product-owned SVGs for a dependency-free toolbar. Consumer-owned icon-font class strings remain accepted, but Components does not install an icon font or infer provider base classes; the product must load the matching stylesheet and pass the complete class string.
+Pass React icon nodes or your own SVGs to avoid an icon-font dependency. Icon-font class strings are also accepted, but Components does not install a font or infer provider base classes. Load the matching stylesheet and pass the complete class string yourself.
 
 Import every Toolbar component from its subpath:
 
@@ -17,17 +17,37 @@ Import every Toolbar component from its subpath:
 import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 ```
 
+Start with [Basic usage](basic-usage.md) to compose and name a palette, then [Active state](active-state.md) to connect tool selection to your application.
+
 ## Keyboard and accessibility
 
-- The root renders `role='toolbar'`, `aria-orientation`, and an accessible name. The name falls back to the provider's `messages.toolbar.label`, then `Tools`; pass `aria-label` or `aria-labelledby` to name each toolbar.
-- `focusMode` defaults to `ToolbarFocusMode.Arrows`: Up/Down move between tools in the default vertical orientation; a horizontal toolbar uses Left/Right (reversed in RTL). Home/End move to the first/last available tool in DOM order. Navigation skips disabled, hidden, and inert tools and stops at either end; it does not wrap. Each tool remains its own Tab stop, so Tab and Shift+Tab work as before.
-- Set `focusMode={ToolbarFocusMode.SingleTabStop}` for the WAI-ARIA toolbar pattern: the toolbar's own tools (`ToolbarButton`, folder and fan-out triggers) share one Tab stop, which starts at the first available tool, follows the arrow keys, and returns to the last focused tool. When that tool is disabled, hidden, or removed, the Tab stop moves to the first available tool. A tool rendered outside the toolbar's own markup, such as through a portal or inside a nested element with `role="toolbar"`, keeps its own Tab stop. Tools in an open folder or fan-out panel belong to the same Tab stop, so you reach them with the arrow keys rather than Tab. Controls you place in the toolbar yourself, widgets such as inputs and sliders, a `ToolbarButton` with an explicit `pt.root.tabIndex`, and a folder or fan-out trigger with an explicit `pt.trigger.tabIndex` keep their own Tab stop; with a tab index of 0 or higher the arrow keys still reach them, while `-1` removes the tool from both Tab and arrow-key navigation. Until the toolbar has chosen its active tool (for example, in server-rendered markup before hydration), every tool keeps its own Tab stop.
-- Set `focusMode={ToolbarFocusMode.None}` to keep native Tab behavior without toolbar key handling. Import `ToolbarFocusMode` from `@cratis/components/Toolbar`. `SingleTabStop` becomes the default in the next major release ([#353](https://github.com/Cratis/Components/issues/353)).
-- Arrows and Home/End inside inputs, sliders, selects, and custom widgets retain their own behavior. Nested toolbars handle their own keys. Key handlers on a tool or `pt.root` can cancel navigation with `preventDefault()` or `stopPropagation()`.
-- `title` is required on `ToolbarButton` and `ToolbarFolder`, and `tooltip` on `ToolbarFanOutItem`. That text becomes the button's `aria-label` and its tooltip, which appears on hover and on keyboard focus.
-- Passing `active` sets `aria-pressed` to `true` or `false` as well as the visual state (`data-active`, `data-selected`); omitting `active` leaves it unset. See [Active state](active-state.md).
-- Folder and fan-out triggers expose `aria-expanded` and `aria-controls`. Their panels close on Escape or a pointer press outside, return focus to their trigger after Escape, and are `inert` and `aria-hidden` while collapsed.
-- Toolbar, folder, fan-out, and context transitions are suppressed under `prefers-reduced-motion: reduce`.
+The root renders `role='toolbar'` and `aria-orientation`. Give each palette an accessible name with `aria-label` or `aria-labelledby`, especially when several appear on one screen. Without an explicit name, it uses the provider's `messages.toolbar.label`, then `Tools`.
+
+`title` is required on `ToolbarButton` and `ToolbarFolder`, and `tooltip` on `ToolbarFanOutItem`. This text supplies the trigger's `aria-label` and its tooltip on hover or keyboard focus. Passing `active` sets `aria-pressed` to `true` or `false`; omitting it leaves the attribute unset. Use [Active state](active-state.md) for persistent tool selection, not for one-time actions such as Undo.
+
+### Choose a focus mode
+
+Import `ToolbarFocusMode` from `@cratis/components/Toolbar` and set `focusMode` on the root:
+
+| Mode | Keyboard behavior |
+| --- | --- |
+| `ToolbarFocusMode.Arrows` (default) | Arrow keys and Home/End move focus; each tool keeps its own Tab stop. |
+| `ToolbarFocusMode.SingleTabStop` | The toolbar's own tools share one Tab stop, following the WAI-ARIA toolbar pattern. Arrow keys move between them. |
+| `ToolbarFocusMode.None` | Native Tab behavior, without toolbar key handling. |
+
+In either arrow-navigation mode, Up/Down move through a vertical palette. A horizontal palette uses Left/Right, with the direction reversed in right-to-left layouts. Home/End move to the first/last available tool in DOM order. Navigation skips disabled, hidden, and inert tools and stops at either end without wrapping.
+
+With `SingleTabStop`, `ToolbarButton` elements and folder and fan-out triggers share a Tab stop. It starts at the first available tool and returns to the last focused tool. If that tool becomes disabled, hidden, or removed, the first available tool takes its place. Tools in open folder and fan-out panels are reached with arrow keys as part of the same Tab stop. Until the toolbar chooses its active focus target, such as before hydration of server-rendered markup, tools keep their individual Tab stops. See [#353](https://github.com/Cratis/Components/issues/353) for the default-mode change discussion.
+
+Controls you add yourself, including inputs and sliders, keep their own Tab stops. So do tools rendered through a portal or inside a nested `role="toolbar"`. An explicit `pt.root.tabIndex` on a `ToolbarButton`, or `pt.trigger.tabIndex` on a folder or fan-out trigger, also opts that tool out of the shared Tab stop. A value of 0 or higher still allows arrow-key navigation; `-1` removes the tool from both Tab and arrow-key navigation.
+
+Arrows and Home/End retain their own behavior inside inputs, sliders, selects, and custom widgets. Nested toolbars handle their own keys. A key handler on a tool or `pt.root` can cancel toolbar navigation with `preventDefault()` or `stopPropagation()`.
+
+### Expand and collapse tools
+
+Folder and fan-out triggers expose `aria-expanded` and `aria-controls`. Their panels close on Escape or a mouse press outside. Escape also returns focus to the trigger. Collapsed panels are `inert` and `aria-hidden`, so their tools are unavailable to keyboard navigation and assistive technology.
+
+Toolbar, folder, fan-out, and context transitions are suppressed under `prefers-reduced-motion: reduce`.
 
 ## Components
 
@@ -47,7 +67,7 @@ import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 
 ## Stable composition and measurement parts
 
-Deeply styled products should measure and select Toolbar structure through typed `pt` surfaces and `data-cratis-part`, not implementation class names.
+When customizing or measuring a palette, use typed `pt` surfaces and `data-cratis-part` to target its structure. These are the stable parts; implementation class names can change.
 
 | Component           | Type                    | `pt` key → `data-cratis-part`                                                                                   |
 | ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------- |

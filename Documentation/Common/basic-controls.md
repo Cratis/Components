@@ -1,6 +1,6 @@
 ---
 title: Basic controls
-description: Native Components-owned inputs, choices, icon actions, and semantic surfaces.
+description: Use Cratis Components controls for React state and native forms, with semantic value callbacks, element refs, stable parts, and accessible names.
 ---
 
 The `Common` subpath provides native basic controls for ordinary React state and browser forms. They expose real element refs, standard native attributes, semantic value callbacks, stable parts, and canonical state attributes without an Arc command binding.

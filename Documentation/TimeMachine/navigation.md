@@ -1,6 +1,6 @@
 ---
 title: TimeMachine navigation
-description: Move between versions with the timeline, buttons, cards, wheel, and keyboard, and control the initial version.
+description: Navigate TimeMachine in Cratis Components with timeline entries, buttons, cards, wheel scrolling, and keyboard controls, or set the initial version.
 ---
 
 ## Timeline Navigation

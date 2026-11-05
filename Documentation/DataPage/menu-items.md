@@ -1,11 +1,11 @@
 ---
-title: DataPage menu items
-description: Declare the DataPage action toolbar, disable actions until a row is selected, and act on the selected row.
+title: DataPage menu items for row actions
+description: Add actions to a DataPage toolbar, enable them when rows are selected, and pass the selected record from your state to a dialog or command.
 ---
 
 ## MenuItems Component
 
-`DataPage.MenuItems` declares the action toolbar at the top of a DataPage. Its children are `MenuItem` markers; each one becomes a button in a single row, in the order you declare them. Leave `DataPage.MenuItems` out and the page has no toolbar.
+`DataPage.MenuItems` adds toolbar actions for the list or its selected rows, such as adding an author or editing the one the user chose. Declare each action as a `MenuItem` child; DataPage renders the buttons in that order and wraps them when space is tight. Omit `DataPage.MenuItems` when the page needs no toolbar.
 
 ## Basic Usage
 
@@ -26,11 +26,11 @@ import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa6';
 </DataPage>;
 ```
 
-This is an excerpt: `AllAuthors` is a generated query proxy, and `addAuthor`, `editAuthor`, and `removeAuthor` are your own handlers. [Accessing Selected Item](#accessing-selected-item) shows how the handlers get the selected row. `MenuItem` is also available as `DataPage.MenuItem`.
+In this excerpt, `AllAuthors` is a generated query proxy and the three handlers belong to your page. **Add** is available immediately; **Edit** and **Remove** become available after a row is selected. The buttons do not receive that row as a command argument: [Accessing Selected Item](#accessing-selected-item) shows how to retain it for your handlers. `MenuItem` is also available as `DataPage.MenuItem`.
 
 ## MenuItem Props
 
-Every prop is optional in the type, but an item without `label` renders an unnamed button and an item without `command` does nothing when clicked, so treat both as required.
+Give each item a `label` so users can identify it and a `command` so activating it does something. Both are optional in the type, but an item without them is unnamed or inactive.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -60,7 +60,9 @@ import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 </DataPage.MenuItems>;
 ```
 
-In single-selection mode, `disableOnUnselected` follows the selected item, including a controlled `selection`. In multiple-selection mode, it follows whether `selectedItems` is empty; the single item used for details does not determine action availability in that mode. Combine it with `disabled` when an action has another precondition, for example `disabled={!canArchive}`. The conditions are ORed: `disabled={false}` does not force-enable a selection-dependent item while its selection is empty.
+With single selection, `disableOnUnselected` follows the selected row, including a controlled `selection`. With multiple selection, it follows whether `selectedItems` is empty, not the separate single row used by the details pane.
+
+An action may also depend on another condition. Set `disabled={!canArchive}`, for example, to keep archive unavailable even after a row is selected. Either condition can disable the button; `disabled={false}` cannot override a missing selection.
 
 ## Icons
 
@@ -85,7 +87,7 @@ DataPage passes a `className` to the icon for spacing, so a custom icon componen
 
 ## Accessing Selected Item
 
-`command` is called with no arguments, and DataPage does not expose its selection through a hook or context. Keep the selected row in your own state from `onSelectionChange`, then read that state in your handlers:
+Keep the row reported by `onSelectionChange` in your own state, then read that state when the action runs. `command` receives no arguments, and there is no public selection hook or context to read instead:
 
 ```tsx
 import { useState } from 'react';
@@ -134,7 +136,7 @@ For a selection-aware dialog, follow the [Add book handoff](../tutorial/list-and
 
 ## The menu is flat — no separators, no submenus
 
-`DataPage.MenuItems` renders a single row of action buttons, in the order you declare them:
+Put each action directly inside `DataPage.MenuItems`. The toolbar preserves their order and wraps buttons onto another line when needed:
 
 ```tsx
 import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
@@ -147,13 +149,15 @@ import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
 </DataPage.MenuItems>;
 ```
 
-There are no separators or submenus. Nested `MenuItem` children are silently ignored, and `<MenuItem separator />` is unsupported. Put each `MenuItem` directly inside `DataPage.MenuItems`. Wrapping items in a fragment or custom component hides them from DataPage, so their buttons do not appear. A condition that returns a `MenuItem` directly works; an absent child adds no action.
+There are no separators or submenus. Nested `MenuItem` children are silently ignored, and `<MenuItem separator />` is unsupported. A fragment or custom component also hides its items from DataPage, so their buttons do not appear. A condition that returns a `MenuItem` directly works; an absent child adds no action.
 
-The action bar is a flat Button toolbar because a navigation menubar is not the correct semantic pattern for a row of commands. When a page genuinely needs grouped actions, put the grouping in a dialog opened from one item, or split the page.
+These buttons perform commands rather than navigate a menu, so the action bar uses toolbar semantics. If users need to choose among grouped actions, open a dialog from one item or give those tasks their own page.
 
 ## Accessibility
 
-The toolbar renders with `role="toolbar"` and the accessible name from DataPage's `actionsAriaLabel` prop, which defaults to `'Actions'`; localize it there. Each item is a native button named by its `label`, and a disabled item is a disabled button. Style the buttons through DataPage's `menubarPt` and `menubarClassName`.
+Name the toolbar with DataPage's `actionsAriaLabel` prop, which defaults to `'Actions'`. It renders with `role="toolbar"`; each item is a native button named by its `label`. Disabled buttons are skipped during keyboard navigation. Enabled buttons remain reachable with Tab, and the toolbar also supports Left/Right arrows, Home, and End.
+
+Localize both the toolbar name and the individual labels. Style the buttons through DataPage's `menubarPt` and `menubarClassName`.
 
 ## Action Handlers
 
@@ -193,7 +197,7 @@ const handleDelete = () => {
 
 ### Async Actions
 
-`command` is typed `() => void`, so DataPage does not await a returned promise and does not disable the button while it runs. Guard against repeated clicks yourself if the action must not run twice:
+DataPage invokes `command` without awaiting a returned promise. Handle errors in your async handler and manage pending state yourself if repeated clicks could submit the same operation twice. The example below catches failures, but does not yet guard repeated clicks:
 
 ```tsx
 const handleArchive = async () => {

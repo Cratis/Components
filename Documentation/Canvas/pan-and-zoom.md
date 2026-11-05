@@ -1,6 +1,6 @@
 ---
 title: Canvas pan and zoom
-description: How Canvas responds to wheel, trackpad, mouse, and touch input, and how to drive the camera from code.
+description: Cratis Components Canvas pans and zooms with mouse, trackpad, and touch input; CanvasHandle lets host controls move the camera from code.
 ---
 
 ## Input matrix

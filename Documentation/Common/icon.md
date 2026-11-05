@@ -1,6 +1,6 @@
 ---
-title: Icon
-description: Pass icons to Components as React nodes or consumer-owned icon-font class strings, and render them with IconDisplay.
+title: Render icons in Cratis Components
+description: Render React icon nodes or consumer-owned icon-font classes with IconDisplay in Cratis Components, without adding an icon-font dependency.
 ---
 
 The `Icon` type and `IconDisplay` component let Cratis controls render either a React icon node or a complete consumer-owned icon-font CSS class. Components does not install an icon font, infer a provider, or add provider-specific base classes.

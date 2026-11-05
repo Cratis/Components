@@ -1,6 +1,6 @@
 ---
 title: RatingField
-description: Bind a number property on an Arc command to a star-rating radio group.
+description: RatingField in Cratis Components binds an Arc command's number to a star-rating radio group with configurable star counts and accessible labels.
 ---
 
 `RatingField` provides a Cratis-owned star-rating radio group with labeled options bound to a `number` property.

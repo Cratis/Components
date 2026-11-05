@@ -1,9 +1,13 @@
 ---
-title: Canvas controls chrome
-description: Localize the Canvas zoom controls, replace their icons, keep them clear of host panels, and render your own glass surface behind them.
+title: Canvas — customize navigation controls
+description: Adapt Canvas zoom and minimap controls to your application with translated labels, custom icons, panel offsets, and an optional glass surface.
 ---
 
-`Canvas` renders its own `CanvasControls` instance when `showControls` is true (the default), and it forwards every control option through its own props. You do not need to render `CanvasControls` yourself to localize or restyle the integrated controls.
+Customize the built-in navigation bar on a Cratis Components Canvas through its `controls*` props. You can translate button labels, replace icons, and keep the bar clear of side panels without building your own controls. Canvas renders `CanvasControls` when `showControls` is true, which is the default.
+
+Start with a board from [Basic usage](basic-usage.md), then apply the options you need below. The integrated bar handles zoom automatically. Enable `showMinimap` to add its minimap toggle; provide `onHelp` to add a help button. The middle percentage button restores 100% zoom, regardless of `initialZoom`.
+
+When consulting the `CanvasControls` API directly, use this mapping from Canvas props:
 
 | `Canvas` prop           | Forwarded to `CanvasControls` as |
 | ----------------------- | -------------------------------- |
@@ -18,7 +22,7 @@ description: Localize the Canvas zoom controls, replace their icons, keep them c
 | `showMinimap`           | `showMinimapToggle`              |
 | `captureAttributes.content` | `contentCaptureAttribute`    |
 
-`Canvas` also wires `getZoom`, `onZoomIn`, `onZoomOut`, `onZoomReset`, `minimapItems`, the minimap world size, and `onMinimapPan` for you. Render `CanvasControls` directly only when you compose the controls outside a `Canvas`; then you supply those callbacks yourself.
+Canvas supplies `getZoom`, `onZoomIn`, `onZoomOut`, `onZoomReset`, `minimapItems`, the minimap world size, and `onMinimapPan`. Render `CanvasControls` directly only when you need controls outside Canvas, where you must provide the camera callbacks and minimap data yourself.
 
 ## `glassSurface` — custom chrome behind the pill
 
@@ -29,7 +33,9 @@ description: Localize the Canvas zoom controls, replace their icons, keep them c
 />
 ```
 
-`MyFrostedGlassSurface` stands for your own component, for example a frosted-glass surface from your design system. When you omit `controlsGlassSurface`, nothing extra is rendered and the control bar uses its own CSS: a GPU-composited `backdrop-filter` pill (`.canvas-controls-glass--plain`), with no extra dependency. Setting `disableControlsGlass` forces that CSS pill and ignores `controlsGlassSurface`. Use it on large boards where a full-scene glass capture would re-rasterize the content behind the controls on every interaction frame.
+Here, chrome means the surface behind the control bar. `MyFrostedGlassSurface` stands for a component from your own design system. Without `controlsGlassSurface`, the bar uses a rounded CSS `backdrop-filter` surface (`.canvas-controls-glass--plain`) with no extra dependency.
+
+Set `disableControlsGlass` to ignore a supplied glass component and use the CSS surface instead. Choose this when your custom glass captures the full scene and would re-rasterize board content on every interaction frame.
 
 ## `labels` — localizing the button text
 
@@ -72,14 +78,14 @@ const icons: CanvasControlsIcons = {
 
 ## Keeping the controls clear of host panels
 
-A host that lays a panel or drawer over the edge of the canvas publishes how far it reaches in through two CSS custom properties on any ancestor of the canvas:
+If a sidebar or drawer overlaps the canvas edge, set its overlap width with a CSS custom property on an ancestor of Canvas. The controls read the property for their chosen corner:
 
 | Custom property           | Read by the controls when placed |
 | ------------------------- | -------------------------------- |
 | `--canvas-viewport-left`  | `bottom-left`                    |
 | `--canvas-viewport-right` | `bottom-right`                   |
 
-The control bar steps aside by the inset at its own edge and animates when the value changes. Both default to `0px`, so a host that sets neither sees no difference.
+The bar moves inward by that width and animates when the value changes. Both properties default to `0px`; leave them unset when panels do not overlap the board.
 
 When the host already makes room itself, by shrinking or shifting the canvas by that inset, set `controlsFollowViewportInsets` to `false`. The bar then stays `1rem` from the canvas edge instead of being moved a second time:
 
@@ -89,4 +95,4 @@ When the host already makes room itself, by shrinking or shifting the canvas by 
 </div>
 ```
 
-See [Pan and zoom](pan-and-zoom.md#controls-and-minimap) for placement and minimap options.
+After applying an option, check the controls it affects: tooltips and accessible names should use your labels, and opening a side panel should leave the bar visible without shifting it twice. See [Pan and zoom](pan-and-zoom.md#controls-and-minimap) to configure placement and the world area represented by the minimap.

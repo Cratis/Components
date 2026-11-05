@@ -1,13 +1,15 @@
 ---
-title: "Recipe: Multi-step form"
-description: Gather a command's input across several named steps with StepperCommandDialog.
+title: "Build a multi-step form with Cratis Components"
+description: Use StepperCommandDialog in Cratis Components to gather one Arc command across named form steps, with per-step feedback and validation before submit.
 ---
 
-**Goal:** one command needs more input than fits comfortably on a single screen. Split it into a wizard — named steps the user moves through — that still executes a single command at the end.
+`StepperCommandDialog` in Cratis Components collects one Arc command across named form steps and executes it at the end. Use it when the input falls into distinct stages or is too long for one dialog. Moving between steps does not execute separate commands.
+
+Start with the providers and styles from [Getting started](getting-started.mdx). This example assumes a generated `RegisterMember` proxy with a required `memberId` and `name`, `email`, and `tier` properties, plus a running backend that handles that command. It illustrates that contract rather than adding a command to the library tutorial.
 
 ## Use StepperCommandDialog
 
-`StepperCommandDialog` is `CommandDialog` with stages. You group fields into `StepperPanel`s; it handles next/back navigation, per-step validation, and runs the command when the last step is confirmed:
+Group fields into `StepperPanel`s. They all bind to the same command instance, so **Previous** and **Next** navigate the input without submitting it:
 
 ```tsx title="RegisterMemberWizard.tsx"
 import { useState } from 'react';
@@ -47,17 +49,19 @@ export const RegisterMemberWizard = () => {
 };
 ```
 
-The example assumes a `RegisterMember` command with a required `memberId` and `name`, `email`, and `tier` properties. `DropdownField` needs `optionValue` and `optionLabel` to know which option property is stored on the command and which one is shown. Open the wizard with `useDialog`, exactly like a single-step [CommandDialog](building-a-form.md#show-the-dialog).
+In the membership step, `optionValue='id'` stores `standard` or `premium` on the command; `optionLabel='name'` displays **Standard** or **Premium**. The generated `memberId` goes through `initialValues` because it is required before the user submits. Open the wizard with `useDialog`, just like a single-step [CommandDialog](building-a-form.md#show-the-dialog).
 
 ## Notes
 
-- **One command, many steps.** Every field across every panel maps to the *same* command — the wizard is just how you collect it. The command still validates and executes once.
-- **Per-step validation.** **Next** is disabled while a field on the current step shows a validation error, and a visited step with an error is marked invalid. A field shows no error until it has been validated (on blur by default), so an untouched required field doesn't block **Next** — but on the last step the submit button is only rendered once the whole command is valid. Set `validateOnInit` to show every error as soon as the wizard opens.
-- **Required values that aren't inputs**, like `memberId` above, still go through `initialValues` (not `onBeforeExecute`), same as a single-step dialog — see [Building a form](building-a-form.md#tips).
+Navigation uses the current step's validation feedback. **Next** is disabled while a field on that step shows an error, and a visited step with an error is marked invalid. By default, a field validates on blur, so an untouched required field can still let the user advance. Set `validateOnInit` if errors should be visible as soon as the wizard opens.
+
+Submission checks the whole command. On the last step, the submit button is only rendered once the command is valid, including fields on earlier panels. Supply required non-input values through `initialValues`; `onBeforeExecute` runs too late to satisfy that validity check. See [Building a form](building-a-form.md#tips).
+
+When checking the form, try advancing past an untouched required field, then blur an invalid field and check **Next** again. Complete every step and confirm that submission becomes available only when the whole command is valid.
 
 ## When to use a wizard vs. a plain dialog
 
-Reach for a wizard when the input is genuinely staged or long enough that one screen would overwhelm. For three or four fields, a single [CommandDialog](CommandDialog/index.md) is friendlier — don't add steps for their own sake.
+Steps help when users need to consider one group of inputs before the next. They also add navigation and can hide earlier input from view. For a short form whose fields belong together, keep a single [CommandDialog](CommandDialog/index.md). If the staged form belongs on the page rather than in a modal, use [CommandStepper](CommandStepper/index.md).
 
 ## Next
 

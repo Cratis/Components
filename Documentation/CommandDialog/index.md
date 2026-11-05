@@ -1,31 +1,27 @@
 ---
-title: CommandDialog
-description: Execute Arc commands in a dialog with automatic form state, validation, and result handling.
+title: CommandDialog for running Arc commands
+description: Use CommandDialog to collect command values, gate confirmation on validation, and return a typed Cratis Arc command response to the caller.
 ---
 
-The `CommandDialog` component provides a dialog interface for executing commands with built-in form handling and validation.
+Use `CommandDialog` when a user needs to create, rename, or delete something through a Cratis Arc command without leaving the current page. The dialog collects values for one command, keeps confirm disabled while the form is invalid, and stays open if execution fails so the user can correct the input.
 
 ## Purpose
 
-CommandDialog simplifies the process of presenting a command form to users within a modal dialog. It handles command execution, validation, and result management automatically.
+Pass the generated command proxy and the fields the user needs to edit. `CommandDialog` connects those fields to the command and runs it when the user confirms. Seed any required values that are not shown as fields, such as the id of the project being renamed.
 
 ## Key Features
 
-- Binds `CommandForm` field children to one command instance
-- Keeps the confirm button disabled until the command passes client validation
-- Field-level change tracking and custom field validation
-- Pre-execution transformation of values and optional approval before execution
-- Success and cancellation handling through the Arc dialog context
-- Busy state management during command execution (buttons and fields disabled, spinner shown)
-- Integration with Cratis Arc command system
+The dialog combines a `CommandForm`, which holds command values and validation state, with a `Dialog`, which handles presentation and dismissal. You do not need to wire a separate form to the confirm button or manage the busy state yourself.
+
+Start with the typed dialog pattern below to await the outcome from the page that opened it. For field-specific checks or value transformations, continue with [Advanced Features](advanced-features.md).
 
 ## Recommended Usage Pattern
 
-For new implementations, use the same dialog pattern as other typed dialogs:
+To let the calling page wait for the user's decision:
 
-- Open dialogs through `useDialog<TResult>()`
-- Close from inside the dialog through `useDialogContext<TRequest, TResult>()` when you need to return a value
-- `await` the dialog at the call site and handle `[dialogResult, value]`
+1. Open the dialog through `useDialog<TResult>()`.
+2. Use `useDialogContext<TRequest, TResult>()` inside the dialog to return a value when it closes.
+3. `await` the dialog at the call site and handle `[dialogResult, value]`.
 
 `useDialogContext` takes the request (input props) type first and the result type second. When the dialog returns the command's response, use the response type as `TResult` and pass it to `closeDialog` from `onSuccess`.
 
@@ -91,7 +87,7 @@ What happens when the user clicks **Create**:
 
 ## Initialize command values
 
-A generated command proxy starts with every property unset. Arc's client validation reports any non-optional property that is still `undefined` or `null`, so the confirm button stays disabled until each one has a value. Values that no field renders, such as the id of the item being edited, must be seeded explicitly.
+A generated command proxy starts with its command values unset. Arc's client validation reports non-optional payload properties that are still `undefined` or `null`, so confirm stays disabled until those properties have values. Properties supplied as route parameters are excluded from that required-property check. Seed required values that no field renders, such as the id of the item being edited, before the user can confirm.
 
 | Prop | When it applies | Counts for validation before confirm |
 | ---- | --------------- | ------------------------------------ |
@@ -149,15 +145,16 @@ Field display defaults are not command values either. A `CheckboxField` shows an
 
 The confirm button is enabled when all of the following hold:
 
-- Arc's client validation passes: every non-optional property has a value and the command's client-side validation rules pass. The form validates on mount and after every change.
+- Arc's client validation passes: required payload properties have values and the command's client-side validation rules pass. The form validates on mount and after every change.
+- No custom field error is set, including messages returned by `onFieldValidate`.
 - The `isValid` prop is not `false`. It can only disable a valid form; `isValid={true}` never enables an invalid one.
-- No command is executing.
+- No submission is in progress, including transformation or pre-execution confirmation.
 
 The form is treated as invalid until its first validation finishes, so confirm starts out disabled for a moment even when every value is already present.
 
 `validateOn` (`'blur'` by default, or `'change'` / `'both'`) and `validateOnInit` only control **when error messages appear**. They do not change when confirm enables. Set `autoServerValidate` to also ask the server's validate endpoint once client validation passes (throttled by `autoServerValidateThrottle`, 500 ms by default); its result also enables or disables confirm.
 
-`onFieldValidate` messages appear on the field, but they do not disable confirm. Use a command validator, `autoServerValidate`, or the `isValid` prop for rules that must block submission. See [Advanced Features](advanced-features.md#field-validation).
+A message returned by `onFieldValidate` appears on the field and disables confirm until that custom error is cleared. The callback runs when the field changes, not on mount; put rules that must also check initial values on the command itself. See [Field Validation](advanced-features.md#field-validation) for the callback contract.
 
 ## Props
 
@@ -220,7 +217,9 @@ The form is treated as invalid until its first validation finishes, so confirm s
 - `onUnauthorized()`: Invoked when authorization fails.
 - `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
 
-Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors. If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open. A rejection from `confirmBeforeExecute` also keeps the dialog open and skips execution; it calls `onException` with the error message and stack trace (or logs the error if no callback is supplied), not `onFailed`.
+On success, the dialog awaits `onSuccess` before asking `onConfirm`, or its `onClose` fallback, whether to close. On failure, it awaits `onFailed` first, then each matching callback in order: `onException`, `onUnauthorized`, and `onValidationFailure`. A validation failure therefore calls `onFailed` before `onValidationFailure`; the dialog then applies the result to the form and stays open.
+
+If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open. A rejection from `confirmBeforeExecute` also keeps the dialog open and skips execution; it calls `onException` with the error message and stack trace (or logs the error if no callback is supplied), not `onFailed`.
 
 ### Dialog Callbacks
 
@@ -312,17 +311,9 @@ Rendering the dialog only while it is open gives the user a fresh form each time
 
 ## Destructive Commands and Initial Focus
 
-The confirm button is focused when the dialog opens, and a focused native button
-fires `click` from the `keydown` of `Enter`. A command whose form has required
-fields is protected from a held or double-tapped `Enter` for free, because the
-form's validity keeps confirm disabled until something is filled in. A command
-that takes **no** input — the typical "delete this, permanently" command — has
-no such gate, so its confirm button is armed the instant the dialog appears.
+The dialog targets the confirm button for initial focus, and `Enter` activates a focused native button. Missing required values keep confirm disabled, but a command with valid initial values or no input can become confirmable as soon as initial validation finishes. For a destructive action, do not rely on missing input as protection against an unintended confirmation.
 
-Pass `initialFocus` for those. It is forwarded straight to
-[`Dialog`](../Dialogs/dialog.md#initial-focus) and changes nothing else — the
-footer, the close (X), `Escape`, and the confirm wiring that runs the command
-all stay intact.
+Set `initialFocus={DialogInitialFocus.Cancel}` to focus Cancel instead. The prop is forwarded to [`Dialog`](../Dialogs/dialog.md#initial-focus); it changes the focus target, not the command execution or dismissal behavior.
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
@@ -353,8 +344,7 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 - The form fields are disabled and inert, so values cannot change while the command runs.
 - Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
-- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit closes the dialog as before.
-- This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
+- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit follows the [dialog callback close decision](#dialog-callbacks).
 
 ## Context
 

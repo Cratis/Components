@@ -1,27 +1,23 @@
 ---
-title: TimeMachine views
-description: What the read model view, the card flip, and the events view show, and how to render version content with Properties.
+title: TimeMachine views for snapshots and events
+description: TimeMachine shows supplied snapshots as version cards and events as a timeline. Choose a view to inspect a past state or its related event payloads.
 ---
 
-TimeMachine has two views, switched with the icon buttons at the top: the **read model view** (the default) and the **events view**.
+TimeMachine's read model view shows the snapshots your application supplies; its events view lists the events attached to those snapshots. Use the cards to inspect a past state and the event list to read the recorded details. Neither view retrieves history or calculates differences between versions.
 
 ## Read Model View
 
-Displays each version as a card in a 3D stack, with the displayed version in front and later versions behind it.
+Start in the read model view when you want to see the data as it stood at a particular version. A read model is the data shaped for display in your application. Each version appears as a card in a 3D stack, with the displayed version in front and later versions behind it.
 
 ### Features
 
-- The front card shows the displayed version's `label` in its title bar and its `content` below
-- Hovering or focusing a timeline entry brings that version to the front as a preview
-- Clicking a card behind the front one selects that version
-- The flip button in each card's title bar turns the card over to list the events behind that version
-- The timeline and previous/next buttons navigate between versions (see [Navigation](navigation.md))
+The front card shows the displayed version's `label` in its title bar and its `content` below. Hovering or focusing a timeline entry brings that version forward as a preview without changing the selection. Click a card behind the front one to select it, or use the timeline and previous/next buttons; [Navigation](navigation.md) explains those controls.
 
-TimeMachine does not compare versions or highlight changed values. Each card shows exactly the `content` you supplied for that version.
+TimeMachine does not compare versions or highlight changed values. Each card shows exactly the `content` you supplied for that version. Use its flip button to inspect the events you associated with that snapshot.
 
 ### Property Display
 
-`content` is any React node. The exported `Properties` component renders a plain key/value table and is the usual choice:
+Because `content` is a React node, a snapshot can use the presentation that suits its data. For a flat object, the exported `Properties` component renders a compact key/value table:
 
 | Property | Value |
 |----------|-------|
@@ -35,7 +31,7 @@ import { Properties } from '@cratis/components/TimeMachine';
 <Properties data={{ name: 'Product A', price: 89.99, status: 'active' }} align='left' />;
 ```
 
-`Properties` takes `data: Record<string, unknown>`, an optional `className`, and `align` (`'left'` by default, or `'right'`). It is also used inside TimeMachine to show event payloads, and you can use it on its own, for example in a custom detail panel.
+The supplied object produces one row per property, as shown in the table above. `Properties` takes `data: Record<string, unknown>`, an optional wrapper `className`, and `align` (`'left'` by default, or `'right'`) for the labels. TimeMachine also uses it to show event payloads. You can render it on its own in a custom detail panel.
 
 `Properties` formats each row as follows:
 
@@ -52,7 +48,7 @@ import { Properties } from '@cratis/components/TimeMachine';
 
 ### Nested Objects and Arrays
 
-`Properties` does not expand nested objects or arrays: they show as `{...}` and `Array[n]`. To show nested data, flatten it into the `data` you pass, render several `Properties` tables, or render your own content. For browsing nested JSON with breadcrumbs, [`ObjectContentEditor`](../ObjectContentEditor/index.md) is an alternative `content` renderer.
+`Properties` does not expand nested objects or arrays: they show as `{...}` and `Array[n]`. To show nested data, flatten it into the `data` you pass, render several `Properties` tables, or render your own content. For browsing nested JSON with breadcrumbs, render [`ObjectContentEditor`](../ObjectContentEditor/index.md) in view mode as your `content`.
 
 ### Card Navigation
 
@@ -63,11 +59,11 @@ import { Properties } from '@cratis/components/TimeMachine';
 
 ### Related events on the card back
 
-The back of a card lists the events of that version, each with its `type`, its `occurred` time (`toLocaleString()`), and its `content` in a `Properties` table. Only the displayed version's card has its events filled in.
+The back of a card lists the events in that version's `events` array, each with its `type`, its `occurred` time (`toLocaleString()`), and its `content` in a `Properties` table. Only the displayed version's card has its events filled in. Your application supplies the association between a snapshot and its events.
 
 ## Events View
 
-Shows all events from all versions in one vertical timeline, in the order of `versions` and then each version's `events` array. TimeMachine does not re-sort events by `sequenceNumber` or time.
+Switch to the events view to read the events across all supplied versions in one place. TimeMachine joins each version's `events` array in version order. It does not re-sort events by `sequenceNumber` or time, or remove duplicates, so prepare the arrays in the order you want readers to see.
 
 ### Event List
 
@@ -81,7 +77,7 @@ PriceUpdated   1/5/2024, 14:30:00 ──●
 
 ### Event Details
 
-Every event card always shows its full payload through `Properties`. There is nothing to expand:
+Each event card displays its payload through `Properties`, with nested values summarized as `{...}` or `Array[n]`. For a flat price-change event, the table looks like this:
 
 ```text
 PriceUpdated                  1/5/2024, 2:30:00 PM
@@ -89,9 +85,11 @@ Old Price    99.99
 New Price    89.99
 ```
 
+The old and new prices are fields in the supplied payload. TimeMachine does not calculate them by comparing snapshots or neighboring events.
+
 ### Selected version
 
-Events that belong to the version selected in the read model view are marked with `data-selected` on the event and its marker, so your CSS can highlight them. Selection itself only changes in the read model view.
+An event is marked with `data-selected` on the event and its marker when its `sequenceNumber` matches one in the selected version's event list. Your CSS can use that attribute to highlight related events. Switching views keeps the selection; selection itself only changes in the read model view.
 
 ### Scrolling
 
@@ -113,7 +111,7 @@ Outside TimeMachine, no event is marked as selected.
 
 ## View Switcher
 
-Toggle between views using the switcher at the top center:
+TimeMachine starts in the read model view. Toggle between views using the switcher at the top center:
 
 ```text
 [Read Model] | [Events]
@@ -123,33 +121,22 @@ Both buttons are icon-only, with the accessible names "Read Model View" and "Eve
 
 ### Read Model View
 
-- Focus on the state at each version
-- Navigate through time
-- Flip a card to see the events behind it
+Use the version cards to inspect one snapshot at a time, then flip the front card to read its related events. This view does not provide a side-by-side comparison or highlight changed values.
 
 ### Events View
 
-- Focus on what happened
-- One list across all versions
-- Full payload on every event
+Use the event list to investigate recorded details across versions. The list contains only the events your application supplies, so its completeness and order depend on how you prepare that history.
 
 ## Best Practices
 
 ### Read Model View
 
-1. **Order versions oldest first**: the timeline and previous/next buttons follow the array order
-2. **Give each version a meaningful `label`**: it is the card's title
-3. **Render comparable content**: use the same `Properties` shape for every version so users can see what changed as they step through
-4. **Flatten nested data**: `Properties` shows nested objects only as `{...}`
+Order versions oldest first because the timeline and previous/next buttons follow the array order. Give each version a meaningful `label` for its card title. Keeping the same fields in each snapshot makes it easier to review states as you step through them. Flatten nested data when readers need to see its values in `Properties`; nested objects otherwise appear as `{...}`.
 
 ### Events View
 
-1. **Pass events in order**: the view does not sort them
-2. **Use `Date` objects** for `occurred`
-3. **Keep payloads flat**: nested payload values show as `{...}` or `Array[n]`
+Pass events in the order you want them displayed, and use `Date` objects for `occurred`. Keep the fields readers need to inspect at the top level of the payload, since nested values show as `{...}` or `Array[n]`.
 
 ### General
 
-1. **Switch views**: Use both for complete understanding
-2. **Localize accessible names** with `labels`
-3. **Build `versions` once per change**: TimeMachine rebuilds its event list when the `versions` array identity changes
+Localize accessible names through `labels` for the people using your application. Keep the `versions` array reference stable until its data changes: TimeMachine rebuilds its combined event list when that reference changes. For the required fields, date types, and label overrides, continue to [Configuration](configuration.md).

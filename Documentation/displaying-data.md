@@ -1,9 +1,9 @@
 ---
-title: "Recipe: Displaying data"
-description: Render query results in a data table that updates live, and build list-and-detail screens with DataPage.
+title: "Display query data with Cratis Components"
+description: Render Arc query results in a Cratis Components React table, distinguish loading from empty results, and choose live updates or a one-shot query.
 ---
 
-**Goal:** show the results of an Arc query in a table — and have it update on its own when the underlying read model changes.
+Cratis Components tables render rows from Arc queries and handle loading, empty, failed, and unauthorized results. Use an observable query when the screen should receive later updates, or a one-shot query when it only needs a snapshot. If your application already owns the rows, use the local-data table instead.
 
 ## Choose who owns the rows
 
@@ -14,11 +14,11 @@ description: Render query results in a data table that updates live, and build l
 | Rows already owned by the application | `DataTableCore` | Host-supplied rows and updates; no Arc request from this surface |
 | Query list with selection, actions, and details | `DataPage` | Query-backed composition plus explicit selected-row handoff |
 
-The query examples need [Getting started](getting-started.mdx), a running backend, and generated `AllAuthors` in `src/Authors/Author.ts`. Follow the [library tutorial](tutorial/index.md) for the full setup. Local-data surfaces do not execute Arc requests, but Arc's required npm peers remain required.
+For the query examples, complete [Getting started](getting-started.mdx), keep the backend running, and use the generated `AllAuthors` proxy in `src/Authors/Author.ts`. The [library tutorial](tutorial/index.md) supplies the full setup. A local-data table makes no Arc requests, though the package still requires its declared Arc npm peer dependencies.
 
 ## A live table from an observable query
 
-If your query is observable, `DataTableForObservableQuery` subscribes for you and re-renders as new data arrives — no polling, no manual subscription:
+`AllAuthors` is observable: it can deliver changed results after the first load. `DataTableForObservableQuery` subscribes to those results, so the screen needs no polling or application subscription code:
 
 ```tsx
 import { Column, DataTableForObservableQuery } from '@cratis/components/DataTables';
@@ -69,7 +69,7 @@ The initial not-ready result shows **Loading…**, not zero authors. Existing da
 
 ## List-and-detail with DataPage
 
-For the common "table on the left, details on the right" screen, `DataPage` gives you the layout, selection, and a resizable detail panel out of the box:
+When selecting a row should open its details beside the table, use `DataPage` for the layout, selection, and resizable detail panel:
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
@@ -85,8 +85,9 @@ Column `field` is a plain string. Keep it aligned with generated row members; un
 
 ## Tips
 
-- **When the table updates** — it re-renders when the observable query delivers a changed result. Command success and row visibility are separate checkpoints; there is no fixed delay promised by Components. With Chronicle behind Arc, a projection must update the read model before the query can report it. Components does not subscribe directly to Chronicle. See [Read Models](/chronicle/read-models/).
-- Keep read models **specialized per screen** — a table query and a detail query can read different, purpose-built read models rather than one shared model.
+An observable table re-renders when its query delivers a changed result. Command success and row visibility are separate checkpoints; Components promises no fixed delay between them. With Cratis Chronicle behind Arc, a projection must update the read model, the data shape used for reading, before the query can report it. Components does not subscribe directly to Chronicle. See [Read Models](/chronicle/read-models/).
+
+Keep read models specialized per screen. A table query and a detail query can read different, purpose-built models, so neither has to return everything the other screen needs.
 
 ## Next
 

@@ -1,6 +1,6 @@
 ---
 title: MultiSelectField
-description: Bind an array property on an Arc command to a multi-select dropdown.
+description: MultiSelectField in Cratis Components binds an Arc command's array to multiple dropdown options, with optional filtering and a clear action.
 ---
 
 `MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md). It uses native multiple selection by default and a labeled multi-value combobox when filtering is enabled.

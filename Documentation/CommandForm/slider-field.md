@@ -1,6 +1,6 @@
 ---
 title: SliderField
-description: Bind a number property on an Arc command to a native range input.
+description: SliderField in Cratis Components binds an Arc command's number to a native range input with min, max, and step settings and a visible value.
 ---
 
 `SliderField` renders a Cratis-owned native range input for selecting a numeric value. The current value is displayed below the slider.

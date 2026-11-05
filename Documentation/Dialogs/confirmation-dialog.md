@@ -1,6 +1,6 @@
 ---
 title: ConfirmationDialog
-description: Ask the user to confirm an action with a host-rendered dialog and await the button they chose.
+description: ConfirmationDialog in Cratis Components asks users to confirm an action and returns their choice or cancellation as a DialogResult.
 ---
 
 Dialog for confirming user actions.

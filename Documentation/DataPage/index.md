@@ -1,22 +1,19 @@
 ---
-title: DataPage
-description: Combine query-backed tables, actions, selection, and optional details in a complete data page.
+title: DataPage for list-and-detail screens
+description: Build a query-backed list-and-detail screen with DataPage. Connect row selection to actions and related data, and plan the layout for narrow screens.
 ---
 
-`DataPage` turns a generated Arc query into a list page: an action toolbar, a paged table with sorting and filtering, row selection, and an optional details pane for the selected row.
+`DataPage` builds a list-and-detail screen from a generated Cratis Arc query, connecting a paged table's selected row to actions and an optional details pane. Use it when users need to find a record, inspect it, and act on it without leaving the list.
 
 ## Purpose
 
-You declare the columns, actions, and details component as children and props. DataPage connects them through the selected row.
+Start with the rows your query returns and the actions someone needs to take on them. You declare the columns and toolbar items as children, then pass a details component if the selected record needs more space. DataPage coordinates selection; your handlers open dialogs or execute commands.
 
 ## Key Features
 
-- Integrated data table with filtering, sorting, and pagination of the loaded page, or of the complete result on the server with `serverQuery`
-- Action toolbar whose items can be disabled until a row is selected
-- Support for both snapshot queries and observable queries
-- Selection management, uncontrolled or controlled
-- Split view with a resizable details panel
-- A layout that keeps the paginator inside the height the page is given
+The table can show a snapshot query, fetched on request, or an observable query, which delivers updated results as the server sends them. Sorting and filtering apply to the loaded page unless you opt into [server mode](#filtering-scope) for the complete result.
+
+Selection ties the screen together: it can enable an action and show the same row in a resizable side pane. Let DataPage own selection for a simple list, or control it when your page needs to clear it or choose a row. The layout keeps the paginator within the height you give the page; the side pane needs a separate plan for [narrow screens](details-panel.md#narrow-screens).
 
 ## Prerequisites
 
@@ -76,13 +73,11 @@ export function Authors() {
 
 The page renders a toolbar with the three actions above a table with a sortable **Name** column. **Edit** and **Remove** stay disabled until a row is selected.
 
-A few things this example relies on:
+Selecting an author reports the row through `onSelectionChange`, which stores it in `selected`. The edit and remove handlers read that state because `MenuItem.command` receives no arguments. DataPage still owns the selection in this example; the callback gives your handlers access to it.
 
-- `MenuItem.command` receives no arguments. To act on the selected row, keep it in your own state from `onSelectionChange`, as above. DataPage still manages the selection itself; `onSelectionChange` only reports it to you.
-- The explicit type arguments `<AllAuthors, Author, object>` tell TypeScript the row type. Without them, and without a typed `detailsComponent`, TypeScript infers the row as `object`, so `event.value.name` does not compile. The third argument is the query's parameter type; use `object` for a query without parameters.
-- `title` is required, but DataPage does not render it as a visible heading. Render your own heading or breadcrumb outside the page if you need one.
+The explicit type arguments `<AllAuthors, Author, object>` give `event.value` the type `Author | null`. Without them or a typed `detailsComponent`, TypeScript infers the row as `object`. The third argument describes the query's parameters; `object` is used here because `AllAuthors` has none.
 
-`MenuItem` is also available as `DataPage.MenuItem`. See [Menu Items](menu-items.md) for the full item surface.
+`title` is required but does not render a visible heading. Put your own heading or breadcrumb outside the page if you need one. For more actions, including async work and confirmation dialogs, continue with [Menu Items](menu-items.md). `MenuItem` is also available as `DataPage.MenuItem`.
 
 ## List-and-detail with a details panel
 
@@ -123,8 +118,9 @@ A typed `detailsComponent` is enough for TypeScript to infer the row type, so th
 
 The table uses single-row selection by default. A user selects a row by clicking it, or by focusing it and pressing Enter or Space.
 
-- **Uncontrolled (default):** leave `selection` out. DataPage keeps the selected row in its own state and still calls `onSelectionChange` on every change.
-- **Controlled:** pass `selection` and update it from `onSelectionChange`. Pass `null` to clear the selection, which also closes the details pane. Passing `undefined` switches back to uncontrolled mode.
+Leave `selection` out for uncontrolled selection: DataPage keeps the row in its own state and reports changes through `onSelectionChange`. To make selection controlled, pass `selection` and update it from that callback. Your parent component then decides which row remains selected.
+
+Pass `null` to clear a controlled selection and close the details pane. Passing `undefined` hands ownership back to DataPage; it is not an instruction to clear the row.
 
 Activating the selected row again selects the same row; it does not toggle selection off. To let users deselect, for example to close the details pane, use controlled mode and offer an action that sets `selection` to `null`.
 
@@ -187,7 +183,7 @@ Unauthorized takes precedence over failure, which takes precedence over loading.
 
 - `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to the provider's `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`, because only the loaded page is searched) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
 - `onGlobalFilterChange`: Called with the search text each time it changes, so the page can tell a search is active
-- `queryArguments`: Arguments to pass to the query. An observable query resubscribes when any argument changes; a snapshot query re-runs when a required argument changes.
+- `queryArguments`: Named arguments for the generated query. Changes to argument values rerun a snapshot query or resubscribe an observable query. See [Query arguments](#query-arguments).
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the query states, passed to the bound table
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row. See [Selection](#selection).
@@ -217,10 +213,18 @@ The query-backed table inside `DataPage` shows a loading row instead of `emptyMe
 
 DataPage supports two types of queries:
 
-1. **IQueryFor**: Snapshot queries, fetched when the page mounts and again when a required argument or the page changes
-2. **IObservableQueryFor**: Observable queries that update the table when the read model changes on the server
+- `IQueryFor`: Snapshot queries, fetched when the page mounts and again when argument values or the page change
+- `IObservableQueryFor`: Observable queries that update the table as the server delivers new results
 
 DataPage checks whether the query class derives from `QueryFor` and renders the matching data table. Both tables request 20 rows per page; the page size is not configurable through DataPage.
+
+## Query arguments
+
+Pass `queryArguments` when the list depends on context, such as the author whose books you want to show. Its property names and values must match the generated query's argument type. When you supply explicit DataPage type arguments, use that generated type as the third argument rather than the `object` used by the parameterless examples above.
+
+Arc waits for every required argument before sending a request or starting a subscription. `undefined`, `null`, and an empty string count as missing. While waiting, a snapshot table shows `emptyMessage`; an observable table keeps showing its loading row. Neither state means the server has returned an empty result, so ask the user to choose the missing context before presenting the list when that distinction matters.
+
+Changing argument values, including optional ones, reruns a snapshot query or resubscribes an observable query. A details component can also run its own query using the selected row's id, as shown in [loading related data](details-panel.md#complex-details-example).
 
 ## Filtering scope
 
@@ -240,9 +244,9 @@ DataPage uses Allotment for the resizable split when a `detailsComponent` is pro
 
 Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. From 3.0 it is **vendored into `@cratis/components/styles`**, so importing that one file at your app entry point is all it takes — you do not need `allotment/dist/style.css` yourself, and if you were importing it you can drop it. Without `@cratis/components/styles` the details pane grows to its content and clips the paginator. If you import [per-area stylesheets](../Styling/per-area-stylesheets.md) instead of the aggregate, `@cratis/components/DataPage/styles` carries those vendored Allotment rules. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
 
-Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs, and the table takes the remaining space and scrolls its rows internally. With a definite-height ancestor, the paginator stays at the bottom of the page even as the row count grows. This also applies when the page has a details pane.
+Inside the page, the toolbar sits above the table and takes the height its buttons need, wrapping them when space is tight. The table fills the remaining height and scrolls its rows internally. With a definite-height ancestor, the paginator stays at the bottom of that region, including when a details pane is open.
 
-The split does not adapt to narrow viewports: the details pane opens beside the table at every width. See [Narrow screens](details-panel.md#narrow-screens).
+The split itself does not adapt to narrow viewports: the details pane still opens beside the table, with a preferred width of `450px`. If the list and details cannot both fit, provide your own dialog, route, or stacked layout. See [Narrow screens](details-panel.md#narrow-screens).
 
 ### DataPage needs an ancestor with a height
 

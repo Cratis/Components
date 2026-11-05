@@ -1,19 +1,28 @@
 ---
-title: AutoCommandForm
-description: Generate a command form's fields from the command's property descriptors instead of writing one field per property.
+title: 'AutoCommandForm: generate command input fields'
+description: AutoCommandForm generates React inputs from Arc command property descriptors, with a field type registry for choosing or replacing controls.
 ---
 
-`AutoCommandForm` generates its field list from the command's own properties instead of you writing one field per property by hand. Each property's type picks its field component through a registry - `string` gets `InputTextField`, `number` gets `NumberField`, `boolean` gets `CheckboxField`, `Date` gets `CalendarField` - the same components you would otherwise use directly.
+`AutoCommandForm` builds an input form from an Arc command's property descriptors, so you do not have to declare a field for every property. Use it when the command's types are enough to choose the controls; use explicit fields when you need individual labels, placement, or input-specific props.
+
+A property descriptor names a command property, its runtime type, and whether it is optional. A registry matches each descriptor to a field component. The built-in mappings use the same controls you can declare by hand:
+
+| Property type | Field |
+| --- | --- |
+| `string` | `InputTextField` |
+| `number` | `NumberField` |
+| `boolean` | `CheckboxField` |
+| `Date` | `CalendarField` |
 
 ## Requirements
 
-Use `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later within the supported 22.x range. Each generated field names its property explicitly through `fieldName`, because its accessor reads the property dynamically. Arc versions before 22.16.0 ignore that name and infer the property from the accessor's source text instead, so every generated field resolves to the same property and an edit can land on the wrong one. The package's peer range still admits those older versions, so check the installed Arc version yourself.
+Use a generated Arc command proxy and `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later within the supported 22.x range. For provider setup, CSS, and proxy generation, follow [Getting started](../getting-started.mdx).
 
-The command must be a generated Arc command proxy: `AutoCommandForm` creates an instance of it and reads its `propertyDescriptors`.
+`AutoCommandForm` creates an instance of the command and reads its `propertyDescriptors`. Each generated field names its property through `fieldName` because its accessor reads the property dynamically. Arc versions before 22.16.0 ignore that name and infer it from the accessor's source text, causing the generated fields to resolve to the same property. An edit can then reach the wrong property. The package's peer range admits those older versions, so check the installed Arc version before using this component.
 
 ## Usage
 
-`AutoCommandForm` renders its own Arc `CommandForm`, so use it on its own and supply the submit control through `footer`:
+Render `AutoCommandForm` as the form itself and put a submit control in `footer`. This excerpt assumes a generated `RegisterProject` proxy with a `projectId` property:
 
 ```tsx
 import { AutoCommandForm } from '@cratis/components/CommandForm';
@@ -27,15 +36,17 @@ import { RegisterProject } from './RegisterProject';
 />;
 ```
 
-The button submits Arc's form, which executes the command and runs the result callbacks. Because the fields are inside a native `<form>`, pressing `Enter` in a text field submits it too.
+The button submits Arc's native `<form>`, which executes the command and runs the result callbacks. Pressing `Enter` in a text field submits it too. `AutoCommandForm` adds no submit control unless you supply one.
 
 :::caution[Do not nest AutoCommandForm in a CommandDialog]
 `CommandDialog`, `CommandStepper`, and `StepperCommandDialog` each create their own command instance. An `AutoCommandForm` placed inside them binds its fields to a second instance, so the values the user types never reach the command the dialog executes. Write the fields by hand inside those components.
 :::
 
-The generated fields keep the command's property-descriptor order, after removing `exclude` entries and properties without a matching provider. A property whose type has no registered provider - a nested object, an array, an enum - is left out of the generated list. When you need a custom layout or a field the registry cannot supply, use Arc's ordinary `CommandForm` and declare the fields inside it, or register a provider for the type (see below). A manual field beside `AutoCommandForm` is outside its command context; it does not edit the same command just because it appears on the same page.
+Fields appear in property-descriptor order, excluding the names in `exclude` and any descriptor without a matching provider. If a property is missing from the form, check its descriptor type and the registry. Nested objects and arrays have no built-in provider. You can register a provider for an unsupported type or use Arc's ordinary `CommandForm` with explicit fields for a custom layout. A manual field beside `AutoCommandForm` is outside its command context; appearing on the same page does not make it edit the same command.
 
-A property you exclude, or one that has no provider, is still part of the command. If it is non-optional, seed it through `initialValues`, or the form stays invalid. A generated number showing `0` or an unchecked checkbox does not seed a value either. See [Field defaults and command values](index.md#field-defaults-and-command-values) and [Initialize command values](../CommandDialog/index.md#initialize-command-values). If your submit control is disabled while the form is invalid, `onBeforeExecute` cannot supply the missing initial value.
+Leaving out an editor does not remove the property from the command. If `projectId` in the example is non-optional, supply it through `initialValues` before validation. Do the same for any required property that has no provider. A number showing `0` or an unchecked checkbox also needs an initial value if that is the intended answer: display defaults do not populate the command.
+
+For the distinction, read [Field defaults and command values](index.md#field-defaults-and-command-values), then [Initialize command values](../CommandDialog/index.md#initialize-command-values). Do not defer a required starting value to `onBeforeExecute` if invalid state keeps the submit control disabled.
 
 ## Props
 
@@ -45,11 +56,13 @@ A property you exclude, or one that has no provider, is still part of the comman
 | `exclude` | `(keyof TCommand)[]` | — | Property names to leave out of the generated field list. |
 | `footer` | `React.ReactNode` | — | Optional content after the generated fields, inside the native Arc form and command context. |
 
-`AutoCommandForm` also accepts every other `CommandForm` prop (`initialValues`, `populateFromQuery`, `onSuccess`, `validateOn`, and so on) except `children`, which it generates itself. Use `initialValues` for the baseline and `currentValues` for values the parent keeps changing; changes to that overlay revalidate the command. Excluding a field only removes its editor, not its validation requirements or the server's responsibility to authorize the submitted values.
+The component also accepts the other Arc `CommandForm` props, including `initialValues`, `populateFromQuery`, `onSuccess`, and `validateOn`. It generates `children` itself. Use `initialValues` for the baseline and `currentValues` for an explicit overlay from the parent; changes to that overlay revalidate the command.
+
+`exclude` only hides an editor. The command's validation requirements still apply, and the server remains responsible for authorizing submitted values.
 
 ## Adding an action inside the form
 
-The default remains fields-only. Supply `footer` to add content or a native submit control:
+Use `footer` for content that needs to be inside the form, such as this submit button. The excerpt assumes a generated `SampleCommand` proxy:
 
 ```tsx
 import { AutoCommandForm } from '@cratis/components/CommandForm';
@@ -61,14 +74,13 @@ import { SampleCommand } from './SampleCommand';
 />
 ```
 
-The button submits Arc's existing form; it does not create a second command or executor.
-A component placed in `footer` can use Arc's `useCommandFormContext` for execution and
-authorization state. `footer` takes React content, not a render callback, and adds no wrapper
-or DOM-prop forwarding. Authorization and validation behavior remain Arc's responsibility.
+The button submits the existing form rather than creating a second command or executor. For a button that responds to execution, validity, or authorization state, put a child component in `footer` and read Arc's `useCommandFormContext` inside that component.
+
+`footer` accepts React content, not a render callback. It adds no wrapper and does not forward DOM props. Arc still owns authorization and validation behavior.
 
 ## Registering a field type provider
 
-The built-in providers cover `string`, `number`, `boolean` and `Date`. Register your own for any other property type, or to override a default, with `registerFieldTypeProvider`. This one renders every `string` property as a multi-line `TextAreaField`:
+Register a field type provider when a property type has no mapping or when you want to replace a built-in choice. This example makes every `string` property use a multi-line `TextAreaField`:
 
 ```tsx
 import { registerFieldTypeProvider, TextAreaField } from '@cratis/components/CommandForm';
@@ -83,11 +95,16 @@ For Fundamentals `Guid` properties, register the opt-in [GuidField](guid-field.m
 
 Register once, in module code that runs before any `AutoCommandForm` renders. Providers are consulted most-recently-registered first, so registering a provider for a type the built-in defaults already cover overrides that default.
 
-`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title` (plus `resetKey` when the component is `GuidField` itself). A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; use an ordinary Arc `CommandForm` with manually declared fields instead.
+`canHandle` receives the property's Arc `PropertyDescriptor`, with `name`, `type`, and `isOptional`. The generated field receives `fieldName`, `value`, and `title`; `GuidField` itself also receives `resetKey`.
+
+Choose explicit fields if the control needs additional props. For example, `DropdownField` requires `options`, `optionValue`, and `optionLabel`, so it cannot be registered directly with no other configuration. Use an ordinary Arc `CommandForm` and declare that field with its options.
 
 ## Behavior
 
-- Field titles are generated from the property name by splitting on capitals and uppercasing the first letter (`dueDate` becomes "Due Date"). For individual field titles or custom placement, use an ordinary Arc `CommandForm` with manually declared fields; `exclude` does not create a place to insert a replacement editor.
-- `AutoCommandForm` does not set `required` on the fields it generates. Whether a value is required is enforced by the command's own validation (every non-optional property must have a value), not by a field prop.
-- Each generated field binds to its descriptor's property name; editing one property leaves the other properties unchanged.
-- Every generated field participates in `CommandForm`'s validation, change tracking and initial-value population exactly as a hand-written field does - `AutoCommandForm` only decides *which* fields to render, not how they behave once rendered.
+A property name becomes the field title by splitting on capitals and uppercasing the first letter: `dueDate` becomes "Due Date". For an individual title or custom placement, declare the fields in an ordinary Arc `CommandForm`. `exclude` does not create a place to insert a replacement editor.
+
+`AutoCommandForm` does not pass a `required` prop. Arc's field wrapper derives required state from the descriptor's `isOptional` value, and the command validates its non-optional properties. Hiding an editor or changing its required treatment does not remove that validation.
+
+Each generated field binds to its descriptor's property name, so editing one property leaves the others unchanged. The fields use Arc's validation, change tracking, and initial-value population just like explicit fields. `AutoCommandForm` chooses the field list; Arc owns the form behavior.
+
+If generation no longer fits the interaction, return to [Choose the execution container](index.md#choose-the-execution-container) to build an inline form, dialog, or stepper with explicit fields.

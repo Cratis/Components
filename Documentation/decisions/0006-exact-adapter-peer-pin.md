@@ -1,7 +1,7 @@
 ---
 id: '0006'
 title: Published adapters pin their Components release
-description: Each published adapter and Conformance release peers on exactly the @cratis/components release it ships with.
+description: Published Cratis Components adapters and Conformance releases require the exact @cratis/components version they ship with, so upgrades stay in lockstep.
 status: accepted
 stage: implemented
 class: contract

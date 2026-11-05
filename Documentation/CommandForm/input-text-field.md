@@ -1,6 +1,6 @@
 ---
 title: InputTextField
-description: Bind a string property on an Arc command to a native single-line input.
+description: InputTextField in Cratis Components binds an Arc command's string property to a native single-line input with configurable type and placeholder.
 ---
 
 `InputTextField` renders a Cratis-owned native single-line input. Its `type` prop accepts the input types listed below, not every HTML input type.

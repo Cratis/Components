@@ -1,6 +1,6 @@
 ---
 title: RadioButtonField
-description: Bind a property on an Arc command to one native radio option.
+description: RadioButtonField in Cratis Components binds one native radio option to an Arc command property, setting its string or number value when selected.
 ---
 
 `RadioButtonField` renders a Cratis-owned native radio option that sets the bound command property to a specific value when selected. Use multiple `RadioButtonField` components bound to the same property to form a radio group.

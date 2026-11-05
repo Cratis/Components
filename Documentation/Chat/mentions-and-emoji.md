@@ -1,13 +1,15 @@
 ---
-title: Mentions and emoji
-description: Offer @-mentions of people and agents and an emoji picker in the chat composer.
+title: "Chat mentions and emoji: compose messages"
+description: Add people and agent mentions to the Chat composer from your own candidates, store mention identities with messages, and insert emoji at the caret.
 ---
 
-The composer offers `@`-mentions of people and agents and an emoji picker. This page covers where mention candidates come from, how mentions travel with a message, and how they render.
+The Cratis Components Chat composer lets people mention a person or agent with `@` and insert emoji at the caret. Your application supplies the people and agents who can be mentioned, then stores their identities alongside the message text so the conversation can highlight them.
 
 ## Where candidates come from
 
-Typing `@` opens the candidate list. Feed it one of two ways — or both. In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` props (`open`, `onClose`, `topics`, `messages`, `onSendMessage`) shown in the [basic usage](./index.md#basic-usage). `searchTeam` stands for your own lookup.
+Supply `mentionCandidates` when your application already has a list of people and agents, or `resolveMentionCandidates` to look them up as someone types after `@`. You can use both; the composer combines the results by id and shows matching candidates.
+
+In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` props (`open`, `onClose`, `topics`, `messages`, `onSendMessage`) shown in the [basic usage](./index.md#basic-usage). `searchTeam` stands for your own lookup.
 
 ```tsx
 // A list the application already holds:
@@ -20,15 +22,19 @@ Typing `@` opens the candidate list. Feed it one of two ways — or both. In the
 <ChatSidebar {...sidebarProps} resolveMentionCandidates={async query => await searchTeam(query)} />
 ```
 
-A `MentionCandidate` has a string `id`, `name`, `hasAvatar`, `kind`, and an optional `avatarVersion`. People and agents are offered side by side — a candidate's `kind` (`ChatAuthorKind.User` | `ChatAuthorKind.Agent`) decides its avatar and how the mention is marked when rendered. Omit both props to turn mentions off.
+A `MentionCandidate` has a string `id`, `name`, `hasAvatar`, `kind`, and an optional `avatarVersion`. People and agents appear in the same list. Their `kind` (`ChatAuthorKind.User` | `ChatAuthorKind.Agent`) distinguishes people from agents for avatar lookup and mention styling. Omit both candidate props to disable mention suggestions.
+
+The composer discards asynchronous lookup results after the search text changes. If a lookup promise rejects, it clears the resolved candidates; any candidates supplied through `mentionCandidates` remain available.
 
 ## Keyboard use
+
+While mention suggestions are open, use the Up and Down arrow keys to move the highlight and Enter or Tab to choose the highlighted candidate. With the suggestions closed, Enter sends the message unless Shift is held.
 
 Focus stays in the message box while the suggestions are open. The arrow keys move the highlight, and the box points at the highlighted option with `aria-activedescendant`. Enter or Tab picks it. Escape closes the suggestions without touching the draft or the caret, and without reaching a dialog around the composer; editing the text after the `@` opens them again. With the suggestions closed, Enter sends the draft as written.
 
 ## How mentions travel
 
-The body stays plain readable text — a mention is written into it as `@Name`. Alongside the text, the send callback reports _who_ the body actually mentions:
+The body remains plain text, with each mention written as `@Name`. The send callback also reports the identities of known candidates mentioned in that text:
 
 ```tsx
 onSendMessage={(topicId, body, mentions) => {
@@ -37,7 +43,7 @@ onSendMessage={(topicId, body, mentions) => {
 }}
 ```
 
-Mentions are extracted from the final text, so a mention that was picked but edited away again does not count. Store them with the message and hand them back on `ChatMessage.mentions` — that is what makes them render distinctly without re-parsing.
+Mentions are extracted from the final text, so a mention that was picked but edited away does not count. Store the reported mentions with the message and return them on `ChatMessage.mentions`. The conversation uses those identities to highlight mentions without looking up candidates again.
 
 ## How mentions render
 
@@ -47,10 +53,12 @@ Each known mention in a body renders as its own element, marked with the kind of
 <span class="cratis-chat-message__mention" data-kind="agent">@Review Agent</span>
 ```
 
-Both kinds are highlighted with the theme's primary color; agents additionally carry a dotted underline. Style them further — or differently per kind — through those hooks in your own CSS.
+Both kinds use the theme's highlight text and background colors; agents also have a dotted underline. Use the class and `data-kind` attribute to adjust their appearance in your CSS.
 
-The parsing helpers are exported for hosts that need them elsewhere (notifications, backend-side checks in TypeScript): `findMentionRanges`, `extractMentions`, and `mentionSegments`, each generic over anything with a `name`.
+If your application needs to process mentions outside the conversation, `findMentionRanges`, `extractMentions`, and `mentionSegments` are exported helpers. Each accepts candidates with a `name` property.
 
 ## Emoji
 
-The composer's emoji button opens a quick row of recently used emoji (kept per browser) that expands into the full categorized picker; the chosen emoji is inserted at the caret. Nothing to wire up — it comes with the composer.
+The composer's emoji button opens a quick row of recently used emoji, with an option to open the full categorized picker. Choosing an emoji inserts it at the caret. Recent choices are stored in the browser when storage is available; no application callback is required.
+
+To let someone reply directly to a message's author, see [quick reply](./message-actions.md#quick-reply).

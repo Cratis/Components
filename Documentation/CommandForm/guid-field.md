@@ -1,6 +1,6 @@
 ---
 title: GuidField
-description: Edit a scalar Fundamentals Guid property on an Arc command as text, with format and required errors.
+description: GuidField in Cratis Components edits an Arc command's scalar Fundamentals Guid as text, preserving its type and reporting format and required errors.
 ---
 
 `GuidField` is a native text input bound to a scalar `Guid`, `Guid | undefined`, or `Guid | null` property. It keeps the command value a native Fundamentals `Guid` and never writes a string. It is opt-in: [AutoCommandForm](auto-command-form.md) does not pick it for `Guid` properties until you register it.

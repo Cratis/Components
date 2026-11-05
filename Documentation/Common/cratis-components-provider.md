@@ -1,6 +1,6 @@
 ---
 title: CratisComponentsProvider
-description: Configure locale, Components-owned labels and icons, and the app-wide toast region.
+description: Configure Cratis Components locale, labels, icons, router links, and toast notifications, and select a renderer within its supported scope.
 ---
 
 `CratisComponentsProvider` is the application root for Components-owned locale/messages and optional renderer selection. Its `value` remains renderer-independent and it does not configure an application's direct third-party component usage; a selected adapter may mount its own provider boundary. Styling remains owned by CSS or by the explicitly selected adapter.
@@ -127,15 +127,15 @@ replacement.
 
 Pass one stable presentation manifest to `library`. The broader fourteen-slot renderer system,
 ordered manifest composition, scopes/islands, atomic slots, lazy loading, and public adapter
-discovery remain experimental even though some `unstable_` contracts are available to repository
-and adapter authors.
+discovery are outside that profile's compatibility promise. Some `unstable_` contracts are
+available to repository and adapter authors.
 
 The provider exposes:
 
 | Prop                 | Purpose                                                                                                         |
 | -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `library`            | One stable presentation manifest. Ordered arrays are experimental last-wins composition. Omit for built-in.     |
-| `libraryMode`        | Experimental profile-promise behavior: `strict` rejects invalid promises; `degrade` reports after mount.        |
+| `library`            | One stable presentation manifest. Ordered arrays use last-wins composition outside that profile. Omit for built-in. |
+| `libraryMode`        | Profile-promise validation: `strict` rejects invalid promises; `degrade` reports after mount.                    |
 | `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects an undeclared slot instead of expanding adapter scope. |
 | `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                                 |
 | `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.                      |

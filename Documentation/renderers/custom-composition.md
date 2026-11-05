@@ -1,28 +1,33 @@
 ---
-title: Build a custom vendor-native composition
-description: Combine Arc-generated contracts with application-owned vendor workflows without relabeling Components composites as vendor-native.
+title: 'Cratis Components: build a vendor-native workflow'
+description: Use Cratis Arc contracts in an application-owned vendor grid or editor alongside Cratis Components. Keep data, provider, and focus ownership explicit.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-**Goal:** keep Arc's generated command and query contracts while building a workflow whose table,
-dialog, selection, and editing behavior all belong to an application-selected vendor.
+Build an application-owned vendor workflow with Cratis Arc's generated command and query contracts
+when you need more than primitive styling. Your grid or editor owns its interactions, while Arc
+connects it to the backend. Cratis Components can remain in use elsewhere in the application without
+owning this workflow.
 
 ## Choose the boundary
 
-Use a renderer adapter when only the nine common primitives need vendor presentation. Use custom
-composition when the required capability belongs to a larger workflow: grouped rows, vendor lazy
-loading, a vendor editing model, a commercial scheduler, or a suite-specific dialog/grid contract.
+Use a renderer adapter when the nine common primitives, such as buttons and text inputs, need
+vendor presentation. Choose custom composition when the capability you need belongs to a larger
+workflow: grouped rows, vendor lazy loading, a vendor editing model, a commercial scheduler, or a
+suite-specific dialog/grid contract.
 
-Do not start with `DataPage` and describe the result as a vendor DataPage. DataPage still owns its
-layout, Arc query binding, selection, action menu, details panel, and DataTables composition even
-when some nested buttons use an adapter.
+Start that workflow with the vendor components and connect them to Arc directly. Starting with
+`DataPage` leaves Components in charge of layout, Arc query binding, selection, the action menu,
+the details panel, and DataTables composition. An adapter can change nested buttons without making
+DataPage a vendor-native grid.
 
 ## Read through the Arc contract
 
-Call the generated query hook when you need values rather than a Components table. Feed the returned
-read models into an application-owned vendor wrapper:
+Call the generated query hook to get the data without a Components table. In this example,
+`AllAccounts` represents an application-generated query, and `AccountGrid` is a vendor wrapper you
+supply. Pass the returned read models, the query's data for display, into that wrapper:
 
 ```tsx
 import { AllAccounts } from './generated/AllAccounts';
@@ -35,19 +40,26 @@ export const Accounts = () => {
 };
 ```
 
-`AccountGrid` owns the vendor's row identity, sorting, filtering, paging, selection, keyboard model,
-and rendering. Arc still owns the generated transport/query contract. If the vendor grid performs
-server operations, model those operations as explicit query arguments and apply them on the server;
-do not infer complete-result behavior from Components loaded-page table state.
+`accounts.data` gives the wrapper the query data; it does not configure a vendor grid. In
+`AccountGrid`, define row identity, sorting, filtering, paging, selection, keyboard behavior, and
+rendering using the vendor's API. Also handle the query's loading and failure states so an empty
+grid does not hide an unfinished or failed request.
 
-Use the generated Arc command API in the same way for writes. Keep command construction, validation,
-execution results, and error handling typed at the Arc boundary, while the application-owned dialog
-or editor maps its vendor event model into those values. Do not pass a vendor event object into a
-Components `ChangeHandler<T>` or cast incompatible callback types together.
+If the grid requests server-side sorting, filtering, or paging, connect those requests to explicit
+query arguments and apply the operations on the server. Sorting or filtering only the loaded page
+cannot produce a result for the complete dataset. Arc supplies the generated transport/query
+contract, while the application decides how the vendor grid drives it.
+
+Use the generated Arc command API for writes. Let the application-owned dialog or editor map vendor
+events to typed command values, then handle validation and execution results at the Arc boundary.
+A Components `ChangeHandler<T>` expects the next semantic value as its first argument, not a vendor
+event wrapper. Translate the event instead of casting incompatible callback types together.
 
 ## Keep providers explicit
 
-Mount every provider for the scope it actually owns:
+Mount `<Arc>` around the workflow so generated hooks use your application's Arc configuration and
+query cache, even when the screen uses no Components controls. Place the vendor provider where its
+components can read it. This example also keeps Components configuration available for other surfaces:
 
 ```tsx
 import { Arc } from '@cratis/arc.react';
@@ -66,51 +78,53 @@ export const Application = () => (
 );
 ```
 
-`<Arc>` supplies the generated query and command proxies with their origin, API base path, and
-query cache; `AllAccounts.use()` needs it whether or not Components is involved. The vendor provider
-owns the vendor-native `AccountGrid`. The Components provider remains available for other
-Components surfaces in the application. Neither provider receives the other's theme,
-portal registry, cache, or license unless that vendor's own documented API requires the application
-to supply it directly.
+`<Arc>` supplies configuration such as origin and API base path, along with an application-scoped
+query cache. Query hooks have default contexts if `<Arc>` is absent, but neither UI provider supplies
+Arc configuration. `ApplicationVendorProvider` is an application-owned wrapper for the vendor setup,
+just as `AccountGrid` wraps the grid. It supplies the vendor context; `CratisComponentsProvider` supplies
+Components configuration. Neither automatically transfers themes, portal registries, caches, or
+license keys to the other. Supply each resource through the API of the provider that needs it.
 
-If this workflow uses no Components surface, it does not need `CratisComponentsProvider`. Arc can be
-used without Components; it still needs `<Arc>`.
+If this workflow uses no Components surface, omit `CratisComponentsProvider` and keep `<Arc>` for
+the application's Arc configuration. Arc can be used without Components.
 
 ## Reuse portable Components contracts selectively
 
-Use a Components primitive when its public semantic contract fits. For example, an application may
-render a Components `Button` beside a vendor grid, or select one of the three concrete primitive
-adapters for that button. Continue to style it through its typed parts and `data-cratis-*` states.
+A Components `Button` can sit beside a vendor grid when its public props and behavior fit the task.
+You can select a primitive adapter for that button and style it through typed parts and
+`data-cratis-*` states. This does not change who owns the neighboring grid.
 
-Do not reuse a Components type merely to give a vendor-native object a familiar name. `DataPage`,
-`Column`, `MenuItem`, `DialogParts`, and `ChangeHandler<T>` describe specific Components contracts.
-A vendor grid column, menu tree, modal lifecycle, or change event remains vendor-owned unless an
-explicit adapter translates and proves the exact Components contract.
+Keep vendor-specific types at that boundary. `DataPage`, `Column`, `MenuItem`, `DialogParts`, and
+`ChangeHandler<T>` describe specific Components contracts, not interchangeable names for vendor
+objects. A vendor grid column, menu tree, modal lifecycle, or change event needs an explicit
+translation before it can satisfy the corresponding Components contract.
 
 ## Own integration behavior
 
-The application-owned composition must specify and test:
+Specify and test the integration decisions that the application now owns:
 
-1. which query arguments own server paging, sorting, and filtering;
-2. which component owns selection and row identity;
-3. which dialog or editor owns focus, dismissal, validation timing, and pending state;
-4. where overlays portal and how their layers interoperate with Components overlays;
-5. how vendor values and errors map to generated Arc command/query values; and
-6. who owns licensing, themes, server rendering, CSP, and upgrade verification.
+- Query arguments for server paging, sorting, and filtering.
+- Selection state and row identity.
+- Focus, dismissal, validation timing, and pending state in the dialog or editor.
+- Portal containers and layer order when vendor and Components overlays are open together.
+- Mapping vendor values and errors to generated Arc command/query values.
+- Licensing, themes, server rendering, Content Security Policy (CSP), and upgrade verification.
 
-Test the complete workflow in the real provider and portal shell. Components conformance evidence
-for an adapter's nine primitives does not cover this application-owned composition.
+Give each interaction one focus owner. Wrapping a vendor modal in a Components modal can introduce
+two focus traps or competing Escape handlers. Configure the vendor's portal separately from the
+Components `overlayEnvironment`; the two systems do not share a portal registry or layer service.
+
+Test the complete workflow in the real provider and portal shell. Conformance checks for an
+adapter's nine primitives do not cover this application-owned composition.
 
 ## Verify the result
 
-A vendor-native workflow should contain vendor-native behavior because the application deliberately
-composed it, not because a provider was expected to transform a Cratis composite. Confirm that:
+Walk through loading the query, selecting a row, editing it, and handling both successful and failed
+command results. Check keyboard navigation and focus restoration with the actual overlays open.
+When the grid uses server operations, confirm that sorting and filtering apply to the complete
+result before paging. Any Components controls in the workflow should use the selected adapter or
+built-in fallback intentionally; neither turns the surrounding workflow into a vendor equivalent.
 
-- no Cratis composite is being described as a vendor equivalent;
-- one control owns each focus and keyboard interaction;
-- Arc queries apply complete-result operations before paging;
-- package/provider/license boundaries remain explicit; and
-- the built-in fallback remains available only where the application intends it.
-
-Read [renderer coexistence](index.md) for portal and focus rules and [unsupported renderer claims](unsupported.md)
-for the promises this approach does not create.
+Use [renderer coexistence](index.md) to configure the remaining Components controls alongside vendor
+portals and focus handling. Check [unsupported renderer claims](unsupported.md) before describing
+which parts an adapter replaces.

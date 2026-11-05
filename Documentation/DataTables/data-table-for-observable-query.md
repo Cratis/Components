@@ -1,6 +1,6 @@
 ---
 title: DataTableForObservableQuery
-description: Show a paged Arc observable query in a table that updates when the read model changes on the server.
+description: DataTableForObservableQuery in Cratis Components displays live Arc query results with server-side paging, row selection, and configurable columns.
 ---
 
 `DataTableForObservableQuery` displays the result of a generated Arc observable query and updates the rows when the underlying data changes.

@@ -1,6 +1,6 @@
 ---
 title: PasswordField
-description: Bind a string property on an Arc command to a masked input with a show/hide toggle.
+description: PasswordField in Cratis Components binds an Arc command's string to a masked input with a show/hide toggle and localizable accessible labels.
 ---
 
 `PasswordField` provides a Cratis-owned masked text input with a labeled show/hide action.

@@ -1,7 +1,9 @@
 ---
 title: PivotViewer dimensions and filters
-description: Define the values PivotViewer sorts, groups, and filters by, and the value types each one supports.
+description: Define PivotViewer dimensions for sorting and grouping, then add categorical or numeric filters so users can narrow the collection.
 ---
+
+PivotViewer dimensions control how users sort and group cards; filters narrow which items remain visible. Choose dimensions for the comparisons users need to make, then add filters for finding a smaller working set. The value returned by `getValue` determines whether a dimension produces categories or numeric ranges.
 
 ## Dimensions
 
@@ -22,13 +24,13 @@ interface PivotDimension<TItem> {
 }
 ```
 
-How a dimension groups depends on the first non-missing (`null` or `undefined`) value returned by `getValue`:
+How a dimension groups depends on the first value returned by `getValue` that is neither `null` nor `undefined`:
 
 | Value | Grouped view |
 | --- | --- |
 | `string` | One column per distinct value, sorted by value. Missing values appear as the string labels `null` and `undefined`. |
-| `number` | Ten equal-width numeric ranges between the smallest and largest value; missing values are excluded from the ranges. |
-| `Date` | Converted to a numeric timestamp, so it groups into ten ranges of milliseconds; missing values are excluded. |
+| `number` | Up to ten equal-width ranges between the smallest and largest visible value; empty ranges and missing values have no column. Equal values form one column. |
+| `Date` | Converted to a numeric timestamp and grouped into ranges of milliseconds, following the same rules as numbers. |
 | `boolean` | Separate `false` and `true` columns; missing values are not grouped with `false`. |
 
 In grouped view, items missing a numeric or boolean grouping value have no column, although the toolbar count still includes them. String dimensions instead show missing values in `null` and `undefined` columns. If every value is missing, the dimension uses string grouping. To group by exact numbers, years, or dates, return a string: `String(item.priority)` or `String(item.createdAt.getFullYear())`.
@@ -60,14 +62,15 @@ The `month` dimension returns zero-padded text such as `2024-03`, so its columns
 
 Filters appear in the filter panel, opened from the filter button at the left of the toolbar. The button, and with it the panel's search box, appears only when `filters` has at least one entry. A badge on the button counts the active selections.
 
+Selections within one categorical filter combine with OR: selecting `todo` and `in-progress` includes either status. Different filters combine with AND: an item must match the status selection and any active assignee or price filter. Numeric ranges include both endpoints; clearing a selection removes that restriction.
+
 ### Filter Types
 
-1. **Categorical filter** (default): a list of values with counts. Single-select unless you set `multi: true`.
-2. **Range filter** (`type: 'number'`): a histogram with a minimum/maximum range selection.
+A categorical filter, the default, shows a list of values with counts. It is single-select unless you set `multi: true`. A range filter (`type: 'number'`) instead shows a histogram with minimum and maximum controls.
 
 A filter and a dimension with the same `key` share one column in PivotViewer's store, and the filter's `getValue` wins. Give them the same `getValue`, or different keys. Categorical filters work on string and boolean columns; a categorical selection on a number column does not narrow the cards. This also applies when the numeric column's first value is missing: the first non-missing value determines its type, so selecting a categorical option still does not narrow it.
 
-The `type` union also contains `'date'` and `'custom'`, and a filter can supply its own editor through `renderEditor`. This page covers the categorical and numeric filters that the PivotViewer stories exercise.
+The `type` union also contains `'date'` and `'custom'`, and `renderEditor` lets a filter replace its editor UI. For the built-in numeric range editor, use `type: 'number'`; the examples below use that editor and categorical selections.
 
 ### Categorical Filter
 
@@ -79,7 +82,9 @@ const categoryFilter: PivotFilter<Product> = {
 };
 ```
 
-Options and their counts are computed from `data`, most frequent first. Pass `options` to supply a fixed list, or `sort` to order the options yourself. Each option's count reflects the other active filters.
+By default, PivotViewer computes options and counts from `data`, most frequent first. It applies the other filter-panel selections before counting, but excludes this filter's own selection. Search and clicks on grouped column labels do not affect these counts.
+
+Use `sort` to order the computed options yourself. A non-empty `options` array instead supplies the list, order, and counts as given; PivotViewer does not recount or sort that list.
 
 Without `multi`, selecting a value replaces the previous selection and selecting it again clears it.
 
@@ -170,7 +175,7 @@ const taskFilters: PivotFilter<Task>[] = [
 ];
 ```
 
-Define these arrays outside the component, or memoize them. PivotViewer rebuilds its store whenever the array identities change.
+Keep these definitions outside the component, or memoize them when they depend on props. A new `getValue` function, a changed key, or a changed `data` array rebuilds the store. Changing only a dimension's label, formatter, or group sorter does not rebuild its columns.
 
 ## Dynamic Dimensions
 
@@ -193,7 +198,7 @@ Columns are sorted in plain string order, so in this example `'Under 18'` comes 
 
 ## Date-based Dimensions
 
-A `Date` or a numeric year groups into ten numeric ranges, not one column per year. Convert dates to text:
+A `Date` or a numeric year produces numeric ranges, not one column per year. Return text when users need to compare calendar periods:
 
 ```typescript
 const byYear: PivotDimension<Task> = {
@@ -220,10 +225,8 @@ Put the year first so the text sorts chronologically.
 
 ## Best Practices
 
-1. **Return strings for exact numeric or date categories**: numbers and dates produce ranges, while booleans produce `false` and `true` columns
-2. **Limit dimensions**: every dimension and filter adds a column to the store PivotViewer builds on the main thread
-3. **Use clear labels**: the `label` is what users see in the Sort by list and the filter panel
-4. **Consider cardinality**: a dimension with hundreds of distinct values produces hundreds of columns
-5. **Balance filters**: provide both broad (status) and narrow (assignee) options, with `multi: true` where users compare several values
-6. **Keep accessors cheap**: `getValue` runs for every item whenever `data`, `dimensions`, or `filters` change, and again when filter options are recounted
-7. **Provide defaults**: set a sensible `defaultDimensionKey`
+Choose a `defaultDimensionKey` that gives users a useful first comparison, and use labels they will recognize in the toolbar and filter panel. Return strings for exact numeric or calendar categories; returning a number or `Date` asks for ranges instead.
+
+A categorical dimension with hundreds of distinct values can produce hundreds of columns. Prefer a broader grouping when that would make the collection easier to compare, and let filters find individual values. Each unique dimension or filter key also adds a column to the store, so keep `getValue` inexpensive and precompute costly derived values before rendering.
+
+Once grouping and filtering match the task, [customize the card text and detail content](renderers.md). If changes feel slow with representative data, [measure the main-thread and worker work](performance.md) before increasing the collection size.

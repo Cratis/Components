@@ -1,9 +1,11 @@
 ---
-title: Headed drawer
-description: Present a category of tools as a headed drawer of labeled tiles, and let the consumer own what a tile does.
+title: Toolbar drawer palettes
+description: Present labeled tools in a ToolbarFolder drawer, connect activation and dragging to your application, and control dismissal and focus.
 ---
 
-Set `presentation='drawer'` on a `ToolbarFolder` to open a headed drawer instead of the compact popout. The drawer shows a visible heading with a close button, followed by labeled tiles: a prominent icon and a title that is always visible, never only a tooltip. The default presentation, the icon-only grid and the labeled list keep working exactly as before.
+Use a `ToolbarFolder` drawer in Cratis Components when users need to browse a category of tools by name before choosing one. Set `presentation='drawer'` to show a heading, a close button, and tiles with visible icons and titles. Your application decides what choosing or dragging a tile does.
+
+The example inserts a layout item at the current selection when a user clicks a tile or activates it with Enter or Space. The `items` array is your catalogue, not a built-in set of layout types.
 
 ```tsx
 import { Toolbar, ToolbarFolder } from '@cratis/components/Toolbar';
@@ -31,12 +33,11 @@ const layoutItems: ToolbarDrawerItem[] = [
 
 ## Palette presentation versus consumer-owned drop
 
-The drawer presents a palette and nothing else. It does not know what a tile creates, where it goes, or whether a drop target accepts it.
+The drawer presents the choices; your application performs the action. Items render in the order you supply them, without filtering or mapping to known types. Give each item a stable `id` for identity and a `title` for its label.
 
-- **The catalogue is yours.** `items` is data. Stack, Row, Grid and Container above are examples, not a built-in list. Add a type by adding an item; nothing inside the drawer changes. Items are rendered in the order supplied and are never normalized, filtered or mapped to a known type.
-- **`payload` is opaque.** The exact value you supply is delivered unchanged to `onActivate` and to the drag callbacks. Identity lives in `id`, never in `title`.
-- **You decide the target.** Activation by click, Enter or Space calls `onActivate(item)`. The drawer does not insert anything.
-- **You own the drop.** Dragging a tile serializes `payload` with `JSON.stringify` onto the `application/json` entry of the HTML5 `DataTransfer` with `effectAllowed` set to `copy`, the same contract as [drag and drop](drag-and-drop.md). Your surface handles `dragover` and `drop`.
+Activation calls `onActivate(item)` with your item and its unchanged `payload`. Use that handler to insert at the selection, choose a tool, or perform the action your editor supports. The drawer does not choose a target or insert anything itself.
+
+Dragging uses a different handoff: it serializes `payload` with `JSON.stringify` into the `application/json` entry of the native HTML5 `DataTransfer` and sets `effectAllowed` to `copy`. Your surface must accept and handle the drop. This fragment shows that boundary:
 
 ```tsx
 <div
@@ -48,11 +49,13 @@ The drawer presents a palette and nothing else. It does not know what a tile cre
 />
 ```
 
-Because the transfer is JSON, keep payloads serializable. When you need the original object, `onItemDragStart(item, event)` receives the item with the very same `payload` reference.
+Keep payloads JSON-serializable and validate incoming data before inserting it on a surface that also accepts other drops. The fragment assumes a valid palette payload; [Drag and drop](drag-and-drop.md) explains the transfer and target handlers. When you need the original object at drag start, `onItemDragStart(item, event)` receives the item with the same `payload` reference.
+
+Keep `onActivate` available even when dragging is enabled. Native HTML5 dragging varies across touch browsers and does not provide a keyboard insertion path. Activation lets users perform the same task without dragging.
 
 ## Items and children
 
-`items` and `children` can be used together. Catalogue tiles come first. A `ToolbarButton` placed inside a drawer folder renders as a labeled tile too, using its `title`, `icon`, `data` and `draggable`.
+`items` and `children` can be used together. Catalogue tiles come first. A `ToolbarButton` placed inside a drawer folder renders as a labeled tile too, using its `title`, `icon`, `data` and `draggable`. Child buttons use their own `onClick` and `onDragStart`; the folder's catalogue callbacks and `closeOnInsert` behavior do not apply to them.
 
 | Prop | Purpose |
 |---|---|
@@ -62,7 +65,7 @@ Because the transfer is JSON, keep payloads serializable. When you need the orig
 | `onActivate` | Called with the item on click, Enter or Space. |
 | `onItemDragStart` / `onItemDragEnd` | Called with the item when a tile drag starts and ends. |
 | `draggable` | Whether catalogue tiles can be dragged. Defaults to `true`. |
-| `closeOnInsert` | Close the drawer after an activation or a completed drop. Defaults to `false`. |
+| `closeOnInsert` | Close after a catalogue tile activates or its drag ends with a non-`none` `dropEffect`. Defaults to `false`. |
 | `maxColumns` | Upper bound for the tile columns. Defaults to `3` in the drawer. |
 
 ## Unavailable items
@@ -71,11 +74,11 @@ Set `disabled` and give a `disabledReason` for an item the current context does 
 
 ## Dismissal, focus and drags
 
-- The trigger exposes `aria-expanded` and `aria-controls`. The panel is named by the visible heading through `aria-labelledby`.
-- Escape and the close button close the drawer and return focus to the trigger. A press outside the drawer closes it without restoring focus and without activating anything; the drawer reacts to `pointerdown`, so touch and pen behave like the mouse.
-- Opening or closing the drawer never activates an item.
-- The drawer stays open while a tile is dragged. It marks itself with `data-dragging`. A cancelled drag leaves everything as it was; with `closeOnInsert`, only a completed drop closes the drawer.
-- Native HTML5 drag-and-drop is not available on every touch browser. Click activation is the equivalent insertion path, which is why `onActivate` exists.
+Opening the drawer does not move focus into it or activate a tile. The trigger exposes `aria-expanded` and `aria-controls`; the visible heading names the panel through `aria-labelledby`. When closed, the panel is `inert` and `aria-hidden`.
+
+Escape and the close button close the drawer and return focus to the trigger. Pressing outside closes it without restoring focus or activating a tile. Outside dismissal listens to `pointerdown` as well as `mousedown`, so it also handles touch and pen presses. Clicking the trigger again closes the drawer too.
+
+A tile drag does not itself dismiss the drawer, which marks the drag with `data-dragging`. With `closeOnInsert={true}`, catalogue activation closes it and restores trigger focus. A catalogue drag closes it without restoring focus only when the drag ends with a `dropEffect` other than `'none'`; cancellation leaves it open. This browser drop signal does not confirm that your application successfully inserted anything.
 
 ## Placement
 
@@ -83,7 +86,7 @@ The drawer opens beside a vertical toolbar, towards `folderDirection`, and below
 
 ## Long and localized titles
 
-Tile titles wrap and clamp to two lines. The full title remains the tile's accessible name, so a narrow drawer or a long translation never hides the essential label. Pass localized strings for `title`, `heading` and `closeLabel`.
+Tile titles wrap and clamp to two lines. The full title remains the tile's accessible name, although longer text can be visually clipped. Pass localized strings for `title`, `heading` and `closeLabel`.
 
 ## Styling parts
 

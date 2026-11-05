@@ -1,6 +1,6 @@
 ---
 title: Canvas regions
-description: Render labeled, resizable regions on a Canvas and detect which items they contain.
+description: Canvas regions in Cratis Components are controlled, labeled boxes that report item containment; the host owns membership and coordinated movement.
 ---
 
 `Region` is a resizable, draggable, labeled box a host can place other shapes inside of — the generic shell behind a "group" or "area" affordance on a board. Like `Note`, it is presentational and fully controlled: it owns no position, size, or name state of its own, and reads its `region` prop fresh every render.
@@ -97,7 +97,7 @@ Moving, resizing, and starting a rename are pointer gestures; `Region` has no ke
 </CanvasItem>
 ```
 
-Rendering something as `children` does not make it a "member" — the two mechanisms are independent. What `Region` does do is detect containment: it watches the Canvas item registry, and whenever a sibling `CanvasItem` that carries an `id` gains or loses containment (its center point entering or leaving the region's bounds — whether the item moved, or the region was moved/resized over it), it publishes `ItemAddedToRegion` / `ItemRemovedFromRegion` over the `@cratis/arc.react` messenger. See [Messaging](messaging.md) for the full catalog and the opt-in rules; without an `ArcContext` above the `Canvas`, or for items without an `id`, this is silently inert.
+Rendering something as `children` does not make it a "member" — the two mechanisms are independent. What `Region` does do is detect containment: it watches the Canvas item registry, and whenever a sibling `CanvasItem` that carries an `id` gains or loses containment (its center point entering or leaving the region's bounds — whether the item moved, or the region was moved/resized over it), it publishes `ItemAddedToRegion` / `ItemRemovedFromRegion` through an optional messenger adapter. The adapter uses Arc's `useMessenger` to resolve the nearest scoped messenger or the root messenger, with a local fallback when no provider is mounted. No provider is required. Containment reporting is skipped when no messenger resolves, such as when a custom `ArcContext.Provider` omits it; items without an `id` are not reported. See [Messaging](messaging.md) for the full catalog.
 
 Note the required convention in the snippets above: the `CanvasItem` wrapping a `Region` is given `id={region.id}`. That is how the region recognizes its own registry entry and excludes itself from its containment reports. Overlapping regions may each claim the same item — both publish an `ItemAddedToRegion` — and that is by design: resolving exclusivity is the host's call.
 

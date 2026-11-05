@@ -1,31 +1,29 @@
 ---
-title: CommandForm
-description: Build type-safe Arc command forms with reusable fields, validation, and automatic value binding.
+title: 'CommandForm: build command input in React'
+description: Build React forms for Arc commands with fields that bind to command properties, show validation errors, and work in inline forms or dialogs.
 ---
 
-The `CommandForm` component provides form field components for building command input forms with automatic type handling and validation.
+Cratis Components' `CommandForm` module supplies input fields for Arc commands in React. Use these fields to collect command values and show validation errors in a page, dialog, or step-by-step form without writing a value binding for each input.
 
 ## Purpose
 
-Use the Components `CommandForm` module for typed fields inside Arc's `CommandForm` or a Components command surface. Arc owns command execution and validation results; the fields supply controls, binding, and error associations. Import the inline `CommandForm` container from `@cratis/arc.react/commands`, and Components fields from `@cratis/components/CommandForm`.
+Arc's `CommandForm` owns the command instance, execution, and validation results. Components supplies the input controls and connects their accessible names and errors. Import the inline form container from `@cratis/arc.react/commands` and the fields from `@cratis/components/CommandForm`; they are separate parts of the same form.
 
-For the surrounding providers, CSS, running backend, and generated proxies, start with [Getting started](../getting-started.mdx). For a complete add-author flow, use [Building a form](../building-a-form.md). A local controlled input need not execute an Arc command.
+Before building a command form, set up the providers, CSS, backend, and generated command proxies in [Getting started](../getting-started.mdx). If you want a complete add-author flow rather than a field reference, follow [Building a form](../building-a-form.md). A local controlled input does not need to execute an Arc command.
 
 ## Key Features
 
-- Field generation from the command's own properties with [`AutoCommandForm`](auto-command-form.md)
-- Support for various input types (text, number, date, boolean, etc.)
-- Built-in validation
-- Integration with `CommandForm`, `CommandDialog`, `CommandStepper`, and `StepperCommandDialog`
-- Type-safe field handling
+Choose explicit fields when you need control over their order, labels, or input type. Each field binds to a command property through a typed accessor and displays validation feedback from Arc.
+
+When the command's metadata is enough to choose the inputs, [AutoCommandForm](auto-command-form.md) generates the field list instead. It reads property descriptors: runtime metadata that names each command property, its type, and whether it is optional. The same field controls work in inline forms, dialogs, and steppers.
 
 ## Available Field Components
 
-The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration. [GuidField](guid-field.md) edits a scalar Fundamentals `Guid` property as text while keeping the command value a native `Guid`.
+The module exports Cratis-owned fields built with native controls. Each field uses Arc's `asCommandFormField` wrapper to connect its value, changes, and validation state to the command. Field pages describe their keyboard behavior, accessible names, and validation. For example, [GuidField](guid-field.md) lets a person edit a scalar Fundamentals `Guid` as text while keeping the command value a native `Guid`.
 
 Import fields from `@cratis/components/CommandForm` or `@cratis/components/CommandForm/fields`; both subpaths resolve to the same module, so pick one and use it consistently.
 
-See the field type pages in this section for documentation on each available field component. To generate a form's fields from a command's own properties instead of writing them out by hand, see [AutoCommandForm](auto-command-form.md).
+Use the field pages in this section to choose the control for each property, or continue with [AutoCommandForm](auto-command-form.md) to generate them.
 
 ## Type-Safe Binding
 
@@ -39,7 +37,7 @@ All field components bind to a property on the command via a `value` accessor fu
 <InputTextField value={c => c.title} />
 ```
 
-The `value` prop accepts a function of the form `(instance: TCommand) => unknown`.
+The `value` prop accepts a function of the form `(instance: TCommand) => unknown`. Arc infers the property name from an ordinary accessor such as `c => c.title`. For a dynamic accessor such as `c => c[propertyName]`, also supply `fieldName` so Arc can identify the property; this requires Arc 22.16.0 or later. Arc supplies the control's current value and change handler; you do not need separate React state for that input.
 
 ## Integration
 
@@ -76,13 +74,17 @@ import {
 | One command in a modal | `CommandDialog` | Closes on success through `useDialog`, or through host callbacks in controlled mode |
 | One command gathered across steps | `CommandStepper` or `StepperCommandDialog` | Keep required values and validation timing aligned across steps |
 
+The dialog and stepper containers already create an Arc `CommandForm`. Put fields inside them, not another `CommandForm` or `AutoCommandForm`, which would create a separate form and command instance.
+
 A field accessor selects a generated command member; it does not supply missing context such as a parent id. Set required hidden values through `initialValues` before validation. `onBeforeExecute` cannot repair a missing value that prevents reaching submit.
 
-Check an empty required field, a valid initial command, a server rejection, and a successful execution. An observable list follows a later query result; command success alone does not insert its row.
+When checking the form, try an empty required field, a valid starting value, a server rejection, and a successful submission. If the form adds an item to an observable list, check command completion first, then the later query result. Command success alone does not insert a row into the list.
 
 ## Field defaults and command values
 
-Each field page states what the control shows while the bound property is unset, such as an unchecked box for `CheckboxField` or `0` for `NumberField`. That is only what the control **shows**. It is not written to the command until the user edits the field. A non-optional property that is still unset fails Arc's client validation, so the form stays invalid and a `CommandDialog` keeps confirm disabled. When the displayed default is an acceptable answer, seed it through `initialValues`; see [Initialize command values](../CommandDialog/index.md#initialize-command-values).
+A displayed default is not a command value. For example, `CheckboxField` can look unchecked and `NumberField` can show `0` while the bound property remains unset. Each field page states its display default; the control writes a value to the command when the person edits it.
+
+An unset non-optional property fails Arc's client validation, so the form stays invalid and `CommandDialog` keeps confirm disabled. If zero or false is the intended starting value, supply it through `initialValues`. That gives the command an actual value before anyone edits the input. See [Initialize command values](../CommandDialog/index.md#initialize-command-values).
 
 ## Accessible names and validation errors
 
@@ -97,7 +99,9 @@ Checkboxes and switches prefer their inline `label`; radio options use their opt
 
 ## Populating Initial Values from a Query
 
-Every field here is built with `asCommandFormField` from `@cratis/arc.react/commands`, so each one automatically supports `CommandForm`'s `populateFromQuery`/`populateFromObservableQuery` props - the form fetches a single-instance query itself and seeds its fields from the result, matched onto the command by property name:
+For an edit form, let Arc load the starting values through `populateFromQuery` or `populateFromObservableQuery`. The form runs the query and matches result properties to command properties by name. Every field here supports this through `asCommandFormField`.
+
+This excerpt assumes generated `GetUserProfile` and `UpdateProfile` proxies and a `userId` in scope. The query result and command both have `firstName` and `lastName` properties:
 
 ```tsx
 import { CommandForm } from '@cratis/arc.react/commands';
@@ -115,7 +119,7 @@ import { UpdateProfile } from './commands';
 </CommandForm>;
 ```
 
-Two field props refine this per field - both work on every field type in this package, since they come from the shared `asCommandFormField` wrapper:
+Use these shared field props when a field should not take the same-named value from the query:
 
 - `noInitialValue` - skip this field entirely, even if the query result has a same-named property.
 - `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.
@@ -129,3 +133,5 @@ See Arc's [Populating a Form from a Query](https://www.cratis.io/arc/frontend/re
 Use `asCommandFormField` from `@cratis/arc.react/commands` for custom fields; it stamps the marker automatically. For a hand-rolled field or column, use `markAsCommandFormField` or `markAsCommandFormColumn` from `@cratis/components/CommandForm`.
 
 The marker is a plain shared property rather than a package-private symbol, so a component marked by Arc is recognized by Components and vice versa. Build transforms may rewrite `displayName` without silently breaking binding.
+
+Once you have chosen the fields, continue with [Building a form](../building-a-form.md) to connect them to a complete command flow, or [AutoCommandForm](auto-command-form.md) to generate the field list.

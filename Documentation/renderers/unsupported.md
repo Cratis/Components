@@ -1,6 +1,6 @@
 ---
 title: Unsupported renderer claims
-description: Exact limits of Components renderer adaptation, platform scope, composite behavior, and installation fallback.
+description: Cratis Components renderer adapters do not replace the full catalog, remove built-in dependencies, or turn DataPage into a vendor grid.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->

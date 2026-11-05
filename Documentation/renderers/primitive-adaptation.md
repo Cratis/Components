@@ -1,6 +1,6 @@
 ---
 title: Primitive adaptation profile
-description: Reference for the nine stable presentation slots, portable parts and states, fallback, and behavior ownership.
+description: Cratis Components adapts nine presentation slots through renderer ABI 1 while preserving public props, parts, semantic values, and refs.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->
