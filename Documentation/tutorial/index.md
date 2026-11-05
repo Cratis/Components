@@ -1,6 +1,6 @@
 ---
 title: "Tutorial: Build the library screen"
-description: Build an Arc-backed library screen with an observable author table, command dialogs, and a selection-aware books panel.
+description: Build an Arc-backed React library screen with an observable author table, command dialogs, and a books panel that follows the selected author.
 ---
 
 Build an Arc-backed React library screen with Cratis Components, starting with a table of authors. Then add a dialog to register an author and a detail panel that shows the selected author's books, with an action to add another book. Arc supplies the backend commands and queries and generates their TypeScript proxies, the browser classes your screen uses to call them. Components supplies the forms, tables, dialogs, and page layout.
