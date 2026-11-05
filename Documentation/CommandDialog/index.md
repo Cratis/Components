@@ -3,17 +3,12 @@ title: CommandDialog for running Arc commands
 description: Use CommandDialog to collect command values, gate confirmation on validation, and return a typed Cratis Arc command response to the caller.
 ---
 
-Use `CommandDialog` when a user needs to create, rename, or delete something through a Cratis Arc command without leaving the current page. The dialog collects values for one command, keeps confirm disabled while the form is invalid, and stays open if execution fails so the user can correct the input.
+<a id="purpose"></a>
+<a id="key-features"></a>
 
-## Purpose
+`CommandDialog` runs one Cratis Arc command in a dialog without leaving the current page. Pass the generated command proxy and the fields to edit, and seed required values that have no field, such as the id of a project being renamed. It combines `CommandForm` validation with `Dialog` presentation: confirm stays disabled while the form is invalid, execution manages the busy state, and failures leave the dialog open for corrections.
 
-Pass the generated command proxy and the fields the user needs to edit. `CommandDialog` connects those fields to the command and runs it when the user confirms. Seed any required values that are not shown as fields, such as the id of the project being renamed.
-
-## Key Features
-
-The dialog combines a `CommandForm`, which holds command values and validation state, with a `Dialog`, which handles presentation and dismissal. You do not need to wire a separate form to the confirm button or manage the busy state yourself.
-
-Start with the typed dialog pattern below to await the outcome from the page that opened it. For field-specific checks or value transformations, continue with [Advanced Features](advanced-features.md).
+Use the typed dialog pattern below to await the outcome from the calling page. For field-specific checks or value transformations, see [Advanced Features](advanced-features.md).
 
 ## Recommended Usage Pattern
 
