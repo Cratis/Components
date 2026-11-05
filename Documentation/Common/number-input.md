@@ -1,6 +1,6 @@
 ---
 title: Locale-aware number input
-description: Enter controlled nullable numbers with locale formatting, explicit commits, adornments, bounds, and stable parts.
+description: Enter controlled nullable numbers with NumberInput in Cratis Components, using locale formatting, explicit commits, bounds, and adornments.
 ---
 
 `NumberInput` is the standalone locale-aware numeric control. It keeps transient text separate from the controlled `number | null` value, so clearing or typing an incomplete number never fabricates `0` or exposes `NaN`.

@@ -1,9 +1,11 @@
 ---
-title: Observable queries
-description: Bind ChatSidebar to two Cratis Arc observable queries for live topics and messages.
+title: "Chat observable queries: keep topics and messages current"
+description: Bind ChatSidebar to Cratis Arc observable queries for live topics and messages, with loading, failure, and access-denied states handled separately.
 ---
 
-`ChatSidebar` is deliberately query-agnostic — arrays in, callbacks out. For applications on Cratis Arc, `ChatSidebarForObservableQueries` binds it to two real-time observable queries so both the topics and the open topic's messages stay current as the read models change server-side.
+`ChatSidebarForObservableQueries` connects Cratis Components Chat to two Cratis Arc observable queries: subscriptions that receive updated query results as server-side data changes. Use it when your application already exposes topics and messages through Arc and you want the sidebar to manage those subscriptions and display their loading or failure states.
+
+The wrapper is optional. `ChatSidebar` accepts arrays and callbacks directly when your application uses another data source or manages subscriptions itself.
 
 ## Prerequisites
 
@@ -40,21 +42,28 @@ export const LiveChat = () => {
 
 `authorOf`, `startTopic`, `send`, `nameTopic`, and `candidates` are your own, as in the [basic usage](./index.md#basic-usage). Render a control that sets `chatOpen` to `true`.
 
-- `topicsQuery` subscribes as soon as the component mounts, whether or not `open` is `true` (pass `topicsArguments` when the query takes any). Mount the wrapper only where the subscription should be live.
-- `messagesQuery` subscribes only while a topic is open. `messagesArguments` derives the query arguments from the open topic's id; answering `undefined` holds the subscription.
-- The wrapper owns the topic selection so it can re-target the messages subscription; everything else — every callback, every render hook — is the same contract as [`ChatSidebar`](./index.md). It does not accept `selectedTopicId`; observe changes through `onTopicSelected`.
-- The wrapper passes each query's data and display status to the sidebar. With no topics or messages, a pending query shows a loading announcement; a failed, invalid, or unauthorized query shows an alert rather than the empty-state text. It never displays server exception details.
+`topicsQuery` subscribes when the component mounts, even when `open` is `false`. Pass `topicsArguments` if the query takes arguments, and mount the wrapper only where that subscription should be live. Closing the sidebar does not unmount the wrapper or stop its subscriptions.
+
+`messagesQuery` subscribes while a topic is selected and `messagesArguments` returns arguments for it. Return `undefined` to hold the subscription. The wrapper owns topic selection so it can switch the messages query to the selected topic. It does not accept `selectedTopicId`; use `onTopicSelected` to observe selection changes.
+
+Sending, topic creation, naming, actions, and render callbacks use the same contract as [`ChatSidebar`](./index.md). The queries supply data, not write operations: your application still handles each callback and updates the server-side data.
 
 ## Loading and failed queries
 
-The topics and messages queries resolve their statuses independently. Authorization denial takes precedence over failure or validation errors; failure takes precedence over loading. When a query is performing with no data, its list or conversation shows a loading message. When it completes successfully with an empty result, the ordinary empty-state text returns. Topics and messages stay visible during a refetch of the same arguments only while the latest query result contains them. Changing `topicsArguments` or opening another topic shows loading without the previous query's status or data until the new result arrives; revisiting earlier arguments can restore a cached result. After a failure, the alert appears above any topics or messages that the latest result still contains; the wrapper does not retain the last successful data if the failed result omits it. An unauthorized result replaces previously loaded content with an access-denied alert and disables starting a new topic or composing a message.
+Topics and messages have independent display states. Access denial takes precedence over other flags. Exceptions or validation errors produce a failure state before loading is considered. Otherwise, a performing query or a result marked not ready shows loading; a settled unsuccessful result shows failure. The sidebar displays these states without server exception details.
 
-Set `labels.topicList.loading`, `labels.topicList.failed`, and `labels.topicList.unauthorized` for the topic list; set the corresponding `labels.conversation` keys for messages. The English defaults are “Loading topics…”, “Could not load topics.”, and “You are not authorized to view these topics.” for the list, and “Loading messages…”, “Could not load messages.”, and “You are not authorized to view these messages.” for the conversation. Chat uses `labels`, not the provider's `messages.dataTable` settings.
+With no data, a loading query shows a status announcement, while failure or access denial shows an alert. A successful empty result shows the ordinary empty-state text, so an empty conversation is not confused with a query that could not load.
+
+During a refetch with the same arguments, topics or messages remain visible only if the latest result still contains them. After a failure, the alert appears above that data. If the failed result omits data, the wrapper does not retain the last successful collection.
+
+Changing `topicsArguments` or selecting another topic shows loading without the previous query's data or status until a result for the new arguments arrives. Returning to earlier arguments can restore a cached result. An unauthorized result hides the affected content: topic access denial disables starting a topic, and message access denial disables the composer.
+
+Set `labels.topicList.loading`, `labels.topicList.failed`, and `labels.topicList.unauthorized` to replace the topic-list messages. Use the same keys under `labels.conversation` for messages. The English defaults are “Loading topics…”, “Could not load topics.”, and “You are not authorized to view these topics.” for the list, and “Loading messages…”, “Could not load messages.”, and “You are not authorized to view these messages.” for the conversation. Chat uses `labels`, not the provider's `messages.dataTable` settings.
 
 If you own the queries yourself, use [`ChatSidebar`](./index.md#query-display-states) with `topicsStatus` and `messagesStatus` instead of this wrapper.
 
 ## When not to use it
 
-If the application already manages its own subscriptions (a shared cache, a view model layer, data arriving over something other than Arc queries), use `ChatSidebar` directly and hand it the arrays — the wrapper adds nothing but the two `useObservableQuery` calls.
+Use `ChatSidebar` directly if your application already manages subscriptions or receives data from another source. It is also the better fit when you need controlled selection for deep links, must map query results to `ChatTopic` and `ChatMessage`, or want custom query-state UI.
 
-Use `ChatSidebar` directly as well when you need to own the selection (deep links, restoring the open topic), map read models whose shape differs from `ChatTopic` and `ChatMessage`, or render query states differently from the built-in status messages. Call `useObservableQuery` (or the proxies' `use()` methods) yourself and pass the data, optional statuses, and any custom UI.
+For Arc queries, call `useObservableQuery` or the proxies' `use()` methods yourself. Pass the resulting arrays and optional statuses to [`ChatSidebar`](./index.md#query-display-states), and keep selection or custom state handling in your application.

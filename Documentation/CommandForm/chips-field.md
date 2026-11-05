@@ -1,6 +1,6 @@
 ---
 title: ChipsField
-description: Bind a string array property on an Arc command to a token input.
+description: ChipsField in Cratis Components binds an Arc command's string array to a token input with literal separators, duplicate control, and chip limits.
 ---
 
 `ChipsField` renders a Cratis-owned token input for collecting multiple text values.

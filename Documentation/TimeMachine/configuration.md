@@ -1,6 +1,6 @@
 ---
 title: TimeMachine configuration
-description: Props, the Version and Event shapes, scroll sensitivity, and localization for TimeMachine.
+description: Configure TimeMachine in Cratis Components with version snapshots, event data, wheel scroll sensitivity, change callbacks, and localized labels.
 ---
 
 ## Props

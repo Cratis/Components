@@ -1,26 +1,23 @@
 ---
-title: ObjectNavigationalBar
-description: Navigate hierarchical objects with a controlled breadcrumb bar and back action.
+title: ObjectNavigationalBar — navigate nested object paths
+description: Use ObjectNavigationalBar to navigate nested object paths in React, map breadcrumb indexes to state, and handle back navigation at the root.
 ---
 
-The `ObjectNavigationalBar` component provides breadcrumb navigation for hierarchical data structures.
+`ObjectNavigationalBar` lets users return to a parent or the root while exploring a nested object in React. You supply the current property path and update it when a breadcrumb or back button is clicked; the bar displays that path but does not read or change the object.
 
-ObjectNavigationalBar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install. It is a fully controlled component: `navigationPath` and `onNavigate` are its entire state contract, so the host application owns navigation state, persistence, and the data at each path segment.
+It belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) and needs no Pixi dependency. As a controlled component, it keeps navigation state in your application through `navigationPath` and `onNavigate`. Your application also owns the data at each location and any saved navigation state.
 
 ## Purpose
 
-ObjectNavigationalBar displays the current navigation path and allows users to jump to any level in the hierarchy with clickable breadcrumbs.
+When a view shows one nested object at a time, users need a way back to the surrounding data. The bar keeps the route visible and lets them jump to any parent without retracing every step. Use it above your own object view, or use [ObjectContentEditor](../ObjectContentEditor/index.md), which already includes it.
 
 ## Key Features
 
-- Breadcrumb trail display
-- Click navigation to any level
-- Back button for going up one level
-- Visual separation of path segments
-- Root indicator
-- Current location highlighting
+The trail starts with `Root` and adds one breadcrumb for each path segment, separated by `>`. Clicking a breadcrumb requests that location; the back arrow requests the immediate parent. Earlier locations are underlined, while the current location is marked with `aria-current='location'`.
 
 ## Quick Start
+
+With the [Components setup](../getting-started.mdx) in place, keep the path in React state and slice it to the destination index reported by the bar:
 
 ```tsx
 import { useState } from 'react';
@@ -38,19 +35,19 @@ export function MyNavigator() {
 }
 ```
 
-The bar shows `Root > profile > address` with a back button. `path.slice(0, index)` covers every case: `0` returns to the root, and the index of the current segment leaves the path unchanged.
+The bar initially shows `Root > profile > address`. Clicking `profile` reports `1`, so `path.slice(0, index)` keeps `['profile']`. Clicking `Root` reports `0` and clears the path; clicking the current `address` reports `2` and leaves it unchanged. Use the same path to choose which data your view displays, so the content and breadcrumbs move together.
 
 ## Props
 
 ### Required Props
 
-- `navigationPath`: Array of strings representing the current path. `[]` is the root, `['profile']` is one level deep, and `['profile', 'address', 'city']` is three levels deep.
-- `onNavigate`: Callback invoked for a breadcrumb or back-button activation. It receives the destination index (`0` means root).
+- `navigationPath: string[]`: Ordered property keys representing the current path. `[]` is the root, `['profile']` is one level deep, and `['profile', 'address', 'city']` is three levels deep.
+- `onNavigate: (index: number) => void`: Callback invoked for a breadcrumb or back-button activation. Its destination index is the number of path segments to keep (`0` means root).
 
 ### Optional Props
 
-- `backLabel`: Tooltip and accessible name of the back button. Defaults to `'Navigate back'`; override it to localize.
-- `className`: Extra class names on the root, which always has the `cratis-object-navigational-bar` class.
+- `backLabel: string`: Tooltip and accessible name of the back button. Defaults to `'Navigate back'`; override it to localize.
+- `className: string`: Extra class names on the root, which always has the `cratis-object-navigational-bar` class. Omitted by default.
 
 The "Root" label and the `>` separators are fixed English text; there is no prop to change them.
 
@@ -78,23 +75,19 @@ The "Root" label and the `>` separators are fixed English text; there is no prop
 
 ### Back Button
 
-The back arrow button `[←]`:
+For a path with `n` segments, the arrow calls `onNavigate(n - 1)`. Your handler removes the last segment by keeping that many entries. This action moves up the supplied object path, not through browser history.
 
-- Goes up one level
-- Disabled when at root
-- Calls `onNavigate` with `index = navigationPath.length - 1`
+At `navigationPath={[]}`, the arrow is disabled and the trail contains only `Root`. Clicking that breadcrumb still calls `onNavigate(0)`, so the handler should leave the path empty.
 
 ### Breadcrumb Segments
 
-Each segment in the path:
+Every location, including `Root` and the current one, is a button. Clicking the current location reports the full path length, so slicing to that index leaves the path unchanged.
 
-- Root is always shown
-- Every segment, including Root and the current one, is a button
-- Segments before the current one are underlined; the current segment is not, and carries `aria-current='location'`
-- Click calls `onNavigate` with segment's index
-- A segment made only of digits is shown as an array index in brackets: `'0'` is shown as `[0]`
+Property names appear as supplied. A segment made only of digits, such as `'0'`, appears as `[0]` to indicate an array element. This is a display convention: the bar does not inspect the data to distinguish an array index from a numeric property name.
 
 ### Index Mapping
+
+The destination index is a path length, not a zero-based position in `navigationPath`. Pass it directly to `slice(0, index)` without adding or subtracting one:
 
 ```text
 navigationPath = ['profile', 'address', 'city']
@@ -107,6 +100,8 @@ city     (index: 3)  ← current location
 ```
 
 ## Complete Example
+
+This folder view opens a child by appending its key to the path. Its breadcrumb handler uses the same state to return to a parent:
 
 ```tsx
 import { useState } from 'react';
@@ -154,7 +149,9 @@ export function FolderNavigator() {
 }
 ```
 
-The host owns both the path and the data: the bar only reports where the user wants to go.
+Click `documents`, then `work`: the view shows a `reports` button, while the bar shows `Root > documents > work`. Click `documents` in the bar to return to its folders, then `Root` to restore the top-level `documents` and `photos` buttons. At that point the arrow is disabled.
+
+The bar only reports where the user wants to go. The path update makes React render both the new breadcrumbs and the folder contents.
 
 ## Example Scenarios
 
@@ -194,35 +191,21 @@ Customize it through the tokens, or target the root class or your own `className
 }
 ```
 
-Load its CSS through `@cratis/components/styles` or `@cratis/components/ObjectNavigationalBar/styles`.
+Load its CSS through `@cratis/components/styles` or `@cratis/components/ObjectNavigationalBar/styles`. The latter also requires the base stylesheet; follow [Per-area stylesheets](../Styling/per-area-stylesheets.md) for that setup.
 
 ## Use Cases
 
-- **Object exploration**: Navigate through nested JSON objects
-- **File system UI**: Browse folder hierarchies
-- **Configuration trees**: Navigate settings hierarchies
-- **Product categories**: Browse category trees
-- **Organization charts**: Navigate organizational structures
-- **Data viewers**: Show location within complex data
+Use the bar in a JSON viewer or object inspector when opening a nested property replaces the current view. It also fits folder or configuration trees when your application can represent each location as a sequence of keys. Your view owns opening a child; the bar provides the route back.
 
 ## Integration
 
-Commonly used with:
-
-- **ObjectContentEditor**: renders an `ObjectNavigationalBar` internally for its own nested navigation
-- **Custom data viewers**: Any hierarchical data display
-
-SchemaEditor has its own breadcrumb and does not use this component.
+If you need a ready-made object view with this navigation, continue with [ObjectContentEditor](../ObjectContentEditor/index.md). For a custom viewer, keep one path state for both the bar and the displayed content, as in the example above. [SchemaEditor](../SchemaEditor/index.md) is a separate choice for editing JSON Schema hierarchies; it has its own breadcrumb and does not use this component.
 
 ## Best Practices
 
-1. **Keep paths meaningful**: Use descriptive segment names
-2. **Limit depth**: Deep hierarchies (5+ levels) are hard to navigate
-3. **Show current data**: Display relevant content for current path
-4. **Handle edge cases**: Empty paths, invalid navigation
-5. **Provide visual feedback**: Highlight current location
-6. **Add product shortcuts explicitly**: If the product needs arrow-key or escape navigation, implement and document it in the host
-7. **Persist state**: Remember navigation path across sessions when the product requires it
+Supply the complete key path, even for deeply nested data. Removing middle segments to shorten the trail also changes destination indexes and breaks the mapping to your object. The bar has no separate display-label or truncation prop.
+
+When your application replaces the object, check that the current path still resolves and reset it to `[]` if necessary. The bar receives only the path, so it cannot detect removed properties. If you persist a location, validate it against the data before restoring it.
 
 ## Keyboard Support
 

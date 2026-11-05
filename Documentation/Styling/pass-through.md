@@ -1,6 +1,6 @@
 ---
 title: Stable component parts
-description: Customize Components through typed Cratis part keys and documented DOM part values.
+description: Cratis Components supports per-instance styling with typed pt keys, stable data-cratis-part values, and component-specific state attributes.
 ---
 
 Components exposes two related styling surfaces:

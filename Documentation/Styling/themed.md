@@ -1,11 +1,15 @@
 ---
-title: Build a product theme
-description: Map a product design system onto Cratis tokens and stable parts.
+title: Build a product theme for Cratis Components
+description: Map your design system onto Cratis Components CSS tokens, switch light and dark values, and use stable parts for component-specific styling.
 ---
 
-A Components theme is CSS. It does not require a JavaScript preset or provider configuration.
+A product theme maps your design system's values onto the CSS variables Cratis Components uses for colors, surfaces, focus, and other visual roles. Use this approach when the application should look like your product rather than the Cratis baseline.
+
+Follow [Set up styling](getting-started.md) with `tokens` and structural styles, omit `@cratis/components/theme`, and load your mappings afterward. Keep the mappings outside cascade layers so they can override the unlayered token defaults. No JavaScript theme preset or provider configuration is required.
 
 ## Map product tokens
+
+This mapping assumes your design system already defines the referenced `--brand-*` variables. Map related roles together so action text, control boundaries, and focus indicators remain readable against their surfaces:
 
 ```css
 :root {
@@ -31,7 +35,7 @@ A Components theme is CSS. It does not require a JavaScript preset or provider c
 }
 ```
 
-Switch schemes by redefining the product values under the product's own selector:
+Switch schemes by redefining the product values under your own mode selector. This excerpt changes three values; define the remaining referenced brand variables for each scheme your product supports:
 
 ```css
 [data-theme='dark'] {
@@ -41,11 +45,13 @@ Switch schemes by redefining the product values under the product's own selector
 }
 ```
 
-Put that attribute on the document element. The browser resolves `var(--brand-…)` where the `--cratis-*` mapping is declared (`:root`), and descendants inherit the resolved value, so redefining a brand variable on a nested element does not change the Cratis token. To theme a subtree differently, repeat the `--cratis-*` mapping on the subtree's selector as well.
+Put `data-theme='dark'` on the document element for this root mapping. The browser resolves each `var(--brand-…)` reference where the `--cratis-*` variable is declared. Descendants inherit that resolved value, so changing only a brand variable on a nested element does not update the inherited Cratis token. To give a subtree another scheme, repeat the relevant `--cratis-*` mappings on its selector.
+
+Without the baseline import, `cratis-dark` and `cratis-light` do not supply a palette. Your product CSS owns the mode selector, its values, and any `color-scheme`, document foreground, or background rules it needs.
 
 ## Add component-specific treatment
 
-Tokens provide shared semantics. Use stable parts for a distinctive product component:
+Tokens give controls shared design values. When one component needs a different treatment, target a stable part: a named element exposed by `data-cratis-part` or the `pt` prop.
 
 ```css
 .product-dialog[data-cratis-part='root'] {
@@ -54,6 +60,6 @@ Tokens provide shared semantics. Use stable parts for a distinctive product comp
 }
 ```
 
-The `product-dialog` class reaches the dialog root through `pt={{ root: { className: 'product-dialog' } }}` on the `Dialog`.
+The `product-dialog` class reaches the dialog root through `pt={{ root: { className: 'product-dialog' } }}` on the `Dialog`. [Stable component parts](pass-through.md) lists the supported hooks; avoid internal renderer classes and undocumented DOM selectors.
 
-This is the supported path for deeply customized products. No renderer preset, internal selector, or commercial theme package sits between product tokens and the rendered component.
+Check the resulting controls in every supported scheme, including hover, disabled, validation, and keyboard-focus states. [Own all styling](unstyled.md) covers product accessibility responsibilities, and the [token reference](cratis-tokens.md) identifies the remaining values you can map.

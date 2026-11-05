@@ -1,6 +1,6 @@
 ---
 title: DropdownField
-description: Bind a string or number property on an Arc command to a single-select dropdown.
+description: DropdownField in Cratis Components binds an Arc command's string or number to one option, using configurable option labels and value keys.
 ---
 
 `DropdownField` renders the renderer-independent Cratis [`Dropdown`](../Dropdown/index.md) for choosing one value from a list.

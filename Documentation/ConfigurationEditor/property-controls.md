@@ -1,6 +1,6 @@
 ---
 title: Property controls
-description: Generic text, number, on/off and choice controls described by the host, for layout settings or a component's own configuration.
+description: PropertyControls in Cratis Components renders text, number, boolean and choice fields from host descriptors, with validation and controlled values.
 ---
 
 `PropertyControls` renders controls from descriptors the host supplies. There is no layout engine, no component registry and no built-in list of properties: a gap, an alignment, a grid span or a responsive override is just a descriptor.

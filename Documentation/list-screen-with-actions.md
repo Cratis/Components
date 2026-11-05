@@ -1,13 +1,13 @@
 ---
-title: "Recipe: A list screen with actions"
-description: Combine a live table with command dialogs to build the everyday "list things, add/edit/remove them" screen.
+title: "Build a list screen with Cratis Components"
+description: Combine DataPage and command dialogs in a React list screen, with live Arc query results and actions that use the selected row.
 ---
 
-**Goal:** the most common screen in any app — a table of things with an action bar to add one, and selection-aware actions that work on the selected row. This recipe wires [displaying data](/components/displaying-data/) and [running commands](/components/building-a-form/) together.
+Use `DataPage` in Cratis Components when a list needs an action bar and actions for the selected row. This author screen combines [an observable table](/components/displaying-data/) with [command dialogs](/components/building-a-form/): **Add author** is available without a selection, while **Add book** needs a selected author.
 
-**Prerequisites:** the providers and styles from [Getting started](/components/getting-started/), an observable query proxy (`AllAuthors`), and a `CommandDialog` component for each action. `AddAuthor` comes from the [form recipe](/components/building-a-form/); `AddBookDialog` takes an `authorId` prop and passes it to `AddBook` through `initialValues`, as in the [tutorial](/components/tutorial/list-and-detail/).
+Complete the providers and styles from [Getting started](/components/getting-started/), and keep the Arc backend running. You need the generated contracts from the [tutorial prerequisites](tutorial/index.md#before-you-start): `Author`/`AllAuthors`, `RegisterAuthor`, `BooksForAuthor`, and `AddBook`.
 
-Before copying, check the generated contracts listed in the [tutorial prerequisites](tutorial/index.md#before-you-start): `Author`/`AllAuthors`, `RegisterAuthor`, `BooksForAuthor`, and `AddBook`. Keep the Arc backend running. This compact recipe reuses the dialog files from the tutorial; it does not define replacement proxies.
+Reuse `AddAuthor` from the [form recipe](/components/building-a-form/) and `AddBookDialog` from the [tutorial](/components/tutorial/list-and-detail/). The latter accepts `authorId` and passes it to `AddBook` through `initialValues`, so the user only enters the book's details. The example below composes those dialogs; it does not define replacement proxies.
 
 Declare `react-icons` in the frontend package when importing its icons directly, even though Components also uses it internally:
 
@@ -17,9 +17,7 @@ npm install react-icons
 
 ## The shape
 
-- A **live table** reads an observable query and renders changed results as they arrive.
-- An **action bar** item opens an "add" `CommandDialog`.
-- **Selection-aware actions** are disabled until a row is selected, then open a command dialog for that row.
+`AllAuthors` supplies the rows and later updates. The two menu items open dialogs, but only **Add book** depends on selection. Keep that selected author in React state so the action can pass its id to the dialog.
 
 ```tsx title="Authors.tsx"
 import { useState } from 'react';
@@ -86,10 +84,11 @@ There is no application refresh handler for the observable table, but command su
 
 ## Tips
 
-- **Edit and remove are just more commands.** Model them as commands (for example `RenameAuthor` and `RemoveAuthor`), add a `disableOnUnselected` menu item for each, and pass the selected row's id through the dialog's `initialValues`; the table updates itself.
-- **Keep the table's read model specialized.** The list query and a detail query can read different, purpose-built read models — don't force one model to serve every screen.
-- **Show the selected row's details** by passing a `detailsComponent`; see [DataPage details panel](DataPage/details-panel.md).
-- For a plain table without the action bar and details panel, use [`DataTableForObservableQuery`](DataTables/data-table-for-observable-query.md) directly.
+To add edit or remove actions, define the corresponding commands, such as `RenameAuthor` and `RemoveAuthor`. Give each a `disableOnUnselected` menu item and pass the selected id through the dialog's `initialValues`. As with adding an author, the table changes when its observable query delivers the updated result.
+
+Add a `detailsComponent` when the user needs to inspect the selected row; see [DataPage details panel](DataPage/details-panel.md). The list and detail queries can read different, purpose-built read models instead of sharing one model for every screen.
+
+If you need only rows, without an action bar or detail panel, use [`DataTableForObservableQuery`](DataTables/data-table-for-observable-query.md) directly.
 
 ## Next
 

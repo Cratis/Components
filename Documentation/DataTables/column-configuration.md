@@ -1,6 +1,6 @@
 ---
 title: Column configuration
-description: Define data, selection, sorting, filtering, and custom rendering columns.
+description: Configure Cratis Components table columns with typed cell renderers, sorting, filters, and selection controls for query-backed React tables.
 ---
 
 `Column` is a declarative marker consumed by `DataTableCore`, the query-backed table components, and `DataPage.Columns`. It renders nothing on its own; the surrounding table reads its props. Import it from `@cratis/components/DataTables` or, next to `DataPage`, from `@cratis/components/DataPage`.

@@ -1,6 +1,6 @@
 ---
 title: PivotViewer configuration
-description: Props, colors, loading and empty states, and search configuration for PivotViewer.
+description: Configure PivotViewer in Cratis Components with props for data, renderers, filters, search, colors, loading states, and accessible labels.
 ---
 
 ## Props

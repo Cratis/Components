@@ -1,6 +1,6 @@
 ---
 title: CheckboxField
-description: Bind a boolean property on an Arc command to a native checkbox.
+description: CheckboxField in Cratis Components binds an Arc command's boolean property to a native checkbox with an inline label and validation state.
 ---
 
 `CheckboxField` provides a Cratis-owned native boolean checkbox.

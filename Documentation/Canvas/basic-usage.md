@@ -1,9 +1,9 @@
 ---
-title: Canvas basic usage
-description: Put DOM content, Pixi items, or your own Pixi scene on a Canvas.
+title: Canvas — build your first board
+description: Place a React card on a Canvas board, check pan and zoom, then choose DOM content or Pixi graphics while your application owns the data.
 ---
 
-The minimal `Canvas` places one piece of content at a fixed world-space position using `CanvasItem`. Install the `pixi.js` peer and import the stylesheets first; see [Canvas](index.md#import).
+Build your first board in Cratis Components by placing a React card inside `CanvasItem`. Canvas supplies pan and zoom; your component supplies the card and its position. Install the `pixi.js` peer and import the stylesheets from [Canvas setup](index.md#import), then render this `MyBoard` component in your application:
 
 ```tsx
 import { Canvas, CanvasItem } from '@cratis/components/Canvas';
@@ -23,15 +23,15 @@ export function MyBoard() {
 }
 ```
 
-The card appears near the top-left of a 480-pixel-high board. Drag the empty background or scroll to pan, and use `Ctrl`/`Cmd` + wheel or the zoom buttons in the bottom-left corner to zoom.
+The card appears near the top-left of a 480-pixel-high board. Drag the empty background or scroll to pan, then use `Ctrl`/`Cmd` + wheel or the bottom-left zoom buttons. The card moves and scales with the camera while its world coordinates remain `(100, 100)`. World coordinates describe positions on the board before pan and zoom are applied.
 
-Canvas has no intrinsic size, so give its root a size through `style` or `className` as shown. Without one, the Pixi surface falls back to 800×600 pixels when the root measures zero at mount.
+Canvas has no intrinsic size, so give its root a width and height through `style` or `className` as shown. If the root measures zero at mount, Pixi falls back to an 800×600 surface; that fallback does not size your layout for you.
 
-`Canvas` renders an empty surface by default — nothing appears until you give it content. There are three ways to do that, and they can be mixed:
+Canvas starts empty. Choose how to supply content from the three approaches below, or combine them on one board.
 
 ## 1. Declarative children (`CanvasItem`)
 
-Wrap ordinary React content in `CanvasItem` and pass `x`/`y` world coordinates. This is the normal path for anything interactive — forms, notes, chat panels — because it is plain HTML/React underneath, not a rendering primitive of its own:
+Use `CanvasItem` for interactive content such as a form or a chat panel. Its children remain ordinary HTML and React components, positioned at the `x`/`y` coordinates you supply:
 
 ```tsx
 <Canvas style={{ width: '100%', height: 480 }}>
@@ -42,11 +42,11 @@ Wrap ordinary React content in `CanvasItem` and pass `x`/`y` world coordinates. 
 
 `MyCard` stands for any component of your own.
 
-`CanvasItem` also reports its rendered size back to the `Canvas` (via a `ResizeObserver`), which is what lets the built-in minimap and `CanvasHandle.getItemBounds()` know where every item actually is without you tracking sizes yourself. `zIndex` controls stacking against sibling items, and `onSize` is called whenever the item's own size changes.
+`CanvasItem` measures its content with `ResizeObserver`, feeding those dimensions to the minimap and `CanvasHandle.getItemBounds()`. Add `showMinimap` to `Canvas` to offer a minimap toggle populated from the mounted items. Use `zIndex` to control stacking against sibling items and `onSize` when your layout needs the initial measurement and subsequent size changes.
 
 ## 2. Data-driven items (`items` + `renderItem`)
 
-For a large number of simple items, pass an `items` array and a `renderItem` function instead of JSX children. `Canvas` syncs the array to its Pixi scene (each item becomes a `PIXI.Container`) whenever `items` or `renderItem` changes:
+Use `items` and `renderItem` for graphics without a DOM node per item. Canvas synchronizes the array with its Pixi scene whenever `items` or `renderItem` changes. Each new id gets a `PIXI.Container`; this example creates two colored dots:
 
 ```tsx
 import { Canvas, type CanvasItemData } from '@cratis/components/Canvas';
@@ -79,11 +79,11 @@ The sync is keyed by `id`:
 - An `id` that already has a container only moves it to the new `x`/`y`. `renderItem` is **not** called again, so a changed `color` on an existing item does not repaint it. Give the item a new `id`, or update the container yourself through `onReady`.
 - An `id` that disappears removes and destroys its container.
 
-This path is lower-level than `CanvasItem` (you are building a `PIXI.Container`, not writing JSX) but avoids one DOM node per item. Pixi items have no accessible representation, so keep anything a keyboard or screen-reader user must reach in `CanvasItem` content.
+Click a dot to see its id in the console through `onItemPointerDown`. These graphics have no accessible representation of their own, so keep anything a keyboard or screen-reader user must reach in `CanvasItem` content.
 
 ## 3. Imperative access (`onReady`)
 
-`onReady` hands you the raw PIXI `Application` and the `world` container once the canvas has initialized, for cases the two approaches above don't cover — managing your own PIXI scene graph directly:
+Use `onReady` when you need to manage Pixi display objects directly. It receives the initialized `Application` and the `world` container that shares the board's camera:
 
 ```tsx
 <Canvas
@@ -97,4 +97,6 @@ This path is lower-level than `CanvasItem` (you are building a `PIXI.Container`,
 
 `onReady` runs after Pixi initializes inside an effect, so it never runs during server rendering.
 
-The three approaches compose: declarative `CanvasItem` children, `items`/`renderItem`, and content added imperatively through `onReady` can all be present on the same `Canvas` at once.
+All three approaches can share one Canvas. Your application still owns the item data: neither rendering path saves positions or synchronizes changes between users.
+
+Continue to [Pan and zoom](pan-and-zoom.md) to control the camera from your application, or [Controls chrome](controls-chrome.md) to fit navigation controls around side panels.

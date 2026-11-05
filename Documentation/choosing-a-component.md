@@ -1,9 +1,9 @@
 ---
-title: Choosing a component
-description: Choose among Components command, data, action, filtering, feedback, structured-data, history, and conversation surfaces.
+title: Choose a Cratis Components surface for your screen
+description: Choose a Cratis Components surface for generated Arc commands and queries or application-owned local state, then follow the matching recipe.
 ---
 
-Choose by the state your screen owns, not by the widget's appearance. Start with the integration boundary, then use the task tables below.
+To choose a Cratis React component, start with what the screen needs to do. Use `CommandDialog` to collect input and execute a generated Arc command, a query-backed table to display backend results, or `DataTableCore` for rows you already have. For local input, choose a controlled component: your React state supplies its value and receives changes. The tables below link each task to its component and recipe.
 
 ## Do you need a backend for this surface?
 
@@ -20,7 +20,7 @@ For your first command/query screen, [configure the package and providers](getti
 
 ## Collecting input
 
-The question is whether confirming the form **runs a command**, and whether it's one step or several.
+First decide what confirmation should do. If it runs a generated command, use a command form or dialog. If it only returns values to the caller, use `Dialog`. Then choose whether the input belongs inline, in one modal, or across named steps.
 
 | You want to…                                             | Use                                                       | Why                                                                                                   |
 | -------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -43,8 +43,7 @@ An inline field or local control does not need to become a modal just to use Com
 
 ## Displaying data
 
-Both render a query or observable query; the question is whether you want a **whole page** or a **table
-to drop into one**.
+For backend results, choose a table to place in your existing layout or `DataPage` for a list with actions and detail panels. An observable query supplies updated results over time; a non-observable query supplies a result when executed. If your application already has an array, pass it to `DataTableCore` instead.
 
 | You want to…                                               | Use                                   | Why                                                                                               |
 | ---------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -79,7 +78,7 @@ Table column and `DataPage` global filters operate on the currently loaded query
 
 ## Actions and tool palettes
 
-Use [`ActionMenubar`](./Common/action-menubar.md) or an ordinary product action row for flat page commands. `DataPage`'s built-in toolbar already renders `ActionMenubar`, not `Toolbar` — that is the default action row for a page, not a canvas tool palette. Use [`Toolbar`](./Toolbar/index.md) only for a genuine canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar, and it is not a page-level action row wearing a different name.
+For page commands such as Add or Edit, use [`ActionMenubar`](./Common/action-menubar.md) or your own action row. `DataPage` already uses `ActionMenubar` in its built-in toolbar. Choose [`Toolbar`](./Toolbar/index.md) when users switch active tools in a canvas or tool palette: it supports groups, slots, folders, and fan-out panels. Its interaction model is not a one-for-one replacement for a generic Prime Toolbar or a page-level action row.
 
 ## Structured data, history, and conversation
 
@@ -106,10 +105,10 @@ Canvas and PivotViewer own interaction and rendering primitives; the application
 
 ## Putting it together
 
-A typical CRUD screen combines these: a `DataPage` lists the rows, an action-bar item opens a
+Once you have chosen the pieces, follow the [list screen with actions](./list-screen-with-actions.md)
+recipe to put them together. A `DataPage` lists the rows, an action-bar item opens a
 `CommandDialog` to add one, and a selection-aware action opens another `CommandDialog` for the
-selected row. That whole
-screen is the [list screen with actions](./list-screen-with-actions.md) recipe.
+selected row.
 
 Components does not ship every toolkit widget. Tabs, general-purpose sidebars, knobs, select-button groups, general popovers, grouped or expandable tables, controlled lazy/server table sorting, and specialized locale-aware inputs remain product-owned or in a separately configured UI toolkit. See [Coming from PrimeReact](./coming-from-primereact.md) for the current replacement boundaries.
 

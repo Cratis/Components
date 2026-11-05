@@ -1,6 +1,6 @@
 ---
 title: PivotViewer interactions
-description: What users can do in PivotViewer with a pointer, touch, and the keyboard, and what state it keeps.
+description: PivotViewer in Cratis Components supports zooming, panning, filtering, and card selection with pointer and touch, plus keyboard scrolling.
 ---
 
 ## Zoom

@@ -1,7 +1,7 @@
 ---
 id: '0002'
 title: Public component classification
-description: The architecture categories assigned to every component exported by the public package barrels.
+description: Cratis Components defines visual primitive, interaction primitive, Arc/high-order composite, and interop-only categories for classifying public components.
 status: accepted
 stage: implemented
 class: contract

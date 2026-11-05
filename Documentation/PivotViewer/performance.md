@@ -1,39 +1,36 @@
 ---
-title: PivotViewer performance
-description: How PivotViewer spreads work across the main thread, a Web Worker, and Pixi, and how to keep it fast for your data.
+title: PivotViewer performance planning
+description: Set a PivotViewer performance budget by measuring initial load, filtering, scrolling, and memory with representative data and target devices.
 ---
+
+Plan PivotViewer collection size by measuring initial load, filtering, scrolling, and memory on your target devices. Viewport-limited drawing and optional worker computation reduce different kinds of work, but neither establishes an item-count or frame-rate guarantee for your application.
 
 ## Architecture
 
-PivotViewer splits its work across the main thread, a Web Worker, and a Pixi (WebGL) canvas. Knowing which part runs where tells you what your own code can slow down.
+PivotViewer splits its work across the main thread, a Web Worker, and a Pixi canvas. Use this division to locate a delay: a worker will not remove time spent extracting values or drawing cards.
 
 | Work | Where it runs | When |
 | --- | --- | --- |
-| Calling every dimension and filter `getValue`, building the column store and indexes | Main thread | Whenever `data`, `dimensions`, or `filters` change identity |
+| Calling dimension and filter `getValue`, building the column store and indexes | Main thread | When `data` changes identity or the extractor keys or `getValue` functions change |
 | Filtering, grouping, and sorting visible ids | Web Worker, or the main thread when no worker is available | On every filter, dimension, or view change |
 | Filter-panel option counts and numeric ranges | Main thread, over all of `data` | Whenever `data`, `filters`, or a filter selection changes |
 | Free-text search | Main thread, over the currently visible ids | On every search change |
 | Card layout | Main thread | On grouping, zoom, or container size changes |
 | Card drawing | Pixi, for cards near the viewport | As you zoom and scroll |
 
-Components publishes no item-count benchmarks for PivotViewer. The largest dataset in its Storybook stories has 2,500 items; that story demonstrates the component, it does not set a limit.
+The repository's 2,500-item employee story demonstrates a collection; it is not a benchmark or an upper bound. Use your own item shape and interactions to decide how much data to load.
 
 ### Web Workers
 
-Filtering, grouping, and sorting requests are answered by a background Web Worker when one is available:
+A background Web Worker answers filtering, grouping, and sorting requests when available. The main thread first extracts values and builds the column store and local indexes. It then posts the store to the worker, which keeps its own copy and builds its own indexes. Filter-panel counts, search, layout, and rendering remain on the main thread.
 
-- **Main thread**: extracts values, builds the column store, renders the UI, computes filter-panel counts and search
-- **Worker thread**: keeps its own copy of the store and indexes, and answers filter, grouping, and sort requests
+Keep source items structured-cloneable, without functions or other values `postMessage` cannot copy. The worker receives the original `data` items as part of the store, so large nested objects add to initialization and memory cost even if cards never display them.
 
-This keeps the UI responsive while a filter or grouping recomputes. It does not move everything off the main thread: building the store, the filter-panel counts, and search still run there.
-
-PivotViewer checks that the worker script is served as JavaScript before starting it. When it is not, when `Worker` is unavailable (for example during server rendering), or when the worker reports an error, the same computations run in-thread. The viewer keeps working; it only loses the off-thread benefit. Worker errors are logged to the console as `[PivotEngine] Worker error:`.
-
-To use the worker, PivotViewer posts the column store to it, including the original `data` items. Keep items to plain, structured-cloneable data; large nested objects on each item add to that copy.
+PivotViewer checks that the worker script is served as JavaScript before starting it. If that check fails, `window` or `Worker` is unavailable, or the worker reports an error, the engine uses synchronous in-thread computation. Worker errors are logged as `[PivotEngine] Worker error:`. This fallback covers the data engine; it does not provide server-rendered cards or replace Pixi's browser canvas. Measure it separately because it moves filter, grouping, and sort work onto the main thread.
 
 ### Columnar Storage
 
-Each dimension and filter becomes one column, keyed by its `key`:
+Each unique dimension or filter `key` becomes one column:
 
 ```text
 Row items:
@@ -44,15 +41,13 @@ status:   ['todo', 'done', ...]      (string column, with a value-to-ids index)
 priority: Float64Array [3, 8, ...]   (number column, with a sorted index for ranges)
 ```
 
-Filters then work on item ids (`Uint32Array`) and only read the columns they need. The original items are kept alongside the columns for rendering and details, so PivotViewer holds both the items and one column per dimension and filter.
+Filters then work on item IDs (`Uint32Array`) and only read the columns they need. The original items remain alongside the columns for rendering and details. Sharing a key does not create another column, so use the same key for a dimension and filter only when they extract the same value.
 
 ### Virtualized Rendering
 
-Cards are Pixi sprites, not DOM elements:
+Cards are Pixi sprites, not DOM elements. Only cards inside the viewport and a surrounding buffer get sprites. Sprites leaving that area return to a pool for reuse, and `cardRenderer` fills the cards being drawn rather than every source item up front.
 
-- Only cards inside the viewport plus a buffer around it get a sprite
-- Sprites that leave that area are returned to a pool and reused for cards that scroll in
-- `cardRenderer` runs when a card's sprite is filled, not for every item up front
+This limits drawing work, not data loading. PivotViewer still retains the full client collection, columns, indexes, grouping results, and layout metadata; scrolling does not fetch another server page.
 
 ## Performance Tips
 
@@ -60,7 +55,7 @@ Cards are Pixi sprites, not DOM elements:
 
 Keep dimension and filter accessors simple. `getValue` runs for every item each time the store is rebuilt, and filter `getValue` runs again for every item whenever filter-panel counts are recomputed.
 
-**Good:**
+Read a prepared value directly:
 
 ```typescript
 const status: PivotDimension<Task> = {
@@ -70,7 +65,7 @@ const status: PivotDimension<Task> = {
 };
 ```
 
-**Avoid:**
+Avoid repeating an expensive calculation during each rebuild:
 
 ```typescript
 const status: PivotDimension<Task> = {
@@ -85,7 +80,7 @@ Precompute expensive values when you load `data`, and read the precomputed prope
 
 ### Memoize Renderers
 
-The `cardRenderer` returns lightweight structured data (`{ title, labels?, values? }`), so keep it cheap. For heavier detail content, render a memoized component from `detailRenderer`:
+Keep `cardRenderer` limited to lightweight structured data (`{ title, labels?, values? }`). Detail content can be a React component: the memoized `TaskDetails` below can skip a parent-driven re-render when its `item` reference is unchanged.
 
 ```tsx
 import { memo } from 'react';
@@ -117,9 +112,9 @@ Cards cannot show images, so image cost only matters in your `detailRenderer`. L
 
 ### Reduce Re-renders
 
-Keep `dimensions` and `filters` stable. PivotViewer memoizes its column extraction on their identity, so a new array on every render rebuilds the store, re-posts it to the worker, and recomputes filter state.
+Keep `data`, extractor keys, and `getValue` functions stable when their meaning has not changed. New accessor functions rebuild the store and indexes, even if they read the same properties. Changing only a dimension's label, formatter, or group sorter does not rebuild its columns.
 
-**Avoid:**
+The inline definition below creates a new `getValue` function on every render:
 
 ```tsx
 <PivotViewer
@@ -130,7 +125,7 @@ Keep `dimensions` and `filters` stable. PivotViewer memoizes its column extracti
 />
 ```
 
-**Better:**
+Memoize a definition that belongs inside the component:
 
 ```tsx
 const dimensions = useMemo<PivotDimension<Task>[]>(
@@ -163,9 +158,9 @@ Use fixed fixtures and repeat each run after warm-up. Keep the dataset, browser/
 
 ### Browser DevTools
 
-1. **Performance** tab: record an interaction and look for long main-thread tasks during data changes, filter-panel updates, and search
-2. **Memory** tab: take heap snapshots after repeated data and filter changes
-3. **React DevTools**: profile how often the component around PivotViewer re-renders and whether it passes new `dimensions`, `filters`, or `data` arrays
+Record an interaction in the browser's Performance tab and look for long main-thread tasks during data changes, filter-panel updates, and search. Take Memory snapshots after repeated data and filter changes to find retained collections or detail content.
+
+In React DevTools, inspect the component that supplies PivotViewer's props. Check whether routine re-renders create new `data` arrays or `getValue` functions and trigger avoidable rebuilds.
 
 ### Console Warnings
 
@@ -173,13 +168,9 @@ PivotViewer does not warn about dataset size. It logs errors to the console when
 
 ## Scaling Strategies
 
-Scale by reducing what reaches the client rather than by tuning the component:
+If the collection exceeds your [performance budget](#establish-an-application-performance-budget), reduce what reaches the client. Filter and scope in the application's query, then pass PivotViewer that working set. Precompute derived values while loading it, and keep only dimensions and filters that help users explore it: each unique key adds a column, and filter options require main-thread recounting.
 
-- Filter and scope on the server or in the query, and pass PivotViewer only the working set
-- Precompute derived dimension values when loading data
-- Use fewer dimensions and filters; each one is a column and, for filters, a main-thread recount
-- Keep `cardRenderer` to a few short strings
-- Measure against your [performance budget](#establish-an-application-performance-budget) before raising the collection size
+Keep `cardRenderer` to a few short strings and measure again before raising the collection size.
 
 When users need to see or edit far more rows than the budget allows, a paged table such as [DataTables](../DataTables/index.md) is the better fit.
 
@@ -188,7 +179,7 @@ When users need to see or edit far more rows than the budget allows, a paged tab
 PivotViewer stores:
 
 - The original `data` array, on the main thread
-- One column per dimension and filter, and their indexes, on the main thread
+- One column per unique dimension or filter key, and its indexes, on the main thread
 - A copy of the column store and the items in the worker, when the worker is used
 - Filter results as `Uint32Array` id lists
 - Pixi sprites for cards near the viewport, pooled for reuse
@@ -197,42 +188,24 @@ Components publishes no memory formula. Measure heap size with your own data, as
 
 ## Best Practices
 
-1. **Profile before optimizing**: Measure actual performance
-2. **Optimize data structure**: plain, flat items clone and extract faster
-3. **Lazy load details**: Fetch full item details only when selected
-4. **Use production build**: Development mode is slower
-5. **Keep definitions stable**: memoize `dimensions`, `filters`, and `data`
-6. **Monitor memory**: Check for leaks in long sessions
-7. **Test on target devices**: Mobile performance differs from desktop
-8. **Set appropriate limits**: Don't try to visualize millions of items
+Profile a production build with representative data on your slowest supported device before choosing a collection limit. Include the worker-unavailable path and repeated data changes, not just the first load. Fetch full details when selected instead of copying them with every item, and watch for retained data during longer sessions.
 
 ## Troubleshooting Performance Issues
 
 ### Slow Initial Load
 
-- Check data size
-- Optimize accessor functions
-- Reduce number of dimensions/filters
-- Preprocess data server-side
-- Check that `data`, `dimensions`, and `filters` are not new arrays on every render
+Profile value extraction, index creation, and the copy to the worker. Reduce the initial working set or precompute costly values if those steps dominate. Check that unrelated renders do not create new `data` arrays or accessor functions.
 
 ### Laggy Filtering
 
-- Simplify filter accessors; they run on the main thread for filter-panel counts
-- Reduce dataset size
-- Check the browser console for `[PivotEngine]` errors
-- Check that the worker script is served with a JavaScript content type, so the worker path is used
+Start with filter accessors: filter-panel counts call them on the main thread even when worker filtering is available. Check the browser console for `[PivotEngine]` errors and confirm that the application serves the worker script with a JavaScript content type. If the work still exceeds the budget, narrow the collection before rendering.
 
 ### Stuttery Scrolling
 
-- Simplify card renderer
-- Keep card text short
-- Check for expensive computations in render
-- Check that the surrounding component does not re-render on every scroll
+Keep card text short and move costly computation out of `cardRenderer`. Record scrolling during a grouping or filter transition as well as after it settles. Inspect surrounding components for unnecessary re-renders on scroll.
 
 ### High Memory Usage
 
-- Check for memory leaks in detail components
-- Reduce data retention and the size of each item
-- Avoid replacing `data` with a new array when nothing changed
-- Narrow the collection before rendering
+Account for source items, derived fields, indexes, and the worker's store copy. Check whether detail components or application state retain old collections after `data` changes. Avoid replacing unchanged data or keeping several enriched copies of it, and reduce the working set if memory remains above budget.
+
+For the definitions that drive extraction and indexing, return to [Dimensions and Filters](dimensions-and-filters.md). To move work out of card rendering and into selected-item content, see [Renderers](renderers.md).

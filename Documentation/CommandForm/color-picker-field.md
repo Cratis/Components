@@ -1,6 +1,6 @@
 ---
 title: ColorPickerField
-description: Bind a hex color string on an Arc command to a native color input.
+description: ColorPickerField in Cratis Components binds an Arc command to a native color input, writing six-digit hex strings without a leading hash.
 ---
 
 `ColorPickerField` renders a Cratis-owned native color input.
@@ -39,6 +39,6 @@ Every field also accepts Arc's shared field props, such as `title`, `description
 
 ## Behavior
 
-- Shows an empty string while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
+- While the bound property is unset, the native color input displays `defaultColor` if it is a valid six-digit hex string, or `#000000` otherwise, with a leading `#` for display. This displayed fallback does not set the command's stored value. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - Values are persisted as six-digit hex strings without the leading `#`.
 - Validation state is exposed through `aria-invalid` on the native color input and `data-invalid` on the stable root part.

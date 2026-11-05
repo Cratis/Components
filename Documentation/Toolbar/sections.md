@@ -1,9 +1,9 @@
 ---
-title: Separators
-description: Divide toolbar tools with ToolbarSeparator.
+title: Toolbar separators between tool clusters
+description: Add ToolbarSeparator to divide tools within one palette. Match its orientation to the toolbar so the rule and ARIA orientation run across it.
 ---
 
-`ToolbarSeparator` renders a thin visual divider between groups of buttons. Unlike `ToolbarSection`, it has no behavioral logic — it simply draws a line perpendicular to the toolbar orientation. In a horizontal toolbar the separator is a vertical rule; in a vertical toolbar it is a horizontal rule.
+`ToolbarSeparator` divides clusters of buttons with a thin line inside a tool palette. Use it to separate tasks without creating another pill-shaped group. It draws across the toolbar: a vertical rule in a horizontal palette, or a horizontal rule in a vertical palette.
 
 ```tsx
 import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components/Toolbar';
@@ -22,11 +22,13 @@ function ZoomToolbar() {
 }
 ```
 
-Pass the same `orientation` value to `ToolbarSeparator` as you pass to the enclosing `Toolbar` so the line is drawn perpendicular to the toolbar direction. The separator renders `role='separator'` with the perpendicular `aria-orientation`, and is not focusable.
+The example keeps Overview, zoom controls, and Help in one palette, with rules between those tasks. Pass the enclosing toolbar's `orientation` to each separator. The prop describes the palette direction; the component draws the rule perpendicular to it.
+
+The separator renders `role='separator'` with that perpendicular `aria-orientation` and is not focusable. It does not create a labeled group or switch the available tools. Use [Toolbar groups](groups.md) for separate pills, or [Context switching](context-switching.md) with `ToolbarSection` when the set of tools needs to change.
 
 ## Vertical toolbar
 
-In a vertical toolbar (the default) the separator is a horizontal rule:
+Both `Toolbar` and `ToolbarSeparator` default to vertical orientation, so no prop is needed for a side palette. The separator below draws a horizontal rule between Draw and Undo:
 
 ```tsx
 <Toolbar>

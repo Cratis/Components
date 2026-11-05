@@ -1,57 +1,44 @@
 ---
-title: DataTables
-description: Render local, paged, and observable query data with sorting, filtering, and selection.
+title: DataTables for local rows and Arc queries
+description: Choose a Cratis Components table for local rows, snapshot Arc queries, or observable queries, with clear paging and filtering boundaries.
 ---
 
-The DataTables module provides a semantic local-array table plus specialized Arc query and observable-query wrappers.
-
-## Components
-
-- **DataTableCore**: For an already-loaded local array
-- **DataTableForQuery**: For standard Arc queries with pagination
-- **DataTableForObservableQuery**: For observable Arc queries with real-time updates
-- **ColumnFilterMenu**: The reusable draft/apply filter popup used by filterable columns
-- **TablePaginator**: The standalone zero-based paginator used by query-backed tables
-
-`DataTableCore` accepts a `status` from `DataTableStatus` (`Ready`, `Loading`, `Failed`, or `Unauthorized`) (import `DataTableStatus` from `@cratis/components/DataTables`); it defaults to `Ready`. For a loading table with no rows, it renders a status row; with rows, it retains them and marks the table busy. Failed or unauthorized states render an alert row. Override the text with `loadingMessage`, `failureMessage`, and `unauthorizedMessage` or configure `CratisComponentsProvider`'s `messages.dataTable`. When a search or column filter is active and no rows are shown, it renders `filteredEmptyMessage` instead of `emptyMessage`; the default says only the loaded page was searched, or is neutral when `rowProcessing` is `None` because the server applies the search.
-
-`DataTableCore` keeps its own sort, column filters, and search text unless you control them. Pass `sort` with `onSortChange`, `filters` with `onFilter`, and `globalFilter` with `onGlobalFilterChange` to own that state, for example to persist it or to send it to the server. `sort={null}` means not sorted; leaving a prop undefined lets the table keep that piece of state itself, and the change callbacks report every change either way. Import `DataTableSort`, `DataTableSortDirection`, and `DataTableRowProcessing` from `@cratis/components/DataTables`.
-
-When the rows already reflect that state, because your query filtered and sorted them on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders the rows as given instead of filtering and sorting them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The bound query tables manage this state for you: set `serverQuery` on `DataTableForQuery` or `DataTableForObservableQuery` and they send the sort, filters, and search text to the server and render the rows as given. See [Server mode](data-table-for-query.md#server-mode).
+DataTables in Cratis Components render local arrays or results from Cratis Arc queries as React tables. Use local rows when you manage loading yourself, a snapshot query for a result fetched on request, or an observable query to update the displayed rows through a subscription.
 
 ## When to Use
 
-Use DataTableCore when:
+Choose `DataTableCore` when you already have an array of rows and want the table to display, sort, filter, and select from that array. It does not run a query for you. It also fits when you run a query yourself and need a custom loading or failure layout rather than the query tables' status rows; see [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries). Start with [Column Configuration](column-configuration.md) to define the cells you want to show.
 
-- Rows are already loaded locally
-- Single or multiple selection and semantic table rendering are sufficient
-- Filtering and sorting should apply only to that loaded array
-- You run the query yourself and need a custom layout for its states beyond the query tables' loading and failure rows (see [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries))
+Use [DataTableForQuery](data-table-for-query.md) for a generated Arc snapshot query: each request returns a result rather than subscribing to later changes. The table runs the query and handles server-side pagination. Follow its guide to connect the query proxy and configure selection.
 
-Use DataTableForQuery when:
+When the displayed rows should follow updates from an Arc observable query, use [DataTableForObservableQuery](data-table-for-observable-query.md). The table manages the subscription and server-side pagination, so you do not need to copy each incoming result into a local array yourself. Its guide shows the query binding and how updates affect row selection.
 
-- You have standard query results
-- You need server-side pagination
-- Data doesn't need real-time updates
+Both query-backed tables sort, filter, and search only the loaded page by default. Pagination alone does not make a search cover the whole result. For that, configure `serverQuery` and a query that applies filtering and search before paging; [Server mode](data-table-for-query.md#server-mode) explains the contract.
 
-Use DataTableForObservableQuery when:
+## Components
 
-- You need real-time data synchronization
-- Data changes frequently
-- You want automatic UI updates
+All three tables render rows through `DataTableCore` and use `Column` to describe the cells. `ColumnFilterMenu` supplies the filter popup, and `TablePaginator` supplies page navigation. Their standalone contracts are below if you are composing your own table layout.
+
+`DataTableCore` accepts a `status` from `DataTableStatus` (`Ready`, `Loading`, `Failed`, or `Unauthorized`); it defaults to `Ready`. Import `DataTableStatus` from `@cratis/components/DataTables`. For a loading table with no rows, it renders a status row; with rows, it retains them and marks the table busy. Failed or unauthorized states render an alert row. Override the text with `loadingMessage`, `failureMessage`, and `unauthorizedMessage` or configure `CratisComponentsProvider`'s `messages.dataTable`.
+
+When a search or column filter is active and no rows are shown, the table renders `filteredEmptyMessage` instead of `emptyMessage`. The default says only the loaded page was searched, or is neutral when `rowProcessing` is `None` because the server applies the search.
+
+`DataTableCore` keeps its own sort, column filters, and search text unless you control them. Pass `sort` with `onSortChange`, `filters` with `onFilter`, and `globalFilter` with `onGlobalFilterChange` to own that state, for example to persist it or to send it to the server. `sort={null}` means not sorted; leaving a prop undefined lets the table keep that piece of state itself, and the change callbacks report every change either way. Import `DataTableSort`, `DataTableSortDirection`, and `DataTableRowProcessing` from `@cratis/components/DataTables`.
+
+When your query has already filtered and sorted the rows on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders them as given instead of processing them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The query-backed tables manage this state for you when you set `serverQuery`: they send sorting and the mapped filter and search arguments to the server, then render the returned rows without local processing. The query must apply those filter and search arguments itself; see [Server mode](data-table-for-query.md#server-mode).
 
 ## Common Features
 
 All three table components share:
 
-- Single-row selection by default, or multiple selection with row checkboxes and a select-all header (`selectionMode='multiple'`)
+- Single or multiple row selection, with row checkboxes and a select-all header in multiple mode (`selectionMode='multiple'`)
 - Global filtering
 - Custom column templates
 - Empty, loading, failure, and unauthorized state messages (set `DataTableCore.status` when rendering a locally managed query)
 - Keyboard selection: each row is a tab stop, and Enter or Space selects it; in multiple mode it toggles the row (on `DataTableCore`, only when `selectionMode` or `onRowClick` is set)
 - Cratis-owned semantic Column markers and stable table parts
 
-Keep an application-owned or direct toolkit table when the surface requires grouping, row expansion, or controlled lazy/server sorting. Components does not silently emulate those behaviors over one loaded page.
+Keep an application-owned or direct toolkit table when the surface requires grouping or row expansion. Components does not emulate those behaviors over one loaded page; server-side sorting is supported through `serverQuery` as described above.
 
 ## ColumnFilterMenu
 

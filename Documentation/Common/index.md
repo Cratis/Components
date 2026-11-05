@@ -1,9 +1,9 @@
 ---
-title: Common components
-description: Choose among the native form controls, pickers, collection controls, layout, icons, and error handling in @cratis/components/Common.
+title: Common controls for local React state
+description: Choose Common controls for local React values, panel switching, navigation, and render recovery, and know when to use a CommandForm field.
 ---
 
-The Common subpath holds the building blocks that work with ordinary React state and need no Arc command binding. Import them from `@cratis/components/Common`:
+Common controls let you build inputs, switch panels, and recover from render failures using ordinary React state, without binding values to an Arc command. Use them for local UI choices and forms whose values your component owns. Import them from `@cratis/components/Common`:
 
 ```tsx
 import { Button, ComboBox, DatePickerInput, TextInput } from '@cratis/components/Common';
@@ -11,7 +11,7 @@ import { Button, ComboBox, DatePickerInput, TextInput } from '@cratis/components
 
 `CratisComponentsProvider` is also re-exported here, but the conventional import is the package root, `@cratis/components`. Mount it once at the application root to supply the locale and Components-owned labels; see [CratisComponentsProvider](cratis-components-provider.md).
 
-When the value belongs to an Arc command, use the matching [CommandForm field](../CommandForm/index.md) instead of wiring a Common control to the command yourself.
+For value controls, your component supplies the current value and handles changes. The control does not save that value or execute an Arc command for you. When the value belongs to an Arc command, use the matching [CommandForm field](../CommandForm/index.md) instead of wiring a Common control to the command yourself.
 
 ## Enter a value
 
@@ -38,7 +38,7 @@ When the value belongs to an Arc command, use the matching [CommandForm field](.
 | --- | --- | --- |
 | Run one action | `Button`, or `IconButton` for an icon-only action | [Basic controls](basic-controls.md) |
 | Show a row of page-level command actions | `ActionMenubar` | [ActionMenubar](action-menubar.md) |
-| Switch between views of the same content | `Tabs` | [Collection controls](collection-controls.md) |
+| Switch between content panels owned by the control | `Tabs` | [Collection controls](collection-controls.md) |
 | Show where the user is in a hierarchy | `Breadcrumbs` | [Collection controls](collection-controls.md) |
 | Give a routed view a full-height layout and title | `Page` | [Page](page.md) |
 | Group content in a bounded `div`, `section`, or `article` | `Surface` | [Basic controls](basic-controls.md) |
@@ -50,6 +50,6 @@ When the value belongs to an Arc command, use the matching [CommandForm field](.
 | --- | --- | --- |
 | Pass an icon as a React node or icon-font class | `Icon`, `IconDisplay` | [Icon](icon.md) |
 | Set the locale, owned labels, icons, or the app-wide toaster | `CratisComponentsProvider` | [CratisComponentsProvider](cratis-components-provider.md) |
-| Stop a render failure from taking down the whole screen | `ErrorBoundary` | [ErrorBoundary](error-boundary.md) |
+| Isolate a section's render failure and offer a user-triggered retry | `ErrorBoundary` | [ErrorBoundary](error-boundary.md) |
 
 Modal content, confirmations, and busy states are in the separate [Dialogs](../Dialogs/index.md) subpath. For choices that span several subpaths, such as a table versus a data page, see [Choosing a component](../choosing-a-component.md). To restyle any of these controls, start with the [Styling overview](../Styling/index.md).

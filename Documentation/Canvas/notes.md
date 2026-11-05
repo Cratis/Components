@@ -1,6 +1,6 @@
 ---
 title: Canvas notes
-description: Render controlled, draggable, resizable sticky notes on a Canvas.
+description: Canvas notes in Cratis Components are controlled sticky notes with drag, resize, and text callbacks; the host stores position, size, and text.
 ---
 
 `Note` is a draggable, resizable, editable sticky note. Like every shape in this module it is presentational and fully controlled — it owns no position, size, or text of its own. It reads its `note` prop fresh every render and reports every change through callbacks; committing the change back into state is entirely up to the host.
@@ -82,4 +82,4 @@ Because an expanded note visually reaches over whatever sits below it, `onExpand
 
 ## Opt-in messaging
 
-Committing an edit (the same moment `onTextChange` fires) also publishes a `NoteTextChanged` (carrying `noteId` and the full committed `text`) over the `@cratis/arc.react` messenger — no extra prop needed, since `note.id` is already there. `onTextChange` remains the note's primary contract; see [Messaging](messaging.md) for the full catalog and why this is silently inert without Arc.
+Committing an edit (the same moment `onTextChange` fires) also publishes a `NoteTextChanged` (carrying `noteId` and the full committed `text`) through an optional messenger adapter — no extra prop needed, since `note.id` is already there. The adapter uses Arc's `useMessenger` to resolve the nearest scoped messenger or the root messenger. No provider is required: without one, Arc supplies a local fallback messenger. Publishing is skipped only when no messenger resolves, such as when a custom `ArcContext.Provider` omits it. `onTextChange` remains the note's primary contract; see [Messaging](messaging.md) for the full catalog.

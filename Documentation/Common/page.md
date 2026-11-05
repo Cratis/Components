@@ -1,6 +1,6 @@
 ---
-title: Page
-description: Give a routed view a full-height column layout with an optional visible title.
+title: Page layout in Cratis Components
+description: Use Page in Cratis Components to lay out a routed view as a full-height column with an optional heading and a main content region.
 ---
 
 `Page` is a layout primitive for the root of a routed view. It renders a flex column that fills its parent's height, an optional level-1 heading, and a `<main>` element that takes the remaining space and clips overflow.

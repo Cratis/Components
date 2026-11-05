@@ -1,58 +1,63 @@
 ---
-title: Components
-description: Components is Cratis Platform's React UI library. Choose a surface, configure providers and styles, then build an Arc-backed command/query screen.
+title: 'Cratis Components: React UI for Arc commands and queries'
+description: Cratis Components is a React UI library for Cratis Arc commands and queries, with typed forms, dialogs, data tables, and application-owned styling.
 ---
 
-import { CardGrid } from '@astrojs/starlight/components';
-import SimpleCard from '@components/SimpleCard.astro';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 import TopicHero from '@components/TopicHero.astro';
+
+Cratis Components is a React UI library for building forms, command dialogs, and list screens
+with [Cratis Arc](/arc/). It connects those screens to Arc's generated proxies: TypeScript
+classes that run your backend commands and queries from the browser. You can also display
+already-loaded rows or edit local React state. Components is part of Cratis Platform;
+Cratis Chronicle is not required.
 
 <TopicHero
     icon='laptop'
-    eyebrow='Components'
+    eyebrow='Cratis Components'
     title='React components wired to your proxies'
 >
-    Components is the React UI component of **Cratis Platform**. Build command dialogs,
-    forms, and query-backed tables around [Arc's](/arc/) generated proxies, or use
-    local-data surfaces with application-owned state. Components owns its public React
-    contracts, semantic parts, tokens, and built-in renderer.
+    Compose a screen around generated commands and queries instead of repeating the
+    execution, validation, and query-result UI wiring. Keep control of the layout and
+    appearance through Cratis-owned React APIs, documented parts, and design tokens.
 </TopicHero>
+
+## What Components adds
+
+For an add or edit flow, give `CommandDialog` a generated command and the fields the user
+needs to fill in. It binds those fields, uses command validation to control confirmation,
+and tracks execution, so you do not maintain a second set of execution-state flags.
+
+For a list, give a query-backed table the generated query and describe its columns. The table
+uses Arc's hooks for results and paging. Observable queries deliver later results as the data
+changes; `DataTableCore` accepts already-loaded rows when your application owns the updates.
+
+Keep your application's appearance by mapping design tokens onto `--cratis-*` variables and
+styling documented `data-cratis-part` elements, or start with the optional baseline theme.
+React Aria supplies selected interaction primitives internally; it is not the public styling API.
+
+Read [why Components](/components/why-components/) for the trade-offs. You still own query
+scope, selected identifiers, backend failure handling, and application-level accessibility
+checks. Command success does not guarantee that a separate read model, the data a query
+reads, is already current.
 
 ## Start here
 
-Building a command/query screen? First [choose the surface](/components/choosing-a-component/),
-then [install and configure](/components/getting-started/), then [build the library screen](/components/tutorial/).
-The tutorial requires a running Arc backend and generated proxies; installing the UI package
-alone does not create them. Chronicle is optional behind Arc, not a prerequisite for this screen.
+For your first working component, [install and open an add-author dialog](/components/getting-started/).
+That guide starts from a running Arc backend and generated proxies, and links to the backend
+setup if you need it. Then [build the library screen](/components/tutorial/) around an author
+table and the selected author's books. Installing the UI package alone does not create the
+backend or proxies. Chronicle is optional behind Arc.
 
-Already have rows in memory? Choose a local-array table or controlled control instead. That
-workflow need not run an Arc request, although Arc's npm packages remain required peers.
+Already have rows in memory or local input to edit? [Choose the matching component](/components/choosing-a-component/)
+before adding a command or query. Those components can use application-owned state without
+running an Arc request, although Arc's npm packages remain required peers.
 
 <CardGrid>
-    <SimpleCard title='Tutorial' icon='open-book' link='/components/tutorial/'>
-        Build a live list-and-detail screen with query-backed tables and command dialogs.
-    </SimpleCard>
-    <SimpleCard title='Getting started' icon='rocket' link='/components/getting-started/'>
-        Install the package, mount the provider, and render your first proxy-driven
-        screen.
-    </SimpleCard>
-    <SimpleCard
-        title='Why Components'
-        icon='approve-check'
-        link='/components/why-components/'
-    >
-        Understand what Components adds to Arc-generated command and query contracts.
-    </SimpleCard>
-    <SimpleCard
-        title='Choose a component area'
-        icon='list-format'
-        link='/components/choosing-a-component/'
-    >
-        Start from the screen job rather than a raw component inventory.
-    </SimpleCard>
-    <SimpleCard title='Styling' icon='seti:folder' link='/components/styling/'>
-        Use the built-in token/theme boundary or an explicitly selected renderer adapter.
-    </SimpleCard>
+    <LinkCard title='Choose a component for your screen' href='/components/choosing-a-component/' />
+    <LinkCard title='Install and open a command dialog' href='/components/getting-started/' />
+    <LinkCard title='Build the library list-and-detail screen' href='/components/tutorial/' />
+    <LinkCard title='Style Components with tokens and parts' href='/components/styling/' />
 </CardGrid>
 
 ## Minimal setup
@@ -89,62 +94,44 @@ TypeScript 6's `TS2882` for the package's untyped stylesheet subpaths. [Getting 
 includes the peer installation, CSS module typing, and first command dialog. The package root is setup-only: import the provider and configuration helpers there, then import
 every component from its explicit subpath, such as `@cratis/components/CommandDialog` or
 `@cratis/components/DataTables`. The built-in renderer is zero-configuration. Optional renderer
-packages are selected explicitly; the application retains their provider, peer, SSR, styling, and
+packages are selected explicitly; the application retains their provider, peer, server-side rendering (SSR), styling, and
 license responsibilities. Read
 [Renderer adapters and coexistence](/components/renderers/) for the exact nine-slot boundary,
 direct vendor coexistence, custom composition, unsupported claims, and licensing policy.
 
 ## Recipes
 
+Use `CommandDialog` and `CommandForm` fields to collect input, query wrappers to display
+results, or `StepperCommandDialog` to gather a command's values across named stages.
+The [list screen recipe](/components/list-screen-with-actions/) combines rows, dialogs,
+toolbar actions, and selection details.
+
 <CardGrid>
-    <SimpleCard title='Build a form' icon='open-book' link='/components/building-a-form/'>
-        Collect input and execute a command with `CommandDialog` and `CommandForm` fields.
-    </SimpleCard>
-    <SimpleCard title='Display data' icon='seti:db' link='/components/displaying-data/'>
-        Render a query or observable query with `DataPage` and the data-table wrappers.
-    </SimpleCard>
-    <SimpleCard
-        title='Multi-step form'
-        icon='list-format'
-        link='/components/multi-step-form/'
-    >
-        Gather information across named stages with `StepperCommandDialog`.
-    </SimpleCard>
-    <SimpleCard
-        title='A list screen with actions'
-        icon='puzzle'
-        link='/components/list-screen-with-actions/'
-    >
-        Build a full screen with rows, dialogs, toolbar actions, and selection details.
-    </SimpleCard>
+    <LinkCard title='Build a command form' href='/components/building-a-form/' />
+    <LinkCard title='Display query results' href='/components/displaying-data/' />
+    <LinkCard title='Build a multi-step command form' href='/components/multi-step-form/' />
+    <LinkCard title='Compose a list screen with actions' href='/components/list-screen-with-actions/' />
 </CardGrid>
 
 ## Component areas
 
+Choose command input for typed fields, forms, and dialogs; data display for tables and list
+pages; application surfaces for dialogs, notifications, and page chrome; or structured
+editors for JSON content and schemas. The [component decision guide](/components/choosing-a-component/)
+also covers navigation, canvas, pivot, and time-oriented views.
+
 <CardGrid>
-    <SimpleCard
-        title='Command input'
-        icon='approve-check'
-        link='/components/commanddialog/'
-    >
-        Typed fields, forms, dialogs, and multi-step command flows.
-    </SimpleCard>
-    <SimpleCard title='Data display' icon='seti:db' link='/components/datapage/'>
-        Query-backed and local-array tables, list pages, filters, and detail surfaces.
-    </SimpleCard>
-    <SimpleCard title='Application surfaces' icon='laptop' link='/components/dialogs/'>
-        Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars.
-    </SimpleCard>
-    <SimpleCard title='Structured editors' icon='pencil' link='/components/schemaeditor/'>
-        JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views.
-    </SimpleCard>
+    <LinkCard title='Command input: forms and dialogs' href='/components/commanddialog/' />
+    <LinkCard title='Data display: tables and list pages' href='/components/datapage/' />
+    <LinkCard title='Application surfaces: dialogs' href='/components/dialogs/' />
+    <LinkCard title='Structured editors: JSON Schema' href='/components/schemaeditor/' />
 </CardGrid>
 
 ## Relationship to Arc and Chronicle
 
 Components consumes generated command/query contracts and React contexts from [Arc](/arc/).
 Applications may use Arc without Components, and Arc does not require event sourcing. Applications
-that use [Chronicle](/chronicle/) commonly render its projected read models through these surfaces.
+that use [Chronicle](/chronicle/) can render its projected read models through these surfaces.
 
 :::caution[Evaluate the exact application profile]
 Package existence, examples, Storybook output, and passing checks do not establish universal
@@ -154,25 +141,14 @@ renderer packages retain their own provider, dependency, styling, SSR, and licen
 
 ## Continue
 
+For package metadata, use [Components on npm](https://www.npmjs.com/package/@cratis/components).
+For implementation and contribution paths, use the [Components source](https://github.com/Cratis/Components).
+The [Arc documentation](/arc/) covers the generated application contracts;
+[Chronicle documentation](/chronicle/) covers event-sourced storage and projected read models.
+
 <CardGrid>
-    <SimpleCard
-        title='Components source'
-        icon='seti:folder'
-        link='https://github.com/Cratis/Components'
-    >
-        Package setup, migration guidance, contribution paths, and current limitations.
-    </SimpleCard>
-    <SimpleCard
-        title='Components on npm'
-        icon='open-book'
-        link='https://www.npmjs.com/package/@cratis/components'
-    >
-        Published package metadata and versions.
-    </SimpleCard>
-    <SimpleCard title='Arc' icon='puzzle' link='/arc/'>
-        The CQRS framework whose generated application contracts Components consumes.
-    </SimpleCard>
-    <SimpleCard title='Chronicle' icon='seti:db' link='/chronicle/'>
-        The event-sourcing database and runtime behind projected read models.
-    </SimpleCard>
+    <LinkCard title='Components source' href='https://github.com/Cratis/Components' />
+    <LinkCard title='Components on npm' href='https://www.npmjs.com/package/@cratis/components' />
+    <LinkCard title='Cratis Arc: CQRS framework' href='/arc/' />
+    <LinkCard title='Cratis Chronicle: event-sourcing database' href='/chronicle/' />
 </CardGrid>

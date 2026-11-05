@@ -1,21 +1,21 @@
 ---
-title: Dialog
-description: Build a modal or side-sheet dialog that the caller can await for a typed result, with controlled dismissal, busy state, and initial focus.
+title: 'Cratis Components Dialog: return a typed result'
+description: Use Cratis Components Dialog with Arc hooks to await a typed result, handle cancellation, and control focus and dismissal in a modal or side sheet.
 ---
 
-Base dialog component for creating typed dialogs that can be awaited.
+Cratis Components `Dialog` displays your content in a modal or side sheet. Pair it with Cratis Arc's dialog hooks when a caller needs to await the user's choice and an optional typed value. The caller decides what to do with that value; `Dialog` does not validate or execute an Arc command for you.
 
-## Recommended Pattern
+## Recommended pattern
 
-Use `useDialog<TResult>()` at the call site and `useDialogContext<TRequest, TResult>()` inside the dialog component. Both hooks come from `@cratis/arc.react/dialogs`.
+Start with the [runtime and provider setup](../getting-started.mdx). At the call site, use `useDialog<TResult>(DialogComponent)`, render the returned wrapper, and await its show function. Inside the dialog, use `useDialogContext<object, TResult>()` to call `closeDialog(result, value?)`. Both hooks come from `@cratis/arc.react/dialogs`.
 
-- The caller opens the dialog with `await` and receives `[dialogResult, value]`
-- The dialog closes itself through `closeDialog(result, value?)`
-- `TResult` is the value returned from the dialog. `useDialogContext` takes the request (the dialog's input props) type first, so pass `object` there when the dialog has no input
+The show function resolves to `[dialogResult, value?]`, not the value alone. Check both before continuing, because cancellation can return no value. `TResult` describes that optional value; use `object` as the context's request type when the dialog takes no input props.
 
-This pattern gives strongly typed dialog results and a simple async flow.
+For a dialog that takes input, the generic order differs: `useDialog<TResult, TRequest>(DialogComponent)` at the caller, and `useDialogContext<TRequest, TResult>()` inside. Pass the request to the show function; the dialog receives it as props and through `context.request`. The [Arc dialog contract](/arc/frontend/react/dialogs/) shows a typed request example. Each `useDialog` instance holds one pending response, so await that interaction before opening it again.
 
 ## Example
+
+This example collects a project name and returns a local `Project` value. It does not persist a project or run a backend command. Render `MyComponent` within the configured application.
 
 ```tsx
 import { useState } from 'react';
@@ -66,22 +66,22 @@ const MyComponent = () => {
 };
 ```
 
-`onConfirm` calls `closeDialog` with the new project, which resolves the caller's `await`. Cancel, the header close (X), `Escape`, and a backdrop click need no callback: they close the dialog with `DialogResult.Cancelled`. `useDialog` unmounts the dialog when it closes, so it starts with an empty name the next time it opens.
+`isValid` keeps Ok disabled until the name contains non-whitespace text. On confirmation, `closeDialog` returns the project to the waiting caller. With this default footer, Cancel, the header close (X), Escape, and a backdrop click need no callback: they resolve the call with `DialogResult.Cancelled` and no project. `useDialog` unmounts the dialog on close, so the name starts empty on the next opening.
 
 ## How the dialog closes
 
-The footer buttons, the header close (X), `Escape`, and a backdrop click all go through the same rules. "Closes" means that the dialog calls `closeDialog(result)` from the surrounding `useDialog` context, without a value.
+Predefined footer buttons and enabled dismissal paths use the same callback rules. In the table, "closes" means that `Dialog` calls `closeDialog(result)` from the surrounding `useDialog` context without a value. A dedicated `onConfirm` or `onCancel` takes precedence over `onClose` for that action.
 
 | User action | Dedicated callback present | Only `onClose` present | No callback |
 | ----------- | -------------------------- | ---------------------- | ----------- |
 | `Ok` / `Yes` | `onConfirm()` runs; closes only if it returns `true` | `onClose(result)` runs; closes unless it returns `false` | Closes with `DialogResult.Ok` / `Yes` |
 | `Cancel` / `No`, X, `Escape`, backdrop | `onCancel()` runs; closes only if it returns `true` | `onClose(result)` runs; closes unless it returns `false` | Closes with `DialogResult.Cancelled` / `No` |
 
-The X, `Escape`, and backdrop report `DialogResult.Cancelled`, even in a `YesNo` dialog. Callbacks may be async; the dialog awaits them before deciding.
+The X, Escape, and backdrop report `DialogResult.Cancelled`, even with `DialogButtons.YesNo`; the No button reports `DialogResult.No`. Callbacks may be async, and the dialog awaits them before deciding whether to close. Returning nothing from `onConfirm` or `onCancel` keeps it open unless the callback calls `closeDialog(...)` itself. Calling `closeDialog` directly is how the example returns a project value.
 
-A callback that calls `closeDialog(...)` itself has already closed the dialog, whatever it returns. That is how you return a value, as in the example above.
+An async callback does not automatically make a plain `Dialog` busy. Set `isBusy` while your operation is pending if you need to block further activation and dismissal.
 
-Outside `useDialog` there is no dialog context, so nothing closes automatically. Control `visible` yourself and hide the dialog from the callbacks:
+Outside `useDialog`, there is no context to close the dialog. Update `visible` from your callbacks instead. This excerpt belongs inside a component with `useState`, `Dialog`, and `DialogButtons` imported:
 
 ```tsx
 const [visible, setVisible] = useState(false);
@@ -111,14 +111,7 @@ const [visible, setVisible] = useState(false);
 - `onConfirm`: Callback for confirm actions; return `true` to close. See [How the dialog closes](#how-the-dialog-closes)
 - `onCancel`: Callback for cancel actions, the X, `Escape`, and a backdrop click; return `true` to close
 - `onClose`: Fallback close callback for whichever of `onConfirm` / `onCancel` is absent; closes unless it returns `false`
-- `buttons`: Predefined `DialogButtons` (`Ok`, `OkCancel`, `YesNo`, `YesNoCancel`),
-  `null` for no footer, or a custom React node. Defaults to
-  `DialogButtons.OkCancel`. Anything other than a `DialogButtons` value also
-  removes the close (X), stops `Escape` closing the dialog, and leaves
-  `onConfirm` / `onCancel` / `onClose` uncalled — the dialog cannot tell which
-  of your buttons means what, so a custom footer must close the dialog itself
-  through `useDialogContext().closeDialog(...)`, or opt the dismiss
-  affordances back in explicitly with `dismissable`
+- `buttons`: Predefined `DialogButtons` (`Ok`, `OkCancel`, `YesNo`, `YesNoCancel`), `null` for no footer, or a custom React node. Defaults to `DialogButtons.OkCancel`. Custom footer buttons do not invoke the dialog callbacks automatically; wire their actions yourself. Custom or absent footers also disable X, Escape, and backdrop dismissal by default. Re-enable those paths with `dismissable` or the independent dismissal props below.
 - `dismissable`: Combined default for the header close (X), a backdrop click and `Escape` (see below)
 - `dismissOnOutsideClick`: Overrides backdrop dismissal independently
 - `closeOnEscape`: Overrides Escape dismissal independently
@@ -131,14 +124,12 @@ const [visible, setVisible] = useState(false);
 - `contentStyle`: Custom content area style
 - `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing code that passes it keeps compiling; it simply has no effect.
 - `isValid`: Enables or disables confirm actions (defaults to `true`)
-- `isBusy`: When `true`, disables all buttons, blocks Escape/backdrop dismissal, and shows a loading spinner on the primary action button
+- `isBusy`: Blocks action activation and dismissal, disables and makes the content inert, and shows a spinner on the predefined primary button. That button stays focusable with `aria-disabled`; secondary buttons and the X are disabled. A custom footer is disabled and inert as a whole.
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Each resolves from the prop, then the
   [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s matching `messages.dialog` entry
   (`ok`, `cancel`, `yes`, `no`), then its English default (`'Ok'`, `'Cancel'`, `'Yes'`, `'No'`) — localize every
-  dialog at once through the provider, or one dialog through the prop. Footer icons are decorative and hidden
-  from accessibility APIs, so each button's accessible name is exactly its configured label. `CommandDialog`
-  forwards these same props straight through to `Dialog`, so the same precedence covers it.
+  dialog at once through the provider, or one dialog through the prop. Each predefined button uses its label as its accessible name. `CommandDialog` forwards these same props to `Dialog`, so the same precedence covers it.
   `StepperCommandDialog` uses `okLabel` for its Submit button (falling back to `messages.stepper.submit`) and
   `cancelLabel` for its optional footer Cancel.
 - `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
@@ -146,7 +137,7 @@ const [visible, setVisible] = useState(false);
 
 ## Header actions
 
-Some actions belong in the header of a dialog: a help button, a "give feedback" button, a "copy link" button. The `headerActions` slot renders them in a `header-actions` part, before the close button, so keyboard and screen-reader order reaches them first and focus management is unchanged.
+Use `headerActions` for actions such as Help or Copy link that belong to the dialog but do not confirm or cancel it. They render in the `header-actions` part before the close button in keyboard and reading order. This excerpt assumes your application's `Button` is imported:
 
 ```tsx
 <Dialog title='Edit details' headerActions={<Button variant='ghost' size='small' label='Help' />}>
@@ -158,7 +149,7 @@ Some actions belong in the header of a dialog: a help button, a "give feedback" 
 
 ### Register actions for every dialog
 
-An application that wants the same action in every dialog registers it once on `CratisComponentsProvider`:
+Register a shared action once on `CratisComponentsProvider`. This excerpt assumes your own `FeedbackButton` and `App` components:
 
 ```tsx
 import { CratisComponentsProvider, type DialogHeaderContext } from '@cratis/components';
@@ -186,16 +177,11 @@ The dialog slot (`dialogs.dialog`) renders the region, so adapter-based dialogs 
 
 ## Dismissing
 
-A dialog is _dismissable_ when the header close (X), a backdrop click and
-`Escape` are all offered. `dismissable` remains the combined switch; each affordance can also be configured independently.
+Dismissal means closing without confirmation through the header X, Escape, or a backdrop click. `dismissable` sets a combined default for those three paths; it does not change the footer buttons.
 
-By default the dialog works out which it should be from `buttons`: a predefined
-`DialogButtons` set is dismissable, a custom `ReactNode` footer or `null` is
-not. That mirrors the v10 behavior and is usually what you want — if the
-dialog renders your buttons, it does not know which one means "get me out of
-here", so it declines to invent one.
+A predefined `DialogButtons` set enables all three paths by default. A custom footer or `buttons={null}` disables them. With a custom footer, wire the button handlers yourself and ensure the user has a way to leave the dialog.
 
-Set `dismissable` explicitly to override that:
+Set `dismissable` to restore all three paths. This excerpt assumes your own `MyOwnFooter` component and `closeDialog` from `useDialogContext()`:
 
 ```tsx
 <Dialog
@@ -209,7 +195,7 @@ Set `dismissable` explicitly to override that:
 </Dialog>
 ```
 
-Each independent prop falls back to `dismissable`, then to the existing `buttons`-derived default. Explicit `true` or `false` takes precedence over that combined switch. For example, keep the header X and Escape available but prevent accidental backdrop dismissal:
+`showCloseButton`, `closeOnEscape`, and `dismissOnOutsideClick` each override the combined default. If omitted, each falls back to `dismissable`, then to the default derived from `buttons`. To keep the X and Escape available with the default footer but prevent an accidental backdrop click from closing the dialog:
 
 ```tsx
 <Dialog title='Edit details' dismissOnOutsideClick={false}>
@@ -217,18 +203,11 @@ Each independent prop falls back to `dismissable`, then to the existing `buttons
 </Dialog>
 ```
 
-Use `showCloseButton={false}` to hide only the X, or `closeOnEscape={false}` to disable only Escape. These props are also forwarded by `CommandDialog`. While `isBusy` is true, all dismissal paths remain blocked regardless of overrides; a visible header X is disabled. The focus trap, focus restoration, and footer actions are unchanged.
-
-This is what `StepperCommandDialog` does for its wizard chrome: it renders a
-custom footer and still keeps a header X — and withdraws it again, along with
-`Escape` and the backdrop, for the whole window a command is executing in.
+Use `showCloseButton={false}` to hide only the X, or `closeOnEscape={false}` to disable only Escape. `CommandDialog` forwards these controls. While `isBusy` is true, dismissal stays blocked regardless of overrides, and a visible X is disabled. Changing dismissal options does not change initial focus or footer callback rules.
 
 ## Placement
 
-`placement` decides where the dialog sits. `center` is the classic modal. `start` and `end` turn the
-same dialog into a full-height **side sheet** against that inline edge of the viewport — a detail pane,
-an internal note, a navigation list on a small screen — sliding in from the edge (and not at all under
-`prefers-reduced-motion`). `width` is the sheet's width; the sheet never exceeds the viewport.
+Use the default `placement='center'` for a centered modal. Choose `'start'` or `'end'` for a full-height side sheet, such as a detail pane beside the current page. These are inline edges: start is left in a left-to-right layout and right in a right-to-left layout. `width` sets the sheet's width within the viewport. The sheet slides in from its edge; `prefers-reduced-motion` disables that animation.
 
 The excerpt assumes `closeDialog` from `useDialogContext()`, `DialogInitialFocus` from `@cratis/components/Dialogs`, and your own `ActivityTimeline` component.
 
@@ -259,24 +238,17 @@ Nothing else changes with placement: the focus trap, `Escape`, backdrop dismissa
 
 ## Initial focus
 
-By default the confirm button is focused when a dialog opens, which makes the
-common "read it, press Enter" flow cost one keystroke. That default also _arms_
-the confirm button: browsers fire `click` from the `keydown` of `Enter`, so a
-key still held down from the control that opened the dialog — or the ordinary
-habit of pressing `Enter` twice — confirms it immediately.
+The predefined confirm button receives focus by default. That makes Enter a convenient way to confirm, but it is a poor default for a destructive choice: another Enter can activate the action before the user has reviewed it. Use `DialogInitialFocus.Cancel` to focus the dismissing button, or `Content` to focus the title without selecting an action.
 
-A plain `Dialog` does not validate its content: confirm is enabled unless you
-pass `isValid={false}`. Derive `isValid` from your own input state so confirm
-stays disabled until the input is complete. (`CommandDialog` does this for you
-from the command's validation.) A dialog that needs **no** input has no such
-gate, which is exactly backwards when the action is destructive. Say where
-focus should go with `initialFocus`:
+Focus and validity are separate. A plain `Dialog` enables confirm unless `isValid={false}`; derive validity from your input state as in the project example. `CommandDialog` also uses command-form validity to gate confirmation. Choose initial focus independently:
 
 | `DialogInitialFocus` | Focuses                                                                |
 | -------------------- | ---------------------------------------------------------------------- |
 | `Confirm` (default)  | The `Ok` / `Yes` button                                                |
 | `Cancel`             | The dismissing button — `Cancel`, or `No` when the set has no `Cancel` |
 | `Content`            | The dialog's own title, so nothing is armed                            |
+
+The following prompt illustrates a destructive choice with No focused. It only returns a decision; the caller must implement any deletion.
 
 ```tsx
 import { Dialog, DialogInitialFocus } from '@cratis/components/Dialogs';
@@ -295,22 +267,12 @@ export const DeletePersonalDataDialog = () => (
 
 Opened through `useDialog`, the caller receives `DialogResult.Yes` or `DialogResult.No` from the buttons, and `DialogResult.Cancelled` from the X, `Escape`, or a backdrop click.
 
-`Cancel` falls back to `Content` when the button set has nothing to dismiss
-with (`DialogButtons.Ok`, a custom footer, or no footer). Focus never stays on
-`document.body`: a modal that does not move focus into itself leaves keyboard
-and screen-reader users stranded outside the content that just interrupted
-them.
+`Cancel` falls back to the title when there is no predefined dismissing button: `DialogButtons.Ok`, a custom footer, or no footer. For custom or absent footers, choose `Content` explicitly if you want the title focused on opening.
 
-`initialFocus` is forwarded by `CommandDialog`, and it changes **only** focus —
-the footer, the close (X), `Escape`, and every callback keep working. That is
-the difference from the older workaround of replacing `buttons` with a custom
-node, which silently gives all of those up.
+`CommandDialog` forwards `initialFocus`. The setting changes focus only; it does not replace the footer, change dismissal options, or alter callback rules. Check the actual application flow with the keyboard, including focus when the dialog opens and where it returns after confirmation or cancellation.
 
 ## Notes
 
-- Prefer `onConfirm` and `onCancel` over `onClose` for clear intent.
-- `onConfirm` and `onCancel` must return `true`, or call `closeDialog` themselves, to close the dialog.
-- `onClose` closes unless it returns `false`.
-- For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<TRequest, TResult>()`.
-- While `isBusy` is `true`, the X, the secondary buttons, `Escape`, and the backdrop are disabled, and the content is disabled and inert. The confirm button stays focusable but is `aria-disabled` and ignores activation, so keyboard focus is never stranded on the page body and the dialog cannot be submitted twice. A custom footer is disabled and inert as a whole.
-- When `onConfirm` (or `onClose`) keeps the dialog open after a confirm, focus returns to the confirm button (to the title when confirm is disabled by `isValid`) and a polite live region inside the dialog announces the outcome. The text resolves from the provider's `messages.dialog.refused`, then `'The action was not completed. Review the dialog and try again.'`. A held `Enter` or `Space` is ignored on the confirm button, so returning focus never re-submits.
+When a confirm callback keeps the dialog open, focus returns to the predefined confirm button, or to the title if confirm is unavailable or disabled by `isValid`. A polite live region announces that the action was not completed. Its text comes from the provider's `messages.dialog.refused`, falling back to `'The action was not completed. Review the dialog and try again.'`. Repeated keydown events from a held Enter or Space are ignored on the predefined confirm button.
+
+Check confirmation and each enabled cancellation path separately. With custom buttons, also check their handlers, busy state, and initial focus; predefined footer behavior does not wire those handlers for you. If the next step is command validation and execution rather than returning a value, continue with [CommandDialog](../CommandDialog/index.md) and the [form recipe](../building-a-form.md).

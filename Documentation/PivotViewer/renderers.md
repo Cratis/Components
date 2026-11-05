@@ -1,13 +1,15 @@
 ---
-title: PivotViewer renderers
-description: Control the text on PivotViewer cards and the content of its detail drawer.
+title: PivotViewer card and detail renderers
+description: Use PivotViewer cardRenderer for identifying text and detailRenderer for React content, including forms and actions in the selected item's drawer.
 ---
+
+PivotViewer uses `cardRenderer` for the text users scan across the collection and `detailRenderer` for the React content they open after selecting an item. Put enough information on each card to recognize it; keep longer explanations, forms, and actions in the detail drawer.
 
 The examples on this page use the `Task` type from [Dimensions and filters](dimensions-and-filters.md#complete-example) and the `Product` type from the [overview](index.md#quick-start).
 
 ## Card Renderer
 
-The card renderer determines how each item appears in the collection view. It returns structured text data — `{ title, labels?, values? }` — and `PivotViewer` lays it out into the card. The `labels` and `values` arrays are paired positionally.
+The card renderer returns structured text data, `{ title, labels?, values? }`, for both collection and grouped views. PivotViewer lays it out into each card, pairing the `labels` and `values` arrays by position. Return display strings, including any number or date formatting the reader needs.
 
 Cards are drawn with Pixi, not as DOM elements, so a card can show only this text: no images, icons, per-card colors, or React content. Every card has the same fixed size (each card occupies a 200 × 176 pixel cell at 100% zoom), and a title or value that does not fit is shortened with an ellipsis.
 
@@ -22,6 +24,8 @@ const cardRenderer = (item: Product) => ({
 ```
 
 ### Rich Card Example
+
+For a task collection, show the status and assignment that distinguish one task from another:
 
 ```typescript
 const taskCardRenderer = (item: Task) => ({
@@ -39,9 +43,9 @@ When a user selects a card, PivotViewer opens a drawer that slides in from the r
 detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
 ```
 
-- The header heading is the item's `name` property, then its `type` property, then the text "Event". Give your items a `name` property, or accept that heading.
-- Call `onClose` from your content to close the drawer, for example after a successful save.
-- Without a `detailRenderer`, the drawer shows a built-in fallback that lists the item's `type`, `occurred`, `service`, `environment`, `tenant`, `correlationId`, `causation`, and `content` properties when present. For most item types, supply your own renderer.
+The header uses the item's `name` property, falling back to `type` and then "Event". It does not use the card's `title`, so give your items a `name` property if that heading should identify them. Your content can call `onClose` when the user finishes a task.
+
+Without a `detailRenderer`, the drawer lists the item's `type`, `occurred`, `service`, `environment`, `tenant`, `correlationId`, `causation`, and `content` properties when present. Supply your own renderer for item types that need different fields, as in the product example below.
 
 ### Basic Details
 
@@ -126,7 +130,7 @@ const interactiveDetailRenderer = (item: Task, onClose: () => void) => (
 );
 ```
 
-`updateTaskDescription` stands for your own persistence call, such as an Arc command. The drawer does not reflect the change until `data` contains the updated item.
+This excerpt assumes an application-provided `updateTaskDescription` persistence call, such as an Arc command. The editor keeps the typed description in local state; saving does not update PivotViewer's `data` for you. Refresh or replace the changed item in `data` so cards and filters also use the saved value.
 
 ## Conditional Rendering
 
@@ -150,17 +154,10 @@ const adaptiveCardRenderer = (item: Task) => {
 
 ### Cards
 
-1. **Keep cards compact**: every card has the same small fixed size, so show a title and a few label/value pairs
-2. **Put the identifying text in `title`**: it is the most prominent line on the card
-3. **Keep `labels` and `values` the same length**: they are paired by position
-4. **Format values yourself**: return display strings such as `'12h'` or `'P3'`
-5. **Keep it cheap**: `cardRenderer` runs for cards as they are drawn, so avoid expensive computation in it
+Use `title` for the identifying text and keep the label/value pairs short enough to scan. Matching array lengths keep the two columns aligned. Since `cardRenderer` runs as cards are drawn, prepare expensive derived values before rendering rather than recomputing them in the callback.
 
 ### Details
 
-1. **Show comprehensive info**: This is the place for all details
-2. **Organize in sections**: Group related information
-3. **Make it actionable**: Include relevant actions and buttons, and call `onClose` when an action finishes the task
-4. **Load related data**: Fetch additional details in a component when it mounts
-5. **Keep hooks in components**: never call hooks directly inside `detailRenderer`
-6. **Consider narrow screens**: the drawer is a fixed 380 pixels wide and overlays the right edge of the card area
+Organize the detail content around what users do after finding an item. Fetch related data in the returned React component when needed, and keep hooks in that component rather than in `detailRenderer` itself. Call `onClose` when an action completes the task.
+
+The drawer is fixed at 380 pixels wide and overlays the right edge of the card area, so check your forms and long content on the narrowest supported screen. To understand how selection and closing fit the rest of the viewer, continue with [Interactions](interactions.md).

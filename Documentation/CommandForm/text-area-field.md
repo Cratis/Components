@@ -1,6 +1,6 @@
 ---
 title: TextAreaField
-description: Bind a string property on an Arc command to a native multi-line input.
+description: TextAreaField in Cratis Components binds an Arc command's string property to a native multi-line input with configurable rows and placeholder.
 ---
 
 `TextAreaField` renders a Cratis-owned native multi-line input.

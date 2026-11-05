@@ -1,9 +1,11 @@
 ---
-title: Coming from PrimeReact
-description: Map direct PrimeReact usage onto renderer-independent Components 4 APIs.
+title: Migrate PrimeReact screens to Cratis Components
+description: Move PrimeReact screens to Cratis Components with Cratis-owned forms and tables, keeping direct vendor widgets where the migration needs them.
 ---
 
-Components 4 does not render PrimeReact or expose Prime types. The public API uses Cratis-owned props, events, tokens, and parts.
+Move a PrimeReact screen to Cratis Components by replacing its layout and data workflow in batches. Components 4 has no PrimeReact dependency and uses Cratis-owned props, events, tokens, and parts instead of exposing Prime types. You can keep a vendor-specific widget while moving the surrounding form or table.
+
+Start with one screen. Replace its imports using the table below, then check dialog close behavior, table data, and styling before removing the Prime provider.
 
 ## Replace direct imports
 
@@ -23,7 +25,7 @@ Use native HTML for simple application-owned controls that do not need Component
 
 Components does not provide one-for-one replacements for every Prime widget. Keep an application-owned or direct Prime surface during migration when it requires tabs, sidebars, timelines, knobs, select-button groups, general popovers, grouped/expandable tables, or controlled lazy/server table sorting. Components `Toolbar` is a canvas/tool-palette control, not a replacement for every page action bar.
 
-The optional MUI, PrimeReact 11, and PrimeReact 10 adapters cover only nine `common.*` presentation slots: button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface. They do not replace Dialog, Dropdown, DatePicker, paginator, table, or another complete widget. Core retains focus, overlay, selection, and keyboard behavior; installing an adapter does not delegate key handling or recreate a Prime public API.
+If you want to keep vendor presentation, the optional MUI, PrimeReact 11, and PrimeReact 10 adapters cover nine `common.*` presentation slots, named replacement points for basic controls: button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface. They do not replace Dialog, Dropdown, DatePicker, paginator, table, or another complete widget. Core retains focus, overlay, selection, and keyboard behavior; installing an adapter does not delegate key handling or recreate a Prime public API. See [Choose a renderer](renderers/index.md) before choosing an adapter.
 
 ## Map common Dialog props
 
@@ -40,11 +42,9 @@ A custom `buttons` footer owns its close result through `useDialogContext`; Comp
 
 ## Choose the table boundary
 
-- Use `DataTableCore` for an already-loaded local array.
-- Use `DataTableForQuery` for a paged Arc query.
-- Use `DataTableForObservableQuery` for an observable paged Arc query.
-- Use `DataPage` for a complete list screen with actions and optional details.
-- Keep an application-owned/Prime adapter for grouping, row expansion, or controlled lazy/server sorting until an explicit state contract exists.
+Choose the table according to who owns the data. `DataTableCore` renders an already-loaded local array. For a paged Arc query, use `DataTableForQuery`; if that query also delivers later results, use `DataTableForObservableQuery`. `DataPage` adds actions and optional details around the table.
+
+Keep an application-owned/Prime adapter for grouping, row expansion, or controlled lazy/server sorting until an explicit state contract exists.
 
 For direct Prime migration, rename `value` to `data`. Replace compact size, stripes, and column alignment with `DataTableParts`, `Column` classes/styles, and product CSS. Prime `Column` cannot be passed to a Components table or `DataPage`; import the Cratis marker for those surfaces.
 
@@ -67,4 +67,4 @@ A PrimeReact 10 / Components 2 application may migrate directly to Components 4.
 
 Components tables render one Arc-provided page. Filtering and sorting the complete dataset belongs on the server before paging. Do not reproduce a client-side DataTable mode over partial data.
 
-Follow the complete [Components 3 to 4 migration](Migration/3-to-4.md).
+For a command form, follow [Building a form](building-a-form.md); for query-bound rows, use [Displaying data](displaying-data.md). If the application also uses an older Components version, follow the complete [Components 3 to 4 migration](Migration/3-to-4.md).

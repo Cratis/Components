@@ -1,15 +1,17 @@
 ---
-title: UI foundation
-description: How Components owns its public React contracts and delegates selected interaction primitives.
+title: Cratis Components UI foundation and public contracts
+description: Cratis Components gives React apps public UI contracts for markup, styling, and Arc bindings, with optional renderer adapters and Pixi-backed views.
 ---
 
-Components 4 owns its public React markup, TypeScript types, tokens, documented parts, and component behavior without exposing its internal interaction library as a consumer contract. The public component contract is deliberately coupled to React and the browser DOM: standard HTML attributes, React refs, native element types, form behavior, and DOM event semantics are intentional guarantees. React Aria supplies selected focus, keyboard, overlay, collection, and date interaction primitives internally. These implementation facts do not establish accessibility conformance for every component or application.
+Cratis Components gives React applications UI contracts for command forms, query-backed tables, and other interactive views. Use it when you want those screens to share typed props and styling hooks while Arc handles command and query execution. Components owns the public markup, types, and behavior; it does not provide a framework-neutral UI layer or require Chronicle.
+
+That ownership lets you style documented parts instead of depending on an internal library's markup. It also sets an adoption boundary: Components uses React and browser DOM semantics, and an optional renderer adapter changes selected controls rather than replacing an entire screen.
 
 ## Why this changed
 
-Components 3 shipped with PrimeReact, PrimeIcons, and PrimeUI theme packages as its declared foundation, so installing `@cratis/components` inherited that dependency tree, its release cadence, and its license terms whether or not an application's own code imported Prime directly. Components 4 removes that inherited coupling: the package manifest declares no Prime dependency or peer, and a [release gate](#release-gates) confirms the emitted JavaScript and declarations contain no Prime imports or type references. Components-owned public types, typed parts, `data-cratis-part` state attributes, and server-paged table contracts (see [Table architecture](#table-architecture)) replace the Prime renderer contracts a consumer previously had to target.
+Components 3 used PrimeReact, PrimeIcons, and PrimeUI theme packages as its foundation. Components 4 removes Prime dependencies and peers from `@cratis/components`. Its [release gates](#release-gates) check that emitted JavaScript and declarations contain no Prime imports or type references.
 
-Long term, that ownership is what the rest of this page documents: one `--cratis-*` token source instead of a translation chain through a third-party preset, a package/version/license boundary an application controls directly instead of inheriting it transitively (see [Prime dependency boundary](#prime-dependency-boundary)), and a public API surface Components validates and evolves on its own release cadence rather than one bound to an upstream renderer's compatibility timeline. React Aria remains an internal implementation dependency rather than a second inherited public contract — see [Why React Aria](#why-react-aria) — so this change moves ownership to Components rather than moving the same coupling to a different upstream package.
+If you are migrating, target Components-owned props, typed parts, `data-cratis-part` attributes, and [table contracts](#table-architecture) rather than the former Prime renderer contracts. Styling uses `--cratis-*` tokens instead of a third-party theme preset. Direct Prime usage in your application remains your responsibility; see the [Prime dependency boundary](#prime-dependency-boundary). React Aria still supplies selected interactions internally, but is not a public styling or prop contract; [Why React Aria](#why-react-aria) explains that choice.
 
 ## Shipped architecture
 
@@ -24,13 +26,15 @@ graph TD
 
 Consumers import `@cratis/components/*`. React Aria does not appear in public prop types, declarations, or styling contracts. Arc command, query, and dialog bindings remain owned by `@cratis/arc.react`; Components builds visual behavior around them.
 
-“Renderer-independent” here does not mean framework-neutral or DOM-neutral. It means React applications depend on Components-owned markup and types rather than an internal renderer vendor's component types, implementation DOM, or styling hooks. `@cratis/components` intentionally exposes React and native HTML semantics while keeping React Aria and any future internal vendor private. Arc's generated transport/client contracts remain a separate boundary from Components' React composition.
+The public contract deliberately uses React refs, native HTML attributes and element types, DOM events, and native form behavior where each component exposes them. “Renderer-independent” means you target Components' contract rather than an internal vendor's types or styling hooks. It does not mean the components can render in another frontend framework.
+
+Arc owns command and query execution and its generated client contracts. Components adds visual interaction around those contracts. Chronicle can supply the backend's event history and projected read models, but Components has no direct Chronicle dependency. An Arc backend using current-state storage can serve the same kind of UI; persistence is a backend choice, not a renderer choice.
 
 The accepted [DOM-coupled public contract](decisions/0001-dom-coupled-contract.md) records that boundary. The accepted [component classification](decisions/0002-component-classification.md) records which public exports are visual primitives, interaction primitives, high-order composites, or interop-only components.
 
 ## Consumer contract
 
-The shipped styling contract contains:
+To integrate an existing design system, use the documented styling surfaces:
 
 - Semantic color, surface, border, radius, and focus variables under `--cratis-*`.
 - Typed `pt` keys for foundation components that support per-instance part attributes.
@@ -43,7 +47,7 @@ Spacing, typography, motion, elevation, and product-specific dimensions remain p
 
 ## Import surface: setup-only root, explicit subpaths
 
-The canonical import rule: **the package root is setup-only; every component ships from its own subpath.**
+Import application-wide setup from the package root and components from explicit subpaths. These imports illustrate the boundary; they are not a complete application setup:
 
 ```ts
 // Setup surface — root
@@ -55,28 +59,32 @@ import { DataTableForQuery, Column } from '@cratis/components/DataTables';
 import { Canvas, CanvasItem } from '@cratis/components/Canvas';
 ```
 
-`@cratis/components` intentionally exports only `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, `mergeCratisComponentsConfig`, `useCratisIcon`, and their config/props/message/icon types — the setup every application needs once, regardless of which components it uses. Every component family, in every [capability profile](#capability-profiles), is reached through its own subpath and never through the root.
+The root exports `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, `mergeCratisComponentsConfig`, `useCratisIcon`, and configuration, message, icon, and dialog integration types. Component families in every [capability profile](#capability-profiles) are reached through their own subpaths, not the root.
 
 Components 4 removes the Components 3 component-family namespaces from the root. Imports such as `import { Canvas } from '@cratis/components'` no longer resolve; use `@cratis/components/Canvas` instead. [Migrate from Components 3 to 4](Migration/3-to-4.md) carries the current namespace-to-subpath mapping, codemod command, and stop conditions. The `CommandStepper` mapping is intentionally special: the historical namespace represented the full `CommandDialog` module, so it migrates to `@cratis/components/CommandDialog`; the narrower `@cratis/components/CommandStepper` subpath exports only the standalone component.
 
 ## Capability profiles
 
-Components groups its subpaths into three capability profiles for documentation, dependencies, and adoption. The profiles do not assign maturity, accessibility, support, or quality tiers:
+The profiles below help you choose which subpaths to use. They group components by purpose and dependency needs, not by separate packages or release versions:
 
-- **Foundation** — the components most applications reach for immediately: `Common`, `CommandDialog` (and its `CommandStepper` alias), `CommandForm` (and `CommandForm/fields`), `DataPage`, `DataTables`, `Dialogs`, `Display`, `Dropdown`, `Filter`, `Notifications`, and `types`. Forms, dialogs, tables, and notifications for an ordinary Arc-backed CRUD screen.
-- **Advanced React** — specialized, still Pixi-free React surfaces used by fewer applications, or by fewer screens within an application: `Chat`, `ObjectContentEditor`, `ObjectNavigationalBar`, `SchemaEditor`, `TimeMachine`, and `Toolbar`. Conversation and topic surfaces, JSON Schema authoring, object/schema navigation, version scrubbing, and canvas-style tool palettes.
-- **Spatial** — pan/zoom and large-dataset visualization surfaces backed by Pixi: `Canvas` and `PivotViewer`. These install the optional `pixi.js` peer; see [Optional Pixi, clean no-Pixi core](#optional-pixi-clean-no-pixi-core).
+- Foundation covers forms, dialogs, tables, and notifications: `Common`, `CommandDialog`, `CommandStepper`, `CommandForm`, `CommandForm/fields`, `DataPage`, `DataTables`, `Dialogs`, `Display`, `Dropdown`, `Filter`, `Notifications`, and `types`.
+- Advanced React covers more specialized screens: `Chat`, `ObjectContentEditor`, `ObjectNavigationalBar`, `SchemaEditor`, `TimeMachine`, and `Toolbar`. These use React and DOM rendering without Pixi.
+- Spatial covers `Canvas` and `PivotViewer`, which require the optional `pixi.js` peer; see [Optional Pixi, clean no-Pixi core](#optional-pixi-clean-no-pixi-core).
 
-All three profiles and the setup-only root are exported from the same package version. “Advanced React” and “Spatial” describe purpose and additional dependency shape, not how carefully a component is built, tested, supported, or versioned. Review the exact package manifest, subpath, component documentation, and application evidence for the profile you use.
+All three profiles and the setup-only root share one package version. The package also exports controls such as `ConfigurationEditor`, `IconPicker`, and `MarkdownEditor`; the profiles are an adoption guide, not an exhaustive export list. Check the package manifest and the component's own documentation for its exact requirements.
 
 ## Capability matrix
 
-| Capability profile | Subpaths                                                                                                                                                                           | Extra peer                                                                                                      | State Components owns                                                                                       | Data & persistence                                                                                                                                                                                                       | Arc / Chronicle relationship                                                                                                                                                                                      | SSR                                                                                                                                                                                                                                                            | Performance shape                                                                                                                                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Setup** (root)   | `@cratis/components`                                                                                                                                                               | —                                                                                                               | Locale, provider-owned labels, icon vocabulary, toast-region wiring                                         | none                                                                                                                                                                                                                     | none                                                                                                                                                                                                              | Renders no browser-only API; safe to import and render on the server                                                                                                                                                                                           | negligible                                                                                                                                                                                                                                               |
-| **Foundation**     | `Common`, `CommandDialog` / `CommandStepper`, `CommandForm` / `CommandForm/fields`, `DataPage`, `DataTables`, `Dialogs`, `Display`, `Dropdown`, `Filter`, `Notifications`, `types` | —                                                                                                               | Widget interaction state: open/closed, focus, loaded-page sort/filter, paginator position, toast queue      | Command execution and query results are `@cratis/arc.react` state; Components never fetches, caches, or persists data                                                                                                    | Commands and queries run through Arc; Arc may itself be backed by Chronicle in an event-sourced application, but Components has no direct Chronicle dependency and behaves the same over a plain Arc.Core backend | Every surface that portals or reads `document` (`Dialog`, `FilterPanel`, `Toaster`) gates on a shared `useSyncExternalStore` browser check and renders a stable placeholder until mounted                                                                      | Table/paging cost scales with the loaded page only; complete-result filtering/sorting is a server concern (see [Update tables](Migration/3-to-4.md#update-tables))                                                                                       |
-| **Advanced React** | `Chat`, `ObjectContentEditor`, `ObjectNavigationalBar`, `SchemaEditor`, `TimeMachine`, `Toolbar`                                                                                   | —                                                                                                               | Draft, topic selection, local edit-buffer, breadcrumb, scrub-position, and active-tool/expanded-panel state | Host-supplied through props (`messages`, `topics`, `object`, `schema`, `versions`, `navigationPath`, …); `ChatSidebarForObservableQueries` can subscribe through Arc, while Components does not persist application data | Chat offers an optional Arc observable-query binding and optional messenger publication; the other subpaths assume no Arc integration. A Chronicle-backed host may supply any of their data                       | Plain React trees; Chat overlays and `Toolbar` folder/fan-out/slot pieces portal or attach browser listeners and therefore require a browser when those interactions mount                                                                                     | Cost follows the messages/topics/object/schema/version data the host passes; Chat conversations render the supplied message list, while the other surfaces document their own performance shape                                                          |
-| **Spatial**        | `Canvas`, `PivotViewer`                                                                                                                                                            | `pixi.js@^8.20.0` (optional, single shared resolution — see [Optional Pixi](#optional-pixi-clean-no-pixi-core)) | Camera/viewport/gesture transforms, measured item bounds, worker/index/filter state                         | Item, shape, and card data is host-supplied; Components renders and lets you query it, never persists it                                                                                                                 | Same as Foundation: an event-sourced host may project Chronicle read models into the data it passes in, but neither component has a Chronicle dependency                                                          | `PIXI.Application` creation and PivotViewer's Web Worker setup run inside effects, guarded and skipped — with a synchronous fallback for the worker — when `window`/`Worker` is unavailable; `CanvasOverlay` uses the same browser-check pattern as Foundation | Pixi rendering keeps large item counts off the DOM, and PivotViewer answers filter, grouping, and sort requests from a Web Worker when one is available; its store and indexes are still built on the main thread — see [Canvas](Canvas/index.md#dom-and-pixi-layers) and [PivotViewer](PivotViewer/index.md#worker-and-search-architecture) |
+| Surface | Use it for | Data boundary | Pixi required? |
+| --- | --- | --- | --- |
+| Setup root | Locale, messages, icons, and provider configuration | No Arc or Pixi import in the root's runtime or declaration graph | No |
+| Foundation | Forms, dialogs, and query-backed tables | Arc executes commands and queries; Components owns visual interaction state | No |
+| Advanced React | Conversations, editors, navigation, and tool palettes | Mostly host-supplied props; Chat also offers Arc query and messaging bindings | No |
+| Spatial | Pan/zoom views and card collections | The host supplies items; Components owns viewport and visualization state | Yes, one shared compatible `pixi.js` resolution |
+
+Components does not persist application data. Local-data components can render values you supply without using an Arc query, but that does not remove the package's declared peer requirements. React 19, ReactDOM 19, Arc, Fundamentals, and `reflect-metadata` are declared peers; Pixi and `tsyringe` are optional peers. The setup-only root has no Arc import edge even though the package declares Arc peers.
+
+Server rendering also differs from browser interaction. Importing a surface without Pixi is a dependency guarantee, not proof that every interaction works on the server. Portals, focus handling, canvas rendering, and workers need their documented browser setup. Use the [Canvas](Canvas/index.md#dom-and-pixi-layers) and [PivotViewer](PivotViewer/index.md#worker-and-search-architecture) references for their rendering and worker boundaries. For existing tables, [Update tables](Migration/3-to-4.md#update-tables) explains the move to loaded-page controls.
 
 ## Optional Pixi, clean no-Pixi core
 
@@ -88,52 +96,51 @@ Only the Spatial profile touches Pixi. `Canvas` and `PivotViewer` are the only s
 npm install pixi.js@^8.20.0
 ```
 
-Install it once, in the application, only if that application uses `Canvas` or `PivotViewer`. Every other subpath needs nothing beyond React, Arc, and Fundamentals.
+Install it in the application only when using `Canvas` or `PivotViewer`. Keep one compatible Pixi resolution shared by the application and Components. Duplicate installations can give `PIXI.Container` and pointer-event types incompatible identities, even when their versions satisfy the same peer range.
 
-**Single-peer rule.** Keep exactly one compatible Pixi resolution across the application and Components — never a nested copy pulled in only for Components. Two installed copies of `pixi.js` produce nominally incompatible `PIXI.Container` and pointer-event types even when both satisfy `^8.20.0`, because TypeScript treats structurally similar classes from two different module instances as distinct nominal types. This is why `CanvasContext`, `renderItem`, and Canvas's pointer callbacks intentionally expose real Pixi types rather than a reduced Cratis facade: consumers build arbitrary Pixi content against the one Pixi instance the application already owns, and Components does not shadow it with a second one. `PivotViewer` uses Pixi internally for its card rendering but does not expose Pixi types publicly, so it needs no equivalent declaration exception (see [Strict public-type validation](#strict-public-type-validation)).
+Canvas exposes real Pixi objects through `CanvasContext`, `renderItem`, and pointer callbacks so you can build content against that shared instance. PivotViewer uses Pixi internally without exposing those types. See [Strict public-type validation](#strict-public-type-validation) for the version boundary that affects strict TypeScript consumers.
 
-**DOM and Pixi as siblings, not a replacement.** Within the Spatial profile, `Canvas` itself composes two independent rendering layers rather than choosing one: arbitrary DOM content, positioned through `CanvasItem` and ordinary CSS transforms, and an optional Pixi `items`/`renderItem` layer for item counts where per-item DOM nodes would be the bottleneck. An application can use only the DOM layer (no `items`/`renderItem`, so no Pixi content ever mounts) or mix both in the same `Canvas`. See [Canvas: DOM and Pixi layers](Canvas/index.md#dom-and-pixi-layers).
-
-Everything Pixi-related — the peer, the install, the single-resolution rule, and the type-validation exception it requires — is a Spatial-profile concern. Choosing Foundation or Advanced React components never pulls Pixi into an application's dependency graph, install size, or type-checking surface.
+Canvas can combine DOM content positioned through `CanvasItem` with a Pixi `items`/`renderItem` layer. You can use only the DOM layer, or mix both; importing the Canvas subpath still requires the Pixi peer. [Canvas: DOM and Pixi layers](Canvas/index.md#dom-and-pixi-layers) explains when to choose each layer. Foundation and Advanced React imports do not require Pixi.
 
 ## Aggregate CSS plus per-area entry points
 
-`@cratis/components/styles` is one manifest — `Source/styles.css` — that `@import`s every component's stylesheet, across all three capability profiles, into one compiled `dist/esm/styles.css`. Component modules import no CSS themselves; every rule reaches the browser through this single entry point. That is a deliberate constraint, not an oversight: a CSS import inside the component JavaScript module graph is what made a previous published ESM unloadable from Node (`ERR_UNKNOWN_FILE_EXTENSION` on any subpath a spec or SSR run touched), so Components' build fails if a `.css` file under `Source/` is not reachable from the manifest — the styles and the components cannot drift apart.
+Component JavaScript does not import CSS. Choose either the aggregate `@cratis/components/styles` or the shared `@cratis/components/styles/base` with the per-area sheets your application needs, such as `@cratis/components/Dialogs/styles` and `@cratis/components/PivotViewer/styles`.
 
-Importing that aggregate loads Foundation, Advanced React, and Spatial CSS together: Canvas's and PivotViewer's rules arrive alongside Dialog's and DataTable's, whether or not the application ever renders `Canvas`. Plain CSS custom properties and class rules are inert until a matching class or `data-cratis-part` renders, so the unused rules cost transfer and parse time, not runtime behavior, layout, or a Pixi/JavaScript dependency — but transfer is a real cost for an application that mounts two surfaces.
+The aggregate is the simpler setup: it includes styling across all three profiles, including components you do not render. That costs CSS transfer and parsing, but does not import Pixi or component JavaScript. Per-area sheets let a smaller application avoid unrelated styles. Follow [Per-area stylesheets](Styling/per-area-stylesheets.md) for the required base and component imports.
 
-The packed archive gate makes that trade-off measurable and fail-closed. The aggregate stylesheet has reviewed ceilings of **205 KiB raw**, **32 KiB gzip**, and **1,200 declaration blocks**. A change that crosses a ceiling must either reduce the payload or update the budget with measured consumer evidence; it cannot grow silently.
+Both paths derive from `Source/styles.css`. Per-area output follows the component's module graph, so a sheet includes styles for the areas its implementation uses, not only its own folder. Keeping CSS outside the JavaScript graph also lets Node import component modules without trying to load `.css` files. The package checks stylesheet coverage and emitted exports, and the archive verifier enforces raw-size, gzip-size, and declaration-block budgets.
 
-That single ceiling used to be the only lever, and it had started deciding design questions it has no business deciding — whether a component may have its own stylesheet, how many stylesheets a group of collection controls gets. So the package now also publishes **one stylesheet per JavaScript subpath** (`@cratis/components/Dialogs/styles`, `@cratis/components/PivotViewer/styles`, …) beside a shared `@cratis/components/styles/base`, and each of those has its own reviewed gzip ceiling. A consumer that mounts a pivot viewer pays for PivotViewer's stylesheet; one that does not never downloads it. See [Per-area stylesheets](Styling/per-area-stylesheets.md).
-
-Crucially this is still **one manifest**. The per-area sheets are derived, not authored: a stylesheet's owning area is the first path segment of its `@import` in `Source/styles.css`, and a subpath's sheet is the union of the areas its built module graph actually reaches — walked with the same closure helper `verify-package-graph.mjs` uses. There is no second list to drift from the first, the "every `.css` under `Source/` must be reachable from the manifest" build failure still applies unchanged, and the build additionally fails when the package's stylesheet exports no longer match what it emits.
-
-A split into separate *packages* — a Spatial bundle with its own version and release cadence — remains a different question, and is still only justified by the criteria below.
+Separate stylesheets do not mean separate packages or release versions. The next section explains that distinction.
 
 ## Package split criteria
 
-`@cratis/components` is one npm package covering all three capability profiles today, and stays that way unless a concrete, measured need crosses one of these lines:
+`@cratis/components` ships the three [capability profiles](#capability-profiles) together. Subpath imports isolate JavaScript dependencies, and [per-area styles](#aggregate-css-plus-per-area-entry-points) let you select CSS, but installing the package still gives you its full distribution. Choosing only Foundation does not create a smaller npm package or a separate upgrade schedule.
 
-- **Peer isolation stops being enough.** The optional `pixi.js` peer plus subpath exports already means a Foundation-only application installs no Pixi code and imports no Pixi module. A split would only remove marginal package-manager or type-resolution overhead beyond what the optional peer already removes — that overhead would need to be measured and real, not assumed.
-- **A capability profile needs an independent release cadence.** For example, a Pixi major upgrade that must ship for `Canvas`/`PivotViewer` without forcing a coordinated release of every Foundation and Advanced React component, or vice versa. Today all three profiles share one version and one release process by design — see [Capability profiles](#capability-profiles).
-- **A separately owned non-visual contract is proven outside Components' React composition.** The [table architecture](#table-architecture) section keeps Arc query/transport ownership separate from visual table state today.
-- **The CSS boundary holds up in practice first.** See [Aggregate CSS plus per-area entry points](#aggregate-css-plus-per-area-entry-points) — a package split typically follows the same boundary as its stylesheets, and the per-area entry points are where that boundary gets exercised while still living under one manifest and one repository gate.
+A package split would address a different need: a smaller installed distribution, independent release versions, or a separately supported non-visual contract. The current package does not offer those boundaries. In particular, [table state](#table-architecture) remains part of React composition, not a separately exported framework-neutral engine.
 
-None of these conditions is met today. A single package with subpath exports, an optional Pixi peer, and one aggregate stylesheet already delivers tree-shakeable code, no forced Pixi install, one `--cratis-*` token source, and one release/versioning/CI surface — the practical benefits a split would chase — without a multi-package version matrix to keep compatible across three profiles that already share every build, spec, and release gate.
+## Renderer adapters
+
+Use the built-in renderer by mounting `CratisComponentsProvider` without a `library` prop. If your application already uses another control library, an adapter can change the presentation of nine primitives through the `stable-presentation/v1` profile: button, icon button, text input, text area, checkbox, radio, switch, progress, and surface.
+
+An adapter does not replace `CommandForm`, `CommandDialog`, `DataTables`, `Canvas`, or other Components compositions. It also does not replace Arc's provider or execution state. The public renderer contract lives at `@cratis/components/renderer`; importing it or the setup root does not load the full built-in manifest. That manifest is an explicit import from `@cratis/components/renderer/builtin`.
+
+Keep vendor providers, themes, credentials, and caches in application setup. `CratisRendererSetup` carries only adapter-declared boolean setup assertions, not those resources. `CratisOverlayEnvironment` lets the host resolve a portal container; it does not merge vendor overlay or z-index systems. When both systems open overlays, the application must coordinate their containers, layers, and focus behavior.
+
+[Renderer adapters and coexistence](renderers/index.md) explains adapter selection and vendor setup. Broader renderer APIs retain their `unstable_` names and are outside the nine-slot compatibility contract.
 
 ## Why React Aria
 
-[React Aria Components](https://react-aria.adobe.com/getting-started) is style-free and Apache-2.0 licensed. It supplies difficult interaction behavior such as focus management, keyboard navigation, screen-reader semantics, overlays, collection behavior, and internationalized dates.
+[React Aria Components](https://react-aria.adobe.com/getting-started) supplies selected focus, keyboard, screen-reader, overlay, collection, and date interactions without supplying Components' visual design.
 
 Components still owns labels, error association, visual focus, contrast, hit targets, responsive composition, and behavior specs. React Aria is not treated as proof that a composed component is automatically accessible.
 
-The React Aria Components Toast API remains unstable, so Components 4 ships its own queue, dispatch, timer, frame, and accessible region rather than exposing that unstable API.
+Components 4 supplies its own toast queue, dispatch, timer, frame, and accessible region rather than exposing React Aria's Toast API.
 
 ## Table architecture
 
-Components 4 uses semantic React HTML and Cratis-owned table state. `DataTableCore` is a rendered React component, not a headless or framework-neutral table engine. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging. Components forwards table state to the server only when a bound query table opts in with `serverQuery`, which maps the sort to Arc sorting and the filters and search text to the query arguments the consumer defines; see [Server mode](DataTables/data-table-for-query.md#server-mode).
+A query-backed table combines two responsibilities. Arc retrieves and pages query results; Components renders semantic HTML and manages the table's visual interaction state. `DataTableCore` is a rendered React component, not a headless or framework-neutral table engine.
 
-The reusable product boundary today is Arc's generated query/transport contract and explicit paging/query arguments—not Components' React table state. Components does not currently export `DataTableCore` as a framework-neutral table engine, and it never forwards table state to the server without `serverQuery`.
+By default, client filtering and sorting affect only the loaded page. To search or sort the complete result, opt into `serverQuery` and implement the corresponding backend query logic before paging. Components maps sort state to Arc sorting and maps filters and search text to the query arguments you define. It does not infer those arguments or apply server filtering for you. [Server mode](DataTables/data-table-for-query.md#server-mode) shows the handoff.
 
 ## Prime dependency boundary
 
@@ -141,19 +148,15 @@ The Components 4 package manifest does not declare PrimeReact, PrimeIcons, Prime
 
 ## Why Components does not implement every interaction itself
 
-Owning the API does not mean independently rebuilding dialog focus traps, composite keyboard navigation, international calendars, and collection selection. Components delegates selected low-level behaviors to an open specialized foundation and exercises the resulting component behavior through owning repository specs and diagnostics.
+Dialog focus traps, composite keyboard navigation, calendars, and collection selection have interaction rules beyond their visual appearance. Components delegates selected behavior to React Aria and uses semantic native HTML for simple controls. This keeps the public contract under Components' control without making every interaction a separate implementation.
 
-Simple controls use semantic native HTML when that is more robust than introducing an abstraction.
+Application composition still matters. Verify keyboard order, focus restoration, and screen-reader output in the shell where the components will run; the choice of interaction library does not certify the finished application.
 
 ## Release sequence
 
-The transition is split by current artifact behavior:
+Moving from Components 3 to 4 changes the foundation, import paths, provider setup, and styling contracts. Follow [Migrate from Components 3 to 4](Migration/3-to-4.md) for the breaking changes and mechanical import mapping. The guide does not establish a maintenance window for either major.
 
-1. Components 3 retains its documented Prime-backed package and migration starting point.
-2. Components 4 changes the default foundation, removes Prime runtime/declaration references from its package, and introduces Components-owned provider and styling contracts.
-3. The migration guide records the current breaking changes and mechanical import path. It does not establish a support window or future maintenance commitment for either major.
-
-Repository specs compare bounded behaviors needed by the current migration; they do not establish universal behavior parity or accessibility conformance. Adapter authors can run the separately packaged development package `@cratis/components.conformance` against a public `UiLibrary` manifest. The built-in proof manifest is an explicit heavy import from `@cratis/components/renderer/builtin`; neither the package root nor the lean `./renderer` contract subpath reaches its implementation graph. A passing report is evidence only for the exercised manifest and environment, and the separate Storybook browser/axe gate remains required.
+Adapter authors can use the separate `@cratis/components.conformance` package to check a renderer manifest. Conformance results cover the exercised contract and environment, not universal behavior parity or accessibility. Browser and axe checks remain separate release requirements.
 
 ## Strict public-type validation
 
@@ -163,15 +166,17 @@ For a focused Core check, run `yarn workspace @cratis/components verify-public-t
 
 The repository compiles and emits declarations with TypeScript 7.0.2, installed under the `@typescript/native` alias. It retains TypeScript 6.0.3 under `typescript` for the compiler API used by Rollup, ESLint, Storybook, and the migrator; TypeScript 7 does not provide that API. CLI scripts select the compiler explicitly, avoiding ambiguous `tsc` binaries. This tooling split is not an extra runtime dependency for a Components consumer.
 
-Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact installed package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, version/metadata drift, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate. A diagnostic anchored in a Components declaration is never covered by message matching alone: the same compiler run must also contain the reviewed TS2834/TS2835 root cause under the exact upstream package named by that diagnostic. Synthetic specs prove absent and unrelated root causes remain failures.
+The verifier records any permitted upstream failures in `Source/scripts/verify-public-types.exceptions.json`, with exact versions, diagnostic codes, affected subpaths, resolution modes, and removal conditions. Unlisted diagnostics or stale exceptions fail the gate. A Components declaration diagnostic requires its reviewed TS2834/TS2835 upstream root cause in the same run; similar error text alone cannot suppress it.
 
-No upstream exception is currently listed. `@cratis/arc.react` 22.156.2 ([Cratis/Arc#3588](https://github.com/Cratis/Arc/issues/3588)) stopped publishing its test-only global JSX declarations, so every public subpath passes as a strict external Bundler and NodeNext consumer with the dev/test pin. The peer range still admits earlier Arc releases; strict (`skipLibCheck: false`) consumers on those releases can still see `TS2503` for unresolved `JSX` identifiers in the command/dialog subpaths and should use 22.156.2 or later.
+The exception list is empty, and the repository pins `@cratis/arc.react` 22.156.2 for development and verification. The Arc package excludes its test-only global JSX declarations; [Cratis/Arc#3588](https://github.com/Cratis/Arc/issues/3588) records the related issue. The peer range still admits earlier Arc releases. If a strict (`skipLibCheck: false`) consumer reports `TS2503` for unresolved `JSX` identifiers in command/dialog subpaths, check that it resolves 22.156.2 or later.
 
 When an exception is listed, a `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: those upstream diagnostics remain reproducible with the pinned releases. The gate reports them rather than disabling declaration checks, and fails on any additional or Components-owned regression.
 
 ### Why the Canvas Pixi surface remains public
 
-`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. With the `pixi.js@8.22.0` dev/test pin, the WebGPU declaration conflict no longer reproduces under TypeScript 6 or 7, so the Canvas exception has been removed without weakening this intentional extensibility contract. The peer range still admits `pixi.js` 8.20.x and 8.21.x; strict consumers (`skipLibCheck: false`) on those releases can still see the WebGPU declaration conflict and should use 8.22.0 or later. `pixi.js` is therefore an optional peer: Canvas/PivotViewer consumers install one compatible `^8.20.0` resolution, preventing nested nominally-incompatible Pixi instances while non-Pixi subpaths impose no installation requirement. PivotViewer does not expose Pixi types publicly and needs no equivalent declaration exception.
+`CanvasContext`, `renderItem`, and pointer callbacks expose real Pixi objects so you can build content without converting to a reduced Components facade. That makes the installed Pixi version part of Canvas's type-checking boundary.
+
+The repository pins `pixi.js@8.22.0` for development and verification, while the `^8.20.0` peer range also admits 8.20.x and 8.21.x. Strict consumers (`skipLibCheck: false`) on those earlier releases can encounter a WebGPU declaration conflict; use 8.22.0 or later. Keep one shared compatible resolution, as described under [Optional Pixi, clean no-Pixi core](#optional-pixi-clean-no-pixi-core). PivotViewer does not expose Pixi types publicly.
 
 ## Current limitations and work records
 
@@ -185,8 +190,7 @@ Repository issues may track these gaps, but an open issue is not a public roadma
 
 ## Post-V4 issue index
 
-The following issues preserve follow-up decisions outside the Components 4 contract. They are
-tracking records, not promises that an unstable API already exists or will ship unchanged:
+These issue records explain decisions and evidence gaps outside the Components 4 contract. They are not a roadmap or a promise to expand the renderer API:
 
 | Issue                                                   | Tracked decision or evidence gap                                                       |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -203,13 +207,7 @@ tracking records, not promises that an unstable API already exists or will ship 
 | [#217](https://github.com/Cratis/Components/issues/217) | Generated evidence inventories instead of hardcoded check counts.                      |
 | [#218](https://github.com/Cratis/Components/issues/218) | Renderer bundle and runtime-performance regression budgets.                            |
 
-Check each issue for its current state. In September 2026, #207 was closed as completed;
-issues #208 through #212, #214, and #218 were closed as not planned and can be reopened if the
-need returns; and issues #213, #215, #216, and #217 were open.
-
-Until those issues produce reviewed changes, the stable boundary remains the setup-only root, the
-exact nine-slot `stable-presentation/v1` profile, boolean setup attestations, and
-`CratisOverlayEnvironment`.
+Read the issue itself for its status and discussion. The public renderer boundary described on this page remains the exact nine-slot `stable-presentation/v1` profile, boolean setup assertions, and `CratisOverlayEnvironment`; an issue does not expand that contract.
 
 ## Release gates
 
@@ -225,5 +223,4 @@ Components 4 releases use these repository release checks:
 - The migration guide works without repository-specific knowledge.
 - Every packed public JavaScript subpath passes strict TypeScript 6 and 7 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
-Generated conformance reports, the checked-in compatibility contract, and `release.md` at the
-repository root own the exact current evidence and publication limitations.
+These checks cover package and component behavior, not every consuming application's theme, overlays, or accessibility needs. For adoption, use [Renderer adapters and coexistence](renderers/index.md) to keep vendor boundaries explicit, or follow [Migrate from Components 3 to 4](Migration/3-to-4.md) when upgrading an existing application.

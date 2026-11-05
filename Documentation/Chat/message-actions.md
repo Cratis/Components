@@ -1,9 +1,9 @@
 ---
-title: Message actions
-description: Offer your own actions on chat messages and control the built-in quick reply.
+title: "Chat message actions: connect messages to your workflow"
+description: Add application-owned actions to Chat messages, control which messages offer them, and use quick reply to prefill a mention of the author.
 ---
 
-The library ships no actions of its own — whatever a message can be turned into (a task, an issue, a document, a link somewhere) is the application's business, expressed as action descriptors on the conversation.
+Cratis Components Chat message actions let someone act on a message without leaving the conversation to find its context. Supply an action descriptor for each operation your application supports, such as creating an issue from a message. The chat renders the button and passes the message to your handler; your application performs the operation.
 
 ## The descriptor
 
@@ -17,7 +17,9 @@ interface ChatMessageAction<TMessage extends ChatMessage = ChatMessage> {
 }
 ```
 
-Actions appear as a small button row over a message's corner while it is hovered (or while one of the buttons holds keyboard focus). The buttons are hidden with opacity rather than removed, so they stay in the Tab order: a keyboard user reaches them with Tab, and the row appears as soon as one of them has focus. `label` is each button's tooltip and accessible name. `onInvoke` receives the full message — with the components generic over your extended message type, everything your action needs rides along on the message itself.
+Actions appear in a button row at a message's corner on hover or when an action has keyboard focus. The buttons remain in the Tab order while hidden, and the row becomes visible as soon as one receives focus. Each button uses `label` for its tooltip and accessible name.
+
+`onInvoke` receives the full message, including fields you added to `ChatMessage`. Use `isAvailable` to offer an action only on relevant messages; omitting it makes the action available on every message.
 
 ## Offering actions
 
@@ -50,8 +52,10 @@ In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` prop
 />
 ```
 
-What happens on invoke — a dialog with a repository picker, a navigation, a command — is entirely yours; the conversation only raised the intent with the message attached.
+These handlers belong to your application. They can open a dialog, navigate to related work, or run a command. The conversation does not create issues or retry messages itself. When an operation changes a message, supply the updated message data to show that change.
 
 ## Quick reply
 
-One conversational affordance is built in: quick reply, which prefills the composer with `@Name` for the message's author. It is chat behavior rather than a host action, on by default, and switched off with `quickReply={false}`.
+Quick reply is built in and enabled by default. It prefills the composer with `@Name` for the message's author so the person can write a reply; it does not send a message. Set `quickReply={false}` to remove that button without affecting your custom actions.
+
+Use [mentions and emoji](./mentions-and-emoji.md) to supply mention candidates. For operations on a whole conversation rather than one message, use [topic actions](./topic-actions.md).

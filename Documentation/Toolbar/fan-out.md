@@ -1,11 +1,11 @@
 ---
-title: Fan-out sub-panel
-description: Slide out a panel of related tools from a single ToolbarFanOutItem trigger.
+title: Toolbar fan-out panels
+description: Keep related tools behind one ToolbarFanOutItem trigger, choose the panel direction, and understand keyboard focus and dismissal.
 ---
 
-`ToolbarFanOutItem` replaces a regular button with one that slides out a panel of additional tools when clicked. The panel closes when you click the trigger again, press anywhere outside it, or press Escape; Escape also returns focus to the trigger.
+Use `ToolbarFanOutItem` in Cratis Components to keep a related set of tools, such as shapes, behind a single trigger. Clicking the trigger opens a strip of buttons beside it. Choose the opening direction to suit the toolbar's position.
 
-`icon`, `tooltip`, and `children` are required. `tooltip` is the trigger's accessible name as well as its tooltip. The trigger exposes `aria-expanded` and `aria-controls`, and the collapsed panel is `inert`, so its tools are not reachable with Tab until it opens.
+Supply `icon`, `tooltip`, and `children`. The `tooltip` names both the trigger and the panel for assistive technology, as well as providing the trigger's tooltip. The example groups three shape tools without adding them permanently to the main toolbar.
 
 ```tsx
 import { Toolbar, ToolbarButton, ToolbarFanOutItem } from '@cratis/components/Toolbar';
@@ -19,6 +19,8 @@ import { Toolbar, ToolbarButton, ToolbarFanOutItem } from '@cratis/components/To
     </ToolbarFanOutItem>
 </Toolbar>
 ```
+
+Opening the panel does not move focus into it. The trigger exposes `aria-expanded` and `aria-controls`; when collapsed, the panel is `inert` and `aria-hidden`, so its tools are not reachable by keyboard. Click the trigger again, click outside the fan-out, or press Escape to close it. Escape returns focus to the trigger; an outside press does not. Activating a child tool does not automatically close the panel.
 
 By default the panel fans out to the right. Use `fanOutDirection='left'` when the toolbar is positioned on the right side of the screen:
 
@@ -53,3 +55,5 @@ import { FaShapes } from 'react-icons/fa6';
 ```
 
 See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+
+For a compact grid or a list with visible tool names, use a [ToolbarFolder](folder.md). When users need a headed catalogue of labeled tiles with activation and drag callbacks, use a [drawer palette](drawer.md).

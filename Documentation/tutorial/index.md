@@ -3,15 +3,15 @@ title: "Tutorial: Build the library screen"
 description: Build an Arc-backed library screen with an observable author table, command dialogs, and a selection-aware books panel.
 ---
 
-Build a library screen where a librarian can list authors, register an author, select one to see their books, and add a book to that author. This is the command/query UI path through **Cratis Platform**: Arc supplies the backend contracts and generated browser proxies; Components supplies the React forms, tables, dialogs, and page composition.
+Build an Arc-backed React library screen with Cratis Components, starting with a table of authors. Then add a dialog to register an author and a detail panel that shows the selected author's books, with an action to add another book. Arc supplies the backend commands and queries and generates their TypeScript proxies, the browser classes your screen uses to call them. Components supplies the forms, tables, dialogs, and page layout.
 
-You will write the fields, columns, actions, and selection handoff. Components handles form binding and query subscriptions. It does not create your backend, generate its proxies, or make a successful command and an updated query result the same event.
+You will write the fields, columns, and actions, then pass the selected author's identifier to the books panel. Components handles form binding and query subscriptions. Bring the backend and generated proxies from the Arc tutorial; completing a command and receiving an updated query result remain separate checkpoints.
 
 ## Before you start
 
 1. Complete the [Arc library tutorial through Relate your slices](/arc/tutorial/books-and-relationships/). Keep its backend running and regenerate the TypeScript proxies after backend changes. This tutorial uses that application's contracts, not mock classes that you should copy into a new React project.
 2. Follow [Getting started](/components/getting-started/) for the package peers, CSS entry file, and the nested `<Arc>` / `CratisComponentsProvider` setup. Keep the Arc host and development-server routing configuration from your application.
-3. Check the generated files below in your frontend's `src/` directory. Names and paths are part of the handoff between the two tutorials.
+3. Check the generated files below in your frontend's `src/` directory. These are the .NET/JVM proxy paths used by the examples. Arc's TypeScript backend generates different `*.proxy.ts` paths; use its imports from [the first slice](/arc/tutorial/first-slice/) and [book relationship chapter](/arc/tutorial/books-and-relationships/) instead.
 
 | Generated file | Exports used here | Contract |
 | --- | --- | --- |
@@ -35,9 +35,9 @@ flowchart LR
     Selection --> Books["BooksForAuthor / AddBook.authorId"]
 ```
 
-The proxies execute in the browser, using runtime configuration from `<Arc>`. The backend owns validation, authorization, writes, and query results. Components renders the state delivered by those proxies.
+The proxies execute in the browser, using runtime configuration from `<Arc>`. The backend owns validation, authorization, writes, and query results. A read model is the data a query reads. An observable query delivers later results as data changes; Components renders the state its proxy delivers.
 
-Command success closes the command dialog. The author or book becomes visible separately, when the observable query delivers a result containing it. There is no fixed delay promised by the UI.
+Watch for two outcomes when you add an author or book. Command success closes the command dialog. The row becomes visible when the observable query delivers a result containing it. The UI does not promise a fixed delay between them.
 
 :::note[Chronicle is not required]
 The Arc tutorial uses MongoDB or EF Core directly and observes database changes. With an Arc backend using Chronicle, a projection must update the read model before its query can report the new row. Components does not subscribe directly to Chronicle. A local-array or presentational Components surface can also be used without this backend workflow; see [Choosing a component](/components/choosing-a-component/).
@@ -51,4 +51,6 @@ The Arc tutorial uses MongoDB or EF Core directly and observes database changes.
 
 Each chapter replaces or adds the named files; it is not a second application. At the end, use the [list-screen recipe](/components/list-screen-with-actions/) as a compact reminder rather than maintaining another copy of the screen.
 
-If the first checkpoint fails, start with [Troubleshooting](/components/troubleshooting/): provider/routing failures belong to the Arc connection, unstyled output to the CSS entry, and a disabled submit button to command values and validity. [Start with the author table →](./list-it.mdx)
+Ready with the backend, proxies, and providers? [Start with the author table →](./list-it.mdx)
+
+If a checkpoint fails, use [Troubleshooting](/components/troubleshooting/) to separate setup from data problems. Check the Arc connection for provider or routing failures, the CSS entry for unstyled output, and required command values and validity for a disabled submit button.

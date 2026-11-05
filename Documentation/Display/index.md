@@ -1,15 +1,32 @@
 ---
-title: Display
-description: Show statuses, counts, avatars, progress, and loading states with presentational primitives.
+title: Choose Cratis Components display primitives
+description: Choose Cratis Components display primitives for status labels, identity, progress, and loading placeholders, with props and accessibility guidance.
 ---
 
-The `Display` components are small, presentational primitives for status and feedback — tags, badges, chips, avatars, progress, and loading skeletons. Import them from `@cratis/components/Display`.
+Cratis Components Display provides small UI elements for showing status, identity, progress, and loading states. Use them to help people recognize an item, understand an operation's result, or see that content is still loading.
 
-Use them for status indicators in tables and detail views, counts on icons, removable filter tokens, user avatars, progress feedback, and placeholder shapes while data loads.
+Import these components from `@cratis/components/Display`.
+
+## Choose what to show
+
+Start with the information the person using your screen needs. A short label can identify an item's status; an operation's result usually needs a message that explains what happened.
+
+| What you need to show | Component | When to choose it |
+| --- | --- | --- |
+| An item's status | [Tag](#tag) | A short label such as “In stock” belongs beside the item. |
+| A count or compact marker | [Badge](#badge) | A number or short value adds context to an icon or button. |
+| A selected value or filter | [Chip](#chip) | A labeled token represents a selection, optionally with a remove control. |
+| A person or entity | [Avatar](#avatar) | An image, initials, or an icon helps identify who or what the item represents. |
+| An operation's result or inline guidance | [Message](#message) | A sentence explains success, an error, or information relevant to the surrounding content. |
+| Measured completion | [ProgressBar](#progressbar) | You have a percentage to show as work advances. |
+| Work with no known completion percentage | [ProgressSpinner](#progressspinner) | You need to indicate that an operation is still running. |
+| Content that has not loaded yet | [Skeleton](#skeleton) | Placeholder shapes reserve space for the expected content. |
+
+The sections below give examples and props for each choice.
 
 ## Tag
 
-A small colored status label. Prefer a `Tag` with a `severity` over hand-colored text so it follows the active semantic theme. Verify the resulting contrast in every application theme you ship.
+Use `Tag` for a short status that stays beside an item, such as availability in a table row. The `severity` prop selects a meaning-based color from the active theme instead of requiring hand-colored text. To change those colors, use the [semantic CSS token reference](../Styling/cratis-tokens.md), and verify the resulting contrast in every application theme you ship.
 
 ```tsx
 import { Tag } from '@cratis/components/Display';
@@ -29,7 +46,7 @@ import { Tag } from '@cratis/components/Display';
 
 ## Badge
 
-A small count or status marker, typically overlaid on an icon or button.
+Use `Badge` for a count or compact marker associated with another element, such as an icon or button. Choose `Tag` instead when the label needs to describe the item's status in words.
 
 ```tsx
 import { Badge } from '@cratis/components/Display';
@@ -48,7 +65,7 @@ import { Badge } from '@cratis/components/Display';
 
 ## Chip
 
-A labeled, optionally-removable token. Use for filter pills and selected values.
+Use `Chip` to show a selected value or active filter as a labeled token. Set `removable` when the person should be able to clear it, and handle `onRemove` to update your selection state; the chip does not remove itself.
 
 ```tsx
 import { Chip } from '@cratis/components/Display';
@@ -68,7 +85,7 @@ import { Chip } from '@cratis/components/Display';
 
 ## Avatar
 
-A user/entity avatar showing an image, initials, or an icon fallback.
+Use `Avatar` to identify a person or entity with an image, initials, or an icon. Supply `label` or `icon` when you do not have an image URL.
 
 ```tsx
 import { Avatar } from '@cratis/components/Display';
@@ -92,7 +109,7 @@ The fallback order is `image` → `icon` → `label`, so passing both an `icon` 
 
 ## Message
 
-An inline status message with a severity tone and optional leading icon.
+Use `Message` when a label alone cannot explain the result or tell the person what to do next. It stays inline with the relevant content and supports a severity tone and optional leading icon. For app-wide toast notifications, follow the [Notifications guide](../Notifications/).
 
 ```tsx
 import { Message } from '@cratis/components/Display';
@@ -123,7 +140,7 @@ By default, error messages use `role='alert'` and every other severity uses `rol
 
 ## ProgressSpinner
 
-An indeterminate loading spinner for work whose completion percentage is unknown.
+Use `ProgressSpinner` to show that work is running when you do not know its completion percentage. This is an indeterminate indicator: it shows activity without claiming how much work remains. Give it an `aria-label` that names the operation.
 
 ```tsx
 import { ProgressSpinner } from '@cratis/components/Display';
@@ -142,7 +159,7 @@ import { ProgressSpinner } from '@cratis/components/Display';
 
 ## ProgressBar
 
-A horizontal progress indicator, determinate or indeterminate.
+Use `ProgressBar` when you can report completion as a percentage. Update `value` as your operation advances; the bar displays that value but does not track the work itself. If you need the same horizontal shape without a known percentage, set `mode="indeterminate"` to show activity without a completion value.
 
 ```tsx
 import { ProgressBar } from '@cratis/components/Display';
@@ -166,7 +183,7 @@ semantic tokens for product styling.
 
 ## Skeleton
 
-A placeholder shape shown while content loads.
+Use `Skeleton` when you know the shape of the content that will appear but its data has not loaded yet. Size the placeholders to reserve space for that content, then replace them when it is ready. A skeleton describes the expected layout, not the operation's progress.
 
 ```tsx
 import { Skeleton } from '@cratis/components/Display';
@@ -183,6 +200,6 @@ import { Skeleton } from '@cratis/components/Display';
 | `circle`       | `boolean` | Renders a circle: `height` is used for width and height, and the radius is forced to `50%`. |
 | `className`    | `string`  | Extra CSS class.                                                                            |
 
-Because `circle` takes its size from `height`, set `height` rather than `width` for a circular skeleton — `<Skeleton circle />` on its own renders at the `1rem` default.
+Because `circle` takes its size from `height`, set `height` rather than `width` for a circular skeleton. `<Skeleton circle />` on its own renders at the `1rem` default.
 
 `Skeleton` is hidden from assistive technology (`aria-hidden='true'`), so a screen reader hears nothing while it is shown. When loading takes noticeable time, pair skeletons with a status announcement such as a `ProgressSpinner` with an `aria-label`, or visually hidden `role='status'` text.

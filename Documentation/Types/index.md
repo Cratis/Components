@@ -1,6 +1,6 @@
 ---
-title: Types
-description: Reference the shared TypeScript types and constants exported by Components.
+title: TypeScript types and constants in Cratis Components
+description: Cratis Components exports shared TypeScript types and constants for JSON schemas, navigation paths, change callbacks, and component parts.
 ---
 
 The `Types` module exports shared TypeScript types and constants used across the component library. Import from `@cratis/components/types` (lowercase). Most exports are types, so import them with `import type`.

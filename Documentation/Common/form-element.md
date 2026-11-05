@@ -1,6 +1,6 @@
 ---
 title: FormElement
-description: Add a leading icon to an application-owned input.
+description: Add a leading icon to an application-owned input with FormElement in Cratis Components, while keeping value, validation, and labeling on the control.
 ---
 
 `FormElement` places a leading icon beside a form control using Cratis tokens and structural CSS. Use it when you own the input and only need an icon addon, rather than a new input implementation.

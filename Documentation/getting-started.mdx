@@ -1,21 +1,22 @@
 ---
-title: Getting started
-description: Install Components, mount the providers, and open your first type-safe command dialog.
+title: 'Cratis Components: build your first command dialog'
+description: Install Cratis Components in a React 19 app with Cratis Arc proxies, configure providers, and submit a RegisterAuthor command against your backend.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Configure **Components**, the React UI component of Cratis Platform, then open an add-author dialog against a running Arc backend. By the end of this page you can enter a name, execute the generated `RegisterAuthor` command, and distinguish success from a rejected command. To build the list and selected author's books around it, continue with the [library tutorial](/components/tutorial/).
+Cratis Components supplies React command dialogs with form binding, validation state, and dialog lifecycle management for Cratis Arc backends. Build your first dialog: enter an author's name and submit it with the generated `RegisterAuthor` command. You will configure the providers, add the name field, and check what happens when the command succeeds or is rejected. The [library tutorial](/components/tutorial/) then adds the author list and selected author's books.
 
-This page follows the generated-proxy path. Components does not generate proxies or start a backend. For local arrays or controlled input without backend requests, [choose a local-data surface](/components/choosing-a-component/) instead; the package peer requirements still apply. Chronicle is not required.
+This flow uses a generated proxy, the TypeScript class Arc creates so your browser can execute a backend command. Components does not generate that class or start the backend. If you only need to display an array or edit local state, [choose a local-data surface](/components/choosing-a-component/) instead; the package peer requirements still apply. Chronicle is not required.
 
 ## Prerequisites
 
 - A React 19 application built with TypeScript. Components declares `react` and `react-dom` `^19.0.0` as peers.
 - An Arc frontend with generated proxies and `experimentalDecorators`/`emitDecoratorMetadata` enabled. The [Arc tutorial's first slice](/arc/tutorial/first-slice/) sets up the project, `tsconfig.json`, and Vite proxy that this page assumes.
 - `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <23`. This checkout pins its Arc development dependencies to **22.156.2**. The wider peer range is not a claim that every accepted version is exercised.
+- If you use strict Yarn PnP with `@cratis/arc.react@22.6.2`, apply the [version-specific workaround](#yarn-pnp-with-arc-react-2262) before installing.
 
-Keep the Arc backend running and retain the Arc tutorial's development-server routing. Check that `src/Authors/RegisterAuthor.ts` exports the generated `RegisterAuthor` command with required `id` and `name`. The later table chapter also needs `AllAuthors` from `src/Authors/Author.ts`. If an export is missing, finish the backend slice and regenerate proxies rather than writing a substitute command class.
+Keep the Arc backend running and retain the Arc tutorial's development-server routing. The examples below use its .NET/JVM proxy paths. Check that `src/Authors/RegisterAuthor.ts` exports the generated `RegisterAuthor` command with required `id` and `name`. The later table chapter also needs `AllAuthors` from `src/Authors/Author.ts`. If an export is missing, finish the backend slice and regenerate proxies rather than writing a substitute command class. For Arc's TypeScript backend, use the different `*.proxy.ts` paths described in [the first slice](/arc/tutorial/first-slice/) instead of copying these imports.
 
 ## Install and wire it up
 
@@ -62,7 +63,7 @@ Keep the Arc backend running and retain the Arc tutorial's development-server ro
     createRoot(document.getElementById('root')!).render(<App />);
     ```
 
-    `tokens` defines stable `--cratis-*` variables with conservative light defaults. `styles` supplies no-Preflight component structure in low-priority Cratis layers. `theme` adds automatic and explicit dark mode, forced colors, and themed subtrees.
+    `tokens` defines stable `--cratis-*` variables with conservative light defaults. `styles` supplies component structure in low-priority Cratis CSS layers without applying a global Preflight reset. `theme` adds automatic and explicit dark mode, forced colors, and themed subtrees.
 
     A product with its own design system can omit `theme`, map its own variables onto `--cratis-*`, and customize stable `data-cratis-part` elements or `pt` attributes.
 
@@ -101,7 +102,66 @@ Keep the Arc backend running and retain the Arc tutorial's development-server ro
 
 </Steps>
 
-### Yarn PnP with Arc React 22.6.2
+## See the payoff
+
+`CommandDialog` takes the generated command, renders its fields and the OK/Cancel footer, keeps **Add** disabled until the form is valid, disables every button while the command executes, and closes only when the command succeeds:
+
+```tsx title="src/AddAuthor.tsx"
+import { useState } from 'react';
+import { Guid } from '@cratis/fundamentals';
+import { CommandDialog } from '@cratis/components/CommandDialog';
+import { InputTextField } from '@cratis/components/CommandForm';
+import { RegisterAuthor } from './Authors/RegisterAuthor';
+
+export const AddAuthor = () => {
+    const [id] = useState(() => Guid.create());
+    return (
+        <CommandDialog<RegisterAuthor>
+            command={RegisterAuthor}
+            title='Add author'
+            okLabel='Add'
+            initialValues={{ id }}
+        >
+            <InputTextField<RegisterAuthor> value={(command) => command.name} title='Name' />
+        </CommandDialog>
+    );
+};
+```
+
+The backend requires an `id`, but the user only enters a name. Put the generated `id` in `initialValues` so validation can see it as soon as the dialog opens. Do not wait for `onBeforeExecute`: that callback runs after validation, so an unset required `id` would keep **Add** disabled.
+
+Open the dialog with Arc's `useDialog` hook. It mounts the dialog only while it is open, so every **Add author** click gets a fresh `id`:
+
+```tsx title="src/Library.tsx"
+import { useDialog } from '@cratis/arc.react/dialogs';
+import { AddAuthor } from './AddAuthor';
+
+export const Library = () => {
+    const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
+    return (
+        <>
+            <button type='button' onClick={() => void showAddAuthor()}>
+                Add author
+            </button>
+            <AddAuthorDialog />
+        </>
+    );
+};
+```
+
+Run the app, click **Add author**, and type a name. **Add** enables, the dialog executes `RegisterAuthor` when you confirm, and it closes once the backend reports success. If the backend rejects the command, the dialog stays open. Server validation results appear against the fields; other failures still need application handling. **Cancel**, the close button, and Escape close it without executing.
+
+Before continuing, leave the required name empty and check that **Add** stays disabled. Enter a name, cancel, and confirm that nothing was submitted. Then submit a valid command and check that the dialog closes only on success. Try the flow with a keyboard too, checking the title, field label, and return focus in your application. For a server validation failure, the dialog should stay open with the field messages visible.
+
+No application `isExecuting` state or duplicate client validation logic is required for this flow. Generated types help detect contract changes; regenerate proxies when C# changes and update affected accessors. The next tutorial adds an observable table: seeing its new row is a separate query-result checkpoint, not something closing this dialog guarantees.
+
+For a complete list-and-detail screen, continue with the [library tutorial](/components/tutorial/).
+
+## Optional setup details
+
+[Provider configuration](#what-the-provider-sets-up) and [localized labels](#localize-components-labels) are optional for this first dialog.
+
+## Yarn PnP with Arc React 22.6.2
 
 If you retain `@cratis/arc.react@22.6.2`, that version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs `rxjs@7.8.2` and this version-specific package extension:
 
@@ -162,62 +222,9 @@ React Aria supplies its own locale data. Configure only labels owned by Componen
 </CratisComponentsProvider>
 ```
 
-## See the payoff
-
-`CommandDialog` takes the generated command, renders its fields and the OK/Cancel footer, keeps **Add** disabled until the form is valid, disables every button while the command executes, and closes only when the command succeeds:
-
-```tsx title="src/AddAuthor.tsx"
-import { useState } from 'react';
-import { Guid } from '@cratis/fundamentals';
-import { CommandDialog } from '@cratis/components/CommandDialog';
-import { InputTextField } from '@cratis/components/CommandForm';
-import { RegisterAuthor } from './Authors/RegisterAuthor';
-
-export const AddAuthor = () => {
-    const [id] = useState(() => Guid.create());
-    return (
-        <CommandDialog<RegisterAuthor>
-            command={RegisterAuthor}
-            title='Add author'
-            okLabel='Add'
-            initialValues={{ id }}
-        >
-            <InputTextField<RegisterAuthor> value={(command) => command.name} title='Name' />
-        </CommandDialog>
-    );
-};
-```
-
-The `id` is required but not typed by the user, so it goes in `initialValues`: the command is complete except for `name` from the moment the dialog opens. Setting a required value in `onBeforeExecute` instead is a common mistake — that callback runs only after the form has validated, so **Add** would never enable.
-
-Open the dialog with Arc's `useDialog` hook. It mounts the dialog only while it is open, so every **Add author** click gets a fresh `id`:
-
-```tsx title="src/Library.tsx"
-import { useDialog } from '@cratis/arc.react/dialogs';
-import { AddAuthor } from './AddAuthor';
-
-export const Library = () => {
-    const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
-    return (
-        <>
-            <button type='button' onClick={() => void showAddAuthor()}>
-                Add author
-            </button>
-            <AddAuthorDialog />
-        </>
-    );
-};
-```
-
-Run the app, click **Add author**, and type a name. **Add** enables, the dialog executes `RegisterAuthor` when you confirm, and it closes once the backend reports success. If the backend rejects the command, the dialog stays open and shows the validation messages against the fields. **Cancel**, the close button, and Escape close it without executing.
-
-Before continuing, check three outcomes: an empty required name prevents confirmation; **Cancel** closes without executing; a valid submission closes only on command success. Also try the flow with a keyboard and check the title, field label, and return focus in your application. A rejection is not a success: the dialog remains open, and server validation can be displayed against the fields.
-
-No application `isExecuting` state or duplicate client validation logic is required for this flow. Generated types help detect contract changes; regenerate proxies when C# changes and update affected accessors. The next tutorial adds an observable table: seeing its new row is a separate query-result checkpoint, not something closing this dialog guarantees.
-
 ## Choose how it looks
 
-Choose one styling posture:
+Start with the baseline theme or your own token values, then customize individual parts where the screen needs it:
 
 - Import `theme` for the Cratis baseline.
 - Define your own `--cratis-*` token values for a product design system.
@@ -234,9 +241,9 @@ Do not target React Aria class names or internal DOM structure. See [Styling](/c
 
 ## Recap
 
-You installed one UI package, imported Components-owned styles, mounted `<Arc>` and `CratisComponentsProvider`, and opened a command dialog generated from `RegisterAuthor`. Components owns the public React contract, Arc supplies command and query behavior, and React Aria supplies selected low-level interaction primitives internally.
+Your handwritten `AddAuthor` dialog now uses the generated `RegisterAuthor` command. `<Arc>` supplies command and query behavior; `CratisComponentsProvider` supplies UI configuration. Components owns the public React contract, with React Aria supplying selected interaction primitives internally.
 
-Next, [build a live library screen](/components/tutorial/) — the tutorial guides you step by step through a list-and-detail page with query-backed tables and command dialogs.
+Next, [build a live library screen](/components/tutorial/). Keep these providers and styles: the tutorial adds a query-backed author table, then connects selection to the author's books. Check the query result separately from command success.
 
 ## Where to go next
 

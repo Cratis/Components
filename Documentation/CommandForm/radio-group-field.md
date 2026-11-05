@@ -1,6 +1,6 @@
 ---
 title: RadioGroupField
-description: Bind a property on an Arc command to a native radio group built from an options array.
+description: RadioGroupField in Cratis Components binds an Arc command property to a native radio group with option labels, value keys, and layout control.
 ---
 
 `RadioGroupField` renders a Cratis-owned native radio group from an options array.

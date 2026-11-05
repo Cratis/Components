@@ -1,9 +1,14 @@
-# Cratis Components
+<a id="cratis-components"></a>
 
-The React UI component of **Cratis Platform**: command dialogs, typed forms,
-query-backed data tables, and application surfaces for
-[Cratis Arc](https://github.com/Cratis/Arc). Arc works with direct database writes or
-an event-sourced backend; Components does not require Chronicle.
+# Cratis Components: React forms and query-backed screens
+
+Cratis Components is a React UI library for building forms, command dialogs, and
+query-backed list screens with [Cratis Arc](https://github.com/Cratis/Arc). Supply a generated
+command and its fields to `CommandDialog`, or a generated query and columns to a table;
+Components handles the validation, execution, and query-result UI wiring for those flows.
+It is part of **Cratis Platform**, but you can use it with Arc without adopting the whole stack.
+Arc works with direct database writes or an event-sourced backend; Components does not
+require Cratis Chronicle.
 
 This is the owning source repository for `@cratis/components`. The current
 package uses Cratis-owned React markup, public TypeScript types, design tokens,
@@ -15,6 +20,12 @@ dependency for selected interaction primitives.
 [Documentation](https://www.cratis.io/components/)
 
 ## Start here
+
+To get a first component working, follow [Getting started](https://www.cratis.io/components/getting-started/):
+configure the providers, open an add-author dialog, and submit it to your Arc backend. You need
+the generated command and a running backend first; that guide links to the Arc setup.
+If your application already owns the rows or local input, use the component chooser below
+instead of adding a backend request just to render them.
 
 - [Browse the canonical Components documentation](https://www.cratis.io/components/)
 - [Install and mount the provider](#minimal-setup)
@@ -40,11 +51,12 @@ from Arc packages. Arc owns those application contracts; Components owns the
 React markup, public component types, styling tokens, stable parts, and component
 behavior in this repository.
 
-Components carries the same design intent as the rest of Cratis: building on a CQRS or
-event-sourced backend should feel like ordinary React. Typed commands, queries, and read models
-remove friction and boilerplate from the UI layer. The ecosystem is designed for productivity,
-quality, reliability, and AI-assisted development, with free [AI skills](https://github.com/Cratis/AI)
-for building with the stack.
+Components adds UI behavior around Arc's generated contracts. `CommandDialog` binds typed
+fields, uses command validation to control confirmation, and tracks execution; query-backed
+tables use Arc's query hooks for results and paging. You compose the screen instead of repeating
+that wiring. Styling stays under your control through `--cratis-*` tokens and documented parts.
+See [why Components](https://www.cratis.io/components/why-components/) for the trade-offs and
+[AI skills](https://github.com/Cratis/AI) for guidance when building with the stack.
 
 Choose the integration per surface: a generated-proxy command dialog or observable table
 needs an Arc runtime and backend; a local-array table or controlled presentational surface can
@@ -87,6 +99,8 @@ proxies use:
 @import '@cratis/components/styles';
 @import '@cratis/components/theme'; /* optional baseline appearance */
 ```
+
+This is a setup excerpt: `YourApp` stands for your application's root component.
 
 ```tsx
 import 'reflect-metadata';
@@ -149,11 +163,12 @@ TypeScript setup, and a first command dialog.
 
 ## The Cratis ecosystem
 
-This project is part of [Cratis](https://www.cratis.io) — free, MIT-licensed tools for building
-CQRS and event-sourced applications.
+This project is part of [Cratis](https://www.cratis.io), a platform for building business
+applications with commands, queries, and optional event sourcing. Check each project's license
+and package notices when choosing what to adopt.
 
-- **[Chronicle](https://github.com/Cratis/Chronicle)** — event-sourcing database and runtime with an
-  Orleans-based kernel, pluggable storage, and language-agnostic gRPC contracts.
+- **[Chronicle](https://github.com/Cratis/Chronicle)** — event-sourcing database and runtime with a
+  Microsoft Orleans-based kernel, pluggable storage, and language-agnostic gRPC contracts.
   [Documentation](https://www.cratis.io/chronicle/)
 - **Chronicle clients** — first-class [.NET SDK](https://github.com/Cratis/Chronicle), plus
   [TypeScript](https://github.com/Cratis/Chronicle.TypeScript),

@@ -1,12 +1,12 @@
 ---
-title: ErrorBoundary
-description: Isolate React render failures with a safe fallback, application-controlled reporting, and user-triggered recovery.
+title: ErrorBoundary for React render recovery
+description: Use ErrorBoundary to isolate a section's React render failures, keep diagnostics out of its fallback, and let users retry the protected content.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-A failed panel should not expose diagnostic details or take down the rest of your page. `ErrorBoundary` replaces its failed subtree with a neutral message and a **Try again** button. Error messages and stack traces never appear in the default fallback.
+`ErrorBoundary` isolates a section's React render failures by replacing its protected children with a neutral message and a **Try again** button. Wrap a section that can recover independently, such as a panel, so a failure there leaves the surrounding page in place. Error messages and stack traces never appear in the default fallback.
 
 ## Basic usage
 
@@ -21,7 +21,7 @@ export function ProtectedSection({ children }: { children: ReactNode }) {
 
 Healthy children render unchanged, without an extra wrapper. When a descendant fails, the default `role="alert"` fallback announces “Something went wrong. Please try again.” Its native button works without a Components provider or an adapter, including when renderer configuration caused the original error.
 
-Retry remounts only the protected children. Their local state is lost, but state outside the boundary is preserved. Retry does not reload the page, retry a network request by itself, or guarantee that the cause is fixed. A persistent failure returns to the fallback; the boundary never retries automatically.
+Choosing **Try again** remounts only the protected children. Their local state is lost, but state outside the boundary is preserved. Place state you need to keep outside that section. Retry does not reload the page or retry a network request by itself; your application must clear any failure cause that survives the remount. If the cause persists, the fallback returns. The boundary never retries automatically.
 
 ## Props
 
@@ -36,7 +36,7 @@ Retry remounts only the protected children. Their local state is lost, but state
 
 ## Customize recovery
 
-Use a fallback callback for translated text, application-specific navigation, or a different recovery action:
+Use a fallback callback for translated text, application-specific navigation, or a different recovery action. Here, `clearFailedState` is an application-supplied synchronous function that clears the cause before the children remount:
 
 ```tsx
 import type { ReactNode } from 'react';
@@ -65,11 +65,13 @@ export function RecoverableSection({
 }
 ```
 
-`reset()` calls `onReset` before remounting the children. Keep that callback synchronous. If recovery requires asynchronous work, perform and handle it in your custom fallback, then call `reset()` after it succeeds. Custom fallbacks own their wording, accessibility, and actions; a static node does not receive a retry function. Do not call `reset()` while rendering a fallback.
+The **Retry section** button calls `reset()`, which runs `onReset` before remounting the children. Keep `onReset` synchronous. If recovery requires asynchronous work, perform it in a custom fallback action and handle failures there, then call `reset()` after it succeeds. Do not call `reset()` while rendering a fallback.
+
+A custom fallback replaces the entire default recovery UI. Your application owns its wording, accessibility, and actions. A static fallback node receives no retry function; use the callback form when the user needs to retry.
 
 ## Report diagnostics without displaying them
 
-By default, the boundary keeps its existing `console.error` reporting. Supply `onError` to replace that reporter with your application's approved logging or telemetry handler. This does not disable React's own error reporting or any reporter configured on the React root.
+By default, the boundary reports caught failures through `console.error`. Supply `onError` to replace that reporter with your application's approved logging or telemetry handler. This does not disable React's own error reporting or any reporter configured on the React root.
 
 Treat thrown values and component stacks as potentially sensitive. Sanitize them according to your application's logging policy and never copy them into the fallback. The boundary does not pass diagnostics to the fallback callback or retain them in its fallback state.
 
@@ -84,4 +86,4 @@ The boundary catches errors in descendant rendering, constructors, and lifecycle
 - Server-side rendering.
 - The boundary's own render path, including a custom fallback. An ancestor boundary can catch render failures in that fallback.
 
-Place boundaries around meaningful, independently recoverable sections. See [Common components](index.md) for other building blocks.
+Return to [Common components](index.md) to choose the controls and layout for the protected section.

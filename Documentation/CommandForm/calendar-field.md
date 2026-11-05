@@ -1,6 +1,6 @@
 ---
 title: CalendarField
-description: Bind a Date property on an Arc command to the locale-aware Cratis date picker.
+description: CalendarField in Cratis Components binds an Arc command's Date value to a locale-aware picker with date bounds and optional time selection.
 ---
 
 `CalendarField` wraps the internationalized Cratis [`DatePickerInput`](../Common/date-picker-input.md) while preserving a `Date | null` command value.

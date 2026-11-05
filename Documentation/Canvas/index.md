@@ -1,13 +1,13 @@
 ---
-title: Canvas
-description: Reference for the pan, zoom, minimap, overlay, and collaborative canvas primitives.
+title: Canvas API reference
+description: Build React boards with Canvas pan, zoom, minimap, and shape APIs while your application owns persistence and collaboration.
 ---
 
-`@cratis/components/Canvas` provides a Prime-free React surface over a shared DOM/Pixi spatial engine. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeReact, PrimeIcons, and a renderer provider are not required.
+Canvas in Cratis Components is a React board surface for arranging content in a shared coordinate space with pan, zoom, and a minimap. Use ordinary React content, Pixi graphics, or both. Canvas handles navigation and measurement; your application supplies the board data and owns persistence, authorization, and collaboration.
 
-Canvas belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside `PivotViewer` — the only two subpaths that require the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
+Start with [Basic usage](basic-usage.md) to place your first card. Then [customize the controls](controls-chrome.md), add [notes](notes.md) or [regions](regions.md), or place a [conversation beside an item](chat-bubble.md). Use this page to look up the APIs and [Pan and zoom](pan-and-zoom.md) for gesture and camera behavior.
 
-The engine renders and positions arbitrary content independently of the optional presentational shapes. Start with [Basic usage](basic-usage.md), then use the focused guides for [pan and zoom](pan-and-zoom.md), [controls chrome](controls-chrome.md), [notes](notes.md), [regions](regions.md), and the [chat bubble](chat-bubble.md). This page is the complete API reference.
+Canvas belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside `PivotViewer`. Both subpaths require the `pixi.js` peer. Appearance comes from `--cratis-*` tokens and Canvas classes; PrimeReact, PrimeIcons, and a renderer provider are not required.
 
 ## Import
 
@@ -23,19 +23,17 @@ import {
 
 Import `@cratis/components/tokens` and `@cratis/components/styles` once at the application root. Add `@cratis/components/theme` only when using the baseline appearance.
 
-Canvas exposes and renders real Pixi objects; PivotViewer renders them internally without exposing Pixi types in its public API. Install the optional peer once in an application that uses either surface:
+Install the Pixi peer in any application that imports `@cratis/components/Canvas`:
 
 ```bash
 npm install pixi.js@^8.20.0
 ```
 
-`pixi.js` is required for the whole `@cratis/components/Canvas` subpath, not only for the `items`/`renderItem` layer: the Canvas module imports `pixi.js` at load time, so importing anything from this subpath (including `Note`, `Region`, or the chat primitives) needs the peer installed.
-
-Keep one compatible Pixi resolution across the application and Components. Two installed copies produce nominal TypeScript incompatibilities for containers and pointer events even when their APIs look structurally similar.
+The peer is optional for Components as a whole, but required for this subpath. Its module loads `pixi.js` even when you use only DOM content, `Note`, `Region`, or the chat primitives.
 
 ### Single Pixi peer
 
-This single-resolution rule is not advisory-only: `pixi.js` is declared `peerDependenciesMeta: { "pixi.js": { "optional": true } }` in Components' own `package.json`, so npm/Yarn/pnpm resolve it to whatever compatible version the application installs rather than nesting a private copy. A second, independently resolved `pixi.js` instance produces nominally distinct `PIXI.Container` and pointer-event types even though both satisfy `^8.20.0` — TypeScript treats classes from two different module instances as unrelated types regardless of their shape. Install `pixi.js` once, at the application level, and let both the application and Components resolve it there. See [Optional Pixi, clean no-Pixi core](../ui-foundation.md#optional-pixi-clean-no-pixi-core) for why the public Pixi types stay real rather than becoming a reduced Cratis facade.
+Keep the application and Components on one compatible Pixi resolution. Canvas exposes Pixi types such as `PIXI.Container` directly, so separately resolved copies can cause TypeScript incompatibilities when you pass objects between them. The optional peer declaration does not itself guarantee a single installed copy. See [Optional Pixi, clean no-Pixi core](../ui-foundation.md#optional-pixi-clean-no-pixi-core) for the dependency boundary.
 
 ## Canvas
 
@@ -88,7 +86,7 @@ Canvas does not size itself. Its root has no width or height rule, and the Pixi 
 | `controlsIcons`                            | `CanvasControlsIcons`              | built-in icons                        | Replaces the integrated minimap, zoom, and help button glyphs. See [Canvas controls chrome](controls-chrome.md).                  |
 | `controlsFollowViewportInsets`             | `boolean`                          | `true`                                | Steps the integrated controls aside by the host's `--canvas-viewport-left`/`--canvas-viewport-right` inset.                       |
 | `controlsGlassSurface`                     | `ReactNode`                        | —                                     | Product-owned glass/acrylic surface rendered behind integrated controls.                                                          |
-| `disableControlsGlass`                     | `boolean`                          | `false`                               | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied.         |
+| `disableControlsGlass`                     | `boolean`                          | `false`                               | Forces the CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied.         |
 | `captureAttributes`                        | `CanvasCaptureAttributes`          | —                                     | Product-owned layer/content/transform-host attribute names for a capture or compositor pipeline. Nothing is hardcoded by default. |
 | `onHandleReady`                            | `(handle: CanvasHandle) => void`   | —                                     | Provides imperative camera/item-bound operations.                                                                                 |
 | `readOnly`                                 | `boolean`                          | `false`                               | Keeps pan/zoom but absorbs content interaction: a transparent layer blocks pointers, and the content layer is marked `inert`, so it cannot be reached with the keyboard either. |
@@ -105,12 +103,11 @@ Canvas does not size itself. Its root has no width or height rule, and the Pixi 
 
 ## DOM and Pixi layers
 
-`Canvas` composes two rendering layers rather than choosing one, and an application can use DOM content alone or mix DOM and Pixi items in the same instance. Canvas always initializes one transparent Pixi `Application` and empty `world` container so `CanvasContext`, `onReady`, and the shared camera have one stable contract; therefore every Canvas consumer still installs the optional Pixi peer. When the world is empty, `Canvas` skips the per-frame GPU render pass.
+Use the DOM layer for interactive React content. `children` and `CanvasItem` position that content with CSS transforms, keeping forms, buttons, and other HTML controls in the DOM.
 
-- **DOM layer** — `children` and `CanvasItem` position arbitrary React/DOM content with ordinary CSS transforms. No Pixi display-object content is created when an application uses only this layer; this is the layer shown by the `WithControlsAndMinimap` Storybook screenshot.
-- **Pixi item layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item in the shared Pixi `world`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer draws many items on the GPU instead. `renderItem` runs once per new `id`; for an `id` that already has a container, later renders only update its position. See [Basic usage](basic-usage.md) for the data-driven items path.
+For graphics, the optional `items`/`renderItem` props build one `PIXI.Container` per item in the shared Pixi `world`, without a DOM node per item. `renderItem` runs once per new `id`; later updates to that id move its container without rebuilding its appearance. See [Basic usage](basic-usage.md) for an example and the update rules.
 
-Both layers share the same camera: panning and zooming transform the DOM layer's CSS and the Pixi `world` container together, so DOM and Pixi content stay registered to the same world coordinates.
+Both layers share the same camera, so DOM and Pixi content stay aligned when you pan or zoom. Canvas initializes a transparent Pixi `Application` even for DOM-only boards, which is why every Canvas consumer needs the peer. It skips the per-frame GPU render pass when the Pixi world is empty.
 
 ## CanvasItem
 
@@ -118,7 +115,7 @@ Both layers share the same camera: panning and zooming transform the DOM layer's
 
 | Prop       | Type                      | Meaning                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`       | `string`                  | Registers the item under a caller-chosen key instead of an internally generated one, making its bounds addressable by id — what a sibling `Region` matches against for membership reporting. Omit for the same behavior as before this prop existed: still measured for the minimap/fit-to-content, but anonymous to anything matching items by id. |
+| `id`       | `string`                  | Registers the item under your application's key for region membership reports. Without an explicit id, the item still contributes measured bounds to the minimap and camera operations but is excluded from region membership. |
 | `x` / `y`  | `number`                  | World position.                                                                                                                                                                                                                                                                                                                                     |
 | `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context.                                                                                                                                                                                                                      |
 | `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                                                                                                                                                                                                                                      |
@@ -162,9 +159,9 @@ const captureAttributes: CanvasCaptureAttributes = {
 
 ## Overlays and SSR
 
-`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration. It uses the same `useSyncExternalStore` browser-detection pattern as `Dialog`, `FilterPanel`, and `ToolbarSlot` elsewhere in Components. `Toaster` is also server-safe, but follows a different contract: its toast-queue store supplies a server snapshot and the component returns `null` when `document` is unavailable. `Canvas`'s own `PIXI.Application` creation likewise runs inside a `useEffect`, so it never executes during server rendering — see the [capability matrix](../ui-foundation.md#capability-matrix) for the equivalent PivotViewer guarantee.
+`CanvasOverlay` renders children into `document.body` in the browser, outside the canvas's clipping boundary. During server rendering and initial hydration it renders an empty placeholder instead of accessing `document`. Canvas also defers Pixi application creation to an effect, so that initialization does not run on the server. See the [capability matrix](../ui-foundation.md#capability-matrix) for the server-rendering boundaries of other Components surfaces.
 
-Use it for floating controls that must escape canvas clipping:
+Use the overlay for floating controls that must remain visible beyond the canvas edge:
 
 ```tsx
 <CanvasOverlay>
@@ -185,9 +182,9 @@ The Canvas entry point also exports:
 
 These are exported from the Canvas subpath, so importing them also loads `pixi.js`. The chat kit source itself does not use Pixi, but `@cratis/components/Chat` does not re-export `Chat`, `ChatBubble`, `ChatComposer`, or the other kit primitives listed above; see [Chat bubble](chat-bubble.md).
 
-These shapes are optional conveniences, not domain models. Applications own persistence, authorization, and collaboration policy. Arc can own commands, queries, validation, authorization, and generated React bindings without Chronicle. Applications that choose Arc plus Chronicle additionally own event streams, projections, and read models. Pass typed data and callbacks into Canvas shapes rather than coupling them to generated proxies.
+Pass data and callbacks into these shapes from your application. Editing a note or sending a chat message does not save it or synchronize it with other users; connect the callbacks to your own state and backend.
 
-`Region` additionally detects sibling `CanvasItem` containment and publishes `ItemAddedToRegion`/`ItemRemovedFromRegion`, `Note` publishes `NoteTextChanged`, and `Chat` (given an `id`) publishes `ChatMessageAdded` — all strictly opt-in, over the `@cratis/arc.react` messenger, and silently inert without an `ArcContext` above the `Canvas`. The pure `itemsWithinRegion(regionBounds, items, excludeId?)` containment function (and its `RegionContainmentBounds` parameter type) is also exported for hosts that want the same center-point math outside the messenger flow. See [Messaging](messaging.md) for the full message catalog and the opt-in rules.
+Shapes also publish local interaction messages through the `@cratis/arc.react` messenger. `Region` reports sibling item membership, `Note` reports committed text, and `Chat` reports sends when it has an `id`. These announcements supplement callbacks; they are not a persistence or collaboration transport. See [Messaging](messaging.md) for subscriptions, identity rules, and behavior without an Arc provider. The exported `itemsWithinRegion(regionBounds, items, excludeId?)` function and `RegionContainmentBounds` type let your application use the same center-point containment test separately.
 
 ## Keyboard and accessibility
 

@@ -1,15 +1,19 @@
 ---
-title: Canvas messaging
-description: Subscribe to region membership, note edit, and chat send messages published by Canvas shapes over the Arc messenger.
+title: Canvas messaging — respond to shape interactions
+description: Subscribe to local Canvas region, note, and chat messages through the Arc messenger, then connect those interactions to your application logic.
 ---
 
-The canvas shapes can announce what happens on them over the `@cratis/arc.react` messenger — region membership changes, committed note edits, sent chat messages. This is strictly opt-in and additive: every shape's existing callback contract is unchanged, and a board that ignores all of this behaves exactly as before.
+Canvas shapes in Cratis Components publish local interaction messages through the `@cratis/arc.react` messenger. Subscribe when another component needs to respond to a region membership change, a committed note edit, or a chat send. Callbacks remain the primary contract; these announcements do not save data or synchronize a board between users.
 
-## Silently inert without Arc
+<a id="silently-inert-without-arc"></a>
 
-Nothing here requires Arc to be wired up. Without an `ArcContext` above the `Canvas` — a Storybook story, a test, a host that simply does not use Arc — every shape renders and behaves exactly as it always has: nothing throws, nothing is required, and no message reaches anyone. Publishing resolves the nearest messenger the same way `useMessenger()` does (a `MessengerScope` between the `Arc` root and the canvas is honored), and when a host mounts an `ArcContext.Provider` whose configuration carries no messenger, the shapes stay silent rather than failing.
+## Choose the messenger scope
 
-To receive the messages, subscribe on the same messenger anywhere under the same context:
+Publishers and subscribers must resolve the same messenger to communicate directly. Shapes use `useMessenger()` to find the nearest `MessengerScope`, falling back to the Arc root messenger. Put a board and its listeners under the same scope when they should share interaction messages.
+
+Shapes also work without an Arc provider. In that case, Arc supplies a default in-memory messenger, so listeners resolving that default can still receive messages. If your application supplies an `ArcContext.Provider` with no `messenger`, built-in shapes skip publishing instead of throwing. A missing provider is therefore different from an explicitly missing messenger.
+
+Subscribe with `useOnMessage` in a component under the chosen scope:
 
 ```tsx
 import { useOnMessage } from '@cratis/arc.react/messaging';
@@ -29,31 +33,32 @@ export function RegionMembershipListener() {
 
 ## Identity: the `id` props
 
-Messages are keyed by ids the host already owns, opted in per shape:
+Use ids from your application's data so a listener can connect an interaction to the right item. Give each reportable `CanvasItem` an `id`; without one, it still appears in the minimap and measured bounds but is excluded from region membership reports.
 
-- **`CanvasItem` accepts an optional `id`.** When set, the item registers in the Canvas item registry under that id instead of an internal generated one — which is what makes it addressable in region-membership reports. Items without an `id` behave exactly as before and are anonymous to containment detection.
-- **The `CanvasItem` wrapping a `Region` must carry `id={region.id}`.** That convention is how the region recognizes its own registry entry and excludes itself from its own containment reports.
-- **`Chat` accepts an optional `id`.** Only a chat with an id publishes `ChatMessageAdded`.
-- **`Note` needs no new prop** — `NoteTextChanged` carries the `note.id` it already has.
+The `CanvasItem` wrapping a `Region` must use `id={region.id}`. The region uses that matching id to exclude its own registry entry. `NoteTextChanged` carries the existing `note.id`, while `ChatMessageAdded` requires an explicit `id` on Chat.
+
+With the listener above mounted, move an identified item into a region and then out again. The console should report its region and item ids. Connect that listener to application logic only after deciding whether it should handle the same interaction as a callback; using both to save a change can duplicate the work.
 
 ## Message catalog
 
 | Message                 | Fields               | Published when                                                                                                                                                                                                                                                                             |
 | ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ItemAddedToRegion`     | `regionId`, `itemId` | A sibling `CanvasItem` carrying an `id` newly has its center point within a `Region`'s bounds — whether the item moved into the region, or the region was moved/resized over it. Also published on mount for every item already contained, so a subscriber never misses the initial state. |
+| `ItemAddedToRegion`     | `regionId`, `itemId` | An identified sibling item's center enters a region's bounds, or the region moves/resizes over it. Also published as initially contained items register; subscribers mounted later do not receive past messages. |
 | `ItemRemovedFromRegion` | `regionId`, `itemId` | Such an item's center point leaves the region's bounds — including by the item unmounting.                                                                                                                                                                                                 |
-| `NoteTextChanged`       | `noteId`, `text`     | A `Note` edit is committed (the editor loses focus) — the same moment `onTextChange` fires, never per keystroke. Carries the full committed text.                                                                                                                                          |
-| `ChatMessageAdded`      | `chatId`, `text`     | A `Chat` given an `id` sends a message from its composer — the same moment `onSend` fires.                                                                                                                                                                                                 |
+| `NoteTextChanged`       | `noteId`, `text`     | A `Note` edit is committed when its editor loses focus, after `onTextChange` is called. Carries the full committed text, never a per-keystroke update.                                                                                                                                          |
+| `ChatMessageAdded`      | `chatId`, `text`     | A `Chat` with an `id` sends text from its composer, after `onSend` is called. This does not confirm that the application saved the message.                                                                                                                                                                                                 |
 
 All of them are plain classes with `constructor(readonly ...)` fields, importable from `@cratis/components/Canvas`.
 
-Containment is by center point, inclusive of the region's edges, and the pure function behind it — `itemsWithinRegion(regionBounds, items, excludeId?)` — is exported for hosts that want the same math outside the messenger flow (hit-testing a drop, say). The Canvas item registry marks an id-less `CanvasItem`'s entry `anonymous: true`, and `itemsWithinRegion` always excludes such an entry from its result, even when its center genuinely lies within the region — that marker is the mechanism behind "items without an `id` are anonymous to containment detection" above; the entry still feeds the minimap and fit-to-content, since exclusion is scoped to region membership only. A host calling `itemsWithinRegion` with its own `{x, y, width, height}` map never needs to set this field — it is optional and absent means reported, so existing callers are unaffected. Overlapping regions may each claim the same item; resolving exclusivity is deliberately the host's job, as is everything else membership implies — the region never moves members, persists nothing, and knows nothing about item types (see [Regions](regions.md)).
+Containment tests the item's center point and includes all four region edges. Overlapping regions can each report the same item. Your application decides whether membership must be exclusive and what it means; a region neither moves its members nor persists membership. See [Regions](regions.md) for positioning and resizing.
+
+For containment checks outside the messenger flow, call the exported `itemsWithinRegion(regionBounds, items, excludeId?)` function. It accepts entries with `{x, y, width, height}` bounds. The optional `anonymous: true` flag excludes an entry from membership results; Canvas sets it for items without an explicit id. When you supply your own bounds map, omit the flag for entries you want included.
 
 ## Defining your own messages for your own shapes
 
-The catalog above is the pattern, not a closed set. A host with its own shapes on the board publishes its own analogous messages the same way: a plain class whose constructor fields carry the ids and payload, published on the messenger at the moment the interaction commits.
+For a custom shape, define a message class carrying its application id and committed value. Publish it where the interaction commits, alongside the shape's callback.
 
-This excerpt shows only the publishing parts; `card` and `onFlip` stand for your shape's own props. Without an Arc root, `useMessenger()` resolves Arc's default messenger, which nothing subscribes to. The built-in shapes additionally guard against an `ArcContext.Provider` whose configuration has no `messenger`; a direct `messenger.publish` call does not, so add that check if your host can be in that state.
+This excerpt shows only the publishing code; `card` and `onFlip` stand for your shape's props. It assumes `useMessenger()` resolves a messenger. Unlike the built-in shapes, the direct `messenger.publish` call does not guard against an `ArcContext.Provider` whose configuration omits `messenger`. Add that guard if your application allows that configuration.
 
 ```tsx
 // The message: a plain class, ids and payload as readonly constructor fields.
@@ -74,4 +79,6 @@ const handleFlip = () => {
 };
 ```
 
-Keep the shape's callback as the primary contract and treat the message as an additive announcement, publish once per committed interaction rather than per intermediate frame, and key by the id the host already owns — then your shapes compose with subscribers exactly like the built-in ones do.
+Subscribe to `CardFlipped` with `useOnMessage`, just as with the built-in message classes. Keep publication at the commit point so listeners receive the chosen value rather than intermediate animation frames. Your application owns any command, persistence, or collaboration flow that follows.
+
+For the callback side of these interactions, continue to [Notes](notes.md), [Regions](regions.md), or [Canvas chat](chat-bubble.md).

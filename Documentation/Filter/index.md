@@ -1,15 +1,15 @@
 ---
-title: FilterPanel
-description: Build reusable filter panels with option, range, and custom editors.
+title: FilterPanel for standalone React filtering
+description: Use FilterPanel to collect option, range, and custom filter selections in React. Apply them to local data or query arguments in your application.
 ---
 
-The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors declared as children. If you are choosing between faceted, column, and global filtering, start with [Choosing a component](../choosing-a-component.md#filtering).
+Use `FilterPanel` from Cratis Components when users need to narrow a data view by choices such as status, salary, or date. It collects selections in a dropdown anchored to a button; your application applies those selections to local data or sends them as query arguments. The panel does not fetch or filter records itself.
 
 ## Key Features
 
-- **Automatic Clear Buttons**: When a filter has active selections, a round clear button (×) appears in the filter header next to the count badge, making it easy to reset individual filters.
-- **Flexible Filter Types**: Supports string/option filters (single or multi-select), numeric range filters with histograms, and fully custom editors.
-- **Integrated State Management**: Use the `useFilterState` hook to manage all filter state in one place.
+A status choice can narrow a list to active records; a salary range can restrict it to a pay band. Define the choices with `FilterDefinition` and use `useFilterState` to track them, or connect the panel to state you already own. Each active group has a header clear button so users can remove one restriction without resetting the others.
+
+For a choice between this panel, table-column filters, and global search, see [Choosing a component](../choosing-a-component.md#filtering). If you have not configured Cratis Components yet, follow [Getting started](../getting-started.mdx) before adding the example below.
 
 ## Components and Exports
 
@@ -32,6 +32,8 @@ The `FilterPanel` component provides a standalone, reusable filter UI that can b
 | `CustomFilterValues` | `Record<string, unknown>` — values for custom editor filters |
 
 ## Quick Start
+
+Start with a status picker. The filter's `key` identifies its state entry; each option's `key` identifies a selection. The counts below are supplied display data, not totals calculated by the panel.
 
 ```tsx
 import { useRef, useState } from 'react';
@@ -93,13 +95,17 @@ export function StatusFilter() {
 }
 ```
 
-Clicking **Filters** opens the panel below the button with the **Status** group expanded. Choosing **Active** updates `filterValues.status` to a `Set` containing `'active'`. The panel only collects selections: apply them to your data or send them as query arguments yourself.
+Open **Filters** and choose **Active**. The **Status** group starts expanded, and `filterValues.status` becomes a `Set` containing `'active'`. The paragraph beneath the button now reads `Selected statuses: active`. Clear the group with its header button to return that text to `all`.
+
+To make the same choice narrow your records, read `filterValues.status` in the component that owns the data view. In this example the option keys equal the record status values, so keep a record when the set is empty or contains its status. With multiple groups, your application decides how to combine their restrictions. Selections contain option keys, not the options' `value` fields; map keys to values when those differ.
+
+For server-side filtering, translate the selected keys into your query arguments and request the matching records. Filtering an already-loaded array only narrows that array, not every server page. Keep option counts and histogram data consistent with the dataset you intend users to explore.
 
 ## Filter Types
 
 ### Single-select (`type: 'string'`, `multi: false`)
 
-Renders a radio-button list. Clicking an already-selected option deselects it.
+Use a radio-button list when only one status should restrict the view at a time. `multi` defaults to `false`; choosing another option replaces the selection. Use the group's header clear button to remove the restriction.
 
 ```tsx
 {
@@ -114,7 +120,7 @@ Renders a radio-button list. Clicking an already-selected option deselects it.
 
 ### Multi-select (`type: 'string'`, `multi: true`)
 
-Renders a checkbox list — multiple values may be selected simultaneously.
+Use a checkbox list when users should be able to include several departments. Each checked option adds its key to the group's selection set; unchecking it removes that key.
 
 ```tsx
 {
@@ -131,7 +137,7 @@ Renders a checkbox list — multiple values may be selected simultaneously.
 
 ### Numeric range with histogram (`type: 'number'`)
 
-Renders a `RangeHistogramFilter` — a range slider overlaid on a histogram of the actual data distribution. Users can drag either handle, focus the named minimum/maximum sliders and use Arrow/Home/End keys, or activate a histogram bar to snap to its bounds.
+Use `RangeHistogramFilter` to let users choose a salary band while seeing how the supplied values are distributed. The histogram groups those values into bars. Drag either handle to change the endpoints, use Arrow/Home/End keys on a focused handle, or activate a bar to select its bounds. The selected pair is stored in `rangeValues.salary`; your application uses it to restrict the records.
 
 ```tsx
 {
@@ -147,19 +153,23 @@ Renders a `RangeHistogramFilter` — a range slider overlaid on a histogram of t
 }
 ```
 
+Supply `numericRange.values` to count histogram bars in the browser, or `numericRange.histogram` for pre-counted `HistogramBucket` entries from your server. Pre-counted buckets take precedence when both are supplied. Use server counts when the loaded records do not cover the full result set; the panel does not obtain those counts for you.
+
 ### Date range (`type: 'date'`)
 
-Uses the same range slider and histogram as `type: 'number'`, configured through `numericRange`. Supply the bounds and values as timestamps in milliseconds (for example `date.getTime()`); the endpoint labels are formatted with `toLocaleString()`.
+For a date interval, use the same `numericRange` shape with bounds and values expressed as timestamps in milliseconds, such as `date.getTime()`. The panel formats the endpoint labels with `toLocaleString()`, but the selected range remains a pair of numbers. Convert those endpoints to the date representation your query expects.
 
 ### Searching long option lists
 
-An option group shows a search box when its options do not fit in the group's box. Set `searchable: true` on the `FilterDefinition` to always show it, or `searchable: false` to never show it. Set `searchPlaceholder` to change its placeholder and `searchAriaLabel` to give the input a distinct accessible name. Without `searchAriaLabel`, its accessible name uses `messages.filter.searchAriaLabel` from `CratisComponentsProvider`, then the effective placeholder, then the English default `'Search'` if the placeholder is empty. Standalone `CheckboxListFilter` accepts the same search props and precedence. An empty explicit or provider search name falls back to `'Search'`, not the placeholder.
+An option group's search narrows its visible choices by label; it does not search your records or clear hidden selections. The search box appears automatically when the options do not fit in the group's box. Set `searchable: true` on the `FilterDefinition` to always show it, or `searchable: false` to never show it. Set `searchPlaceholder` to change its placeholder and `searchAriaLabel` to give the input a distinct accessible name. Without `searchAriaLabel`, its accessible name uses `messages.filter.searchAriaLabel` from `CratisComponentsProvider`, then the effective placeholder, then the English default `'Search'` if the placeholder is empty. Standalone `CheckboxListFilter` accepts the same search props and precedence. An empty explicit or provider search name falls back to `'Search'`, not the placeholder.
 
 Set `autoFocus: true` on a `FilterDefinition` to focus its inline search when that group becomes expanded, including if overflow measurement adds the input after rendering. The default is `false`; `autoFocus` has no effect if the group is collapsed or has no search input. For a standalone `CheckboxListFilter`, use `autoFocusSearch` to request focus when its search becomes visible.
 
+The panel-level search is separate from each group's option search. Supplying `onSearchChange` shows it, but your application must store the text in `search` and apply it to records or query arguments.
+
 ### Custom editor (`type: 'custom'`)
 
-Declare `type: 'custom'` in the `FilterDefinition`, then place a matching `<FilterEditor>` child inside `<FilterPanel>`. The value is stored in `customValues` keyed by the filter's `key`.
+For a restriction that needs its own control, such as a minimum star rating, declare `type: 'custom'` and place a matching `<FilterEditor>` child inside `<FilterPanel>`. Its `filterKey` must equal the definition's `key`; that match tells the panel where to render the editor. With `useFilterState` wired below, changes are stored in `customValues` under the same key.
 
 ```tsx
 // 1. Declare the filter group (no editor function here)
@@ -184,23 +194,21 @@ const filters: FilterDefinition[] = [
 
 Pass `customValues` and `onCustomValueChange` to `FilterPanel` when using custom editors. The complete wiring, with a number input as the editor, is shown in [`useFilterState` Hook](#usefilterstate-hook).
 
-The editor receives `value` as `unknown`; narrow it before use. Call `onChange(undefined)` to leave the filter unset.
+The editor receives `value` as `unknown`; narrow it before use. Call `onChange(undefined)` to leave the filter unset. Your application interprets the result: for a minimum rating of 4, for example, keep records rated 4 or higher. The editor collects that threshold; it does not apply the comparison.
 
 ## Clearing Filters
 
-Each filter group automatically displays a round clear button (×) in its header when it has active selections:
+Use the header clear button (×) to remove a restriction without expanding the group. It appears beside the selection count for option filters, beside the `Range` indicator for numeric/date ranges, or when a custom value is neither `null` nor `undefined`. The button has an accessible name and a matching tooltip.
 
-- **String/option filters**: The clear button appears next to the selection count badge (e.g., "3 selected")
-- **Numeric range filters**: The clear button appears next to the "Range" indicator
-- **Custom filters**: The clear button appears when the filter has a value (non-null, non-undefined)
+Clearing calls the handler for that group's state:
 
-The clear button includes a tooltip describing its action and can be clicked without expanding the filter. When clicked:
+| Filter kind | Clear callback |
+|---|---|
+| String/option | `onFilterClear(filterKey)` clears its selection set |
+| Numeric/date range | `onRangeChange(filterKey, null)` removes its range |
+| Custom | `onCustomValueChange(filterKey, undefined)` unsets its value |
 
-- For string/option filters, all selections are cleared via `onFilterClear(filterKey)`
-- For range filters, the range is reset to `null` via `onRangeChange(filterKey, null)`
-- For custom filters, the value is set to `undefined` via `onCustomValueChange(filterKey, undefined)`
-
-Custom filter editors should not implement their own clear buttons; the header clear button handles this automatically.
+With `useFilterState`, the mapped handlers make those state changes. If you supply your own state, implement the same reset behavior in your callbacks. Custom editors can use the header button instead of adding a separate clear control.
 
 ## `FilterPanel` Props
 
@@ -220,7 +228,7 @@ Custom filter editors should not implement their own clear buttons; the header c
 | `expandedFilterKey` | `string \| null` | — | Which filter group is open |
 | `anchorRef` | `RefObject<HTMLButtonElement \| null>` | ✓ | Button the panel anchors below |
 | `onClose` | `() => void` | ✓ | Called when panel should close |
-| `onSearchChange` | `(value: string) => void` | — | If provided, shows a search box |
+| `onSearchChange` | `(value: string) => void` | — | If provided, shows the panel search box; the host applies its text to data or query arguments |
 | `onFilterToggle` | `(filterKey, optionKey, multi) => void` | ✓ | Called when an option is toggled |
 | `onFilterClear` | `(filterKey) => void` | ✓ | Called when all selections for a filter are cleared |
 | `onRangeChange` | `(filterKey, range) => void` | ✓ | Called when a numeric range changes |
@@ -239,7 +247,9 @@ Custom filter editors should not implement their own clear buttons; the header c
 
 ## `useFilterState` Hook
 
-`useFilterState(filters)` initializes and manages all filter state in one call. Its handler names differ from the `FilterPanel` prop names (`handleToggleFilter` versus `onFilterToggle`), so you cannot spread the result into `FilterPanel`; map each value to its prop:
+`useFilterState(filters)` tracks option selections, ranges, custom values, and the expanded group. Keep panel visibility in your own state, as in the Quick Start. Its handler names differ from the `FilterPanel` prop names (`handleToggleFilter` versus `onFilterToggle`), so map each handler explicitly rather than spreading the result into `FilterPanel`.
+
+This example connects a minimum-rating number input. Empty input calls `onChange(undefined)`; entering a number puts it in `state.customValues.rating` for the data view to use.
 
 ```tsx
 import { useRef, useState } from 'react';
@@ -293,11 +303,11 @@ export function RatingFilter() {
 }
 ```
 
-The first filter group starts expanded. The hook re-syncs its state when the set of filter keys changes, not on every new `filters` array; existing selections are preserved for filter keys that are still present.
+The first filter group starts expanded. When the filter key list changes, the hook rebuilds its option and range maps, preserving option selections and `type: 'number'` ranges for keys still present. Date ranges are created on first change and are not preserved through that rebuild. A new `filters` array with the same key list does not trigger it.
 
 ## `RangeHistogramFilter` Props
 
-`RangeHistogramFilter` can also be used standalone, independently of `FilterPanel`.
+Use `RangeHistogramFilter` on its own when the range belongs directly in your layout rather than in a dropdown. Supply the bounds and histogram data, store `selectedRange` in your state, and handle `onChange`. As with the panel, your data view must apply the chosen endpoints.
 
 | Prop               | Type                                        | Required | Description                                                                                |
 | ------------------ | ------------------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
@@ -315,12 +325,17 @@ The first filter group starts expanded. The hook re-syncs its state when the set
 
 ## Accessibility and keyboard
 
-- The panel portals into the `CratisComponentsProvider` [overlay container](../Common/cratis-components-provider.md#choose-an-overlay-container), or `document.body` without one. It stays anchored at a fixed position below `anchorRef` and follows the anchor on scroll and resize. If a configured container is temporarily unavailable (`getContainer()` returns `null`), the panel waits rather than rendering into the body; a later render can mount it when the container is available. Inside a Cratis modal `Dialog`, a shared container outside the modal would hide the panel from assistive technology and pull focus back into the modal. In that case the panel mounts inside the dialog's modal root instead. If the dialog has a persistent fixed containing block (for example, a `pt.root` transform), the panel stays within the dialog's visible bounds and its contents scroll to keep options reachable. A container already inside the modal remains the destination. Translated and scaled overlay containers are supported; rotated or skewed overlay containers are not.
-- The panel renders as a `<div>` with `role="dialog"`, so it is exposed as a named, non-modal dialog, not an `<aside>` complementary landmark. Override its English default name with `aria-label` for one panel, or set `messages.filter.label` on `CratisComponentsProvider` for all panels. An empty dialog label is retained, as with other provider label groups. Opening the panel moves focus into the dialog; if an expanded group's `autoFocus` search is available, it receives focus instead. Focus is not trapped. Set `aria-expanded` on your trigger, as in the Quick Start.
-- Escape closes the panel and returns focus to `anchorRef` if focus is inside the panel or on its anchor. Escape with focus elsewhere does nothing. Outside mousedown closes without moving focus.
-- Each group header is a button with `aria-expanded`. The clear button is named by `clearFilterAriaLabel` or `clearRangeAriaLabel`.
-- Range sliders are named by `minimumAriaLabel` and `maximumAriaLabel` and respond to Arrow, Home, and End keys.
-- The panel and group search inputs have accessible names: `searchAriaLabel` on `FilterPanel`, `FilterDefinition`, or standalone `CheckboxListFilter` wins, followed by `messages.filter.searchAriaLabel`, the effective placeholder, and finally `'Search'`. The provider does not change placeholders; `FilterDefinition.searchPlaceholder` still overrides the panel placeholder. `PivotViewer` keeps its per-group `labels.searchGroup` names (or distinct `Search ${groupLabel}` defaults), so a shared provider search name cannot collapse them. Its `labels.search` also wins over the provider for the panel search.
+Give the panel a name that identifies what it filters. It renders a `<div>` with `role="dialog"` as a non-modal dialog, not an `<aside>` landmark. Set `aria-label` on one panel or `messages.filter.label` on `CratisComponentsProvider` for all panels; the English default is `'Filters'`. An empty dialog label is retained, so supply a non-empty name. Set `aria-expanded` on the trigger, as in the Quick Start.
+
+Opening moves focus into the panel unless an expanded group's `autoFocus` search receives it first. Focus is not trapped. An unhandled Escape inside the panel or on its anchor closes the panel and returns focus to `anchorRef`. Escape elsewhere does nothing; a control that handles Escape itself or an active text composition also leaves the panel open. Outside mousedown closes without moving focus.
+
+Group headers are buttons with `aria-expanded`. Name their clear buttons with `clearFilterAriaLabel` or `clearRangeAriaLabel`. Range handles expose named sliders that respond to Arrow, Home, and End keys. For standalone `RangeHistogramFilter`, customize those names with `minimumAriaLabel` and `maximumAriaLabel`.
+
+Give searches distinct names when their purpose differs, such as searching records versus searching status choices. The `searchAriaLabel` on each surface wins over `messages.filter.searchAriaLabel`, then the effective placeholder supplies the fallback, with `'Search'` used for an empty name. The provider does not change placeholders; `FilterDefinition.searchPlaceholder` still overrides the panel placeholder. `PivotViewer` keeps its `labels.searchGroup` names (or distinct `Search ${groupLabel}` defaults) for groups and uses `labels.search` ahead of the provider for its panel search.
+
+The panel portals into the provider's [overlay container](../Common/cratis-components-provider.md#choose-an-overlay-container), or `document.body` without one. It follows `anchorRef` on scroll and resize, choosing above or below the button according to the available space. If a configured container is unavailable (`getContainer()` returns `null`), the panel waits; a later render can mount it once the container exists.
+
+Inside a Cratis modal `Dialog`, a shared container outside the modal would hide the panel from assistive technology and pull focus back into the modal. The panel therefore mounts inside the dialog's modal root in that case. A container already inside the modal remains the destination. If the dialog has a persistent fixed containing block, such as a `pt.root` transform, the panel stays within the dialog's visible bounds and its contents scroll. Translated and scaled overlay containers are supported; rotated or skewed containers are not.
 
 ## Importing
 

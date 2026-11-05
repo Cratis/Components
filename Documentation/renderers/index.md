@@ -1,24 +1,26 @@
 ---
-title: Renderer adapters and coexistence
-description: Understand the built-in renderer, optional primitive adapters, and safe coexistence with application-owned vendor components.
+title: Cratis Components renderer adapters and coexistence
+description: Cratis Components adapters change nine primitive renderer slots. Keep vendor-native grids and workflows application-owned, with explicit providers.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-A product rarely replaces its entire interface at once. It may use Components for Arc-aware forms
-and data surfaces, retain a vendor grid for one specialized screen, and adopt a different visual
-language for ordinary controls. Components supports that coexistence without claiming that every
-surface becomes interchangeable.
+Cratis Components renderer adapters give nine common controls vendor presentation while Components
+keeps ownership of its forms, tables, and larger compositions. Choose an adapter to change those
+controls; build an application-owned vendor workflow when you need a vendor's grid or editing model.
+You can use both approaches in the same React application.
 
 ## The ownership boundary
 
-The default path is built in. Install `@cratis/components`, mount `CratisComponentsProvider`, and
-omit `library`. Components then renders its Components-owned React and HTML contracts. Semantic
-native HTML handles simple controls, while the installed React Aria foundation supplies selected
-focus, collection, date, and overlay behavior internally.
+You do not need an adapter to use Components. Install `@cratis/components`, mount
+`CratisComponentsProvider`, and omit `library` to use the built-in renderer. It uses semantic native
+HTML for simple controls and React Aria internally for selected focus, collection, date, and overlay
+behavior.
 
-An optional adapter changes only the renderer slots that it declares:
+A renderer slot is a named place where Components can use an adapter's implementation of a control.
+Each optional adapter below implements nine presentation slots, preserving the Components props and
+behavior contracts:
 
 | Package                           | Vendor peers                                                                                        | Declared coverage              |
 | --------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
@@ -28,7 +30,7 @@ An optional adapter changes only the renderer slots that it declares:
 
 Every adapter also has React and ReactDOM 19 as peers. Each published adapter release declares a peer on exactly its own version of `@cratis/components` (for example, `@cratis/components.mui@4.14.0` requires `@cratis/components@4.14.0`), so install and upgrade the adapter and `@cratis/components` together at the same version. PrimeReact is a peer of the two PrimeReact adapters only; `@cratis/components` itself depends on no PrimeReact package.
 
-All three adapters publish stable `CratisPresentationUiLibrary` manifests for renderer ABI version 1. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile. Stable profile selection means nine-slot primitive adaptation, never full-catalog replacement.
+All three adapters declare `CratisPresentationUiLibrary` manifests for renderer ABI version 1, the versioned contract between Components and an adapter. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. For example, selecting MUI can change a button inside DataPage without turning its table into a MUI grid. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile; selecting it never replaces the full Components catalog.
 
 ```mermaid
 graph TD
@@ -40,8 +42,8 @@ graph TD
     App --> Vendor[Application-owned vendor surface]
 ```
 
-The application-owned vendor surface is a sibling, not a hidden replacement for the Components
-composite.
+The application renders a vendor grid alongside Components surfaces and supplies its data and
+callbacks directly. Selecting an adapter does not route a Components table to that grid.
 
 ## Select an adapter
 
@@ -58,7 +60,9 @@ export const Application = () => (
 );
 ```
 
-Each adapter then needs its own vendor setup around or beside that provider:
+The example selects MUI presentation for the declared slots throughout this Components scope.
+Controls outside that profile keep their built-in implementation by default. Complete the vendor
+setup for the adapter you select:
 
 | Adapter                           | Manifest                | Application setup                                                                                                                                                                                                     |
 | --------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -66,7 +70,9 @@ Each adapter then needs its own vendor setup around or beside that provider:
 | `@cratis/components.primereact`   | `primeReactUiLibrary`   | Required outer `PrimeReactProvider` from `@primereact/core/config` with the application's license key and theme, plus `rendererSetup` with `'cratis-primereact.license-configured'` set to `true` only when the key was supplied; see the [licensing policy](licensing.md#primereact-11-key-ownership). |
 | `@cratis/components.primereact10` | `primeReact10UiLibrary` | One PrimeReact 10 theme stylesheet (for example `primereact/resources/themes/lara-light-cyan/theme.css`). An outer `PrimeReactProvider` from `primereact/api` is optional; the adapter mounts a default one when none exists. |
 
-The renderer changes only the declared slots. Command and query components still need Arc's `<Arc>` provider from `@cratis/arc.react` around the application; an adapter does not replace it.
+Mount Cratis Arc's `<Arc>` provider from `@cratis/arc.react` to supply application-specific
+configuration and an application-scoped query cache for generated command and query hooks.
+Selecting a renderer does not configure those hooks or replace the Arc provider.
 
 ## Direct vendor coexistence
 
@@ -75,28 +81,30 @@ server-rendering setup, portal configuration, and license. Mount the vendor prov
 host boundary that needs it, and keep `CratisComponentsProvider` responsible only for Components
 configuration and any selected adapter.
 
-A direct vendor island does not need to register itself as a renderer. Register an adapter only when
-it implements the public renderer ABI and accepts the exact slot props. Use [custom composition](custom-composition.md)
-when an entire workflow needs vendor-native capabilities that a Components composite does not
-claim.
+A vendor grid rendered directly by the application does not need a renderer manifest. Register an
+adapter only when it implements the public renderer ABI and accepts the exact slot props. If the
+whole workflow needs vendor-native behavior, follow [custom composition](custom-composition.md) to
+connect generated Arc contracts to your own vendor components.
 
 ## Providers and setup values
 
-A renderer library may mount its own provider around the selected Components scope. Application
-resources that the renderer ABI cannot safely transport stay outside that scope. The stable
-`CratisRendererSetup` shape accepts only adapter-declared boolean attestations. Never place a
-credential, license key, cache, provider instance, or mutable configuration object in it.
+A renderer library may mount its own provider around the selected Components scope. Resources such
+as a request-local cache or license key stay with the application's vendor setup. `CratisRendererSetup`
+accepts only adapter-declared boolean attestations: non-secret assertions that required setup has
+happened. Never place a credential, license key, cache, provider instance, or mutable configuration
+object in it.
 
-PrimeReact 11 demonstrates the boundary: the application passes its key directly to its own outer
-PrimeReact provider, then gives Components only a non-secret boolean assertion that setup occurred.
-The adapter fails closed with `CRATIS-UI-1005` when the provider or assertion is absent. The [licensing policy](licensing.md)
-explains this boundary without making a licensing conclusion for an application.
+For PrimeReact 11, pass the key directly to the application's outer PrimeReact provider, then give
+Components the boolean assertion. The adapter throws `CRATIS-UI-1005` when the provider is absent or
+the assertion is not `true`; it does not validate the key itself. The [licensing policy](licensing.md)
+explains the setup and the licensing responsibilities that remain with the application.
 
 ## Portals and z-index
 
-The built-in overlay environment resolves `document.body` only when an overlay needs a container.
-A host may supply `overlayEnvironment` to return another container. Returning `null` defers the
-overlay; it does not silently retarget it.
+An overlay portal renders a dialog, menu, or other floating surface in a container outside its usual
+DOM location. The built-in overlay environment resolves `document.body` only when an overlay needs
+a container. Supply `overlayEnvironment` with a `getContainer()` method to choose another container.
+Returning `null` defers the overlay; it does not silently retarget it.
 
 Direct vendor overlays keep their vendor configuration. Components does not merge a vendor portal
 registry or z-index service with its built-in overlay environment. When both systems can open
@@ -108,20 +116,22 @@ simultaneously, the application must:
 - keep theme CSS and portal CSS available in every chosen container.
 
 The nine-slot adapters do not include dialog, dropdown, date-picker, tooltip, or paginator atomic
-slots. Those controls therefore use the built-in implementation unless another adapter explicitly
-and honestly declares them.
+slots. Those controls use the built-in implementation by default. Replacing their interactions
+requires an adapter that explicitly implements the corresponding atomic slot contract.
 
 ## Focus ownership
 
-One interactive surface owns one focus lifecycle. Do not place one modal implementation inside
-another modal merely to borrow vendor appearance, and do not combine two focus traps, dismissal
-listeners, or keyboard-selection owners for the same interaction. A presentation adapter must
-preserve the Components contract without adding a second semantic control. An atomic adapter, if
-one is selected, owns the complete interaction instead of wrapping the built-in owner.
+One interactive surface owns focus from opening through dismissal and restoration. A presentation
+adapter preserves the Components contract without adding a second semantic control. An atomic
+adapter owns the complete interaction instead of wrapping the built-in owner.
 
-This rule is structural, not a universal accessibility certification. Verify keyboard order, initial
-focus, focus restoration, escape handling, background inertness, and screen-reader output in the
-application's supported browsers and assistive technologies.
+For example, do not nest two modal implementations just to borrow vendor appearance. Both may try
+to trap focus or handle Escape, leaving the user unable to reach or dismiss the intended control.
+The same ownership rule applies to dismissal listeners and keyboard selection.
+
+Verify keyboard order, initial focus, focus restoration, escape handling, background inertness, and
+screen-reader output in the application's supported browsers and assistive technologies. Following
+the ownership rule does not by itself establish accessibility.
 
 ## Adapter package metadata schema
 

@@ -1,12 +1,12 @@
 ---
-title: Troubleshooting
-description: Find the owning guidance for common Components installation, styling, rendering, and form symptoms.
+title: Troubleshoot Cratis Components
+description: Diagnose Cratis Components forms, tables, and styling by checking client validation, Arc requests, query results, and CSS setup.
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-Start with the observable failure, not the widget you suspect. For the [library tutorial](tutorial/index.md), check these boundaries in order:
+To troubleshoot a Cratis Components screen, start with what you can observe: a disabled button, a missing request, or a table that has not changed. Each points to a different part of the form or data flow. The table below covers those checks, including the [library tutorial](tutorial/index.md).
 
 | Symptom | Inspect first |
 | --- | --- |
@@ -18,11 +18,11 @@ Start with the observable failure, not the widget you suspect. For the [library 
 | Command succeeds but a row is absent | Observable query connection and read-model update |
 | Only layout or product overrides fail | Ancestor height or cascade-layer order |
 
-Keep command success, query success, and appearance separate. An empty-state message does not diagnose a failed query, and removing validation or styles to silence a symptom does not repair its cause.
+A successful command, a successful query, and a correctly styled screen are separate checks. For example, if no request leaves the browser, inspect the client setup before debugging backend validation. If a request does leave but fails, inspect its result. An empty-state message does not diagnose a failed query, and removing validation or styles to silence a symptom does not repair its cause.
 
 ## The command submit button stays disabled
 
-Required command values must be visible to client validation before submission. Put non-input required values in `initialValues`, or keep custom controls synchronized through `currentValues`; a value first created in `onBeforeExecute` arrives too late to satisfy the validity gate. Follow [Building a form](building-a-form.md#tips) for the short rule and [CommandDialog advanced features](CommandDialog/advanced-features.md#custom-inputs) for custom inputs.
+Check every required command property, including values the user never types. Client validation must see them before submission. Put non-input required values in `initialValues`, or keep custom controls synchronized through `currentValues`. A value first created in `onBeforeExecute` arrives too late to enable submission. Follow [Building a form](building-a-form.md#tips) for the short rule and [CommandDialog advanced features](CommandDialog/advanced-features.md#custom-inputs) for custom inputs.
 
 ## Commands or queries do not reach the backend
 
@@ -42,7 +42,7 @@ On TypeScript 6, direct TypeScript imports of package stylesheet subpaths can re
 
 First confirm the command result is successful; a disabled submit button or rejected request is a different branch. The dialog closes on success, but an observable table only changes when its query delivers a result containing the row. Check that the table uses the intended observable query, its arguments match the new data, and its connection is active.
 
-Then inspect the backend read-model update. With Chronicle behind Arc, a projection must process the event into that model before the query can report it. Components neither subscribes directly to Chronicle nor guarantees an immediate read after a successful command. Do not keep registering the same author to force a refresh; each fresh dialog generates another id. See [Displaying data](displaying-data.md#interpret-query-status).
+Then inspect the backend read-model update, which supplies the data the query reads. With Cratis Chronicle behind Arc, a projection must process the event into that model before the query can report it. Components neither subscribes directly to Chronicle nor guarantees an immediate read after a successful command. Do not keep registering the same author to force a refresh; each fresh dialog generates another id. See [Displaying data](displaying-data.md#interpret-query-status).
 
 ## A detail panel shows the previous author's books
 

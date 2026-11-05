@@ -1,6 +1,6 @@
 ---
 title: Components architecture decisions
-description: Accepted decisions that define Components' public React, package, kernel, and renderer boundaries.
+description: Accepted Cratis Components architecture decisions define its public React and DOM contracts, component classification, kernel, and renderer boundaries.
 ---
 
 These accepted decisions explain why Components owns its public React and DOM contracts while

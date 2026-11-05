@@ -1,9 +1,11 @@
 ---
-title: Use the baseline theme
-description: Apply the optional Cratis baseline appearance globally or to one subtree.
+title: Apply the Cratis Components baseline theme
+description: Apply the Cratis Components baseline theme to an application or subtree, follow system dark mode, and control explicit light and dark states.
 ---
 
-Import the baseline after tokens and structural styles:
+The Cratis Components baseline theme gives controls a shared appearance and follows the system's light or dark preference. Use it for an application without its own design system, or for an embedded surface that needs a separate color scheme.
+
+Follow the CSS-first imports in [Set up styling](getting-started.md), retaining `theme` after tokens and structural styles. Existing applications can use these direct TypeScript imports with the [stylesheet module declarations](../getting-started.mdx#install-and-wire-it-up):
 
 ```ts
 import '@cratis/components/tokens';
@@ -11,23 +13,25 @@ import '@cratis/components/styles';
 import '@cratis/components/theme';
 ```
 
-`tokens` supplies conservative light defaults on `:root`. The `theme` import adds document foreground/background, system dark-mode values, explicit scheme classes, forced-colors tuning, and `.cratis-theme` subtree defaults. No provider option or wrapper class is required for the normal whole-application setup.
+`tokens` supplies light defaults on `:root`. The `theme` import adds document foreground/background, system dark-mode values, explicit scheme classes, forced-colors tuning, and `.cratis-theme` subtree defaults. A whole-application setup needs no theme provider option or wrapper class.
 
-The baseline intentionally remains visually familiar to Components 2/3 consumers: Lara-adjacent blue actions, neutral surfaces, 6px radii, comparable control density, and similar overlay depth. It is implemented entirely with Cratis markup and tokens. Exact pixel identity is not promised where focus, control-boundary, disabled-state, or status treatments differ. Verify the final theme against the application's own contrast and accessibility requirements.
+The baseline uses blue actions, neutral surfaces, and 6px radii, defined through Cratis CSS variables. Check the finished application for readable contrast, visible focus, and the other accessibility requirements of your product.
 
 ## Dark mode
 
-Apply `cratis-dark` to the document element:
+Apply `cratis-dark` to the document element to force dark mode. With `cratis-light` absent, this excerpt uses your application's `darkMode` boolean to add or remove the class:
 
 ```ts
 document.documentElement.classList.toggle('cratis-dark', darkMode);
 ```
 
-Use `cratis-light` to keep the light values when the operating system prefers dark. Explicit light wins over an ambient/root `cratis-dark`, while a subtree with its own `cratis-dark` remains dark. A root `cratis-light` also keeps ordinary `.cratis-theme` descendants light without repeating the class. Without either explicit class, the baseline follows `prefers-color-scheme`.
+Removing `cratis-dark` returns to the system preference; it does not force light mode. For an explicit light choice, apply `cratis-light`. When switching between explicit choices, remove the previous class as you add the new one.
+
+On the root, `cratis-light` takes precedence if both classes are present. It also keeps ordinary `.cratis-theme` descendants light without repeating the class, while a subtree with its own `cratis-dark` can remain dark. Without either explicit class, the baseline follows `prefers-color-scheme`.
 
 ## Theme one subtree
 
-The same values are scoped by `.cratis-theme` when a page needs an independently themed island:
+Put `.cratis-theme` on a wrapper when an embedded surface needs its own token values. This JSX excerpt assumes an existing `EmbeddedSurface` component and a `dark` boolean:
 
 ```tsx
 <div className={`cratis-theme ${dark ? 'cratis-dark' : ''}`}>
@@ -35,9 +39,8 @@ The same values are scoped by `.cratis-theme` when a page needs an independently
 </div>
 ```
 
-Both arrangements are supported:
+The example forces dark when `dark` is true. When false, it removes that explicit choice; the subtree still follows applicable ancestor classes and system preference. Add `cratis-light` when the subtree must stay light.
 
-- `cratis-dark cratis-theme` on the same element
-- `cratis-dark` on an ancestor of `cratis-theme`
+The dark class can be on the `.cratis-theme` element itself or on an ancestor. The theme also supports an explicit light subtree under a dark root.
 
-To adapt the baseline, override `--cratis-*` variables after the theme import, under the same selectors the theme uses. A plain `:root` override is not enough here: the theme's dark, explicit-light, and `.cratis-theme` rules are more specific and replace it in those states. [Customize the palette](custom-palette.md) shows the selectors. For a complete product design, omit the baseline and follow [Build a product theme](themed.md).
+To change brand colors while keeping these behaviors, follow [Customize the palette](custom-palette.md). It matches the baseline's scheme selectors so overrides survive dark mode and subtree defaults. For a design system that owns the full appearance, omit the baseline and follow [Build a product theme](themed.md).

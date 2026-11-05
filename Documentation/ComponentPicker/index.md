@@ -1,25 +1,25 @@
 ---
-title: ComponentPicker
-description: Let a user point at a component on screen, highlight it, and read its name, id, rectangle, enclosing components and editable presentation properties.
+title: 'Cratis Components ComponentPicker: inspect and edit'
+description: Use Cratis Components ComponentPicker to identify UI elements, add application context, and propose presentation changes with optional live preview.
 ---
 
-`ComponentPicker` is the primitive behind features that let a user point at part of the screen and say something about it: an inspector, a guided-tour editor, in-app feedback ("this column header is confusing", "this button should be called *Save draft*"). It highlights the component under the pointer or keyboard cursor, names it, and returns a `PickedComponent` that describes it.
+Cratis Components `ComponentPicker` lets a user select a rendered component so your app can attach feedback or propose presentation changes to the right part of the screen. The picker supplies component identity and editable properties; your app supplies context such as the screen or feature, and decides how to use or save the result.
 
-Everything lives behind one subpath: `@cratis/components/ComponentPicker`. The package ships no stylesheet for it, so there is nothing extra to import.
+Use it for an inspector, a guided-tour editor, or in-app feedback such as "this button should be called *Save draft*." Import the picker APIs from `@cratis/components/ComponentPicker`. The picker overlay needs no additional stylesheet.
 
 ## Component identity markers
 
-Every public component renders `data-cratis-component="<Name>"` on its root. When the consumer passes an `id` or a `name` (form fields already do), the root also renders `data-cratis-component-id`. This is how the picker knows what an element is; it never guesses from class names.
+The picker recognizes a component by `data-cratis-component="<Name>"` on its root element. A marked component can also expose a consumer-supplied `id` or `name` through `data-cratis-component-id`. These attributes identify the selection without guessing from class names.
 
 ```html
 <button data-cratis-component="Button" data-cratis-component-id="save" data-cratis-part="root">…</button>
 ```
 
-`data-cratis-part` still marks the **parts** inside a component (`label`, `title`, `close`). The marker names the **component**. A conformance spec fails when a public component is added without the marker, and a coverage table in the package's specs records the components that are still being marked.
+`data-cratis-part` identifies a part inside the component, such as `label`, `title` or `close`; `data-cratis-component` identifies the component itself. Some public components do not yet have their own marker. For an unmarked element, the picker selects its nearest marked ancestor, if one exists. The package's identity specs track marker coverage and require new public components to be accounted for.
 
 ## Pick a component
 
-`useComponentPicker()` starts and stops picking imperatively. Render the returned `picker` once, anywhere under the provider, and call `start()`:
+Render your screen under [CratisComponentsProvider](../Common/cratis-components-provider.md), then use `useComponentPicker()` to start and stop picking. Render the returned `picker` once under that provider and call `start()` when the user asks to select something:
 
 ```tsx
 import { useComponentPicker } from '@cratis/components/ComponentPicker';
@@ -42,6 +42,8 @@ export function FeedbackButton() {
     );
 }
 ```
+
+In this example, confirming a component logs its name, optional id and presentation properties. The resolver adds `screen: 'orders-list'` to the result's `context`, so your feedback flow can associate the selection with that screen.
 
 `start()` resolves with the confirmed `PickedComponent`, or `null` when picking was cancelled or `cancel()` was called. Starting again cancels the previous pick.
 
@@ -81,13 +83,13 @@ interface PickedComponent {
 
 ### Add host context
 
-`resolve(element)` is called with the picked component root. Return whatever the library cannot know, for example a screen identity or the application slice the element belongs to. The result is returned as `context`.
+`resolve(element)` receives the picked component root and returns the application information you need alongside the selection. In the example above, the picker can identify a `Button`, but only your app knows that it belongs to the orders screen. Return that screen identity, or a feature identifier derived from the element, as `context`. Without a resolver, `context` is an empty object.
 
 ## Presentation properties
 
-A component that declares presentation properties lists its **presentation props** only: the props that change how it looks or reads, such as `label`, `placeholder`, `variant`, `tone`, `size` or a column's `header`. Behavior and data props are left out.
+A presentation descriptor declares which props a component exposes to an editor, such as a button's `label` or a column's `header`. The picker reports those declared properties, not every prop or callback. A marked component without a registered descriptor can still be picked, but its `presentationProperties` list is empty.
 
-`presentationProperties` holds one entry per descriptor property, with the value the component was rendered with, read from the rendered props through a registry and not from the DOM:
+For each declared property, `presentationProperties` includes editor metadata and the value registered from the component's rendered props. The picker reads these values from an in-memory registry, not from the DOM:
 
 | Field | Meaning |
 | --- | --- |
@@ -95,8 +97,8 @@ A component that declares presentation properties lists its **presentation props
 | `type` | `string`, `boolean`, `number` or `enum`. |
 | `values` | The allowed values of an `enum`. |
 | `defaultValue` | What the component uses when the prop is not set. |
-| `value` | The rendered value, or `undefined` when the prop is not set. |
-| `editable` | `false` when the rendered value is not a plain string, number or boolean (for example a `label` that is an element). |
+| `value` | The rendered string, number or boolean, or `undefined` when unset or not a plain value. |
+| `editable` | `false` for non-primitive values, such as a `label` that is an element. Unset props remain editable. |
 
 Components with descriptors today:
 
@@ -114,7 +116,7 @@ Components with descriptors today:
 
 ### Describe your own component
 
-A component opts in with `describeComponent` and `useComponentPresentation`. The descriptor's property names are checked against the component's props.
+To make your own component pickable and editable, declare its presentation properties with `describeComponent`, then pass that descriptor and the incoming props to `useComponentPresentation`. The descriptor's property names are checked against the component's props. In this `Banner`, the editor can propose a headline or emphasis change; `onDismiss` is not exposed:
 
 ```tsx
 import {
@@ -135,7 +137,9 @@ export function Banner(incoming: BannerProps) {
 }
 ```
 
-`useComponentPresentation` returns the **effective** props (the props you were given, plus any live preview) and the identity attributes to spread on the root. `knownComponentDescriptors()` lists the descriptors of components that have rendered so far.
+Render from the props returned by `useComponentPresentation`, as `Banner` does with `props.headline` and `props.emphasis`. They combine the incoming props with any live preview overrides, so a proposed change can appear without changing the caller's props. Spread the returned identity attributes on the root so the picker can find the component and its registered properties.
+
+`knownComponentDescriptors()` lists the descriptors of components that have rendered so far.
 
 ## Highlight a component
 
@@ -147,7 +151,7 @@ export function Banner(incoming: BannerProps) {
 
 ## Propose changes with the property editor
 
-`PresentationPropertyEditor` builds a form from a picked component's descriptor: text, toggle, select and number inputs. It reports the proposed changes as `{ property, from, to }[]` and **does not apply them**.
+Pass the selected `PickedComponent` to `PresentationPropertyEditor` to turn its descriptor into text, toggle, select and number inputs. By default, editing only reports a proposal as `{ property, from, to }[]`; it does not change the selected component. Your app decides whether to save that proposal and how to apply an accepted change.
 
 ```tsx
 <PresentationPropertyEditor
@@ -157,13 +161,13 @@ export function Banner(incoming: BannerProps) {
 // changes: [{ property: 'label', from: 'Save', to: 'Save draft' }]
 ```
 
-`onChange` is called whenever the proposal changes, with `[]` when nothing differs from the rendered values. A property edited back to its original value drops out of the proposal.
+Here, `setProposal` keeps the proposed changes in your app's state. `onChange` receives `[]` when nothing differs from the picked values, and a property edited back to its original value drops out of the proposal. Keep the selection's identity and host context with the proposal if your app needs them for a review or save action.
 
 ### Preview live
 
-Pass `preview` to show the proposal on the page while the user edits. The editor applies the changes through the same registry the picker reads; the component re-renders with them, and returns to exactly how it was when the change is edited back, when `preview` turns off, and when the editor unmounts.
+Pass `preview` to `PresentationPropertyEditor` to show the proposal on the page while the user edits. The editor adds temporary overrides through the same registry the picker reads, and the selected component re-renders with them. It removes those overrides when a change is edited back, when `preview` turns off, or when the editor unmounts. Live preview does not save the proposal or update the caller's props.
 
-A host can drive the same mechanism itself:
+If your app manages the editing UI itself, use `previewPresentationChanges` and retain the returned cleanup function:
 
 ```ts
 import { previewPresentationChanges } from '@cratis/components/ComponentPicker';
@@ -182,5 +186,5 @@ revert(); // removes exactly these changes; calling it twice is harmless
 
 ## Related
 
-- [CratisComponentsProvider](../Common/cratis-components-provider.md) configures the overlay environment the picker portals into.
-- [Dialog](../Dialogs/dialog.md) documents the dialog stack the picker stacks above.
+- Follow [CratisComponentsProvider](../Common/cratis-components-provider.md) to configure the overlay environment before adding the picker to a screen.
+- Use the [Dialog guide](../Dialogs/dialog.md) when the picking or editing flow needs a dialog that returns a result to its caller.

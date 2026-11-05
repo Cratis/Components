@@ -1,7 +1,7 @@
 ---
 id: '0005'
 title: Generic primitive admission
-description: When a proposed generic primitive belongs in the Components public API.
+description: Cratis Components admits reusable generic primitives that own an interaction contract or are needed by an established Components contract.
 status: accepted
 stage: none
 class: product

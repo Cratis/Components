@@ -1,9 +1,9 @@
 ---
-title: Basic usage
-description: Place ToolbarButton elements inside a Toolbar with icons or text-first content.
+title: Toolbar basic usage
+description: Compose a Toolbar from named buttons with icons or text. Learn how labels, click handlers, and application state define the tools users operate.
 ---
 
-Place `ToolbarButton` elements inside a `Toolbar`:
+Build a canvas tool palette by placing `ToolbarButton` elements inside a `Toolbar`. Each button needs a tool name and visible content, either an icon or text. The example below lays out Select, Draw, and Rectangle vertically; it does not yet connect those buttons to canvas behavior.
 
 ```tsx
 import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
@@ -20,9 +20,11 @@ function MyToolbar() {
 }
 ```
 
-`title` is required. It becomes the button's `aria-label` and the tooltip shown on hover and keyboard focus, so write it as the tool's name. Name the toolbar itself with `aria-label` when a page has more than one.
+`title` is required. It supplies the button's `aria-label` and the tooltip shown on hover and keyboard focus, so write it as the tool's name. Give the palette an `aria-label`, such as `Drawing tools`, to distinguish it from other toolbars on the page.
 
-`ToolbarButton` renders `text` when that prop is non-empty; otherwise it renders `icon`. Use `text` for text-first controls such as zoom indicators rather than expecting icon and text to appear together. The accessible name is still `title`, not the visible `text`, so a screen reader announces the button below as "Reset zoom" rather than the percentage:
+Add `onClick` to connect a button to your application. For a persistent mode such as Draw, keep the selection in application state and pass `active` to each tool. [Active state](active-state.md) shows that connection; the toolbar does not select tools for you.
+
+`ToolbarButton` renders non-empty `text` instead of `icon`. This lets a zoom control display its current percentage while remaining a button. In the example below, the middle button displays the `zoom` state and resets it to 100 when clicked. Its accessible name is still `title`, so a screen reader announces "Reset zoom", not the percentage:
 
 ```tsx
 import { useState } from 'react';
@@ -46,7 +48,7 @@ function ZoomToolbar() {
 
 ## ReactNode Icons
 
-The `icon` prop accepts an `Icon` (`string | ReactNode`). Prefer a React element, product-owned SVG, or icon-library component. A string is treated as a consumer-owned icon-font class; Components does not install that font.
+The `icon` prop accepts an `Icon` (`string | ReactNode`). Use a React element, your own SVG, or an icon-library component. The examples use `react-icons/fa6`; choose icons available in your application. A string is treated as an icon-font class, and your application must load the matching font stylesheet.
 
 ```tsx
 import { FaArrowPointer, FaPencil } from 'react-icons/fa6';
@@ -57,4 +59,4 @@ import { FaArrowPointer, FaPencil } from 'react-icons/fa6';
 </Toolbar>
 ```
 
-See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component. Once the buttons have names and behavior, choose an [orientation](orientation.md) and [group related tools](groups.md) to fit the space around your canvas.

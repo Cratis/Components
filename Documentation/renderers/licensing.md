@@ -1,6 +1,6 @@
 ---
 title: Renderer licensing policy
-description: Package, provider, and key ownership rules for the built-in renderer and optional vendor adapters.
+description: 'Cratis Components keeps renderer licenses separate: applications own vendor peers, providers, terms, themes, and PrimeReact 11 keys.'
 ---
 
 <!-- Copyright (c) Cratis. All rights reserved. -->

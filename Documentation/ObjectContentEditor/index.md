@@ -1,37 +1,38 @@
 ---
-title: ObjectContentEditor
-description: Explore complex JSON objects with schema-aware rendering and breadcrumb navigation.
+title: ObjectContentEditor for inspecting and editing JSON
+description: ObjectContentEditor displays JSON in a property table, browses nested objects and arrays, and edits top-level values with limited validation.
 ---
 
-The `ObjectContentEditor` component shows a JSON object as a property table driven by a JSON schema, lets users drill into nested objects and arrays, and can edit top-level primitive properties.
+`ObjectContentEditor` is a React component in Cratis Components for inspecting JSON as a property table and editing top-level primitive values. Use it to review a response or snapshot without reading raw JSON. Breadcrumbs, a clickable path through the data, let users return from nested objects and arrays to their parent.
 
-ObjectContentEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
+ObjectContentEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles). It uses React and DOM rendering without Pixi; the package's declared peer requirements still apply.
 
 ## Purpose
 
-ObjectContentEditor provides a structured view of JSON objects with breadcrumb navigation for exploring nested objects and arrays, rendering properties according to a JSON schema.
+Use view mode to let users inspect a record, including its nested data. Supply a schema to choose which top-level fields appear. For a form that changes those fields, enable edit mode and keep the updated object in your application's state. Editing nested values and persisting changes belong to your application.
 
 ## JSON Schema support
 
-ObjectContentEditor renders against the same `JsonSchema`/`JsonSchemaProperty` contract as [`SchemaEditor`](../SchemaEditor/index.md) — see [SchemaEditor: JSON Schema support](../SchemaEditor/index.md#json-schema-support) for the exact supported subset (type/format/description/properties/items/required/definitions/$ref) and what is intentionally not supported (composition keywords, `enum`/`const`, numeric/string constraints, `additionalProperties`, boolean schemas). A property whose schema uses an unsupported keyword still renders by its `type`/`format`; the unsupported keyword itself has no effect on rendering or validation here.
+Pass a `JsonSchema` from `@cratis/components/types`. ObjectContentEditor shares that contract with [`SchemaEditor`](../SchemaEditor/index.md), but reads only the top-level `properties` and each property's `type`, `format`, and `description` for rendering. It is not a general-purpose JSON Schema validator.
 
-The schema is only consulted for the top level of the object:
+The table changes how it chooses rows as users navigate:
 
-- At the top level, one row is rendered per entry in `schema.properties`, in that order. Keys of `object` that the schema does not list are not shown.
-- After navigating into a nested object or array, rows come from the data itself. Nested `properties`, `items`, and `required` are not used for display, editing, or validation.
+- At Root, one row is rendered per entry in `schema.properties`, in that order. Keys of `object` that the schema does not list are not shown. Include a `type` on each property to enable its edit control and description tooltip.
+- Inside a nested object or array, rows come from the data itself. Nested `properties`, `items`, and `required` do not control display, editing, or validation.
 
-## Key Features
+Although the shared contract carries `required`, `definitions`, and `$ref`, ObjectContentEditor does not resolve references or use `required` to decide which fields need values in edit mode. Composition keywords, `enum`/`const`, numeric and string constraints, and `additionalProperties` have no effect here. Boolean schemas are outside the supported shape. For the shared type's fields, see [SchemaEditor: JSON Schema support](../SchemaEditor/index.md#json-schema-support); for the checks on edited values, see [Validation](#validation).
 
-- Top-level rows taken from `schema.properties`, with each property's `description` as a tooltip
-- Breadcrumb navigation into nested objects and arrays, through [`ObjectNavigationalBar`](../ObjectNavigationalBar/index.md)
-- Arrays of objects shown as stacked key/value groups
-- An optional "Snapshot captured" timestamp
-- An edit mode with type- and format-specific inputs for top-level primitive properties
-- Read-only viewing mode (the default)
+<a id="key-features"></a>
 
-In view mode, primitive values are shown as plain text (`String(value)`): a date-time string or a URI is displayed as the raw string, not formatted or linked.
+## Inspect a record in view mode
+
+The component starts in read-only view mode. Users open nested objects and arrays from the table, then use [`ObjectNavigationalBar`](../ObjectNavigationalBar/index.md) to return to a parent. Arrays of objects appear as stacked key/value groups, so users can inspect several records without opening each one separately.
+
+Property descriptions appear as tooltips beside top-level names. Non-null primitive values appear as plain text (`String(value)`): a date-time string or URI stays a raw string, not a formatted date or link. Null and missing values appear blank. Supply `timestamp` when the data represents a snapshot and users need to know when it was captured.
 
 ## Quick Start
+
+Pass the object you want to inspect and a schema listing its top-level fields. This example opens in view mode:
 
 ```tsx
 import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor';
@@ -75,21 +76,23 @@ The table lists `id`, `name`, `email`, and `profile`. The `profile` row shows an
 ### Required Props
 
 - `object`: The JSON object to display
-- `schema`: JSON schema defining the object's structure
+- `schema`: `JsonSchema` selecting the top-level rows and their edit controls
 
 ### Optional Props
 
 - `timestamp`: Date shown below the table as "Snapshot captured: …" (formatted with `toLocaleString()`)
-- `editMode`: When `true`, renders editable input fields for each top-level property (default: `false`)
+- `editMode`: When `true`, renders edit controls for typed top-level primitive properties (default: `false`)
 - `onChange`: `ChangeHandler<Json>`, called with the full updated object and change metadata after any field edit. ObjectContentEditor is controlled: without `onChange`, edits are not kept.
-- `onValidationChange`: Called with `true` when any field has a validation error, `false` when all fields are valid — only called when `editMode` is `true`
+- `onValidationChange`: Called with `true` when the editor has field errors, `false` when it has none; only called when `editMode` is `true`. This reports the limited checks below, not full schema validity.
 - `className`: Extra class names on the root, which always has the `order-content` class
 
 The component's own texts ("Root", "Snapshot captured", "Object", "Empty array", the validation messages) are English, and there is no `labels` prop.
 
 ## Edit Mode
 
-When `editMode` is `true`, each top-level property is rendered as an editable input field appropriate for its schema type and format. Every input's accessible name is its property name.
+Enable `editMode` to change top-level primitive properties using their schema type and format. Pass `onChange` and feed the returned object back through `object`; the editor does not retain the new values for you. Every input's accessible name is its property name.
+
+Return to Root before editing. Switching `editMode` does not reset the navigation path, and nested rows remain a data-only view.
 
 ### Input field types
 
@@ -104,22 +107,26 @@ When `editMode` is `true`, each top-level property is rendered as an editable in
 | `array` | The text "Array editing not yet supported" |
 | `object` | The text "Object editing not yet supported" |
 
-In edit mode, `array` and `object` properties show that text instead of the navigation button, so nested data can only be browsed in view mode.
+At Root in edit mode, typed `array` and `object` properties show that text instead of navigation buttons. Switch to view mode to open them; their nested values have no edit controls.
 
 ### Validation
 
-Validation runs only in edit mode, at the top level: on every field change, and whenever `object`, `schema`, or `editMode` changes.
+Validation runs in edit mode at Root, on field changes and when `object`, `schema`, `editMode`, or the navigation path changes. Every top-level property in `schema.properties` needs a value, even if it is absent from `schema.required`.
 
-- **Every** top-level property in `schema.properties` is treated as required: an empty string, `null`, or missing value is flagged with "This field is required". `schema.required` does not change this.
-- `string` fields with `format: 'email'` are validated against a basic email pattern ("Invalid email format").
-- `string` fields with `format: 'uri'` must start with `http://` or `https://` ("Invalid URI format").
-- `number` / `integer` fields must be valid numbers ("Must be a valid number").
+| Check | Error text |
+| --- | --- |
+| Empty string, `null`, or missing top-level value | "This field is required" |
+| String with `format: 'email'` failing a basic email pattern | "Invalid email format" |
+| String with `format: 'uri'` not matching an `http://` or `https://` prefix followed by content | "Invalid URI format" |
+| `number` or `integer` value for which `Number(value)` is `NaN` | "Must be a valid number" |
 
-In view mode nothing is validated.
+These checks do not enforce integer-only values, general JSON type matching, date validity, or formats such as `guid`. Nested values are not validated, and view mode runs no validation. Use your application's validator before persistence when you need those checks or the full JSON Schema rules.
 
 Validation errors are displayed inline beneath each field, tinted with the `--cratis-red-500` token, and the offending input gets `aria-invalid` (the date pickers get their `invalid` state). The error text is not linked to the input with `aria-describedby`. Override [`--cratis-red-500`](../Styling/cratis-tokens.md) to retint them.
 
 ### Edit Mode Example
+
+Keep the edited object in React state and use `onValidationChange` to control whether Save is enabled:
 
 ```tsx
 import { useState } from 'react';
@@ -165,7 +172,9 @@ export function EditableProduct() {
 }
 ```
 
-Type the state as `Json`. `onChange` is a `ChangeHandler<Json>`, so passing the setter of a state typed as your own object shape (`useState({ name: '…' })`) does not type-check. Convert the `Json` value to your domain type where you persist it.
+`onChange` replaces the example's local `product` state with the full updated object. Type that state as `Json`: the callback is a `ChangeHandler<Json>`, so a setter for a narrower inferred shape (`useState({ name: '…' })`) does not type-check. Validate and convert the value to your domain type where you persist it.
+
+The example only enables or disables Save; it has no save handler. Add your persistence action there. Despite `required: ['name', 'price']`, the editor also requires values for `inStock`, `releaseDate`, and `website`, because it checks every top-level property.
 
 ## Navigation
 
@@ -195,7 +204,9 @@ Root > metadata
   tags       Array[2] →
 ```
 
-An array of primitives lists its items as `[0]`, `[1]`, …; an array of objects shows each item as a group of key/value rows, using the keys of the first item. An empty array shows "Empty array". If `object` changes so the current path no longer exists, the editor returns to Root.
+An array of primitives lists its items as `[0]`, `[1]`, …; an array of objects shows each item as a group of key/value rows, using the keys of the first item. Keys found only in later items are not shown. Nested objects and arrays within those rows can be opened too.
+
+An empty array shows "Empty array". If a changed `object` makes the current path missing, null, or primitive, the editor returns to Root.
 
 ### Navigation Examples
 
@@ -206,6 +217,8 @@ Return to a parent:            the back arrow or a breadcrumb segment
 ```
 
 ## Complete Example
+
+This product record combines primitive fields with an object and an array. Use the `specs` and `tags` buttons to inspect the nested values:
 
 ```tsx
 import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor';
@@ -263,47 +276,35 @@ export function ProductViewer() {
 
 ## Use Cases
 
-- **Data inspection**: View complex API response data
-- **Configuration display**: Show application settings
-- **Audit trails**: Display historical data states
-- **Debugging**: Explore runtime object structures
-- **Documentation**: Display example data structures
-- **Data validation**: Review data against schema
-- **User profiles**: Display nested user information
-- **Product catalogs**: Show product details and metadata
+Use view mode to inspect a response, application settings, or a historical snapshot. The host supplies the data; ObjectContentEditor does not fetch records or build an audit history. Add a timestamp when the supplied object represents a captured state.
+
+Edit mode suits changes to a record's top-level primitive fields. If users must edit nested structures or rely on complete schema validation, provide that editing workflow and validation separately.
 
 ## Best Practices
 
-1. **Provide complete schema**: only top-level properties listed in `schema.properties` are shown
-2. **Use formats for editing**: `date`, `date-time`, `email`, and `uri` change the edit input or its validation; view mode shows raw values
-3. **Structure deeply nested data**: Keep nesting reasonable (3-4 levels max)
-4. **Timestamp important data**: Include timestamp for temporal context
-5. **Keep objects focused**: Don't display overly large objects (use pagination)
-6. **Use consistent property names**: Follow naming conventions
-7. **Validate data against schema**: Ensure data matches schema structure
+Choose the visible top-level fields deliberately: leaving a key out of `schema.properties` hides it at Root. That does not filter nested data, which is displayed using its own keys. Prepare the object before passing it in if some nested values should not be shown.
+
+Use `date` and `date-time` to select date inputs, and `email` and `uri` for their edit-time checks. Those formats do not change how values appear in view mode. Keep application validation beside your save action rather than treating the editor's error callback as proof that the whole record is valid.
 
 ## Integration with Other Components
 
-ObjectContentEditor works well with:
+To inspect a selected row beside a list, render ObjectContentEditor in a [DataPage details panel](../DataPage/details-panel.md). For historical data, use it as the snapshot `content` in [TimeMachine's read model view](../TimeMachine/views.md#read-model-view). In each case, your application supplies the object and its schema.
 
-- **TimeMachine**: Display read model states at each version
-- **DataPage**: Show detail panel content
-- **Dialogs**: Display object details in modal
-- **SchemaEditor**: Use schema created by editor
+For a modal editing workflow, place the editor inside a [Dialog](../Dialogs/dialog.md) and decide how validation and confirmation lead to saving. If users need to change field definitions instead of values, use [SchemaEditor](../SchemaEditor/index.md).
 
 ## Schema Requirements
 
-The schema should be a valid JSON Schema with:
+For the object-table workflow shown above, pass a schema with:
 
 - `type: 'object'` at root
 - `properties` defining each top-level property's type and format
 - An optional `required` array; it is accepted but does not change what ObjectContentEditor validates
 - Nested schemas for object and array types, if other tools need them; ObjectContentEditor does not read them
 
-This requirement list describes structure, not the full supported keyword set — see [JSON Schema support](#json-schema-support) above for exactly which JSON Schema keywords `ObjectContentEditor` reads.
+This structure selects the table's rows and controls; it does not make the editor a full schema validator. [JSON Schema support](#json-schema-support) explains which fields it reads.
 
 ## Performance Considerations
 
-- Every property and array item renders as a table row; there is no virtualization or paging, so trim large arrays before passing them in
-- Deep nesting can be difficult to navigate with breadcrumbs alone
-- In edit mode, validation reruns for every top-level property whenever `object` or `schema` changes, so keep `schema` stable (a module constant or `useMemo`)
+The table renders all rows for the current location. There is no virtualization or paging, so limit large arrays before passing them in; ObjectContentEditor cannot page through them for you. For deeply nested data, consider whether a smaller object would let users reach the relevant values more directly.
+
+At Root in edit mode, validation reruns for every top-level property when `object` or `schema` changes. Keep an unchanged schema reference stable, for example as a module constant or with `useMemo`, to avoid rerunning those checks just because the parent rendered.

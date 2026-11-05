@@ -5,11 +5,13 @@ description: Put the library's authors on screen with a data table that binds to
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Start with the read side: render the generated observable `AllAuthors` query as a table. Complete the [tutorial prerequisites](./index.md#before-you-start) first: this chapter needs the running Arc library backend, generated `src/Authors/Author.ts`, and the providers and CSS from [Getting started](/components/getting-started/). An empty result is fine; you will add an author in the next chapter.
+Put the library's authors on screen with `DataTableForObservableQuery` and the generated `AllAuthors` query. This query is observable: it can deliver updated results after the first load, and the table renders those results without application subscription code.
+
+Before creating the component, complete the [tutorial prerequisites](./index.md#before-you-start). You need the running Arc library backend, generated `src/Authors/Author.ts`, and the providers and CSS from [Getting started](/components/getting-started/). An empty result is fine; the next chapter adds an author.
 
 <Steps>
 
-1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker. Its `field` string must match a property on the generated `Author` read model:
+1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker. Its `field` string must match a property on the generated `Author` read model, the row shape returned by the query:
 
     ```tsx title="src/Authors.tsx"
     import { Page } from '@cratis/components/Common';
@@ -45,7 +47,7 @@ For connection failures, use [Commands or queries do not reach the backend](/com
 
 ## What you didn't write
 
-There is no application `fetch`, `useEffect`, or subscription to maintain here. `DataTableForObservableQuery` uses Arc's observable-query runtime and renders the delivered rows and query status. When that observable delivers a changed result, the table re-renders. Registering an author is a separate operation; the next chapter lets you observe the command and the subsequent query update.
+`DataTableForObservableQuery` uses Arc's observable-query runtime to receive rows and query status, so this component needs no application `fetch`, `useEffect`, or subscription. When the query delivers a changed result, the table re-renders. Registering an author is a separate operation; in the next chapter you will check command completion first, then watch for the new row.
 
 <Aside type='note' title='Live, because the query is observable'>
     The liveness comes from the query being observable on the C# side: `AllAuthors` returns
@@ -61,8 +63,6 @@ The generated query and its row values are typed, but `Column.field` is currentl
 
 ## What you built
 
-- A library screen that lists every author in a table,
-- bound to the `AllAuthors` query with **no subscription or fetch code**,
-- that re-renders when the observable query delivers a new result.
+You have an author table bound to `AllAuthors`, with a visible heading and separate loading, empty, failure, and unauthorized states. The table receives subsequent query results without subscription or fetch code in your component.
 
-A read-only list isn't a back office, though — a librarian needs to _add_ authors. Next we'll give the screen a command. [Let's act on the list →](./act-on-it.mdx)
+Once the table shows a successful result, including an empty one, [add the author dialog →](./act-on-it.mdx). Keep `src/Authors.tsx`; the next chapter adds an action to open the dialog from this screen.

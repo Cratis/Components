@@ -1,11 +1,11 @@
 ---
-title: Toolbar layout
-description: Swap complete toolbar regions from feature code with ToolbarLayout and slots.
+title: Toolbar layout regions for feature tools
+description: Replace a named toolbar region with feature-owned groups and separators using ToolbarLayout, with fallback content when no feature contributes.
 ---
 
-`ToolbarLayout` is a named, transparent region inside a `Toolbar` that enables decoupled, dynamically swappable toolbar content. Unlike `ToolbarGroup`, it carries no visual container of its own — the injected content brings its own `ToolbarGroup` pills, `ToolbarSection` context switchers, and `ToolbarSeparator` dividers.
+Use `ToolbarLayout` in Cratis Components when a feature needs to supply a whole toolbar region, not just add a button to an existing group. The shell reserves a named region; the feature supplies its groups and separators through a matching `ToolbarSlot` inside the same `ToolbarSlotProvider`.
 
-The key capability: any component in the React tree can inject a complete toolbar layout — multiple groups, sections, and separators — into a named region without prop drilling. The injection is coordinated by the `ToolbarSlotProvider`.
+The layout adds no visible container of its own. Its content supplies the visual structure through `ToolbarGroup`, `ToolbarSection`, and `ToolbarSeparator`. Keep shared actions outside the region so changing features does not replace them.
 
 ## When to use `ToolbarLayout` vs `ToolbarGroup`
 
@@ -18,7 +18,7 @@ The key capability: any component in the React tree can inject a complete toolba
 
 ## Quick Start
 
-Wrap the toolbar and the contributing components in a `ToolbarSlotProvider`. Give `ToolbarLayout` a `name` prop that external components match in their `ToolbarSlot`:
+Wrap the toolbar and contributing features in one `ToolbarSlotProvider`. Give the layout a `name` that the feature matches with `ToolbarSlot`'s `slotName`. Here, Select stays in the shell. The feature replaces the default Draw group with two groups and a separator:
 
 ```tsx
 import { useMemo } from 'react';
@@ -88,9 +88,11 @@ const CanvasFeature = () => {
 
 ## Fallback Children
 
-The `children` prop provides default content rendered when no slot content has been registered. As soon as any `ToolbarSlot` with a matching `slotName` mounts, the slot content replaces the fallback completely.
+The `children` prop supplies fallback content when no matching slot is registered. A matching registration replaces the fallback, rather than appending to it. When the last contributor unmounts, the fallback returns. All of these registrations must belong to the same provider as the layout.
 
-If the layout region has no meaningful default, omit `children` entirely — `ToolbarLayout` renders nothing when both its slot and its children are empty:
+Even a registered slot with `null` children suppresses the fallback. To restore the default, unmount the contributing `ToolbarSlot` instead of leaving it mounted with empty content.
+
+If the region has no meaningful default, omit `children`. With no matching registrations and no fallback, `ToolbarLayout` renders nothing:
 
 ```tsx
 {/* No fallback: the layout is invisible until a feature registers */}
@@ -99,7 +101,7 @@ If the layout region has no meaningful default, omit `children` entirely — `To
 
 ## Multiple Contributors
 
-Multiple components can each register a `ToolbarSlot` with the same `slotName`. The `order` prop on each slot controls the render order (lower values appear first):
+A matching slot does not claim exclusive ownership of the region. All contributors to that name render together, sorted by `order` with lower values first. Use distinct order values when their sequence matters, and coordinate group and separator boundaries between features:
 
 ```tsx
 // Feature A — appears first
@@ -122,7 +124,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
 
 ## Context-Sensitive Layouts
 
-A common pattern is to render a different slot content based on the active application mode. Mount and unmount (or swap the children of) a single `ToolbarSlot` as the mode changes. `DrawingTools`, `TextTools`, and `ShapeTools` stand for your own components that return toolbar groups, and `activeMode` is your own state:
+When one feature controls the region, swap the children of a single `ToolbarSlot` as the application mode changes. Mount or unmount the slot itself when the feature becomes available or leaves the screen. `DrawingTools`, `TextTools`, and `ShapeTools` below stand for your components that return toolbar groups; `activeMode` is your application state:
 
 ```tsx
 const modeContent = {
@@ -136,6 +138,10 @@ const modeContent = {
     {modeContent[activeMode]}
 </ToolbarSlot>;
 ```
+
+The layout cross-fades old and new content and resizes to fit. Outgoing content is `inert` and `aria-hidden` during its exit, then unmounts. The layout does not move focus to an incoming tool, so handle focus in your application if the replaced region contained the focused control.
+
+Use [context switching](context-switching.md) instead when you want named tool sets to stay mounted while inactive. For a horizontal toolbar, pass `orientation='horizontal'` to the layout as well so its groups follow the same direction.
 
 ## Props
 

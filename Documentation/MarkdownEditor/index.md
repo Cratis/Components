@@ -1,11 +1,13 @@
 ---
-title: MarkdownEditor
-description: Write markdown in one bordered box with a formatting toolbar, a preview toggle, configurable autocompletion, and file uploads.
+title: MarkdownEditor — edit markdown in React
+description: Use MarkdownEditor to edit markdown in React with controlled state, trigger-based suggestions, pasted or dropped uploads, and your own preview renderer.
 ---
 
-`MarkdownEditor` is a controlled markdown editor: a formatting toolbar above the writing area, and a round toggle in the corner that swaps the whole box to the rendered preview. It fills the container it is given, completes whatever triggers you configure, and uploads pasted or dropped files through a callback you supply.
+`MarkdownEditor` from Cratis Components lets people edit a markdown field in your React application while you keep its value in state. It supplies the writing area and formatting toolbar. Your application supplies completion suggestions, file uploads, and a renderer when you want a preview.
 
 ## Basic usage
+
+Bind `value` to your markdown string and update it through `onChange`. This makes the editor controlled: your React state holds the text, including changes made by the toolbar.
 
 ```tsx
 import { useState } from 'react';
@@ -25,11 +27,15 @@ export function DescriptionEditor() {
 }
 ```
 
+In this example, typing or applying a format updates `description` through `setDescription`. Saving that value belongs to your application's submit or save handler.
+
 Import the stylesheet once, either the aggregate `@cratis/components/styles` or the area sheet `@cratis/components/MarkdownEditor/styles`.
 
 ## Show a preview
 
-The editor ships no markdown renderer. Rendering, and which HTML is allowed through, belongs to your application, so pass the renderer you already use for read-only markdown through `renderPreview`. The toggle appears only when a renderer is given:
+To let people check the rendered text before saving, pass your markdown renderer through `renderPreview`. The editor has no bundled renderer, so your application decides how markdown is displayed and which HTML is allowed.
+
+The round toggle appears only when `renderPreview` is supplied and switches the whole writing area to the rendered preview. `MarkdownView` below stands for your application's renderer:
 
 ```tsx
 <MarkdownEditor
@@ -39,11 +45,13 @@ The editor ships no markdown renderer. Rendering, and which HTML is allowed thro
 />
 ```
 
-`renderPreview` is never called with empty markdown; the editor shows its `emptyPreview` label instead. Use `initialMode={MarkdownEditorMode.Preview}` to open on the preview.
+`renderPreview` is not called with empty or whitespace-only markdown; the editor shows its `emptyPreview` label instead. To open on the preview, import `MarkdownEditorMode` from the same package and set `initialMode={MarkdownEditorMode.Preview}`.
 
 ## Autocomplete a trigger
 
-A completion names what starts it and where its suggestions come from. The editor recognizes the trigger at the caret, waits for typing to pause, calls `suggest`, renders the list at the caret, and writes the picked suggestion's `insertText` over the trigger and the query:
+Use a completion to help people insert a reference without remembering its identifier. The example below turns `#` followed by an issue search into a list of issue titles. Picking a title inserts its issue number, such as `#42`, into the markdown.
+
+The editor recognizes the trigger at the caret (the text insertion point), waits for typing to pause, and calls `suggest` with the query. Supply your own issue-search endpoint in place of `/api/issues`; `body` and `setBody` represent the same controlled state as in the basic example:
 
 ```tsx
 import type { MarkdownCompletion } from '@cratis/components/MarkdownEditor';
@@ -67,7 +75,9 @@ const issues: MarkdownCompletion = {
 <MarkdownEditor value={body} onChange={setBody} completions={[issues]} />;
 ```
 
-- A string `trigger` starts a completion at the start of a line or after whitespace. The query is what follows it on the same line; set `allowSpaces` to search by title rather than a single word.
+Choosing a suggestion replaces the trigger and query with its `insertText`. The title and other display details do not become part of the markdown unless you include them in that string.
+
+- A string `trigger` starts a completion at the start of a line or after whitespace. The query is what follows it on the same line. `allowSpaces` defaults to `false`; set it to `true` to search by title rather than a single word.
 - A `RegExp` trigger is matched against the current line up to the caret. The whole match is replaced, and the query is the named group `query`, the first group, or the whole match. For example, `/(?<=^|\s)\[\[(?<query>[^\]]*)$/u` completes `[[` wiki links.
 - `suggest` may answer synchronously or with a promise. An answer for a query the person has typed past is dropped, the `signal` is aborted when the answer is no longer wanted, and a rejected answer closes the list.
 - `debounce` (default `150` milliseconds) and `minimumQueryLength` (default `0`) decide when to ask.
@@ -77,7 +87,9 @@ The arrow keys move the highlight, Enter or Tab picks it, and Escape dismisses t
 
 ## Upload pasted and dropped files
 
-Give `uploadFile` to take over pasted and dropped files. The editor puts a placeholder at the caret straight away, calls `uploadFile`, and replaces the placeholder with the markdown it returns:
+Supply `uploadFile` when people need to add attachments by pasting or dropping files. The editor inserts a placeholder at the caret for each file, calls your callback, and replaces that placeholder with the markdown the callback returns. You can keep typing while the upload runs.
+
+Your application handles file storage. In this example, `/api/files` represents your upload endpoint, which returns a URL. The callback turns that URL into an image or link:
 
 ```tsx
 <MarkdownEditor
@@ -93,7 +105,7 @@ Give `uploadFile` to take over pasted and dropped files. The editor puts a place
 />
 ```
 
-When the upload rejects, the placeholder is taken out again and `onUploadFailed` is told. A status line announces the files that are uploading, and the root carries `data-busy` while it shows.
+If an upload rejects, the editor removes its placeholder and calls `onUploadFailed` with the file and error so your application can report the failure. A status line announces the files that are uploading, and the root carries `data-busy` while it shows.
 
 ## Formatting
 
@@ -111,7 +123,7 @@ import { MarkdownFormat } from '@cratis/components/MarkdownEditor';
 />
 ```
 
-The same edits are available without the editor through `applyMarkdownFormat(value, selectionStart, selectionEnd, format)`.
+If you need the same formatting in another editing surface, call `applyMarkdownFormat(value, selectionStart, selectionEnd, format)` without mounting the editor. It returns the updated markdown and the selection positions to apply afterward.
 
 ## Size
 
@@ -123,4 +135,4 @@ Every label has an English default and can be replaced through `labels`, includi
 
 ## Styling
 
-Style the stable parts through `pt` or the `data-cratis-part` attributes: `root`, `toolbar`, `format`, `toggle`, `textarea`, `preview`, `status`, `suggestions` and `suggestion`. The root carries `data-disabled`, `data-invalid`, `data-readonly` and `data-busy`; the toggle carries `data-pressed` while the preview shows; the highlighted suggestion carries `data-selected`. Colors come from the `--cratis-*` tokens.
+Style the stable parts through `pt` or the `data-cratis-part` attributes: `root`, `toolbar`, `format`, `toggle`, `textarea`, `preview`, `status`, `suggestions` and `suggestion`. The root carries `data-disabled`, `data-invalid`, `data-readonly` and `data-busy`; the toggle carries `data-pressed` while the preview shows; the highlighted suggestion carries `data-selected`. Colors come from the `--cratis-*` tokens. See [Stable component parts](../Styling/pass-through.md) for how to use typed `pt` keys and DOM part attributes.

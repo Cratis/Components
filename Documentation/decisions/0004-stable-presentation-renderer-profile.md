@@ -1,7 +1,7 @@
 ---
 id: '0004'
 title: Stable presentation renderer profile
-description: The bounded nine-slot renderer contract promoted after independent conformance proof.
+description: Cratis Components defines a nine-slot presentation renderer contract for adapters, with versioned compatibility rules and bounded conformance checks.
 status: accepted
 stage: implemented
 class: contract
@@ -24,7 +24,7 @@ sidebar:
 ## Context
 
 Components V4 needs an honest extension point for adapting common primitives without implying that a
-vendor renderer replaces the full Components catalog. The experimental renderer system proved a
+vendor renderer replaces the full Components catalog. The broader renderer system proved a
 larger fourteen-slot model, but five of those slots own interactions rather than presentation and
 have not earned the same compatibility promise.
 
@@ -33,8 +33,8 @@ private plain-DOM falsification fixture, MUI, PrimeReact 11, and PrimeReact 10. 
 passed every applicable conformance check with zero failures and zero skips. The generated report,
 rather than a hardcoded count in this decision, inventories the exercised checks. The proof covers the
 exact public props, refs, parts, state, behavior ownership, server rendering, hydration, and bounded
-accessibility assertions recorded by the conformance package. It does not turn the remaining
-experimental renderer system into a stable API.
+accessibility assertions recorded by the conformance package. It does not extend that compatibility
+promise to the rest of the renderer system.
 
 ## Decision
 
@@ -67,7 +67,7 @@ objects remain impossible at this boundary.
 
 `CratisOverlayEnvironment` is a separate stable V4 host contract. It resolves a portal container on
 demand and may return `null` when no container is available. Internal overlay hooks remain
-experimental.
+outside the presentation contract.
 
 The MUI, PrimeReact 11, and PrimeReact 10 package manifests are stable
 `CratisPresentationUiLibrary` values. Selecting one certifies nine-slot primitive adaptation only.
@@ -108,8 +108,8 @@ bags that did not exist. Portable customization remains the typed `pt` contract.
 
 Applications keep zero-configuration built-in behavior. The package root remains setup-only, the
 React/browser-DOM-free kernel boundary remains unchanged, and Core gains no PrimeReact dependency.
-Adapter authors can depend on a small stable façade while experimental work continues behind
-explicit `unstable_` names.
+Adapter authors can depend on a small stable façade; broader renderer contracts retain explicit
+`unstable_` names.
 
 Conformance evidence is bounded evidence, not a universal claim about every browser, theme,
 assistive technology, security posture, or application shell. Adapter packages continue to publish

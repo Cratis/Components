@@ -1,16 +1,16 @@
 ---
-title: Storybook
-description: Browse every Cratis component live — props, states, and variations — in an interactive Storybook.
+title: Explore Cratis Components in Storybook
+description: Inspect Cratis Components props and states in Storybook, compare renderer previews in light and dark modes, and link to a specific story.
 tableOfContents: false
 ---
 
 import StorybookEmbed from '@components/StorybookEmbed.astro';
 
-Use the **Renderer** control to run a story with the built-in renderer, Material UI, PrimeReact 11, or PrimeReact 10. Changing renderer remounts the preview iframe.
+Use the Cratis Components Storybook to inspect a control's props and states before adding it to your screen. Choose a story in the sidebar; its autodocs page is generated from public component types and TSDoc.
 
-Use the **Appearance** toolbar to switch between light and dark baseline modes.
+The **Renderer** control switches between the built-in renderer, Material UI, PrimeReact 11, and PrimeReact 10. Switching remounts the preview iframe and loses the story's local state, so repeat any interaction you want to compare. The adapters replace only their declared presentation slots, not every component in the catalog; [Choose a renderer](renderers/index.md) explains that boundary.
 
-Every story generates an autodocs page from public component types and TSDoc.
+Use the **Appearance** toolbar to compare light and dark baseline modes. To use a component in your application, follow [Getting started](getting-started.mdx) for providers and styles, or [Building a form](building-a-form.md) for a command-bound input.
 
 ## Link to a story
 

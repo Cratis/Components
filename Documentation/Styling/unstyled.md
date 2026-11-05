@@ -1,16 +1,18 @@
 ---
-title: Own all styling
-description: Use Components structure and behavior with a completely custom product design.
+title: Own Cratis Components styling without the baseline
+description: Keep Cratis Components structure and behavior while your product owns the appearance, dark-mode values, and accessibility checks.
 ---
 
-Own all styling when your application already has a design system and needs Components behavior without the optional baseline theme. Keep the structural CSS, then map the Cratis semantic tokens to your product's values.
+Cratis Components can use your product's design system without the optional baseline theme. Keep the token defaults and structural CSS, then override the design values and component parts your product owns. “Unstyled” here means no baseline theme, not controls with all CSS removed.
 
-Components does not require a theme runtime. Import these layers once at your application entry point:
+Use the CSS-first setup in [Set up styling](getting-started.md), omitting `theme`. If your application already uses direct TypeScript imports, keep these imports once at the application entry and provide the [stylesheet module declarations](../getting-started.mdx#install-and-wire-it-up):
 
 ```ts
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
 ```
+
+Map your product variables onto the Cratis tokens after those imports:
 
 ```css
 :root {
@@ -33,13 +35,13 @@ import '@cratis/components/styles';
 }
 ```
 
-The CSS example assumes that your design system defines the referenced `--product-*` variables. Load your mappings after the token and structural layers so they take precedence. The token layer includes conservative light defaults; leaving a token unmapped retains its default rather than removing the component's styles.
+The example assumes your design system defines each referenced `--product-*` variable. Keep these mappings outside cascade layers and load them after the token and structural styles. Unmapped Cratis tokens retain their light defaults, so this is a starting mapping rather than a complete product palette. Use the [token reference](cratis-tokens.md) to find the other roles your design needs.
 
-Do not import `@cratis/components/theme` when the product supplies all values. Omitting the theme is not the same as omitting structural CSS: component layout, borders, and interaction-state rules still come from `styles`. You can replace the full stylesheet with the documented per-area entry points when you want a smaller selection.
+Omit `@cratis/components/theme` when your product supplies the appearance and scheme behavior. Keep `styles`: it provides component layout, borders, and interaction-state rules. To select fewer surfaces, replace the full stylesheet with the shared base and the appropriate [per-area entries](per-area-stylesheets.md).
 
 ## Customize structure
 
-Use `pt` for one instance or `data-cratis-part` for a product-wide rule:
+Use the `pt` prop to pass a class to a named component part, or target `data-cratis-part` for a product-wide rule. This excerpt assumes an imported `Dropdown` and an existing `roles` collection:
 
 ```tsx
 <Dropdown
@@ -57,9 +59,11 @@ The parts are Cratis-owned and remain stable across internal foundation changes.
 
 ## Accessibility responsibilities
 
-A custom design still owns visible focus, contrast, target size, reduced motion, forced colors, and responsive behavior. Components supplies semantic behavior but cannot infer product color relationships.
+Your product owns visible focus, contrast, target size, reduced motion, forced colors, and responsive behavior. Components supplies semantic behavior, but the CSS values and overrides you choose still need checking together in the application.
 
-Check hover, active, disabled, and focus states as well as the resting appearance. If your application supports dark mode, supply the appropriate token overrides in your own mode selector; the light defaults do not create that mode for you. Scope custom part rules to the intended component or application region instead of relying on internal renderer markup.
+Check hover, active, disabled, validation, and focus states as well as the resting appearance. For dark mode, supply token overrides under your own mode selector; the light defaults do not create a dark palette. [Build a product theme](themed.md) explains root mappings and the extra mappings needed for independently themed subtrees.
+
+Scope custom part rules to the intended component or application region. Avoid internal renderer markup, whose structure is not a public styling contract.
 
 ## See also
 

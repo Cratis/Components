@@ -1,6 +1,6 @@
 ---
 title: JSON Schema mapping
-description: Vendor and standard keywords, type changes, generated values, the conversion helpers, and the limits of the tree layout.
+description: SchemaEditor maps a JSON Schema subset to a property tree, preserves supported metadata, and drops incompatible keywords when types change.
 ---
 
 ## JSON Schema support

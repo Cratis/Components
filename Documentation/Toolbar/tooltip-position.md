@@ -1,11 +1,11 @@
 ---
-title: Tooltip position
-description: Choose where toolbar tooltips appear relative to their trigger.
+title: Toolbar tooltip placement
+description: Place Toolbar tooltips above, below, or beside each trigger. Position labels for the palette's location while keeping accessible tool names.
 ---
 
-`tooltipPosition` chooses which side of a toolbar tool shows its label on hover or keyboard focus. Use it to keep labels away from the screen edge or from neighboring palettes.
+`tooltipPosition` places a toolbar tool's label above, below, or beside its trigger on hover or keyboard focus. Choose a side that leaves room for the label: below a top-mounted palette, for example, or toward the canvas from a side palette.
 
-`ToolbarButton`, `ToolbarFanOutItem`, and `ToolbarFolder` default to showing tooltips on the `right`. Set the prop on each trigger whose placement should differ:
+`ToolbarButton`, `ToolbarFanOutItem`, and `ToolbarFolder` default to `right`, regardless of the toolbar's orientation. For a horizontal palette along the top, set `tooltipPosition='bottom'` on each trigger whose label should appear below it:
 
 ```tsx
 import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
@@ -17,11 +17,11 @@ import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 
 Valid values are `'top'`, `'right'`, `'bottom'`, and `'left'`.
 
-Tooltips appear on hover and on keyboard focus after a short delay. They are disabled for tools inside a collapsed folder or fan-out, or an inactive context, and a folder or fan-out trigger hides its tooltip while its panel is open. In a folder's list mode, buttons show their `title` as a visible label instead of a tooltip. A horizontal toolbar along the top of the screen usually reads better with `tooltipPosition='bottom'`.
+Position belongs to each trigger. Setting it on a folder does not configure the folder's child buttons, and `Toolbar` has no inherited tooltip-position setting. A button or folder uses its `title` as the label; a fan-out trigger uses `tooltip`. That same text supplies the accessible name, so name the tool or action even when its icon seems familiar.
 
-Position is local to the trigger, not inherited from `Toolbar`. Setting a folder's tooltip position does not configure its child buttons, and changing `orientation` does not change the tooltip default. A fan-out trigger uses its `tooltip` text; a button or folder uses its `title`.
+Tooltips appear after a short delay on hover and keyboard focus. Hidden tools in collapsed folders, fan-outs, or inactive contexts have tooltips disabled. A folder or fan-out trigger also hides its tooltip while its panel is open. In a folder's list mode, buttons display `title` as a visible label instead.
 
-Keep tooltip text short and descriptive. A button's `title` also supplies its accessible name, so do not use placement as a substitute for meaningful text. The tooltip is a non-interactive label, not a place for links or commands; use the folder or fan-out panel for additional tools. Test placement with both keyboard focus and pointer hover in the space your application provides.
+Keep these labels short. Tooltips are non-interactive, so put additional tools in a folder or fan-out panel instead of adding links or commands to the label. Check labels with keyboard focus and pointer hover in your application, including near screen edges, to make sure they remain visible.
 
 ## See also
 
