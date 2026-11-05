@@ -30,6 +30,10 @@ The composer discards asynchronous lookup results after the search text changes.
 
 While mention suggestions are open, use the Up and Down arrow keys to move the highlight and Enter or Tab to choose the highlighted candidate. With the suggestions closed, Enter sends the message unless Shift is held.
 
+## Keyboard use
+
+Focus stays in the message box while the suggestions are open. The arrow keys move the highlight, and the box points at the highlighted option with `aria-activedescendant`. Enter or Tab picks it. Escape closes the suggestions without touching the draft or the caret, and without reaching a dialog around the composer; editing the text after the `@` opens them again. With the suggestions closed, Enter sends the draft as written.
+
 ## How mentions travel
 
 The body remains plain text, with each mention written as `@Name`. The send callback also reports the identities of known candidates mentioned in that text:

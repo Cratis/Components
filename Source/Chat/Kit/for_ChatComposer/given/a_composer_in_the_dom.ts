@@ -73,3 +73,33 @@ export const click = async (element: HTMLElement) => {
         element.click();
     });
 };
+
+/**
+ * Presses a key the way a keyboard does: a `keydown` followed by a `keyup` on the same element.
+ * @param element - The element holding focus.
+ * @param key - The `KeyboardEvent.key` value.
+ * @returns Whether the `keydown` was left uncancelled.
+ */
+export const press = async (element: HTMLElement, key: string): Promise<boolean> => {
+    let notCancelled = true;
+    // Separate acts: a browser lets React commit the keydown before the keyup arrives.
+    await act(async () => {
+        notCancelled = element.dispatchEvent(
+            new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+    });
+    await act(async () => {
+        element.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true, cancelable: true }));
+    });
+    return notCancelled;
+};
+
+/**
+ * Places the caret and lets the composer read it, as a click into the text does.
+ * @param textarea - The textarea to place the caret in.
+ * @param position - The caret position.
+ */
+export const moveCaret = async (textarea: HTMLTextAreaElement, position: number) => {
+    textarea.setSelectionRange(position, position);
+    await click(textarea);
+};

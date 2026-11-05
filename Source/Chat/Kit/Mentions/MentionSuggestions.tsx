@@ -4,6 +4,7 @@
 import { PersonAvatarCircle, type BuildAvatarUrlParams } from '../Avatar';
 import { ChatAuthorKind } from '../ChatAuthorKind';
 import type { MentionCandidate } from './MentionCandidate';
+import { mentionOptionId } from './mentionOptionId';
 
 /**
  * Props for the list that opens while an `@` mention is being typed, showing people and agents
@@ -22,6 +23,9 @@ export interface MentionSuggestionsProps {
     /** Invoked when the pointer moves onto a candidate, so hover and keyboard stay in step. */
     onHighlight: (index: number) => void;
 
+    /** Id of the list element. When given, each option gets a position-based id the input can reference with `aria-activedescendant`. */
+    id?: string;
+
     /** Accessible name for the suggestion list. Defaults to `'Mention suggestions'`. */
     'aria-label'?: string;
 
@@ -39,13 +43,16 @@ export const MentionSuggestions = ({
     onSelect,
     onHighlight,
     buildAvatarUrl,
+    id,
     'aria-label': ariaLabel = 'Mention suggestions',
 }: MentionSuggestionsProps) => (
-    <div className='mention-suggestions' role='listbox' aria-label={ariaLabel}>
+    <div id={id} className='mention-suggestions' role='listbox' aria-label={ariaLabel}>
         {candidates.map((candidate, index) => (
             <button
                 key={candidate.id}
+                id={id === undefined ? undefined : mentionOptionId(id, index)}
                 type='button'
+                tabIndex={-1}
                 role='option'
                 aria-selected={index === highlightedIndex}
                 className={`mention-suggestions__item${index === highlightedIndex ? ' mention-suggestions__item--highlighted' : ''}`}

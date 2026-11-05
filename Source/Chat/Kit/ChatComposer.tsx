@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type React from 'react';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import type { BuildAvatarUrlParams } from './Avatar';
 import { activeMentionQuery } from './Mentions/activeMentionQuery';
 import { applyMention } from './Mentions/applyMention';
+import { mentionOptionId } from './Mentions/mentionOptionId';
 import { extractMentions } from './Mentions/extractMentions';
 import { matchCandidates } from './Mentions/matchCandidates';
 import { MentionSuggestions, type MentionCandidate } from './Mentions';
@@ -97,6 +98,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
     ) => {
         const [draft, setDraft] = useState({ text: '', caret: 0 });
         const [highlightedIndex, setHighlightedIndex] = useState(0);
+        // The query the user dismissed with Escape; it stays closed until the query itself changes.
+        const [dismissed, setDismissed] = useState<{ start: number; text: string } | null>(null);
+        const listId = useId();
         const [showEmojiPicker, setShowEmojiPicker] = useState(false);
         const [resolvedCandidates, setResolvedCandidates] = useState<MentionCandidate[]>(
             [],
@@ -113,6 +117,14 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             ? activeMentionQuery(draft.text, draft.caret)
             : null;
         const queryText = query?.text;
+        const isDismissed =
+            dismissed !== null && query?.start === dismissed.start && query.text === dismissed.text;
+
+        useEffect(() => {
+            if (dismissed !== null && !isDismissed) {
+                setDismissed(null);
+            }
+        }, [dismissed, isDismissed]);
 
         useEffect(() => {
             if (!resolveMentionCandidates || queryText === undefined) {
@@ -165,7 +177,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                     candidate.name.toLowerCase() === query.text.trim().toLowerCase(),
             );
         const suggestions =
-            query && !queryIsCompleteMention
+            query && !queryIsCompleteMention && !isDismissed
                 ? matchCandidates(candidatePool, query.text)
                 : [];
         const isSuggesting = !disabled && suggestions.length > 0;
@@ -263,12 +275,10 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
 
                 if (event.key === 'Escape') {
                     event.preventDefault();
-                    // Closing the list without changing the text: move the caret past the mention so the
-                    // query no longer resolves.
-                    setDraft((previous) => ({
-                        ...previous,
-                        caret: previous.text.length,
-                    }));
+                    // The Escape belongs to the list while it is open, not to a dialog around the composer.
+                    event.stopPropagation();
+                    // Closing the list leaves the draft and caret alone.
+                    setDismissed(query);
                     return;
                 }
             }
@@ -285,6 +295,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                     <MentionSuggestions
                         candidates={suggestions}
                         highlightedIndex={highlighted}
+                        id={listId}
                         onSelect={choose}
                         onHighlight={setHighlightedIndex}
                         buildAvatarUrl={buildAvatarUrl}
@@ -302,6 +313,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                         labels?.placeholder ?? 'Write a message… (Enter to send)'
                     }
                     rows={2}
+                    aria-autocomplete={isSuggesting ? 'list' : undefined}
+                    aria-controls={isSuggesting ? listId : undefined}
+                    aria-activedescendant={isSuggesting ? mentionOptionId(listId, highlighted) : undefined}
                     disabled={disabled}
                 />
                 <button
