@@ -3,11 +3,17 @@
 
 import { UNSAFE_PortalProvider } from 'react-aria';
 import type { DropdownProps } from './Dropdown';
+import type { DropdownBranchProps } from './DropdownBranchProps';
 import { FilterDropdown } from './FilterDropdown';
 import { MultipleSelectDropdown } from './MultipleSelectDropdown';
 import { SingleSelectDropdown } from './SingleSelectDropdown';
 import { useDropdownHandlers } from './useDropdownHandlers';
 import { useDropdownState } from './useDropdownState';
+
+const chooseBranch = <T,>(props: DropdownProps<T>, branch: DropdownBranchProps<T>) => {
+    if (props.filter) return <FilterDropdown {...branch} />;
+    return props.multiple ? <MultipleSelectDropdown {...branch} /> : <SingleSelectDropdown {...branch} />;
+};
 
 /** A renderer-independent single or multiple select with stable Cratis parts. */
 export const DropdownImplementation = <T = unknown,>(props: DropdownProps<T>) => {
@@ -18,9 +24,7 @@ export const DropdownImplementation = <T = unknown,>(props: DropdownProps<T>) =>
 
     return (
         <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
-            {props.filter && <FilterDropdown {...branch} />}
-            {!props.filter && props.multiple && <MultipleSelectDropdown {...branch} />}
-            {!props.filter && !props.multiple && <SingleSelectDropdown {...branch} />}
+            {chooseBranch(props, branch)}
         </UNSAFE_PortalProvider>
     );
 };

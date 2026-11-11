@@ -61,7 +61,7 @@ export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCov
     DataTableForQuery: { delegatesTo: 'DataTableCore' },
     DatePickerInput: { marked: ['Common/DatePickerInputImplementation.tsx'] },
     Dialog: { marked: ['Dialogs/dialogDescriptor.ts'] },
-    Dropdown: { marked: ['Dropdown/DropdownImplementation.tsx'] },
+    Dropdown: { marked: ['Dropdown/DropdownParts.tsx'] },
     DropdownField: { delegatesTo: 'Dropdown' },
     EmojiPicker: { pending: true },
     ErrorBoundary: { exempt: 'Renders only its children or the fallback it was given.' },
