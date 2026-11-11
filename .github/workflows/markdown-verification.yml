@@ -35,9 +35,10 @@ on:
             - 'Storybook/*.md'
             - 'scripts/*.md'
 
+# Only pull request runs replace each other when superseded; a run on main is never cancelled by a later merge.
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+    group: ${{ github.event_name == 'pull_request' && format('{0}-{1}', github.workflow, github.ref) || format('{0}-{1}', github.workflow, github.run_id) }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
     contents: read
