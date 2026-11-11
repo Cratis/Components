@@ -4,147 +4,60 @@
 import { useState } from 'react';
 import {
     Button,
-    Calendar,
-    CalendarCell,
-    CalendarGrid,
-    CalendarGridBody,
-    CalendarGridHeader,
-    CalendarHeaderCell,
-    DateInput,
     DatePicker as AriaDatePicker,
-    DateSegment,
-    Group,
-    Popover,
-    type DateValue,
 } from 'react-aria-components/DatePicker';
-import { Dialog } from 'react-aria-components/Dialog';
-import { Heading } from 'react-aria-components/Heading';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
-import { useCratisComponentsConfig } from './CratisComponentsProvider';
-import { useCratisIcon } from '../configuration/useCratisIcon';
-import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
-import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
-import {
-    fromDate,
-    getLocalTimeZone,
-    today,
-    toCalendarDate,
-} from '@internationalized/date';
 import type { DatePickerInputProps } from './DatePickerInput';
 import { classNames } from '../ClassNames/classNames';
+import { DatePickerDateInput } from './DatePickerDateInput';
+import { DatePickerGroup, DatePickerPlaceholder } from './DatePickerGroup';
+import { DatePickerPopover } from './DatePickerPopover';
+import { asDate, asDateValue } from './datePickerValues';
+import { rootStateAttributes, triggerStateAttributes } from './datePickerStateAttributes';
+import { useDatePickerState } from './useDatePickerState';
 
-const asDateValue = (
-    value: Date | null,
-    showTime: boolean | undefined,
-): DateValue | null => {
-    if (!value) return null;
-    const zoned = fromDate(value, getLocalTimeZone());
-    return showTime ? zoned : toCalendarDate(zoned);
+const resolveHourCycle = (hourFormat: DatePickerInputProps['hourFormat']) => {
+    if (hourFormat === '12') return 12;
+    return hourFormat === '24' ? 24 : undefined;
 };
-
-const asDate = (value: DateValue | null): Date | null =>
-    value ? value.toDate(getLocalTimeZone()) : null;
 
 /**
  * An internationalized date or date-time picker with Cratis-owned markup parts.
  * The public boundary remains `Date | null`; React Aria's calendar values stay internal.
  */
-export const DatePickerInputImplementation = ({
-    value,
-    onChange,
-    onBlur,
-    invalid,
-    disabled,
-    readOnly,
-    id,
-    showButtonBar,
-    isNonModal = false,
-    placeholder,
-    showIcon = true,
-    showTime,
-    hourFormat,
-    minDate,
-    maxDate,
-    className,
-    style,
-    pt,
-    todayLabel,
-    clearLabel,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledby,
-    'aria-describedby': ariaDescribedby,
-}: DatePickerInputProps) => {
+export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
+    const { value, onChange, onBlur, showButtonBar, isNonModal = false, showIcon = true, showTime, hourFormat, style, pt } = props;
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const overlayEnvironment = unstable_useOverlayEnvironment();
-    const nearestDialogZIndex = useNearestDialogZIndex();
-    const resolvedPopoverZIndex =
-        nearestDialogZIndex === null
-            ? 'var(--cratis-z-index-overlay)'
-            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
-    const { messages } = useCratisComponentsConfig();
-    const datePickerMessages = messages?.datePicker;
-    const icon = useCratisIcon();
-    const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
-    const resolvedClearLabel = clearLabel ?? datePickerMessages?.clear ?? 'Clear';
-    const timeZone = getLocalTimeZone();
-    const minValue = asDateValue(minDate ?? null, showTime) ?? undefined;
-    const maxValue = asDateValue(maxDate ?? null, showTime) ?? undefined;
-    const todayDate = today(timeZone).toDate(timeZone);
-    // Compare the same granularity that the action emits. In date-time mode the Today action
-    // retains its existing local-midnight value, which can legitimately fall before a same-day
-    // minDate carrying a later time.
-    const todayValue = asDateValue(todayDate, showTime)!;
-    const isTodayOutOfBounds =
-        (minValue !== undefined && todayValue.compare(minValue) < 0) ||
-        (maxValue !== undefined && todayValue.compare(maxValue) > 0);
-    const rootClassName = classNames(
-        'cratis-date-picker',
-        pt?.root?.className,
-        className,
-    );
-    const inputId = id ?? pt?.input?.id;
-    const effectiveDisabled = disabled ?? pt?.input?.disabled ?? false;
-    const effectiveReadOnly = readOnly ?? pt?.input?.readOnly ?? false;
-    const effectiveInvalid = invalid ?? pt?.input?.['aria-invalid'] ?? false;
-    const actionsDisabled = effectiveDisabled || effectiveReadOnly;
-    const clearDisabled = actionsDisabled || pt?.clear?.disabled || false;
-    const effectivePlaceholder = placeholder ?? pt?.input?.placeholder;
-    const effectiveAriaLabel =
-        ariaLabel ??
-        pt?.input?.['aria-label'] ??
-        effectivePlaceholder ??
-        datePickerMessages?.label ??
-        'Date';
-    const effectiveAriaLabelledby = ariaLabelledby ?? pt?.input?.['aria-labelledby'];
-    const effectiveAriaDescribedby = ariaDescribedby ?? pt?.input?.['aria-describedby'];
-    const inputPartAttributes = {
-        ...pt?.input,
-        id: undefined,
-        className: undefined,
-        style: undefined,
-        disabled: undefined,
-        readOnly: undefined,
-        placeholder: undefined,
-        'aria-label': undefined,
-        'aria-labelledby': undefined,
-        'aria-describedby': undefined,
-        'aria-invalid': undefined,
+    const state = useDatePickerState(props);
+    const { effectiveDisabled, effectiveReadOnly } = state;
+    const fieldState = {
+        invalid: state.effectiveInvalid,
+        disabled: effectiveDisabled,
+        readOnly: effectiveReadOnly,
+        selected: value !== null,
     };
+    const buttonBar = showButtonBar ? {
+        pt,
+        todayLabel: state.resolvedTodayLabel,
+        clearLabel: state.resolvedClearLabel,
+        actionsDisabled: state.actionsDisabled,
+        clearDisabled: state.clearDisabled,
+        isTodayOutOfBounds: state.isTodayOutOfBounds,
+        todayDate: state.todayDate,
+        onChange,
+    } : null;
 
     return (
         <div
             {...pt?.root}
-            className={rootClassName}
+            className={state.rootClassName}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
             data-cratis-component='DatePickerInput'
-            data-invalid={effectiveInvalid || undefined}
-            data-disabled={effectiveDisabled || undefined}
-            data-readonly={effectiveReadOnly || undefined}
-            data-open={isPickerOpen || undefined}
-            data-selected={value !== null || undefined}
+            {...rootStateAttributes(fieldState, isPickerOpen)}
             onBlur={onBlur}
         >
             <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
@@ -153,104 +66,35 @@ export const DatePickerInputImplementation = ({
                     onChange={(next) => onChange(asDate(next), { source: 'user' })}
                     isDisabled={effectiveDisabled}
                     isReadOnly={effectiveReadOnly}
-                    isInvalid={effectiveInvalid}
+                    isInvalid={state.effectiveInvalid}
                     isOpen={isPickerOpen}
                     onOpenChange={(nextIsOpen) => {
                         if (!nextIsOpen || !effectiveReadOnly) setIsPickerOpen(nextIsOpen);
                     }}
-                    minValue={minValue}
-                    maxValue={maxValue}
+                    minValue={state.minValue}
+                    maxValue={state.maxValue}
                     granularity={showTime ? 'minute' : 'day'}
-                    hourCycle={
-                        hourFormat === '12' ? 12 : hourFormat === '24' ? 24 : undefined
-                    }
-                    aria-label={effectiveAriaLabel}
-                    aria-labelledby={effectiveAriaLabelledby}
-                    aria-describedby={effectiveAriaDescribedby}
+                    hourCycle={resolveHourCycle(hourFormat)}
+                    aria-label={state.effectiveAriaLabel}
+                    aria-labelledby={state.effectiveAriaLabelledby}
+                    aria-describedby={state.effectiveAriaDescribedby}
                     className='cratis-date-picker__picker'
                 >
                     {({ isOpen }) => (
                         <>
-                            <Group
-                                {...pt?.group}
-                                id={inputId}
-                                aria-invalid={effectiveInvalid || undefined}
-                                className={classNames(
-                                    'cratis-date-picker__group',
-                                    pt?.group?.className,
-                                )}
-                                data-cratis-part='group'
-                                data-empty={value === null || undefined}
-                                render={(groupProps) => (
-                                    <div
-                                        {...groupProps}
-                                        data-open={isOpen || undefined}
-                                        data-invalid={effectiveInvalid || undefined}
-                                        data-disabled={effectiveDisabled || undefined}
-                                        data-readonly={effectiveReadOnly || undefined}
-                                        data-selected={value !== null || undefined}
-                                    />
-                                )}
-                            >
-                                <DateInput
-                                    {...inputPartAttributes}
-                                    className={classNames(
-                                        'cratis-date-picker__input',
-                                        pt?.input?.className,
-                                    )}
-                                    style={pt?.input?.style}
-                                    data-cratis-part='input'
-                                    data-placeholder={effectivePlaceholder}
-                                    render={(inputProps) => (
-                                        <div
-                                            {...inputProps}
-                                            data-open={isOpen || undefined}
-                                            data-invalid={effectiveInvalid || undefined}
-                                            data-disabled={effectiveDisabled || undefined}
-                                            data-readonly={effectiveReadOnly || undefined}
-                                            data-selected={value !== null || undefined}
-                                        />
-                                    )}
-                                >
-                                    {(segment) => (
-                                        <DateSegment
-                                            {...pt?.segment}
-                                            segment={segment}
-                                            className={classNames(
-                                                'cratis-date-picker__segment',
-                                                pt?.segment?.className,
-                                            )}
-                                            data-cratis-part='segment'
-                                            render={(segmentProps) => (
-                                                <span
-                                                    {...segmentProps}
-                                                    data-invalid={
-                                                        effectiveInvalid || undefined
-                                                    }
-                                                    data-disabled={
-                                                        effectiveDisabled || undefined
-                                                    }
-                                                    data-readonly={
-                                                        effectiveReadOnly || undefined
-                                                    }
-                                                />
-                                            )}
-                                        />
-                                    )}
-                                </DateInput>
-                                {value === null && effectivePlaceholder && (
-                                    <span
-                                        {...pt?.placeholder}
-                                        className={classNames(
-                                            'cratis-date-picker__placeholder',
-                                            pt?.placeholder?.className,
-                                        )}
-                                        data-cratis-part='placeholder'
-                                        aria-hidden='true'
-                                    >
-                                        {effectivePlaceholder}
-                                    </span>
-                                )}
+                            <DatePickerGroup pt={pt} inputId={state.inputId} state={fieldState} isOpen={isOpen}>
+                                <DatePickerDateInput
+                                    pt={pt}
+                                    inputPartAttributes={state.inputPartAttributes}
+                                    placeholder={state.effectivePlaceholder}
+                                    state={fieldState}
+                                    isOpen={isOpen}
+                                />
+                                <DatePickerPlaceholder
+                                    pt={pt}
+                                    placeholder={state.effectivePlaceholder}
+                                    selected={fieldState.selected}
+                                />
                                 {showIcon && (
                                     <Button
                                         {...asReactAriaButtonProps(pt?.trigger)}
@@ -265,208 +109,25 @@ export const DatePickerInputImplementation = ({
                                         render={(triggerProps) => (
                                             <button
                                                 {...triggerProps}
-                                                data-open={isOpen || undefined}
-                                                data-invalid={
-                                                    effectiveInvalid || undefined
-                                                }
-                                                data-disabled={
-                                                    effectiveDisabled ||
-                                                    effectiveReadOnly ||
-                                                    undefined
-                                                }
-                                                data-readonly={
-                                                    effectiveReadOnly || undefined
-                                                }
-                                                data-selected={
-                                                    value !== null || undefined
-                                                }
+                                                {...triggerStateAttributes(fieldState, isOpen)}
                                             />
                                         )}
                                         aria-label={
                                             pt?.trigger?.['aria-label'] ??
-                                            datePickerMessages?.openCalendar ??
+                                            state.datePickerMessages?.openCalendar ??
                                             'Open calendar'
                                         }
                                     >
                                         <span aria-hidden='true'>▦</span>
                                     </Button>
                                 )}
-                            </Group>
-                            <Popover
-                                {...pt?.popover}
+                            </DatePickerGroup>
+                            <DatePickerPopover
+                                pt={pt}
                                 isNonModal={isNonModal}
-                                className={classNames(
-                                    'cratis-date-picker__popover',
-                                    pt?.popover?.className,
-                                )}
-                                style={{
-                                    zIndex: resolvedPopoverZIndex,
-                                    ...pt?.popover?.style,
-                                }}
-                                data-cratis-part='popover'
-                                data-open
-                                placement='bottom start'
-                            >
-                                <Dialog
-                                    {...pt?.dialog}
-                                    className={classNames(
-                                        'cratis-date-picker__dialog',
-                                        pt?.dialog?.className,
-                                    )}
-                                    data-cratis-part='dialog'
-                                    data-open
-                                >
-                                    <Calendar
-                                        {...pt?.calendar}
-                                        className={classNames(
-                                            'cratis-date-picker__calendar',
-                                            pt?.calendar?.className,
-                                        )}
-                                        data-cratis-part='calendar'
-                                        data-open
-                                    >
-                                        <header
-                                            {...pt?.header}
-                                            className={classNames(
-                                                'cratis-date-picker__header',
-                                                pt?.header?.className,
-                                            )}
-                                            data-cratis-part='header'
-                                        >
-                                            <Button
-                                                {...asReactAriaButtonProps(pt?.previous)}
-                                                slot='previous'
-                                                className={classNames(
-                                                    'cratis-date-picker__nav',
-                                                    pt?.previous?.className,
-                                                )}
-                                                data-cratis-part='previous'
-                                                aria-label={
-                                                    pt?.previous?.['aria-label'] ??
-                                                    datePickerMessages?.previousMonth ??
-                                                    'Previous month'
-                                                }
-                                            >
-                                                <span aria-hidden='true'>
-                                                    {icon('previous', '‹')}
-                                                </span>
-                                            </Button>
-                                            <Heading
-                                                {...pt?.heading}
-                                                className={classNames(
-                                                    'cratis-date-picker__heading',
-                                                    pt?.heading?.className,
-                                                )}
-                                                data-cratis-part='heading'
-                                            />
-                                            <Button
-                                                {...asReactAriaButtonProps(pt?.next)}
-                                                slot='next'
-                                                className={classNames(
-                                                    'cratis-date-picker__nav',
-                                                    pt?.next?.className,
-                                                )}
-                                                data-cratis-part='next'
-                                                aria-label={
-                                                    pt?.next?.['aria-label'] ??
-                                                    datePickerMessages?.nextMonth ??
-                                                    'Next month'
-                                                }
-                                            >
-                                                <span aria-hidden='true'>
-                                                    {icon('next', '›')}
-                                                </span>
-                                            </Button>
-                                        </header>
-                                        <CalendarGrid
-                                            {...pt?.grid}
-                                            className={classNames(
-                                                'cratis-date-picker__grid',
-                                                pt?.grid?.className,
-                                            )}
-                                            data-cratis-part='grid'
-                                        >
-                                            <CalendarGridHeader>
-                                                {(day) => (
-                                                    <CalendarHeaderCell>
-                                                        {day}
-                                                    </CalendarHeaderCell>
-                                                )}
-                                            </CalendarGridHeader>
-                                            <CalendarGridBody>
-                                                {(date) => (
-                                                    <CalendarCell
-                                                        {...pt?.cell}
-                                                        date={date}
-                                                        className={classNames(
-                                                            'cratis-date-picker__cell',
-                                                            pt?.cell?.className,
-                                                        )}
-                                                        data-cratis-part='cell'
-                                                    />
-                                                )}
-                                            </CalendarGridBody>
-                                        </CalendarGrid>
-                                    </Calendar>
-                                    {showButtonBar && (
-                                        <div
-                                            {...pt?.buttonBar}
-                                            className={classNames(
-                                                'cratis-date-picker__button-bar',
-                                                pt?.buttonBar?.className,
-                                            )}
-                                            data-cratis-part='button-bar'
-                                        >
-                                            <button
-                                                {...pt?.today}
-                                                type='button'
-                                                className={classNames(
-                                                    'cratis-date-picker__action',
-                                                    pt?.today?.className,
-                                                )}
-                                                data-cratis-part='today'
-                                                data-disabled={
-                                                    actionsDisabled || isTodayOutOfBounds || undefined
-                                                }
-                                                disabled={actionsDisabled || isTodayOutOfBounds}
-                                                aria-disabled={
-                                                    actionsDisabled || isTodayOutOfBounds || undefined
-                                                }
-                                                onClick={(event) => {
-                                                    if (actionsDisabled || isTodayOutOfBounds) return;
-                                                    onChange(todayDate, {
-                                                        source: 'user',
-                                                        nativeEvent: event.nativeEvent,
-                                                    });
-                                                }}
-                                            >
-                                                {resolvedTodayLabel}
-                                            </button>
-                                            <button
-                                                {...pt?.clear}
-                                                type='button'
-                                                className={classNames(
-                                                    'cratis-date-picker__action',
-                                                    pt?.clear?.className,
-                                                )}
-                                                data-cratis-part='clear'
-                                                data-disabled={clearDisabled || undefined}
-                                                disabled={clearDisabled}
-                                                aria-disabled={clearDisabled || pt?.clear?.['aria-disabled'] || undefined}
-                                                onClick={(event) => {
-                                                    if (clearDisabled) return;
-                                                    onChange(null, {
-                                                        source: 'user',
-                                                        nativeEvent: event.nativeEvent,
-                                                    });
-                                                }}
-                                            >
-                                                {resolvedClearLabel}
-                                            </button>
-                                        </div>
-                                    )}
-                                </Dialog>
-                            </Popover>
+                                zIndex={state.resolvedPopoverZIndex}
+                                buttonBar={buttonBar}
+                            />
                         </>
                     )}
                 </AriaDatePicker>
