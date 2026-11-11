@@ -16,7 +16,7 @@ export const isInToolbarScope = (root: HTMLElement | null, tool: Element): boole
 export const isDisabledTool = (tool: HTMLElement): boolean => tool.matches(disabledSelector);
 
 const hasHiddenAttribute = (element: HTMLElement): boolean =>
-    element.hidden || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true';
+    !!element.hidden || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true';
 
 const hasHiddenStyle = (element: HTMLElement): boolean => {
     const { display, visibility } = getComputedStyle(element);
