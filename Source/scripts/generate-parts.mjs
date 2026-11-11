@@ -154,7 +154,15 @@ export const partDefinitions = {
             'multiple',
             'indicator',
         ],
-        sources: ['Dropdown/DropdownImplementation.tsx'],
+        sources: [
+            'Dropdown/DropdownImplementation.tsx',
+            'Dropdown/DropdownParts.tsx',
+            'Dropdown/DropdownOptionLists.tsx',
+            'Dropdown/renderTriggerWithOpenState.tsx',
+            'Dropdown/SingleSelectTrigger.tsx',
+            'Dropdown/MultipleSelectDropdown.tsx',
+            'Dropdown/FilterDropdown.tsx',
+        ],
         ptFiles: ['Dropdown/Dropdown.tsx'],
         ptKeys: [
             'root',
@@ -200,7 +208,14 @@ export const partDefinitions = {
             'today',
             'clear',
         ],
-        sources: ['Common/DatePickerInputImplementation.tsx'],
+        sources: [
+            'Common/DatePickerInputImplementation.tsx',
+            'Common/DatePickerButtonBar.tsx',
+            'Common/DatePickerCalendar.tsx',
+            'Common/DatePickerDateInput.tsx',
+            'Common/DatePickerGroup.tsx',
+            'Common/DatePickerPopover.tsx',
+        ],
         ptFiles: ['Common/DatePickerInput.tsx'],
         ptKeys: [
             'root',
@@ -1331,31 +1346,7 @@ export const partStateDefinitions = {
  */
 export const splitPartStateAllowlist = [
     {
-        file: 'Common/DatePickerInputImplementation.tsx',
-        spread: 'groupProps',
-        part: 'group',
-        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
-    },
-    {
-        file: 'Common/DatePickerInputImplementation.tsx',
-        spread: 'inputProps',
-        part: 'input',
-        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
-    },
-    {
-        file: 'Common/DatePickerInputImplementation.tsx',
-        spread: 'segmentProps',
-        part: 'segment',
-        states: ['disabled', 'invalid', 'readonly'],
-    },
-    {
-        file: 'Common/DatePickerInputImplementation.tsx',
-        spread: 'triggerProps',
-        part: 'trigger',
-        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
-    },
-    {
-        file: 'Dropdown/DropdownImplementation.tsx',
+        file: 'Dropdown/renderTriggerWithOpenState.tsx',
         spread: 'props',
         part: 'trigger',
         states: ['open'],
@@ -1382,6 +1373,41 @@ export const implicitPartStateAllowlist = [
         reason: 'React Aria CalendarCell emits data-selected for the selected date.',
     },
     {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerInputImplementation.tsx',
+        part: 'root',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        reason: 'rootStateAttributes spreads the field state onto the root; the date picker specs prove each attribute.',
+    },
+    {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerInputImplementation.tsx',
+        part: 'trigger',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        reason: 'triggerStateAttributes spreads the field state onto the trigger; the date picker specs prove each attribute.',
+    },
+    {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerGroup.tsx',
+        part: 'group',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        reason: 'fieldStateAttributes spreads the field state onto the group; the date picker specs prove each attribute.',
+    },
+    {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerDateInput.tsx',
+        part: 'input',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        reason: 'fieldStateAttributes spreads the field state onto the input; the date picker specs prove each attribute.',
+    },
+    {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerDateInput.tsx',
+        part: 'segment',
+        states: ['disabled', 'invalid', 'readonly'],
+        reason: 'segmentStateAttributes spreads the field state onto each segment; the date picker specs prove each attribute.',
+    },
+    {
         component: 'ColumnFilterMenu',
         file: 'DataTables/ColumnFilterMenu.tsx',
         part: 'filter-trigger',
@@ -1403,6 +1429,11 @@ export const dynamicPartExpressions = [
         parts: ['add', 'typeButton'],
     },
     {
+        file: 'Common/DatePickerCalendar.tsx',
+        expression: 'slot',
+        parts: ['previous', 'next'],
+    },
+    {
         file: 'Common/TooltipImplementation.tsx',
         expression: "children.props['data-cratis-part'] ?? 'trigger'",
         parts: ['trigger'],
@@ -1412,6 +1443,21 @@ export const dynamicPartExpressions = [
 
 /** Exact dynamic test selectors and the concrete values supplied by their fixtures. */
 export const dynamicTestSelectors = [
+    {
+        file: 'Common/for_DatePickerInput/when_choosing_dates.tsx',
+        expression: '[data-cratis-part="${name}"]',
+        parts: ['root', 'group', 'trigger', 'popover', 'previous', 'next', 'today', 'clear'],
+    },
+    {
+        file: 'Common/for_DatePickerInput/when_choosing_dates.tsx',
+        expression: '[data-cratis-part="segment"][data-type="${type}"]',
+        parts: ['segment'],
+    },
+    {
+        file: 'Dropdown/for_Dropdown/when_rendering_every_variant.tsx',
+        expression: '[data-cratis-part="${name}"]',
+        parts: ['root', 'trigger', 'filter', 'multiple', 'value', 'clear'],
+    },
     {
         file: 'Toolbar/for_ToolbarComposition/when_rendering_stable_parts.tsx',
         expression: 'data-cratis-part="${part}"',

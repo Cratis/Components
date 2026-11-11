@@ -49,9 +49,9 @@ export const MultipleSelectDropdown = <T,>({ props, state, handlers }: DropdownB
                 aria-invalid={flag(effectiveInvalid)}
                 className={classNames('cratis-dropdown__multiple', pt?.input?.className, pt?.multiple?.className)}
                 data-cratis-part='multiple'
-                data-disabled={flag(disabled)}
-                data-invalid={flag(effectiveInvalid)}
-                data-selected={flag(selected)}
+                data-disabled={disabled || undefined}
+                data-invalid={effectiveInvalid || undefined}
+                data-selected={selected || undefined}
                 onChange={emitChosenOptions}
             >
                 {resolvedOptions.map((option) => (
@@ -59,8 +59,8 @@ export const MultipleSelectDropdown = <T,>({ props, state, handlers }: DropdownB
                         key={option.key}
                         value={option.key}
                         disabled={option.disabled}
-                        data-disabled={flag(option.disabled)}
-                        data-selected={flag(selectedKeys.includes(option.key))}
+                        data-disabled={option.disabled || undefined}
+                        data-selected={selectedKeys.includes(option.key) || undefined}
                     >
                         {option.label}
                     </option>

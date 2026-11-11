@@ -3,7 +3,6 @@
 
 import { classNames } from '../ClassNames/classNames';
 import type { DropdownProps } from './Dropdown';
-import type { ResolvedOption } from './resolveOptions';
 
 export type DropdownParts = DropdownProps['pt'];
 
@@ -18,20 +17,3 @@ export const popoverClassName = (pt: DropdownParts, panelClassName: string | und
     classNames('cratis-dropdown__popover', pt?.popover?.className, panelClassName);
 
 export const popoverStyle = (pt: DropdownParts, zIndex: string) => ({ zIndex, ...pt?.popover?.style });
-
-export const listBoxAttributes = (pt: DropdownParts, options: ResolvedOption[]) => ({
-    items: options,
-    className: classNames('cratis-dropdown__listbox', pt?.listbox?.className),
-    'data-cratis-part': 'listbox',
-    'data-open': true,
-});
-
-export const optionAttributes = (pt: DropdownParts, option: ResolvedOption, selected: boolean) => ({
-    id: option.key,
-    textValue: option.label,
-    isDisabled: option.disabled,
-    className: classNames('cratis-dropdown__option', pt?.option?.className),
-    'data-cratis-part': 'option',
-    'data-disabled': flag(option.disabled),
-    'data-selected': flag(selected),
-});

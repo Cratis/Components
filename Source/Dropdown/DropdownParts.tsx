@@ -28,10 +28,10 @@ export const DropdownRoot = ({ pt, className, style, onBlur, invalid, disabled, 
         className={className}
         data-cratis-part='root'
         data-cratis-component='Dropdown'
-        data-invalid={flag(invalid)}
-        data-disabled={flag(disabled)}
-        data-open={flag(open)}
-        data-selected={flag(selected)}
+        data-invalid={invalid || undefined}
+        data-disabled={disabled || undefined}
+        data-open={open || undefined}
+        data-selected={selected || undefined}
         style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
         onBlur={onBlur}
     >
@@ -54,7 +54,7 @@ export const DropdownClearButton = ({ pt, disabled, label, icon, onClick }: Drop
         disabled={disabled}
         className={classNames('cratis-dropdown__clear', pt?.clear?.className)}
         data-cratis-part='clear'
-        data-disabled={flag(disabled)}
+        data-disabled={disabled || undefined}
         aria-label={label}
         onClick={onClick}
     >
@@ -84,9 +84,9 @@ export const DropdownFilterInput = ({ pt, inputRef, id, placeholder, tabIndex, i
         className={classNames('cratis-dropdown__filter', pt?.input?.className, pt?.filter?.className)}
         style={{ ...pt?.input?.style, ...pt?.filter?.style }}
         data-cratis-part='filter'
-        data-disabled={flag(disabled)}
-        data-invalid={flag(invalid)}
-        data-open={flag(open)}
+        data-disabled={disabled || undefined}
+        data-invalid={invalid || undefined}
+        data-open={open || undefined}
     />
 );
 
@@ -104,9 +104,9 @@ export const DropdownComboBoxTrigger = ({ pt, disabled, invalid, selected, label
         {...asReactAriaButtonProps(pt?.trigger)}
         className={classNames('cratis-dropdown__indicator', pt?.trigger?.className)}
         data-cratis-part='trigger'
-        data-disabled={flag(disabled)}
-        data-invalid={flag(invalid)}
-        data-selected={flag(selected)}
+        data-disabled={disabled || undefined}
+        data-invalid={invalid || undefined}
+        data-selected={selected || undefined}
         render={renderTriggerWithOpenState}
         aria-label={label}
     >

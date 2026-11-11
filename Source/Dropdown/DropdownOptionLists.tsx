@@ -12,9 +12,8 @@ import {
     Popover,
 } from 'react-aria-components/Select';
 import { asReactAriaListBoxItemProps, asReactAriaListBoxProps } from '../Common/reactAriaProps';
+import { classNames } from '../ClassNames/classNames';
 import {
-    listBoxAttributes,
-    optionAttributes,
     popoverClassName,
     popoverStyle,
     type DropdownParts,
@@ -41,11 +40,23 @@ export const ComboBoxOptionList = ({ pt, panelClassName, zIndex, options, isSele
         data-cratis-part='popover'
         data-open
     >
-        <ComboBoxListBox {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)} {...listBoxAttributes(pt, options)}>
+        <ComboBoxListBox
+            {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
+            items={options}
+            className={classNames('cratis-dropdown__listbox', pt?.listbox?.className)}
+            data-cratis-part='listbox'
+            data-open
+        >
             {(option) => (
                 <ComboBoxListBoxItem
                     {...asReactAriaListBoxItemProps<ResolvedOption>(pt?.option)}
-                    {...optionAttributes(pt, option, isSelected(option.key))}
+                    id={option.key}
+                    textValue={option.label}
+                    isDisabled={option.disabled}
+                    className={classNames('cratis-dropdown__option', pt?.option?.className)}
+                    data-cratis-part='option'
+                    data-disabled={option.disabled || undefined}
+                    data-selected={isSelected(option.key) || undefined}
                 >
                     {option.label}
                 </ComboBoxListBoxItem>
@@ -63,11 +74,23 @@ export const SelectOptionList = ({ pt, panelClassName, zIndex, options, isSelect
         data-cratis-part='popover'
         data-open
     >
-        <ListBox {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)} {...listBoxAttributes(pt, options)}>
+        <ListBox
+            {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
+            items={options}
+            className={classNames('cratis-dropdown__listbox', pt?.listbox?.className)}
+            data-cratis-part='listbox'
+            data-open
+        >
             {(option) => (
                 <ListBoxItem
                     {...asReactAriaListBoxItemProps<ResolvedOption>(pt?.option)}
-                    {...optionAttributes(pt, option, isSelected(option.key))}
+                    id={option.key}
+                    textValue={option.label}
+                    isDisabled={option.disabled}
+                    className={classNames('cratis-dropdown__option', pt?.option?.className)}
+                    data-cratis-part='option'
+                    data-disabled={option.disabled || undefined}
+                    data-selected={isSelected(option.key) || undefined}
                 >
                     {option.label}
                 </ListBoxItem>

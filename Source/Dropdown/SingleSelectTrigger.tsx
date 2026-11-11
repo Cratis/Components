@@ -24,19 +24,19 @@ export const SingleSelectTrigger = <T,>({ props, state, handlers }: DropdownBran
             className={classNames('cratis-dropdown__trigger', pt?.input?.className, pt?.trigger?.className)}
             style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
             data-cratis-part='trigger'
-            data-disabled={flag(disabled)}
-            data-invalid={flag(effectiveInvalid)}
-            data-selected={flag(selected)}
+            data-disabled={disabled || undefined}
+            data-invalid={effectiveInvalid || undefined}
+            data-selected={selected || undefined}
             render={renderTriggerWithOpenState}
         >
             <SelectValue
                 {...pt?.value}
                 className={classNames('cratis-dropdown__value', pt?.value?.className)}
                 data-cratis-part='value'
-                data-disabled={flag(disabled)}
-                data-invalid={flag(effectiveInvalid)}
-                data-open={flag(isOpen)}
-                data-selected={flag(selected)}
+                data-disabled={disabled || undefined}
+                data-invalid={effectiveInvalid || undefined}
+                data-open={isOpen || undefined}
+                data-selected={selected || undefined}
             >
                 {selectedOption?.label ?? placeholder}
             </SelectValue>
@@ -44,9 +44,9 @@ export const SingleSelectTrigger = <T,>({ props, state, handlers }: DropdownBran
                 {...pt?.indicator}
                 className={classNames('cratis-dropdown__indicator', pt?.indicator?.className)}
                 data-cratis-part='indicator'
-                data-disabled={flag(disabled)}
-                data-invalid={flag(effectiveInvalid)}
-                data-open={flag(isOpen)}
+                data-disabled={disabled || undefined}
+                data-invalid={effectiveInvalid || undefined}
+                data-open={isOpen || undefined}
                 aria-hidden='true'
             >
                 {state.expandIcon}
