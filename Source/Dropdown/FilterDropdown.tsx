@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ComboBox, ComboBoxValue } from 'react-aria-components/ComboBox';
-import { UNSAFE_PortalProvider } from 'react-aria';
 import { classNames } from '../ClassNames/classNames';
 import { ComboBoxCommitBridge } from './ComboBoxCommitBridge';
 import type { DropdownBranchProps } from './DropdownBranchProps';
@@ -100,17 +99,15 @@ export const FilterDropdown = <T,>({ props, state, handlers }: DropdownBranchPro
             open={isOpen}
             selected={selected}
         >
-            <UNSAFE_PortalProvider getContainer={state.overlayEnvironment.getContainer}>
-                {multiple ? (
-                    <ComboBox {...common} selectionMode='multiple' value={selectedKeys} onChange={handlers.selectOptions}>
-                        {body}
-                    </ComboBox>
-                ) : (
-                    <ComboBox {...common} value={selectedKey} onChange={handlers.selectOption}>
-                        {body}
-                    </ComboBox>
-                )}
-            </UNSAFE_PortalProvider>
+            {multiple ? (
+                <ComboBox {...common} selectionMode='multiple' value={selectedKeys} onChange={handlers.selectOptions}>
+                    {body}
+                </ComboBox>
+            ) : (
+                <ComboBox {...common} value={selectedKey} onChange={handlers.selectOption}>
+                    {body}
+                </ComboBox>
+            )}
         </DropdownRoot>
     );
 };
