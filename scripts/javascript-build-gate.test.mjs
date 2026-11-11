@@ -265,7 +265,7 @@ const jobs = Object.fromEntries([...workflow.matchAll(/^    ([A-Za-z_][A-Za-z0-9
 test('workflow has unfiltered ordinary PRs and preserves the original push filter', () => {
     assert.match(workflow, /    pull_request:\n        branches:\n            - '\*\*'\n\npermissions:/);
     assert.doesNotMatch(workflow, /pull_request_target|merge_group|secrets\.|self-hosted/);
-    assert.match(workflow, /concurrency:\n    group: \$\{\{ github.workflow \}\}-\$\{\{ github.ref \}\}\n    cancel-in-progress: true/);
+    assert.match(workflow, /concurrency:\n    group: \$\{\{ github.event_name == 'pull_request' && format\('\{0\}-\{1\}', github.workflow, github.ref\) \|\| format\('\{0\}-\{1\}', github.workflow, github.run_id\) \}\}\n    cancel-in-progress: \$\{\{ github.event_name == 'pull_request' \}\}/);
     assert.equal(workflow.match(/    push:\n[\s\S]*?(?=    pull_request:)/)?.[0], `    push:
         branches:
             - 'main'
