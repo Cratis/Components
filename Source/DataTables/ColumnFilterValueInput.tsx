@@ -22,7 +22,7 @@ export interface ColumnFilterValueInputProps {
     filterElement?: ColumnFilterElement;
     draftValue: unknown;
     draftMode: FilterMatchMode;
-    setDraftValue: (update: unknown | (() => unknown)) => void;
+    setDraftValue: (update: unknown) => void;
     setDraftMode: (mode: FilterMatchMode) => void;
     apply: (event?: SyntheticEvent) => void;
     clear: (event?: SyntheticEvent) => void;
