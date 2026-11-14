@@ -15,6 +15,8 @@ The table can show a snapshot query, fetched on request, or an observable query,
 
 Selection ties the screen together: it can enable an action and show the same row in a resizable side pane. Let DataPage own selection for a simple list, or control it when your page needs to clear it or choose a row. The layout keeps the paginator within the height you give the page; the side pane needs a separate plan for [narrow screens](details-panel.md#narrow-screens).
 
+`DataPage` owns a main landmark by default. If your shell already renders `<main>`, pass `landmark={false}` to DataPage. It forwards the option to [Page](../Common/page.md), replacing only the content tag with a `div` and preserving layout.
+
 ## Prerequisites
 
 - Your app renders `<Arc>` from `@cratis/arc.react` around `CratisComponentsProvider`. DataPage runs the query through Arc's React hooks and does not replace that provider.

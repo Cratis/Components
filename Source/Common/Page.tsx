@@ -25,6 +25,9 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
      */
     showTitle?: boolean;
 
+    /** Whether the content region is a main landmark. Defaults to true; set false inside an existing main. */
+    landmark?: boolean;
+
     /** Page body content. */
     children?: ReactNode;
 
@@ -57,13 +60,14 @@ const pageDescriptor = describeComponent<PageProps>('Page', [
  */
 export const Page = (incomingProps: PageProps) => {
     const [props, marker] = useComponentPresentation(pageDescriptor, incomingProps, incomingProps.id);
-    const { title, showTitle = false, children, panel, className, ...rest } = props;
+    const { title, showTitle = false, landmark = true, children, panel, className, ...rest } = props;
+    const Content = landmark ? 'main' : 'div';
     return (
         <div {...marker} className={`cratis:flex cratis:flex-col cratis:h-full cratis:flex-1${className ? ` ${className}` : ''}`} {...rest}>
             {showTitle && <h1 className='cratis:text-3xl cratis:mt-3 cratis:mb-4'>{title}</h1>}
-            <main className={`cratis:overflow-hidden cratis:h-full cratis:flex cratis:flex-col cratis:flex-1 ${panel ? 'panel' : ''}`}>
+            <Content className={`cratis:overflow-hidden cratis:h-full cratis:flex cratis:flex-col cratis:flex-1 ${panel ? 'panel' : ''}`}>
                 {children}
-            </main>
+            </Content>
         </div>
     );
 };

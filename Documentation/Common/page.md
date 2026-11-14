@@ -56,6 +56,7 @@ When `showTitle` is `false`, `title` is not written to the DOM at all: it does n
 | ------------ | -------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
 | `title`      | `string`                         | Required | Page title. Rendered only when `showTitle` is `true`.                                        |
 | `showTitle`  | `boolean`                        | `false`  | Renders `title` as an `h1` above the content.                                                |
+| `landmark`   | `boolean` | `true` | Set `false` to render the content as a `div` with identical layout instead of a `main` landmark. |
 | `panel`      | `boolean`                        | `false`  | Adds a `panel` class to `<main>`. No styling for it ships with Components.                   |
 | `children`   | `ReactNode`                      | —        | Page content, rendered inside `<main>`.                                                      |
 | other props  | `HTMLAttributes<HTMLDivElement>` | —        | Forwarded to the root `div` (`id`, `style`, `aria-*`, `data-*`, event handlers, `className`). |
@@ -68,7 +69,7 @@ A `className` you pass is added after the root's layout classes, so the root kee
 - The optional `h1` sits at the top.
 - `<main>` fills the remaining space as a flex column and hides overflow. Put a scrolling element inside it when the content can be taller than the view.
 
-`Page` renders a `<main>` landmark. Use one `Page` per view, and do not put it inside another `<main>` element, because a document should have only one visible `main` landmark.
+`Page` renders a `<main>` landmark by default. When a shell already owns the main landmark, use `<Page title='Example Project' landmark={false}>…</Page>` to avoid nested or duplicate landmarks. The content then renders as a `div` with identical classes and layout.
 
 ## Examples
 
