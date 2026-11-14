@@ -978,6 +978,11 @@
     ],
     "ptDeclarations": [
         "Chat/ChatSidebar.tsx#ChatSidebarProps",
+        "Chat/ChatSidebarContent.tsx#ChatSidebarContentProps",
+        "Chat/ChatSidebarHeader.tsx#ChatSidebarHeaderProps",
+        "Chat/ChatSidebarHeader.tsx#HeaderButtonProps",
+        "Chat/ChatSidebarHeader.tsx#TitleProps",
+        "Chat/ChatSidebarShells.tsx#ChatSidebarShellProps",
         "CommandDialog/CommandStepper.tsx#StepperCustomizationProps",
         "CommandForm/fields/CalendarField.tsx#CalendarFieldComponentProps",
         "CommandForm/fields/CheckboxField.tsx#CheckboxFieldComponentProps",
