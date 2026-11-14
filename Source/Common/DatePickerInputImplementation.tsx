@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import {
     Button,
     DatePicker as AriaDatePicker,
@@ -17,6 +17,7 @@ import { DatePickerPopover } from './DatePickerPopover';
 import { asDate, asDateValue } from './datePickerValues';
 import { rootStateAttributes, triggerStateAttributes } from './datePickerStateAttributes';
 import { useDatePickerState } from './useDatePickerState';
+import { useDatePickerAccessibility } from './useDatePickerAccessibility';
 
 const resolveHourCycle = (hourFormat: DatePickerInputProps['hourFormat']) => {
     if (hourFormat === '12') return 12;
@@ -30,9 +31,9 @@ const resolveHourCycle = (hourFormat: DatePickerInputProps['hourFormat']) => {
 export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
     const { value, onChange, onBlur, showButtonBar, isNonModal = false, showIcon = true, showTime, hourFormat, style, pt } = props;
     const [isPickerOpen, setIsPickerOpen] = useState(false);
-    const calendarId = useId();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const state = useDatePickerState(props);
+    const { calendarId, triggerLabel, triggerAttributes } = useDatePickerAccessibility(props, state.datePickerMessages?.openCalendar);
     const { effectiveDisabled, effectiveReadOnly } = state;
     const fieldState = {
         invalid: state.effectiveInvalid,
@@ -111,15 +112,10 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
                                             <button
                                                 {...triggerProps}
                                                 {...triggerStateAttributes(fieldState, isOpen)}
-                                                aria-controls={isOpen ? calendarId : undefined}
+                                                {...triggerAttributes(isOpen)}
                                             />
                                         )}
-                                        aria-label={
-                                            props.openCalendarLabel ??
-                                            pt?.trigger?.['aria-label'] ??
-                                            state.datePickerMessages?.openCalendar ??
-                                            'Open calendar'
-                                        }
+                                        aria-label={triggerLabel}
                                     >
                                         <span aria-hidden='true'>▦</span>
                                     </Button>

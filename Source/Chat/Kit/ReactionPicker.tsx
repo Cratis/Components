@@ -1,13 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { RefObject, useEffect, useId, useRef, useState } from 'react';
+import { RefObject, useId, useState } from 'react';
 import { FocusScope } from 'react-aria';
 import { EmojiOptions } from './Emoji/EmojiOptions';
 import { EmojiPicker, type EmojiPickerLabels } from './Emoji/EmojiPicker';
 import { recentEmojis, rememberEmoji } from './Emoji/recentEmojis';
 import type { EmojiMemory } from './Emoji/EmojiMemory';
 import type { ChatMessageReaction } from './ChatMessageReaction';
+import { useReactionPickerFocus } from './useReactionPickerFocus';
 
 /** Overrides for the picker's own labels. Any field left unset falls back to a literal English
  *  default. */
@@ -76,7 +77,7 @@ export const ReactionPicker = ({
     onDismiss,
     labels,
 }: ReactionPickerProps) => {
-    const rootRef = useRef<HTMLDivElement>(null);
+    const { rootRef, onKeyDown } = useReactionPickerFocus(anchorRef, onDismiss);
     const fullPickerId = useId();
     const store =
         memory ?? (typeof window === 'undefined' ? undefined : window.localStorage);
@@ -84,21 +85,6 @@ export const ReactionPicker = ({
         store ? recentEmojis(store) : [],
     );
     const [showingAll, setShowingAll] = useState(false);
-
-    useEffect(() => {
-        const handlePointerDown = (event: PointerEvent) => {
-            const target = event.target as Node;
-            if (rootRef.current?.contains(target) || anchorRef?.current?.contains(target))
-                return;
-            onDismiss();
-        };
-        // Capture phase, so board items that stop pointerdown propagation for their own
-        // gestures still dismiss the picker.
-        document.addEventListener('pointerdown', handlePointerDown, true);
-        return () => {
-            document.removeEventListener('pointerdown', handlePointerDown, true);
-        };
-    }, [onDismiss, anchorRef]);
 
     const pick = (emoji: string) => {
         // Remembered before it is handed on: the caller closes the picker, and the row has to already
@@ -109,12 +95,7 @@ export const ReactionPicker = ({
 
     return (
         <FocusScope contain restoreFocus autoFocus>
-            <div ref={rootRef} className='reaction-picker' role='dialog' aria-label={labels?.pickEmoji ?? 'Pick an emoji'} onKeyDown={(event) => {
-                if (event.key !== 'Escape') return;
-                event.preventDefault();
-                event.stopPropagation();
-                onDismiss();
-            }}>
+            <div ref={rootRef} className='reaction-picker' role='dialog' aria-label={labels?.pickEmoji ?? 'Pick an emoji'} onKeyDown={onKeyDown}>
                 <div className='reaction-picker__quick'>
                     <EmojiOptions
                         emojis={quickEmojis}

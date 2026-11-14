@@ -43,6 +43,15 @@ describe('when opening the calendar', () => {
         should().not.exist(within(document.body).queryByRole('dialog'));
     });
 
+    it('should preserve a caller-supplied dialog id and point the trigger at it', async () => {
+        await act(async () => root.render(<DatePickerInput value={null} onChange={() => undefined} pt={{ dialog: { id: 'example-calendar-dialog' } }} />));
+        const trigger = within(container).getByRole('button', { name: 'Open calendar Date' });
+        await act(async () => trigger.click());
+        const popup = within(document.body).getByRole('dialog');
+        popup.id.should.equal('example-calendar-dialog');
+        trigger.getAttribute('aria-controls')!.should.equal(popup.id);
+    });
+
     it('should accept a localized trigger label', async () => {
         await act(async () => root.render(<DatePickerInput value={null} onChange={() => undefined} openCalendarLabel='Choose date' />));
         should().exist(within(container).getByRole('button', { name: 'Choose date Date' }));
