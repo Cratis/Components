@@ -261,6 +261,9 @@ export interface DataPageProps<
      */
     title: string;
 
+    /** Whether the page content is a main landmark. Defaults to true; set false inside an existing main. */
+    landmark?: boolean;
+
     /**
      * Children to render, for this it means menu items and columns. Use <DataPage.MenuItems> and <DataPage.Columns> for this.
      */
@@ -584,7 +587,7 @@ const DataPage = <
 
     return (
         <DataPageContext.Provider value={context}>
-            <Page title={props.title} panel={true} style={pageStyle} data-cratis-component='DataPage'>
+            <Page title={props.title} landmark={props.landmark} panel={true} style={pageStyle} data-cratis-component='DataPage'>
                 {props.detailsComponent ? (
                     <Allotment className='cratis:h-full' proportionalLayout={false}>
                         <Allotment.Pane>

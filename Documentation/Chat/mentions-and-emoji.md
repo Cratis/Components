@@ -61,4 +61,8 @@ If your application needs to process mentions outside the conversation, `findMen
 
 The composer's emoji button opens a quick row of recently used emoji, with an option to open the full categorized picker. Choosing an emoji inserts it at the caret. Recent choices are stored in the browser when storage is available; no application callback is required.
 
+The picker is nonmodal: it moves focus into its emoji buttons, but Tab and Shift+Tab can leave it or move back to the quick row and its toggle. Each labelled button group has one tab stop; `aria-pressed` identifies your current reaction. Left/Right move between emoji with wrapping, Up/Down move by a row (eight columns in the full picker, staying in the same column at an edge), and Home/End move to the first/last button. Enter or Space chooses the focused emoji. The full picker's React Aria category tabs use Left/Right (with wrapping) and Home/End to switch their associated, lazily mounted panel. Tab moves from the selected category tab to the emoji buttons, then out of the picker. Categories remain visually below the emoji. Escape dismisses the reaction picker and restores focus to the previously focused control. Pointer selection and outside-click dismissal remain available.
+
+Picker labels can be localized through `ReactionPicker.labels` and its `emojiPicker` labels, including category names.
+
 To let someone reply directly to a message's author, see [quick reply](./message-actions.md#quick-reply).

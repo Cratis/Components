@@ -9,6 +9,7 @@ import { DatePickerCalendar } from './DatePickerCalendar';
 import type { DatePickerInputPassThrough } from './DatePickerInput';
 
 interface DatePickerPopoverProps {
+    id: string;
     pt: DatePickerInputPassThrough | undefined;
     isNonModal: boolean;
     zIndex: string;
@@ -16,7 +17,7 @@ interface DatePickerPopoverProps {
 }
 
 /** The portaled popover with the calendar dialog and, when requested, the Today and Clear actions. */
-export const DatePickerPopover = ({ pt, isNonModal, zIndex, buttonBar }: DatePickerPopoverProps) => (
+export const DatePickerPopover = ({ id, pt, isNonModal, zIndex, buttonBar }: DatePickerPopoverProps) => (
     <Popover
         {...pt?.popover}
         isNonModal={isNonModal}
@@ -28,6 +29,7 @@ export const DatePickerPopover = ({ pt, isNonModal, zIndex, buttonBar }: DatePic
     >
         <Dialog
             {...pt?.dialog}
+            id={id}
             className={classNames('cratis-date-picker__dialog', pt?.dialog?.className)}
             data-cratis-part='dialog'
             data-open

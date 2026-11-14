@@ -87,6 +87,7 @@ The Today and Clear buttons call `onChange` directly; they do not close the popo
 | `showTime` | `boolean` | `false` | Adds hour and minute segments. |
 | `hourFormat` | `'12' \| '24'` | Locale | Hour cycle for the time segments. Omit it to use the locale's hour cycle. |
 | `minDate` / `maxDate` | `Date` | Unbounded | Earliest and latest selectable date for the calendar and the Today action. |
+| `openCalendarLabel` | `string` | Provider message or `Open calendar` | Accessible name of the calendar trigger, combined with the field label. |
 | `todayLabel` / `clearLabel` | `string` | Provider message | Per-instance labels for the Today and Clear actions. |
 | `aria-label` | `string` | See [Labels](#locale-and-labels) | Accessible name of the segmented-input group. |
 | `aria-labelledby` | `string` | — | Id of an element that labels the picker. |
