@@ -43,7 +43,7 @@ export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCov
     ChipsField: { marked: ['CommandForm/fields/ChipsField.tsx'] },
     ColorPickerField: { marked: ['CommandForm/fields/ColorPickerField.tsx'] },
     Column: { exempt: 'Declarative column marker; the table renders its header cell, identified as DataTableColumn.' },
-    ColumnFilterMenu: { marked: ['DataTables/ColumnFilterMenu.tsx'] },
+    ColumnFilterMenu: { marked: ['DataTables/ColumnFilterTrigger.tsx'] },
     Columns: { exempt: 'Declarative column container.' },
     ComboBox: { marked: ['Common/ComboBox.tsx'] },
     CommandDialog: { delegatesTo: 'Dialog' },

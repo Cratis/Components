@@ -458,7 +458,12 @@ export const partDefinitions = {
     },
     ColumnFilterMenu: {
         parts: ['filter-trigger', 'filter-popover', 'filter-menu', 'filter-actions'],
-        sources: ['DataTables/ColumnFilterMenu.tsx'],
+        sources: [
+            'DataTables/ColumnFilterMenu.tsx',
+            'DataTables/ColumnFilterTrigger.tsx',
+            'DataTables/ColumnFilterActions.tsx',
+            'DataTables/ColumnFilterValueInput.tsx',
+        ],
         ptKeys: [
             'trigger',
             'popover',
@@ -1409,7 +1414,7 @@ export const implicitPartStateAllowlist = [
     },
     {
         component: 'ColumnFilterMenu',
-        file: 'DataTables/ColumnFilterMenu.tsx',
+        file: 'DataTables/ColumnFilterTrigger.tsx',
         part: 'filter-trigger',
         states: ['pressed'],
         reason: 'React Aria Button emits data-pressed during pointer activation.',
