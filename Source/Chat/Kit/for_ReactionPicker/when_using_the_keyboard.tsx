@@ -18,12 +18,12 @@ const ExamplePicker = () => {
     const [picked, setPicked] = useState('');
     return <>
         <button ref={anchorRef} onClick={() => setOpen(!open)}>React</button>
-        <button>Outside</button>
         <output aria-label='Picked'>{picked}</output>
         {open && <ReactionPicker memory={{ getItem: () => null, setItem: () => undefined }} anchorRef={anchorRef} ownEmoji='👍' onDismiss={() => setOpen(false)} onPick={(emoji) => {
             setPicked(emoji);
             setOpen(false);
         }} />}
+        <button>Outside</button>
     </>;
 };
 
@@ -40,59 +40,95 @@ afterEach(async () => {
     container.remove();
 });
 
-test('quick reactions use roving focus, activate with Enter and restore the opener', async () => {
+test('quick reactions are pressed-state actions with one collection entry', async () => {
     const view = within(container);
     await userEvent.click(view.getByRole('button', { name: 'React' }));
-    const list = view.getByRole('listbox');
-    const options = within(list).getAllByRole('option');
-    expect(list.querySelectorAll('[tabindex="0"]').length).toBe(1);
-    expect(list.contains(document.activeElement)).toBe(true);
+    const group = view.getByRole('group', { name: 'Pick an emoji' });
+    const choices = within(group).getAllByRole('button');
+    expect(group.querySelectorAll('[tabindex="0"]').length).toBe(1);
+    expect(within(group).getByRole('button', { name: '👍', pressed: true })).toBe(choices[0]);
+    expect(container.querySelector('[role="listbox"], [role="option"], [aria-selected]')).toBeNull();
+    expect(group.contains(document.activeElement)).toBe(true);
     await userEvent.keyboard('{End}');
-    expect(document.activeElement).toBe(options.at(-1));
+    expect(document.activeElement).toBe(choices.at(-1));
     await userEvent.keyboard('{Home}{ArrowRight}');
     const chosen = document.activeElement!.textContent;
     await userEvent.keyboard('{Enter}');
     expect(view.getByLabelText('Picked').textContent).toBe(chosen);
-    expect(view.queryByRole('dialog')).toBeNull();
+    expect(view.queryByRole('group')).toBeNull();
     await expect.poll(() => document.activeElement).toBe(view.getByRole('button', { name: 'React' }));
 });
 
-test('full picker tabs and options are linked, keyboard navigable and dismissible', async () => {
+test('full picker tabs and button groups are linked and keyboard navigable', async () => {
     const view = within(container);
     await userEvent.click(view.getByRole('button', { name: 'React' }));
     await userEvent.click(view.getByRole('button', { name: 'All emojis' }));
-    const full = view.getByRole('dialog', { name: 'All emojis' });
+    const full = view.getByRole('group', { name: 'All emojis' });
     const tabs = within(full).getAllByRole('tab');
     const first = tabs[0];
     expect(within(full).getByRole('tabpanel').getAttribute('aria-labelledby')).toBe(first.id);
     expect(first.getAttribute('aria-controls')).toBe(within(full).getByRole('tabpanel').id);
-    expect(within(full).getByRole('listbox').contains(document.activeElement)).toBe(true);
-    await userEvent.tab();
-    expect(document.activeElement).toBe(first);
+    const choices = within(full).getByRole('group', { name: 'Pick an emoji' });
+    await expect.poll(() => document.activeElement).toBe(first);
+    expect(choices.querySelector('[role="option"], [aria-selected]')).toBeNull();
     await userEvent.keyboard('{End}');
     expect(document.activeElement).toBe(tabs.at(-1));
     expect(tabs.at(-1)!.getAttribute('aria-selected')).toBe('true');
     await userEvent.keyboard('{ArrowRight}');
     expect(document.activeElement).toBe(first);
     await userEvent.keyboard('{Home}');
-    await userEvent.tab({ shift: true });
-    expect(within(full).getByRole('listbox').contains(document.activeElement)).toBe(true);
+    await userEvent.tab();
+    expect(within(full).getByRole('group', { name: 'Pick an emoji' }).contains(document.activeElement)).toBe(true);
     await userEvent.keyboard(' ');
     expect(view.getByLabelText('Picked').textContent).not.toBe('');
-    await userEvent.click(view.getByRole('button', { name: 'React' }));
+});
+
+test('Tab can leave the quick picker and Escape returns focus to the opener', async () => {
+    const view = within(container);
+    const opener = view.getByRole('button', { name: 'React' });
+    await userEvent.click(opener);
+    await userEvent.tab();
+    expect(document.activeElement).toBe(view.getByRole('button', { name: 'All emojis' }));
+    await userEvent.tab();
+    expect(document.activeElement).toBe(view.getByRole('button', { name: 'Outside' }));
+    await userEvent.tab({ shift: true });
     await userEvent.keyboard('{Escape}');
-    expect(view.queryByRole('dialog')).toBeNull();
-    await expect.poll(() => document.activeElement).toBe(view.getByRole('button', { name: 'React' }));
+    expect(view.queryByRole('group')).toBeNull();
+    await expect.poll(() => document.activeElement).toBe(opener);
+});
+
+test('the full picker permits focus back to the quick row and toggle, and Tab outside', async () => {
+    const view = within(container);
+    const opener = view.getByRole('button', { name: 'React' });
+    await userEvent.click(opener);
+    const toggle = view.getByRole('button', { name: 'All emojis' });
+    await userEvent.click(toggle);
+    await expect.poll(() => document.activeElement).toBe(view.getAllByRole('tab')[0]);
+    await userEvent.tab({ shift: true });
+    expect(document.activeElement).toBe(toggle);
+    await userEvent.tab({ shift: true });
+    expect(view.getAllByRole('group', { name: 'Pick an emoji' })[0].contains(document.activeElement)).toBe(true);
+    await userEvent.click(toggle);
+    expect(view.queryByRole('group', { name: 'All emojis' })).toBeNull();
+    await userEvent.click(toggle);
+    await expect.poll(() => document.activeElement).toBe(view.getAllByRole('tab')[0]);
+    await userEvent.tab();
+    await userEvent.tab();
+    expect(document.activeElement).toBe(view.getByRole('button', { name: 'Outside' }));
+    await userEvent.tab({ shift: true });
+    await userEvent.keyboard('{Escape}');
+    expect(view.queryByRole('group')).toBeNull();
+    await expect.poll(() => document.activeElement).toBe(opener);
 });
 
 test('pointer selection and outside dismissal remain available', async () => {
     const view = within(container);
     await userEvent.click(view.getByRole('button', { name: 'React' }));
-    const option = view.getAllByRole('option')[0];
-    const chosen = option.textContent;
-    await userEvent.click(option);
+    const choice = within(view.getByRole('group', { name: 'Pick an emoji' })).getAllByRole('button')[0];
+    const chosen = choice.textContent;
+    await userEvent.click(choice);
     expect(view.getByLabelText('Picked').textContent).toBe(chosen);
     await userEvent.click(view.getByRole('button', { name: 'React' }));
     await userEvent.click(view.getByRole('button', { name: 'Outside' }));
-    expect(view.queryByRole('dialog')).toBeNull();
+    expect(view.queryByRole('group')).toBeNull();
 });

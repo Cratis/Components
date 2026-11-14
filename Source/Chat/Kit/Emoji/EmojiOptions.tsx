@@ -7,27 +7,28 @@ import { movePickerFocus } from './movePickerFocus';
 interface EmojiOptionsProps {
     emojis: readonly string[];
     ownEmoji?: string;
+    columns?: number;
     label: string;
     className: string;
     optionClassName: string;
     onPick: (emoji: string) => void;
 }
 
-/** A single-tab-stop emoji list; arrow keys move focus without changing the reaction. */
-export const EmojiOptions = ({ emojis, ownEmoji, label, className, optionClassName, onPick }: EmojiOptionsProps) => {
-    const [active, setActive] = useState(() => Math.max(0, emojis.indexOf(ownEmoji ?? '')));
+/** A single-tab-stop group of emoji actions; item updates retain a valid focus entry. */
+export const EmojiOptions = ({ emojis, ownEmoji, columns = 1, label, className, optionClassName, onPick }: EmojiOptionsProps) => {
+    const [focusedEmoji, setFocusedEmoji] = useState(ownEmoji);
+    const active = emojis.includes(focusedEmoji ?? '') ? focusedEmoji : emojis[0];
     return (
-        <div role='listbox' aria-label={label} className={className} onKeyDown={movePickerFocus}>
-            {emojis.map((emoji, index) => (
+        <div role='group' aria-label={label} className={className} onKeyDown={(event) => movePickerFocus(event, columns)}>
+            {emojis.map((emoji) => (
                 <button
                     key={emoji}
                     type='button'
-                    role='option'
                     data-picker-item
-                    tabIndex={active === index ? 0 : -1}
-                    aria-selected={emoji === ownEmoji}
+                    tabIndex={active === emoji ? 0 : -1}
+                    aria-pressed={emoji === ownEmoji}
                     className={`${optionClassName}${emoji === ownEmoji ? ` ${optionClassName}--selected` : ''}`}
-                    onFocus={() => setActive(index)}
+                    onFocus={() => setFocusedEmoji(emoji)}
                     onClick={() => onPick(emoji)}
                 >
                     {emoji}

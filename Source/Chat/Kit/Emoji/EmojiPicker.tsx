@@ -1,10 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useId, useState } from 'react';
-import { FocusScope } from 'react-aria';
+import { useState } from 'react';
+import { Tab, TabList, TabPanel, Tabs } from 'react-aria-components/Tabs';
 import { EmojiOptions } from './EmojiOptions';
-import { movePickerFocus } from './movePickerFocus';
+import { useEmojiPickerFocus } from './useEmojiPickerFocus';
 import { EMOJI_CATALOG } from './emojiCatalog';
 import { EmojiCategoryKey } from './EmojiCategoryKey';
 
@@ -37,9 +37,9 @@ const DEFAULT_CATEGORY_LABELS: Record<EmojiCategoryKey, string> = {
 
 /** Overrides for the picker's labels. Any field left unset falls back to a literal English default. */
 export interface EmojiPickerLabels {
-    /** Accessible label for the picker dialog. Defaults to `'All emojis'`. */
+    /** Accessible label for the picker group. Defaults to `'All emojis'`. */
     allEmojis?: string;
-    /** Accessible label for the emoji grid. Defaults to `'Pick an emoji'`. */
+    /** Accessible label for the emoji button group. Defaults to `'Pick an emoji'`. */
     pickEmoji?: string;
     /** Accessible label for the category tab list. Defaults to `'Emoji categories'`. */
     emojiCategories?: string;
@@ -71,57 +71,39 @@ export interface EmojiPickerProps {
  */
 export const EmojiPicker = ({ ownEmoji, onPick, labels }: EmojiPickerProps) => {
     const [category, setCategory] = useState(EmojiCategoryKey.Smileys);
-    const pickerId = useId();
-
-    const emojis =
-        EMOJI_CATALOG.find((section) => section.key === category)?.emojis ?? [];
+    const rootRef = useEmojiPickerFocus();
     const categoryLabel = (key: EmojiCategoryKey) =>
         labels?.categories?.[key] ?? DEFAULT_CATEGORY_LABELS[key];
 
     return (
-        <FocusScope contain restoreFocus autoFocus>
-            <div
-                className='emoji-picker'
-                role='dialog'
-                aria-label={labels?.allEmojis ?? 'All emojis'}
-            >
-                <div role='tabpanel' id={`${pickerId}-panel`} aria-labelledby={`${pickerId}-${category}`} tabIndex={-1}>
-                    <EmojiOptions
-                        key={category}
-                        emojis={emojis}
-                        ownEmoji={ownEmoji}
-                        label={labels?.pickEmoji ?? 'Pick an emoji'}
-                        className='emoji-picker__grid'
-                        optionClassName='emoji-picker__emoji'
-                        onPick={onPick}
-                    />
-                </div>
-                <div
-                    className='emoji-picker__tabs'
-                    role='tablist'
-                    onKeyDown={(event) => movePickerFocus(event, true)}
-                    aria-label={labels?.emojiCategories ?? 'Emoji categories'}
-                >
+        <div ref={rootRef} className='emoji-picker' role='group' aria-label={labels?.allEmojis ?? 'All emojis'}>
+            <Tabs selectedKey={category} onSelectionChange={(key) => setCategory(key as EmojiCategoryKey)} className='emoji-picker__categories'>
+                <TabList className='emoji-picker__tabs' aria-label={labels?.emojiCategories ?? 'Emoji categories'}>
                     {EMOJI_CATALOG.map((section) => (
-                        <button
+                        <Tab
                             key={section.key}
-                            type='button'
-                            role='tab'
-                            id={`${pickerId}-${section.key}`}
-                            data-picker-item
-                            tabIndex={section.key === category ? 0 : -1}
-                            aria-controls={`${pickerId}-panel`}
-                            aria-selected={section.key === category}
+                            id={section.key}
                             aria-label={categoryLabel(section.key)}
-                            title={categoryLabel(section.key)}
-                            className={`emoji-picker__tab${section.key === category ? ' emoji-picker__tab--current' : ''}`}
-                            onClick={() => setCategory(section.key)}
+                            className={({ isSelected }) => `emoji-picker__tab${isSelected ? ' emoji-picker__tab--current' : ''}`}
                         >
-                            {CATEGORY_GLYPHS[section.key]}
-                        </button>
+                            <span title={categoryLabel(section.key)}>{CATEGORY_GLYPHS[section.key]}</span>
+                        </Tab>
                     ))}
-                </div>
-            </div>
-        </FocusScope>
+                </TabList>
+                {EMOJI_CATALOG.map((section) => (
+                    <TabPanel key={section.key} id={section.key}>
+                        <EmojiOptions
+                            emojis={section.emojis}
+                            ownEmoji={ownEmoji}
+                            columns={8}
+                            label={labels?.pickEmoji ?? 'Pick an emoji'}
+                            className='emoji-picker__grid'
+                            optionClassName='emoji-picker__emoji'
+                            onPick={onPick}
+                        />
+                    </TabPanel>
+                ))}
+            </Tabs>
+        </div>
     );
 };

@@ -94,8 +94,8 @@ export const ReactionPicker = ({
     };
 
     return (
-        <FocusScope contain restoreFocus autoFocus>
-            <div ref={rootRef} className='reaction-picker' role='dialog' aria-label={labels?.pickEmoji ?? 'Pick an emoji'} onKeyDown={onKeyDown}>
+        <FocusScope restoreFocus autoFocus>
+            <div ref={rootRef} className='reaction-picker' onKeyDown={onKeyDown}>
                 <div className='reaction-picker__quick'>
                     <EmojiOptions
                         emojis={quickEmojis}
@@ -111,7 +111,6 @@ export const ReactionPicker = ({
                         title={labels?.allEmojis ?? 'All emojis'}
                         aria-label={labels?.allEmojis ?? 'All emojis'}
                         aria-expanded={showingAll}
-                        aria-haspopup='dialog'
                         aria-controls={showingAll ? fullPickerId : undefined}
                         onClick={() => setShowingAll((open) => !open)}
                     >

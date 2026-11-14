@@ -4,7 +4,7 @@
 import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Guid } from '@cratis/fundamentals';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import { PersonAvatarCircle } from './Avatar/PersonAvatarCircle';
 import { ChatAuthorKind } from './ChatAuthorKind';
@@ -207,6 +207,23 @@ export const QuickReactionPicker: Story = {
 
 export const AllEmojis: Story = {
     render: () => <EmojiPicker ownEmoji='👍' onPick={fn()} />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const choices = canvas.getByRole('group', { name: 'Pick an emoji' });
+        const buttons = within(choices).getAllByRole('button');
+        await waitFor(async () => expect(canvas.getAllByRole('tab')[0]).toHaveFocus());
+        await userEvent.click(buttons[0]);
+        await userEvent.keyboard('{ArrowDown}');
+        await expect(buttons[8]).toHaveFocus();
+        await userEvent.keyboard('{ArrowUp}');
+        await expect(buttons[0]).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        const tabs = canvas.getAllByRole('tab');
+        await expect(tabs[0]).toHaveFocus();
+        await userEvent.keyboard('{End}');
+        await expect(tabs.at(-1)).toHaveFocus();
+        await expect(canvas.getAllByRole('tabpanel')).toHaveLength(1);
+    },
 };
 
 const KeyboardPickerExample = () => {
@@ -220,6 +237,7 @@ const KeyboardPickerExample = () => {
             setPicked(emoji);
             setOpen(false);
         }} />}
+        <button>Outside</button>
     </>;
 };
 
@@ -230,13 +248,18 @@ export const KeyboardReactionPicker: Story = {
         const opener = canvas.getByRole('button', { name: 'React' });
         await userEvent.click(opener);
         await userEvent.keyboard('{End}');
-        const quick = canvas.getByRole('listbox');
+        const quick = canvas.getByRole('group', { name: 'Pick an emoji' });
         await expect(quick).toContainElement(document.activeElement as HTMLElement);
         await expect(quick.querySelectorAll('[tabindex="0"]').length).toBe(1);
         await userEvent.tab();
         await userEvent.keyboard('{Enter}');
-        const full = canvas.getByRole('dialog', { name: 'All emojis' });
-        await expect(within(full).getByRole('listbox')).toContainElement(document.activeElement as HTMLElement);
+        const full = canvas.getByRole('group', { name: 'All emojis' });
+        await waitFor(async () => expect(within(full).getAllByRole('tab')[0]).toHaveFocus());
+        await userEvent.tab({ shift: true });
+        await expect(canvas.getByRole('button', { name: 'All emojis' })).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await expect(quick).toContainElement(document.activeElement as HTMLElement);
+        await userEvent.tab();
         await userEvent.tab();
         await userEvent.keyboard('{End}');
         const tabs = within(full).getAllByRole('tab');
@@ -244,13 +267,16 @@ export const KeyboardReactionPicker: Story = {
         await expect(tabs.at(-1)).toHaveAttribute('aria-selected', 'true');
         await userEvent.keyboard('{ArrowRight}');
         await expect(tabs[0]).toHaveFocus();
+        await userEvent.tab();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'Outside' })).toHaveFocus();
         await userEvent.tab({ shift: true });
         await userEvent.keyboard(' ');
         await expect(canvas.getByLabelText('Picked emoji')).not.toBeEmptyDOMElement();
         await expect(opener).toHaveFocus();
         await userEvent.click(opener);
         await userEvent.keyboard('{Escape}');
-        await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+        await expect(canvas.queryByRole('group')).not.toBeInTheDocument();
         await expect(opener).toHaveFocus();
     },
 };

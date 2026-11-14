@@ -4,14 +4,14 @@
 import type { KeyboardEvent } from 'react';
 
 /** Moves focus within a picker composite; activation remains the native button's responsibility. */
-export const movePickerFocus = (event: KeyboardEvent<HTMLElement>, activate = false) => {
-    const items = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[data-picker-item]'));
+export const movePickerFocus = (event: KeyboardEvent<HTMLElement>, columns = 1) => {
+    const items = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[data-picker-item]:not(:disabled)'));
     const index = items.indexOf(event.target as HTMLButtonElement);
     const destinations: Record<string, number> = {
         ArrowRight: (index + 1) % items.length,
-        ArrowDown: (index + 1) % items.length,
+        ArrowDown: index + columns < items.length ? index + columns : index,
         ArrowLeft: (index - 1 + items.length) % items.length,
-        ArrowUp: (index - 1 + items.length) % items.length,
+        ArrowUp: Math.max(index - columns, index % columns),
         Home: 0,
         End: items.length - 1,
     };
@@ -20,5 +20,4 @@ export const movePickerFocus = (event: KeyboardEvent<HTMLElement>, activate = fa
     event.preventDefault();
     event.stopPropagation();
     items[destination]?.focus();
-    if (activate) items[destination]?.click();
 };
