@@ -337,7 +337,13 @@ export const partDefinitions = {
             'confirm',
             'cancel',
         ],
-        sources: ['Dialogs/DialogImplementation.tsx'],
+        sources: [
+            'Dialogs/DialogImplementation.tsx',
+            'Dialogs/DialogDocument.tsx',
+            'Dialogs/DialogFooter.tsx',
+            'Dialogs/DialogHeader.tsx',
+            'Dialogs/DialogShells.tsx',
+        ],
         ptFiles: ['Dialogs/Dialog.tsx'],
         ptKeys: [
             'backdrop',
@@ -1428,11 +1434,6 @@ export const implicitPartStateAllowlist = [
 
 /** Exact dynamic production expressions that intentionally emit known parts. */
 export const dynamicPartExpressions = [
-    {
-        file: 'Dialogs/DialogImplementation.tsx',
-        expression: "primary ? 'confirm' : 'cancel'",
-        parts: ['confirm', 'cancel'],
-    },
     {
         file: 'SchemaEditor/Tree/PropertyTypeMenu.tsx',
         expression: "triggerPart === 'add' ? 'add' : 'typeButton'",
