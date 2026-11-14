@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Guid } from '@cratis/fundamentals';
 import { expect, fn, userEvent, within } from 'storybook/test';
@@ -207,6 +207,52 @@ export const QuickReactionPicker: Story = {
 
 export const AllEmojis: Story = {
     render: () => <EmojiPicker ownEmoji='👍' onPick={fn()} />,
+};
+
+const KeyboardPickerExample = () => {
+    const anchorRef = useRef<HTMLButtonElement>(null);
+    const [open, setOpen] = useState(false);
+    const [picked, setPicked] = useState('');
+    return <>
+        <button ref={anchorRef} onClick={() => setOpen(!open)}>React</button>
+        <output aria-label='Picked emoji'>{picked}</output>
+        {open && <ReactionPicker anchorRef={anchorRef} onDismiss={() => setOpen(false)} onPick={(emoji) => {
+            setPicked(emoji);
+            setOpen(false);
+        }} />}
+    </>;
+};
+
+export const KeyboardReactionPicker: Story = {
+    render: () => <KeyboardPickerExample />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const opener = canvas.getByRole('button', { name: 'React' });
+        await userEvent.click(opener);
+        await userEvent.keyboard('{End}');
+        const quick = canvas.getByRole('listbox');
+        await expect(quick).toContainElement(document.activeElement as HTMLElement);
+        await expect(quick.querySelectorAll('[tabindex="0"]').length).toBe(1);
+        await userEvent.tab();
+        await userEvent.keyboard('{Enter}');
+        const full = canvas.getByRole('dialog', { name: 'All emojis' });
+        await expect(within(full).getByRole('listbox')).toContainElement(document.activeElement as HTMLElement);
+        await userEvent.tab();
+        await userEvent.keyboard('{End}');
+        const tabs = within(full).getAllByRole('tab');
+        await expect(tabs.at(-1)).toHaveFocus();
+        await expect(tabs.at(-1)).toHaveAttribute('aria-selected', 'true');
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(tabs[0]).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await userEvent.keyboard(' ');
+        await expect(canvas.getByLabelText('Picked emoji')).not.toBeEmptyDOMElement();
+        await expect(opener).toHaveFocus();
+        await userEvent.click(opener);
+        await userEvent.keyboard('{Escape}');
+        await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+        await expect(opener).toHaveFocus();
+    },
 };
 
 export const Mentions: Story = {

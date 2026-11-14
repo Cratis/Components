@@ -61,4 +61,8 @@ If your application needs to process mentions outside the conversation, `findMen
 
 The composer's emoji button opens a quick row of recently used emoji, with an option to open the full categorized picker. Choosing an emoji inserts it at the caret. Recent choices are stored in the browser when storage is available; no application callback is required.
 
+The picker moves focus into its emoji list and contains Tab navigation while open. Each list has one tab stop: arrow keys move between emoji without selecting one, and Home/End move to the first/last option. Enter or Space chooses the focused emoji. The full picker's category tabs use Left/Right (with wrapping) and Home/End to switch categories; Tab moves between the emoji list and the selected category tab. Escape dismisses the reaction picker and restores focus to the previously focused control. Pointer selection and outside-click dismissal remain available.
+
+Picker labels can be localized through `ReactionPicker.labels` and its `emojiPicker` labels, including category names.
+
 To let someone reply directly to a message's author, see [quick reply](./message-actions.md#quick-reply).

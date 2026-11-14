@@ -1,7 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useId, useRef, useState } from 'react';
+import { FocusScope } from 'react-aria';
+import { EmojiOptions } from './Emoji/EmojiOptions';
 import { EmojiPicker, type EmojiPickerLabels } from './Emoji/EmojiPicker';
 import { recentEmojis, rememberEmoji } from './Emoji/recentEmojis';
 import type { EmojiMemory } from './Emoji/EmojiMemory';
@@ -75,6 +77,7 @@ export const ReactionPicker = ({
     labels,
 }: ReactionPickerProps) => {
     const rootRef = useRef<HTMLDivElement>(null);
+    const fullPickerId = useId();
     const store =
         memory ?? (typeof window === 'undefined' ? undefined : window.localStorage);
     const [quickEmojis, setQuickEmojis] = useState(() =>
@@ -89,17 +92,11 @@ export const ReactionPicker = ({
                 return;
             onDismiss();
         };
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onDismiss();
-        };
-
         // Capture phase, so board items that stop pointerdown propagation for their own
         // gestures still dismiss the picker.
         document.addEventListener('pointerdown', handlePointerDown, true);
-        document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('pointerdown', handlePointerDown, true);
-            document.removeEventListener('keydown', handleKeyDown);
         };
     }, [onDismiss, anchorRef]);
 
@@ -111,65 +108,64 @@ export const ReactionPicker = ({
     };
 
     return (
-        <div ref={rootRef} className='reaction-picker'>
-            <div className='reaction-picker__quick'>
-                <div
-                    role='listbox'
-                    aria-label={labels?.pickEmoji ?? 'Pick an emoji'}
-                    className='reaction-picker__options'
-                >
-                    {quickEmojis.map((emoji) => (
-                        <button
-                            key={emoji}
-                            type='button'
-                            role='option'
-                            aria-selected={emoji === ownEmoji}
-                            className={`reaction-picker__item${emoji === ownEmoji ? ' reaction-picker__item--selected' : ''}`}
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => pick(emoji)}
-                        >
-                            {emoji}
-                        </button>
-                    ))}
+        <FocusScope contain restoreFocus autoFocus>
+            <div ref={rootRef} className='reaction-picker' role='dialog' aria-label={labels?.pickEmoji ?? 'Pick an emoji'} onKeyDown={(event) => {
+                if (event.key !== 'Escape') return;
+                event.preventDefault();
+                event.stopPropagation();
+                onDismiss();
+            }}>
+                <div className='reaction-picker__quick'>
+                    <EmojiOptions
+                        emojis={quickEmojis}
+                        ownEmoji={ownEmoji}
+                        label={labels?.pickEmoji ?? 'Pick an emoji'}
+                        className='reaction-picker__options'
+                        optionClassName='reaction-picker__item'
+                        onPick={pick}
+                    />
+                    <button
+                        type='button'
+                        className={`reaction-picker__more${showingAll ? ' reaction-picker__more--open' : ''}`}
+                        title={labels?.allEmojis ?? 'All emojis'}
+                        aria-label={labels?.allEmojis ?? 'All emojis'}
+                        aria-expanded={showingAll}
+                        aria-haspopup='dialog'
+                        aria-controls={showingAll ? fullPickerId : undefined}
+                        onClick={() => setShowingAll((open) => !open)}
+                    >
+                        ☺
+                    </button>
                 </div>
-                <button
-                    type='button'
-                    className={`reaction-picker__more${showingAll ? ' reaction-picker__more--open' : ''}`}
-                    title={labels?.allEmojis ?? 'All emojis'}
-                    aria-label={labels?.allEmojis ?? 'All emojis'}
-                    aria-expanded={showingAll}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => setShowingAll((open) => !open)}
-                >
-                    ☺
-                </button>
+                {showingAll && (
+                    <div id={fullPickerId}>
+                        <EmojiPicker
+                            ownEmoji={ownEmoji}
+                            onPick={pick}
+                            labels={labels?.emojiPicker}
+                        />
+                    </div>
+                )}
+                {!showingAll && reactions.length > 0 && (
+                    <div className='reaction-picker__given'>
+                        {reactions.flatMap((reaction) =>
+                            reaction.users.map((user) => (
+                                <div
+                                    key={`${reaction.emoji}-${user.id.toString()}`}
+                                    className='reaction-picker__given-row'
+                                >
+                                    <span className='reaction-picker__given-emoji'>
+                                        {reaction.emoji}
+                                    </span>
+                                    <span className='reaction-picker__given-name'>
+                                        {user.name}
+                                    </span>
+                                </div>
+                            )),
+                        )}
+                    </div>
+                )}
             </div>
-            {showingAll && (
-                <EmojiPicker
-                    ownEmoji={ownEmoji}
-                    onPick={pick}
-                    labels={labels?.emojiPicker}
-                />
-            )}
-            {!showingAll && reactions.length > 0 && (
-                <div className='reaction-picker__given'>
-                    {reactions.flatMap((reaction) =>
-                        reaction.users.map((user) => (
-                            <div
-                                key={`${reaction.emoji}-${user.id.toString()}`}
-                                className='reaction-picker__given-row'
-                            >
-                                <span className='reaction-picker__given-emoji'>
-                                    {reaction.emoji}
-                                </span>
-                                <span className='reaction-picker__given-name'>
-                                    {user.name}
-                                </span>
-                            </div>
-                        )),
-                    )}
-                </div>
-            )}
-        </div>
+        </FocusScope>
     );
 };
