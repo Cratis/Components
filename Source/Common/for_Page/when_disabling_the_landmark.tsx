@@ -30,6 +30,6 @@ describe('when disabling the Page landmark', () => {
         content.tagName.should.equal('DIV');
         content.className.should.equal(defaultContent.className);
         content.innerHTML.should.equal(defaultContent.innerHTML);
-        disabled.firstElementChild!.hasAttribute('landmark').should.be.false;
+        disabled.firstElementChild!.hasAttribute('landmark').should.equal(false);
     });
 });
