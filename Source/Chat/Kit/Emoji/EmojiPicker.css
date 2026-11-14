@@ -15,12 +15,6 @@
     overflow: hidden;
 }
 
-/* Keep categories visually below the emoji while using the standard tabs-first keyboard order. */
-.emoji-picker__categories {
-    display: flex;
-    flex-direction: column-reverse;
-}
-
 .emoji-picker__grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
