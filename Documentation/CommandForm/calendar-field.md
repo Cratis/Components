@@ -39,6 +39,7 @@ The accessor selects a date-valued member on the command owned by the surroundin
 | `placeholder` | `string`                          | -       | Placeholder text shown when no date is selected.                                                                                                                |
 | `dateFormat`  | `string`                          | —       | Legacy mask retained for source compatibility; locale controls formatting.                                                                                      |
 | `showIcon`    | `boolean`                         | `true`  | Displays the accessible calendar trigger next to the segmented input. Set `false` only when typed segment entry is sufficient.                                  |
+| `openCalendarLabel` | `string` | Provider message or `Open calendar` | Localizes the calendar trigger's accessible name. |
 | `showTime`    | `boolean`                         | `false` | Enables time selection in addition to date selection.                                                                                                           |
 | `isNonModal` | `boolean`                        | `false` | Allows the first outside click to reach another control (for example a submit button) while dismissing the calendar popover. |
 | `hourFormat`  | `'12' \| '24'`                    | locale  | Hour cycle when `showTime` is enabled. Without it the locale's hour cycle is used.                                                                             |

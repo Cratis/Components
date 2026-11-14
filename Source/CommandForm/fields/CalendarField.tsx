@@ -23,6 +23,9 @@ interface CalendarFieldComponentProps
     /** legacy date format mask (e.g. `'yy-mm-dd'`). */
     dateFormat?: string;
 
+    /** Localized accessible name for the calendar trigger. Defaults to "Open calendar". */
+    openCalendarLabel?: string;
+
     /** When true, renders a trailing calendar icon button. */
     showIcon?: boolean;
 
@@ -94,6 +97,7 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
                     placeholder={props.placeholder}
                     dateFormat={props.dateFormat}
                     showIcon={props.showIcon}
+                    openCalendarLabel={props.openCalendarLabel}
                     showTime={props.showTime}
                     hourFormat={props.hourFormat}
                     minDate={props.minDate}

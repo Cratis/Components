@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
     Button,
     DatePicker as AriaDatePicker,
@@ -30,6 +30,7 @@ const resolveHourCycle = (hourFormat: DatePickerInputProps['hourFormat']) => {
 export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
     const { value, onChange, onBlur, showButtonBar, isNonModal = false, showIcon = true, showTime, hourFormat, style, pt } = props;
     const [isPickerOpen, setIsPickerOpen] = useState(false);
+    const calendarId = useId();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const state = useDatePickerState(props);
     const { effectiveDisabled, effectiveReadOnly } = state;
@@ -110,9 +111,11 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
                                             <button
                                                 {...triggerProps}
                                                 {...triggerStateAttributes(fieldState, isOpen)}
+                                                aria-controls={isOpen ? calendarId : undefined}
                                             />
                                         )}
                                         aria-label={
+                                            props.openCalendarLabel ??
                                             pt?.trigger?.['aria-label'] ??
                                             state.datePickerMessages?.openCalendar ??
                                             'Open calendar'
@@ -123,6 +126,7 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
                                 )}
                             </DatePickerGroup>
                             <DatePickerPopover
+                                id={calendarId}
                                 pt={pt}
                                 isNonModal={isNonModal}
                                 zIndex={state.resolvedPopoverZIndex}

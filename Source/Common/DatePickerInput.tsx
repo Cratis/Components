@@ -126,6 +126,8 @@ export interface DatePickerInputProps {
      * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
      */
     unstyled?: boolean;
+    /** Localized accessible name for the calendar trigger. Defaults to the provider's label or "Open calendar". */
+    openCalendarLabel?: string;
     /** Localized label for the Today action. */
     todayLabel?: string;
     /** Localized label for the Clear action. */
