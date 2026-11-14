@@ -73,8 +73,8 @@ interface CloseButtonProps {
 
 const CloseButton = ({ isBusy, hasHeaderActions, ariaLabel, icon, pt, onClose }: CloseButtonProps) => (
     <button
-        {...dialogPartAttributes(pt?.close, 'cratis-dialog__close', closeButtonStyle(hasHeaderActions, pt?.close?.style))}
         type='button'
+        {...dialogPartAttributes(pt?.close, 'cratis-dialog__close', closeButtonStyle(hasHeaderActions, pt?.close?.style))}
         disabled={isBusy}
         data-cratis-part='close'
         data-disabled={isBusy || undefined}
