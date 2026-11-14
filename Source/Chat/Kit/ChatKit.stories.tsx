@@ -273,11 +273,11 @@ export const KeyboardReactionPicker: Story = {
         await userEvent.tab({ shift: true });
         await userEvent.keyboard(' ');
         await expect(canvas.getByLabelText('Picked emoji')).not.toBeEmptyDOMElement();
-        await expect(opener).toHaveFocus();
+        await waitFor(async () => expect(opener).toHaveFocus());
         await userEvent.click(opener);
         await userEvent.keyboard('{Escape}');
         await expect(canvas.queryByRole('group')).not.toBeInTheDocument();
-        await expect(opener).toHaveFocus();
+        await waitFor(async () => expect(opener).toHaveFocus());
     },
 };
 
