@@ -33,7 +33,7 @@ export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCov
     ChatConversation: { pending: true },
     ChatMessageBody: { pending: true },
     ChatMessageBubble: { pending: true },
-    ChatSidebar: { marked: ['Chat/ChatSidebar.tsx'] },
+    ChatSidebar: { marked: ['Chat/ChatSidebarShells.tsx'] },
     ChatSidebarForObservableQueries: { pending: true },
     ChatTopicList: { pending: true },
     Checkbox: { marked: ['Common/CheckboxImplementation.tsx'] },

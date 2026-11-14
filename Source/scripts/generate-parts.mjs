@@ -511,7 +511,12 @@ export const partDefinitions = {
     },
     ChatSidebar: {
         parts: ['backdrop', 'root', 'header', 'back', 'title', 'close', 'content'],
-        sources: ['Chat/ChatSidebar.tsx'],
+        sources: [
+            'Chat/ChatSidebar.tsx',
+            'Chat/ChatSidebarHeader.tsx',
+            'Chat/ChatSidebarContent.tsx',
+            'Chat/ChatSidebarShells.tsx',
+        ],
         ptKeys: ['backdrop', 'root', 'header', 'title', 'back', 'close', 'content'],
     },
     Toolbar: {
