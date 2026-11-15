@@ -39,6 +39,14 @@ export interface AnchoredOverlayProps {
     children: ReactNode;
 }
 
+/**
+ * Renders its children in a fixed-position portal, anchored to an element on the board.
+ * The portal target is the overlay container resolved for the anchor: the owner document's body,
+ * or a dialog/top-layer container when the anchor lives inside one, layered above the nearest dialog.
+ * Board overlays (menus, pickers, tooltips) must float above everything: the slice columns use
+ * content-visibility paint containment for virtualization, which clips any absolutely-positioned
+ * descendant to the column box — portaling is what lets an overlay escape.
+ */
 export const AnchoredOverlay: React.FC<AnchoredOverlayProps> = ({
     anchorRef,
     open,

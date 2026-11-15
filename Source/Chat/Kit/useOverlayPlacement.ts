@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { type CSSProperties, type RefObject, useLayoutEffect, useState } from 'react';
-import { probeStyle } from '../../Filter/measurePanelPlacement';
+import { probeStyle } from '../../renderer/fixedProbe';
 import { computePlacement, placementInContainer } from './overlayGeometry';
 import type { OverlayPlacementOptions } from './OverlayPlacementOptions';
 import { readAnchorTheme } from './readAnchorTheme';
