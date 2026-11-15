@@ -49,6 +49,24 @@ import {
 | `Switch` | `input[type=checkbox][role=switch]` / `HTMLInputElement` | `boolean` | `root`, `input`, `control`, `handle`, `label` | `selected`, `disabled`, `invalid`, `readonly` |
 | `Surface` | `div`, `section`, or `article` / `HTMLElement` | none | `root` | none |
 
+`Button` takes these props in addition to the native button attributes:
+
+| Prop | Values | Default | Behavior |
+| --- | --- | --- | --- |
+| `label` | `ReactNode` | — | The button's text. |
+| `icon` | `ReactNode` | — | Rendered before the label. |
+| `loading` | `boolean` | `false` | Replaces the icon with a spinner and disables the button. |
+| `tooltip`, `tooltipOptions` | `string`, `{ position?, className? }` | — | Text shown on hover and keyboard focus, and its placement. |
+| `variant` | `'solid'`, `'outline'`, `'ghost'`, `'link'` | `'solid'` | Visual treatment. |
+| `tone` | `'neutral'`, `'accent'`, `'positive'`, `'caution'`, `'critical'` | — | Semantic color. Omit it for the primary action. |
+| `shape` | `'default'`, `'pill'` | `'default'` | Border shape. |
+| `size` | `'small'`, `'normal'`, `'large'` | `'normal'` | Sizes the button. |
+| `disabled` | `boolean` | `false` | Disables the button. |
+| `type` | `'button'`, `'submit'`, `'reset'` | `'button'` | The native button type. Unlike a plain `<button>`, it does not submit a form unless you pass `type='submit'`. |
+| `pt` | `ButtonParts` | — | Attributes for the `root`, `icon`, `label` and `spinner` parts. |
+
+The boolean `text`, `link`, `outlined` and `rounded` props and `severity` are deprecated and will be removed in 5.0. Use `variant`, `shape` and `tone` instead; [Migrate Button appearance](../Migration/3-to-4.md#migrate-button-appearance-and-change-callbacks) maps each one and has a transform that rewrites them.
+
 `IconButton` requires `aria-label` and delegates to `Button`; it does not add another button or interaction layer. It accepts the same semantic `variant`, `tone`, `shape`, `size`, `loading`, and `disabled` props as `Button`.
 
 [`NumberInput`](number-input.md) keeps locale-aware numeric edit text behind a controlled `number | null` boundary. Its public contract does not expose a formatter, renderer, or native event type.

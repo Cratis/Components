@@ -20,7 +20,7 @@ For a choice between this panel, table-column filters, and global search, see [C
 | `RangeHistogramFilter` | Standalone numeric range slider with histogram bars |
 | `CheckboxListFilter` | Standalone bounded checkbox/radio option list; `FilterPanel` uses it for option groups |
 | `useFilterState` | State management hook — tracks selections, ranges, and custom values |
-| `buildHistogram` | Counts values into histogram buckets, as `RangeHistogramFilter` does |
+| `buildHistogram` | Builds the bars `RangeHistogramFilter` draws; see [`buildHistogram`](#buildhistogram) |
 | `FilterDefinition` | Type describing a single filter group |
 | `FilterOption` | One selectable option: `key`, `label`, `value`, optional `count` |
 | `FilterValue` | `string \| number \| boolean \| Date \| null \| undefined` |
@@ -30,6 +30,10 @@ For a choice between this panel, table-column filters, and global search, see [C
 | `FilterValues` | `Record<string, Set<string>>` — selected option keys per filter |
 | `RangeValues` | `Record<string, [number, number] \| null>` — selected ranges per filter |
 | `CustomFilterValues` | `Record<string, unknown>` — values for custom editor filters |
+| `FilterPanelProps` | Props for `FilterPanel`; see [`FilterPanel` Props](#filterpanel-props) |
+| `CheckboxListFilterProps` | Props for `CheckboxListFilter`; see [`CheckboxListFilter` Props](#checkboxlistfilter-props) |
+| `RangeHistogramFilterProps` | Props for `RangeHistogramFilter`; see [`RangeHistogramFilter` Props](#rangehistogramfilter-props) |
+| `UseFilterStateResult` | What `useFilterState` returns; see [`useFilterState` Hook](#usefilterstate-hook) |
 
 ## Quick Start
 
@@ -322,6 +326,60 @@ Use `RangeHistogramFilter` on its own when the range belongs directly in your la
 | `itemsLabel`       | `string`                                    | —        | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`)        |
 | `minimumAriaLabel` | `string`                                    | —        | Accessible name for the lower-bound slider (default: `'Minimum value'`)                    |
 | `maximumAriaLabel` | `string`                                    | —        | Accessible name for the upper-bound slider (default: `'Maximum value'`)                    |
+
+## `CheckboxListFilter` Props
+
+Use `CheckboxListFilter` on its own when you need the panel's bounded option list somewhere else in your layout. It is controlled: keep the selected keys in your state and update them in `onToggle`. With `multi`, each row is a checkbox; without it, the rows are one radio group.
+
+```tsx
+import { useState } from 'react';
+import { CheckboxListFilter, type FilterOption } from '@cratis/components/Filter';
+
+const statuses: FilterOption[] = [
+    { key: 'open', label: 'Open', value: 'open', count: 12 },
+    { key: 'closed', label: 'Closed', value: 'closed', count: 30 },
+];
+
+export function StatusList() {
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+
+    const toggle = (key: string) =>
+        setSelected((current) => {
+            const next = new Set(current);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+
+    return <CheckboxListFilter options={statuses} selected={selected} multi onToggle={toggle} />;
+}
+```
+
+`onToggle` receives only the picked option's key, so your handler decides what a pick means. For a single selection, replace the set with the new key instead of adding to it.
+
+| Prop                | Type                          | Required | Description                                                                                      |
+| ------------------- | ----------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `options`           | `FilterOption[]`              | ✓        | Everything that can be picked.                                                                   |
+| `selected`          | `Set<string>`                 | ✓        | Keys of the selected options.                                                                    |
+| `onToggle`          | `(optionKey: string) => void` | ✓        | Called with the picked option's key.                                                             |
+| `multi`             | `boolean`                     | —        | Checkboxes instead of radio buttons (default `false`).                                          |
+| `searchable`        | `boolean`                     | —        | `true` always shows the search box, `false` never does; omitted, it appears when the options do not fit. |
+| `searchPlaceholder` | `string`                      | —        | Placeholder for the search box (default `'Search…'`).                                           |
+| `searchAriaLabel`   | `string`                      | —        | Accessible name for the search box; see [Searching long option lists](#searching-long-option-lists). |
+| `autoFocusSearch`   | `boolean`                     | —        | Focuses the search box when it is visible (default `false`).                                   |
+| `emptyMessage`      | `string`                      | —        | Shown when there are no options (default `'Nothing to choose from.'`).                         |
+| `noMatchesMessage`  | `string`                      | —        | Shown when a search matches nothing (default `'No matches.'`).                                 |
+| `name`              | `string`                      | —        | The radio group's `name`. Generated when omitted.                                              |
+
+## `buildHistogram`
+
+`buildHistogram(values, min, max, bucketCount, provided?)` builds the bars `RangeHistogramFilter` draws, so you can compute the same buckets elsewhere, for example to render a summary.
+
+- `values` is a `number[]`. Unlike the `values` prop of `RangeHistogramFilter`, it does not accept other `FilterValue`s, so convert dates and strings to numbers first.
+- Without `provided`, it counts the values into `bucketCount` evenly sized buckets from `min` to `max`. It returns an empty array when the range is empty or there are no values.
+- With `provided`, it keeps those buckets and their counts instead of recounting, because pre-counted buckets usually come from a source that saw more data than the browser holds.
+
+Each returned bucket has `start`, `end` and `count`, plus `maxCount`, the tallest count in the set, which a bar uses to size itself.
 
 ## Accessibility and keyboard
 
