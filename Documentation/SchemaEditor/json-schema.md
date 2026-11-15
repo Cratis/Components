@@ -18,12 +18,13 @@ The table layout edits the schema document in place and keeps every keyword it d
 | Yes or no | `{ "type": "boolean" }` |
 | Date | `{ "type": "string", "format": "date" }` |
 | Time | `{ "type": "string", "format": "time" }` |
+| Unique identifier | `{ "type": "string", "format": "uuid" }` |
 | List of text | `{ "type": "array", "items": { "type": "string" } }` |
 | List of numbers | `{ "type": "array", "items": { "type": "number" } }` |
 | Object | `{ "type": "object", "properties": { … } }` |
 | List of objects | `{ "type": "array", "items": { "type": "object", "properties": { … } } }` |
 
-Reading is more forgiving: `integer` reads as a number, and an unknown or missing `type` reads as text. A list whose items are not numbers or objects reads as a list of text. The table above is what the editor writes for a property you create or retype; a property you leave alone is written back as it was read.
+Reading is more forgiving: `integer` reads as a number, a string with format `uuid` or `guid` reads as a unique identifier, and an unknown or missing `type` reads as text. The table layout's default type catalog offers the `guid` format, while the tree writes `uuid`, so the same concept is written differently depending on the layout. A list whose items are not numbers or objects reads as a list of text. The table above is what the editor writes for a property you create or retype; a property you leave alone is written back as it was read.
 
 ## Keywords the editor adds
 
@@ -76,7 +77,7 @@ A type change keeps only what still applies to the new type. Choosing the type a
 | List constraints: `minItems`, `maxItems`, `uniqueItems`, `contains`, `minContains`, `maxContains` | Kept when the new type is a list of any kind; keywords on the items are dropped |
 | Object constraints: `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `propertyNames`, `dependentRequired`, `dependentSchemas`, `unevaluatedProperties` | Kept when the new type is an object |
 | Value keywords: `default`, `enum`, `const`, `examples` | Dropped |
-| Type refinements: `integer`, type arrays, and a `format` other than the date and time the editor writes | Dropped |
+| Type refinements: `integer`, type arrays, and a `format` other than the date, time and unique-identifier formats the editor writes | Dropped |
 | Anything else, such as `$ref`, `allOf`, `oneOf`, `anyOf`, `not`, `if`, `then`, `else` | Dropped |
 
 ## What the tree layout does not preserve

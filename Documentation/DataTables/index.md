@@ -27,6 +27,61 @@ When a search or column filter is active and no rows are shown, the table render
 
 When your query has already filtered and sorted the rows on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders them as given instead of processing them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The query-backed tables manage this state for you when you set `serverQuery`: they send sorting and the mapped filter and search arguments to the server, then render the returned rows without local processing. The query must apply those filter and search arguments itself; see [Server mode](data-table-for-query.md#server-mode).
 
+## Local rows with DataTableCore
+
+Pass the rows you already hold as `data`. `emptyMessage` is required, and `dataKey` names the property that identifies a row, so a selection survives when the row objects are replaced:
+
+```tsx
+import { useState } from 'react';
+import { Column, DataTableCore } from '@cratis/components/DataTables';
+
+interface Order {
+    id: string;
+    customer: string;
+    total: number;
+    overdue: boolean;
+}
+
+export function OrderTable({ orders, onOpen }: { orders: Order[]; onOpen: (order: Order) => void }) {
+    const [selected, setSelected] = useState<Order[]>([]);
+
+    return (
+        <DataTableCore<Order>
+            data={orders}
+            dataKey='id'
+            emptyMessage='No orders yet.'
+            selectionMode='multiple'
+            selectedItems={selected}
+            onSelectedItemsChange={setSelected}
+            onRowClick={(event) => onOpen(event.data)}
+            rowClassName={(order) => (order.overdue ? 'order-overdue' : '')}
+            scrollable
+            scrollHeight='24rem'
+        >
+            <Column field='customer' header='Customer' sortable />
+            <Column field='total' header='Total' sortable />
+        </DataTableCore>
+    );
+}
+```
+
+Here `onOpen` and the `order-overdue` class belong to your application. The table sorts and filters the rows it was given unless you set `rowProcessing`, as described above.
+
+| Prop | Purpose |
+| --- | --- |
+| `data` | The rows to show. Required. |
+| `emptyMessage` | Shown when there are no rows. Required. |
+| `dataKey` | The row property used as identity. Set it to keep a selection across refreshed row objects. |
+| `selectionMode` | `'single'` selects a row through activation and reports through `selection` / `onSelectionChange`; `'multiple'` adds row checkboxes and a select-all checkbox and reports through `selectedItems` / `onSelectedItemsChange`. |
+| `selectionAriaLabel`, `selectAllAriaLabel` | Accessible names for the row and select-all checkboxes. They fall back to `messages.dataTable`, then `Select row` and `Select all rows`. |
+| `onRowClick` | Called with a `DataTableRowClickEvent` (`{ data, index }`, where `index` is the position on the loaded page) when a row is clicked or activated with the keyboard. |
+| `rowClassName` | Returns an extra class name for a row. |
+| `scrollable`, `scrollHeight` | Put the table in a scroll container. `scrollHeight` is its maximum height (default `100%`). |
+| `globalFilterFields`, `globalSearchPlaceholder`, `globalSearchAriaLabel` | The row fields the search box searches, and its placeholder and accessible name. |
+| `className`, `style`, `pt` | A class and inline style for the table, and attributes for its stable parts. |
+
+The status, message, filtering, sorting and `rowProcessing` props are described in [Components](#components) above.
+
 ## Common Features
 
 All three table components share:
