@@ -52,7 +52,13 @@ All of them are plain classes with `constructor(readonly ...)` fields, importabl
 
 Containment tests the item's center point and includes all four region edges. Overlapping regions can each report the same item. Your application decides whether membership must be exclusive and what it means; a region neither moves its members nor persists membership. See [Regions](regions.md) for positioning and resizing.
 
-For containment checks outside the messenger flow, call the exported `itemsWithinRegion(regionBounds, items, excludeId?)` function. It accepts entries with `{x, y, width, height}` bounds. The optional `anonymous: true` flag excludes an entry from membership results; Canvas sets it for items without an explicit id. When you supply your own bounds map, omit the flag for entries you want included.
+For containment checks outside the messenger flow, call the exported `itemsWithinRegion(regionBounds, items, excludeId?)` function. `items` is an iterable of `[id, bounds]` pairs, where each bounds value is a `RegionContainmentBounds` (`{ x, y, width, height }`), so the entries of a `Map<string, RegionContainmentBounds>` can be passed directly. It returns the ids of the contained items, in iteration order, and never reports `excludeId`:
+
+```ts
+const members = itemsWithinRegion(regionBounds, new Map([['note-1', { x: 40, y: 40, width: 120, height: 80 }]]), regionId);
+```
+
+The optional `anonymous: true` flag excludes an entry from membership results; Canvas sets it for items without an explicit id. When you supply your own bounds map, omit the flag for entries you want included.
 
 ## Defining your own messages for your own shapes
 
