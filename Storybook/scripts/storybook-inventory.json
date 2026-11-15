@@ -487,6 +487,7 @@
         "common-tabs--keyboard-navigation",
         "common-tabs--two-tabs",
         "common-taggroup--adds-and-removes",
+        "common-taggroup--allowed-duplicates",
         "common-taggroup--custom-remove-icon",
         "common-taggroup--default",
         "common-taggroup--disabled",
