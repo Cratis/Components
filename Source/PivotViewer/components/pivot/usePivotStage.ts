@@ -43,7 +43,6 @@ export const usePivotStage = ({
     const spritesRef = useRef<Map<ItemId, CardSprite>>(new Map());
     const animationFrameRef = useRef<number>(0);
     const mountedRef = useRef(true);
-    const initializingRef = useRef(false);
     const [pixiReady, setPixiReady] = useState(false);
 
     useEffect(() => {
@@ -54,12 +53,8 @@ export const usePivotStage = ({
             return;
         }
 
-        // Prevent multiple simultaneous initializations
-        if (initializingRef.current || appRef.current) {
-            return;
-        }
-
-        initializingRef.current = true;
+        // Each setup owns its application, including during StrictMode replay.
+        let cancelled = false;
         let app: PIXI.Application | null = null;
 
         (async () => {
@@ -74,14 +69,15 @@ export const usePivotStage = ({
                     height: viewportHeight > 0 ? viewportHeight : 600,
                 } as PIXI.ApplicationOptions;
 
-                app = new PIXI.Application();
-                await app.init(options);
+                const application = new PIXI.Application();
+                await application.init(options);
+                app = application;
 
-                if (!mountedRef.current || !parentContainerRef.current) {
+                if (cancelled || !parentContainerRef.current) {
                     // Component unmounted during initialization
                     if (app && typeof app.destroy === 'function')
                         app.destroy(true, { children: true });
-                    initializingRef.current = false;
+                    app = null;
                     return;
                 }
 
@@ -178,24 +174,24 @@ export const usePivotStage = ({
                 }
 
                 setPixiReady(true);
-                initializingRef.current = false;
 
                 // Trigger initial render
                 needsRenderRef.current = true;
                 app.renderer?.render(app.stage);
             } catch (error) {
                 console.error('Failed to initialize Pixi.js:', error);
-                initializingRef.current = false;
             }
         })();
 
         return () => {
+            cancelled = true;
             mountedRef.current = false;
             setPixiReady(false);
             cancelAnimationFrame(animationFrameRef.current);
 
-            if (appRef.current && typeof appRef.current.destroy === 'function') {
-                appRef.current.destroy(true, { children: true });
+            // Pending initialization destroys its own application after init resolves.
+            if (app && typeof app.destroy === 'function') {
+                app.destroy(true, { children: true });
                 appRef.current = null;
                 rootRef.current = null;
             }
