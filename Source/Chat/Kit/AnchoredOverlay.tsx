@@ -1,8 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { ReactNode, RefObject, useLayoutEffect, useState } from 'react';
+import React, { CSSProperties, ReactNode, RefObject, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { measureProbe, probeStyle } from '../../Filter/measurePanelPlacement';
+import { unstable_useOverlayEnvironment } from '../../renderer/RendererContext';
+import { useNearestDialogZIndex } from '../../renderer/DialogStackContext';
+import { OVERLAY_OFFSET, zIndexAboveDialog } from '../../renderer/dialogStack';
 
 /** The side of the anchor the overlay prefers to open on. */
 export type AnchoredOverlaySide = 'above' | 'below' | 'left' | 'right';
@@ -46,21 +50,19 @@ interface Placement {
     transform?: string;
 }
 
-function computePlacement(
-    anchor: DOMRect,
-    side: AnchoredOverlaySide,
-    align: AnchoredOverlayAlign,
-    gap: number,
-): Placement {
-    if (side === 'left' || side === 'right') {
-        return {
-            top: anchor.top + anchor.height / 2,
-            left: side === 'right' ? anchor.right + gap : anchor.left - gap,
-            transform: side === 'right' ? 'translateY(-50%)' : 'translate(-100%, -50%)',
-        };
-    }
+type PlacementOptions = { side: AnchoredOverlaySide; align: AnchoredOverlayAlign; gap: number };
 
-    const spaceBelow = window.innerHeight - anchor.bottom - gap;
+function horizontalPlacement(anchor: DOMRect, align: AnchoredOverlayAlign): Pick<Placement, 'left' | 'transform'> {
+    if (align === 'center') return { left: anchor.left + anchor.width / 2, transform: 'translateX(-50%)' };
+    if (align === 'right') return { left: anchor.right, transform: 'translateX(-100%)' };
+    return { left: anchor.left };
+}
+
+function computePlacement(anchor: DOMRect, { side, align, gap }: PlacementOptions, viewportHeight: number): Placement {
+    if (side === 'right') return { left: anchor.right + gap, top: anchor.top + anchor.height / 2, transform: 'translateY(-50%)' };
+    if (side === 'left') return { left: anchor.left - gap, top: anchor.top + anchor.height / 2, transform: 'translate(-100%, -50%)' };
+
+    const spaceBelow = viewportHeight - anchor.bottom - gap;
     const spaceAbove = anchor.top - gap;
     const resolved =
         side === 'below'
@@ -71,25 +73,71 @@ function computePlacement(
               ? 'below'
               : 'above';
 
-    const horizontal =
-        align === 'center'
-            ? { left: anchor.left + anchor.width / 2, transform: 'translateX(-50%)' }
-            : align === 'right'
-              ? { left: anchor.right, transform: 'translateX(-100%)' }
-              : { left: anchor.left, transform: undefined };
+    const horizontal = horizontalPlacement(anchor, align);
 
     return resolved === 'below'
         ? { top: anchor.bottom + gap, ...horizontal }
-        : { bottom: window.innerHeight - anchor.top + gap, ...horizontal };
+        : { bottom: viewportHeight - anchor.top + gap, ...horizontal };
 }
 
-/**
- * Renders its children into a fixed-position portal on <body>, anchored to an element on the board.
- * Board overlays (menus, pickers, tooltips) must float above everything: the slice columns use
- * content-visibility paint containment for virtualization, which clips any absolutely-positioned
- * descendant to the column box — portaling is what lets an overlay escape (the same approach the
- * Cratis Dropdown takes with appendTo=document.body).
- */
+function readAnchorTheme(anchor: HTMLElement): CSSProperties {
+    const computed = anchor.ownerDocument.defaultView?.getComputedStyle(anchor);
+    if (!computed) return {};
+    const tokens = Object.fromEntries(Array.from(computed)
+        .filter(property => property.startsWith('--'))
+        .map(property => [property, computed.getPropertyValue(property)]));
+    return { ...tokens, colorScheme: computed.colorScheme };
+}
+
+function placementInContainer(probe: HTMLDivElement, placement: Placement, viewportHeight: number): Placement {
+    const { origin, bottom } = measureProbe(probe);
+    const scaleX = origin.width || 1;
+    const scaleY = origin.height || 1;
+    return {
+        ...placement,
+        left: (placement.left - origin.left) / scaleX,
+        top: placement.top === undefined ? undefined : (placement.top - origin.top) / scaleY,
+        bottom: placement.bottom === undefined ? undefined : (bottom - viewportHeight + placement.bottom) / scaleY,
+    };
+}
+
+function useOverlayContainer(open: boolean) {
+    const environment = unstable_useOverlayEnvironment();
+    const [container, setContainer] = useState<HTMLElement | null>(null);
+    // Resolve only while open, including subsequent host renders after a deferred target appears.
+    useLayoutEffect(() => { setContainer(open ? environment.getContainer() : null); });
+    return container;
+}
+
+function useOverlayPlacement(container: HTMLElement | null, anchorRef: RefObject<HTMLElement | null>, { side, align, gap }: PlacementOptions) {
+    const [position, setPosition] = useState<{ container: HTMLElement; style: CSSProperties }>();
+    useLayoutEffect(() => {
+        const ownerWindow = container?.ownerDocument.defaultView;
+        if (!container || !ownerWindow) return;
+        const probe = container.ownerDocument.createElement('div');
+        probe.style.cssText = probeStyle;
+        container.append(probe);
+        const update = () => {
+            const anchor = anchorRef.current;
+            if (!anchor) return;
+            const placement = computePlacement(anchor.getBoundingClientRect(), { side, align, gap }, ownerWindow.innerHeight);
+            setPosition({ container, style: { ...readAnchorTheme(anchor), ...placementInContainer(probe, placement, ownerWindow.innerHeight) } });
+        };
+        update();
+        ownerWindow.addEventListener('resize', update);
+        ownerWindow.addEventListener('scroll', update, true);
+        container.ownerDocument.addEventListener('animationend', update);
+        container.ownerDocument.addEventListener('transitionend', update);
+        return () => {
+            ownerWindow.removeEventListener('resize', update);
+            ownerWindow.removeEventListener('scroll', update, true);
+            container.ownerDocument.removeEventListener('animationend', update);
+            container.ownerDocument.removeEventListener('transitionend', update);
+            probe.remove();
+        };
+    }, [container, anchorRef, side, align, gap]);
+    return position?.container === container ? position.style : undefined;
+}
 export const AnchoredOverlay: React.FC<AnchoredOverlayProps> = ({
     anchorRef,
     open,
@@ -98,33 +146,28 @@ export const AnchoredOverlay: React.FC<AnchoredOverlayProps> = ({
     gap = 8,
     children,
 }) => {
-    const [placement, setPlacement] = useState<Placement | undefined>();
+    const container = useOverlayContainer(open);
+    const placement = useOverlayPlacement(container, anchorRef, { side, align, gap });
+    const nearestDialogZIndex = useNearestDialogZIndex();
+    const zIndex = nearestDialogZIndex === null
+        ? 'var(--cratis-z-index-overlay, 1300)'
+        : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
 
-    useLayoutEffect(() => {
-        if (!open) {
-            setPlacement(undefined);
-            return;
-        }
-        const anchor = anchorRef.current?.getBoundingClientRect();
-        if (!anchor) return;
-        setPlacement(computePlacement(anchor, side, align, gap));
-    }, [open, side, align, gap, anchorRef]);
-
-    if (!open || !placement) return null;
+    if (!open) return null;
+    if (!container) return null;
+    if (!placement) return null;
 
     return createPortal(
         <div
+            data-react-aria-top-layer='true'
             style={{
+                ...placement,
                 position: 'fixed',
-                zIndex: 1300,
-                top: placement.top,
-                bottom: placement.bottom,
-                left: placement.left,
-                transform: placement.transform,
+                zIndex,
             }}
         >
             {children}
         </div>,
-        document.body,
+        container,
     );
 };
