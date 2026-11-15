@@ -26,6 +26,7 @@ export interface PresentationPropertyEditorProps {
 }
 
 const unsetValue = '';
+const emptyDraft: Readonly<Record<string, PresentationPropertyValue>> = Object.freeze({});
 
 const field = (
     property: PickedPresentationProperty,
@@ -98,13 +99,14 @@ const field = (
  */
 export const PresentationPropertyEditor = ({ picked, onChange, preview = false, className }: PresentationPropertyEditorProps) => {
     const prefix = useId();
-    const [draft, setDraft] = useState<Record<string, PresentationPropertyValue>>({});
-    const changes = useMemo(() => proposedChanges(picked, draft), [picked, draft]);
+    const [draft, setDraft] = useState({ picked, values: emptyDraft });
+    const values = draft.picked === picked ? draft.values : emptyDraft;
+    const changes = useMemo(() => proposedChanges(picked, values), [picked, values]);
     const reportChange = useRef(onChange);
     reportChange.current = onChange;
 
     useEffect(() => {
-        setDraft({});
+        setDraft({ picked, values: emptyDraft });
     }, [picked]);
 
     useEffect(() => {
@@ -128,14 +130,17 @@ export const PresentationPropertyEditor = ({ picked, onChange, preview = false, 
         <div data-cratis-part='root' data-cratis-component='PresentationPropertyEditor' className={className}>
             {picked.presentationProperties.map((property) => {
                 const id = `${prefix}-${property.name}`;
-                const value = property.name in draft ? draft[property.name] : property.value;
+                const value = property.name in values ? values[property.name] : property.value;
                 return (
                     <div key={property.name} data-cratis-part='property'>
                         <label htmlFor={id} data-cratis-part='label'>
                             {property.label}
                         </label>
                         {field(property, id, value, (next) =>
-                            setDraft((current) => ({ ...current, [property.name]: next })),
+                            setDraft((current) => ({
+                                picked,
+                                values: { ...(current.picked === picked ? current.values : emptyDraft), [property.name]: next },
+                            })),
                         )}
                         {property.description && <small data-cratis-part='description'>{property.description}</small>}
                     </div>
