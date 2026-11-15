@@ -37,17 +37,17 @@ npm install @cratis/components@^4
 
 The current package manifest declares these peer dependencies:
 
-- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`
+- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <24`
 - `@cratis/fundamentals` `^7.10.3`
 - optional `pixi.js` `^8.20.0`
 - `react` and `react-dom` `^19.0.0`
 - `reflect-metadata` `0.2.2`
 - optional `tsyringe` `4.10.0` (Arc React installs it as its own dependency)
 
-Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This checkout pins its Arc development dependencies to 22.156.2; use the version matching your generated proxies:
+Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This checkout pins its Arc development dependencies to 23.0.0; use the version matching your generated proxies:
 
 ```bash
-ARC_VERSION=22.156.2
+ARC_VERSION=23.0.0
 npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
@@ -269,7 +269,7 @@ Do not target React Aria classes or internal DOM structure.
 
 ## Import from explicit subpaths
 
-The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig` from the root; import every component from the subpath in its capability profile:
+The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig` from the root; import every component from its own subpath. The table maps the main subpaths to their capability profile; it is not an exhaustive export list. The package also publishes controls such as `@cratis/components/ComponentPicker`, `@cratis/components/ConfigurationEditor`, `@cratis/components/IconPicker` and `@cratis/components/MarkdownEditor`, and the renderer integration subpaths `@cratis/components/renderer` and `@cratis/components/renderer/builtin`. The `exports` field of the package manifest is the complete list.
 
 | Subpath                                    | Capability profile                |
 | ------------------------------------------ | --------------------------------- |
