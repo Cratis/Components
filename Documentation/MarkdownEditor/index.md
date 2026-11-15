@@ -29,6 +29,15 @@ export function DescriptionEditor() {
 
 In this example, typing or applying a format updates `description` through `setDescription`. Saving that value belongs to your application's submit or save handler.
 
+These props change how the writing area behaves:
+
+| Prop | Effect |
+| --- | --- |
+| `onBlur` | Called when focus leaves the writing area, for example to validate or save on blur. |
+| `autoFocus` | Focuses the writing area when the editor mounts. |
+| `disabled` | Disables writing, formatting and uploading. Defaults to `false`. |
+| `readOnly` | Shows the markdown without letting it be changed. Defaults to `false`. |
+
 Import the stylesheet once, either the aggregate `@cratis/components/styles` or the area sheet `@cratis/components/MarkdownEditor/styles`.
 
 ## Show a preview
@@ -123,6 +132,18 @@ import { MarkdownFormat } from '@cratis/components/MarkdownEditor';
 />
 ```
 
+To extend the default toolbar instead of replacing it, start from `defaultMarkdownFormats`, which holds the default groups:
+
+```tsx
+import { MarkdownFormat, defaultMarkdownFormats } from '@cratis/components/MarkdownEditor';
+
+const withoutTaskLists = defaultMarkdownFormats.map((group) =>
+    group.filter((format) => format !== MarkdownFormat.TaskList),
+);
+
+<MarkdownEditor value={note} onChange={setNote} formats={withoutTaskLists} />
+```
+
 If you need the same formatting in another editing surface, call `applyMarkdownFormat(value, selectionStart, selectionEnd, format)` without mounting the editor. It returns the updated markdown and the selection positions to apply afterward.
 
 ## Size
@@ -131,7 +152,7 @@ The editor fills the height of its container. When the container leaves its heig
 
 ## Labels and accessibility
 
-Every label has an English default and can be replaced through `labels`, including the toolbar buttons, the toggle, the empty preview, the suggestion list and the upload status. Name the writing area with `aria-label`, `aria-labelledby`, or a `<label htmlFor>` pointing at `id`. `invalid` sets `aria-invalid`, and `aria-describedby` can point at a validation message.
+Every label has an English default and can be replaced through `labels`. Pass only the keys you change; the rest keep their defaults, which are exported as `defaultMarkdownEditorLabels`. Labels cover the toolbar buttons, the toggle, the empty preview, the suggestion list and the upload status. Name the writing area with `aria-label`, `aria-labelledby`, or a `<label htmlFor>` pointing at `id`. `invalid` sets `aria-invalid`, and `aria-describedby` can point at a validation message.
 
 ## Styling
 

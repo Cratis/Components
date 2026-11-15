@@ -51,6 +51,8 @@ Dragging uses a different handoff: it serializes `payload` with `JSON.stringify`
 
 Keep payloads JSON-serializable and validate incoming data before inserting it on a surface that also accepts other drops. The fragment assumes a valid palette payload; [Drag and drop](drag-and-drop.md) explains the transfer and target handlers. When you need the original object at drag start, `onItemDragStart(item, event)` receives the item with the same `payload` reference.
 
+A tile drag also reaches the enclosing `Toolbar`: its `onItemDragStart(payload, event)` runs after the folder's `onItemDragStart(item, event)`, with the item's `payload` rather than the item. Handle a palette drag in one of the two places, so it is not handled twice.
+
 Keep `onActivate` available even when dragging is enabled. Native HTML5 dragging varies across touch browsers and does not provide a keyboard insertion path. Activation lets users perform the same task without dragging.
 
 ## Items and children

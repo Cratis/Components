@@ -19,7 +19,7 @@ When the command's metadata is enough to choose the inputs, [AutoCommandForm](au
 
 ## Available Field Components
 
-The module exports Cratis-owned fields built with native controls. Each field uses Arc's `asCommandFormField` wrapper to connect its value, changes, and validation state to the command. Field pages describe their keyboard behavior, accessible names, and validation. For example, [GuidField](guid-field.md) lets a person edit a scalar Fundamentals `Guid` as text while keeping the command value a native `Guid`.
+The module exports Cratis-owned fields. Most wrap native controls; `CalendarField` wraps the Cratis `DatePickerInput`, and `DropdownField` wraps the Cratis `Dropdown`, a React Aria composite widget. Each field uses Arc's `asCommandFormField` wrapper to connect its value, changes, and validation state to the command. Field pages describe their keyboard behavior, accessible names, and validation. For example, [GuidField](guid-field.md) lets a person edit a scalar Fundamentals `Guid` as text while keeping the command value a native `Guid`.
 
 Import fields from `@cratis/components/CommandForm` or `@cratis/components/CommandForm/fields`; both subpaths resolve to the same module, so pick one and use it consistently.
 
@@ -131,6 +131,10 @@ See Arc's [Populating a Form from a Query](https://www.cratis.io/arc/frontend/re
 `CommandForm`, `CommandDialog`, and `CommandStepper` inspect each child's component type. A field carries `isCommandFormField: true`; a column carries `isCommandFormColumn: true`. The legacy `displayName` values remain permanent fallbacks so independently versioned Components and Arc packages interoperate in either upgrade order.
 
 Use `asCommandFormField` from `@cratis/arc.react/commands` for custom fields; it stamps the marker automatically. For a hand-rolled field or column, use `markAsCommandFormField` or `markAsCommandFormColumn` from `@cratis/components/CommandForm`.
+
+Marking a component replaces any `displayName` it already had with `CommandFormField` or `CommandFormColumn` (exported as `CommandFormFieldDisplayName` and `CommandFormColumnDisplayName`). Versions of `@cratis/arc.react` that predate the marker bind fields by that exact name, so a marked component cannot keep its own diagnostic `displayName`.
+
+To recognize fields and columns the way the forms do, call `isCommandFormField(type)` or `isCommandFormColumn(type)` with a child's component type. Each checks the marker first and falls back to the `displayName`, and both accept any value, including the string type of a host element.
 
 The marker is a plain shared property rather than a package-private symbol, so a component marked by Arc is recognized by Components and vice versa. Build transforms may rewrite `displayName` without silently breaking binding.
 

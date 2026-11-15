@@ -45,6 +45,8 @@ Set `draggable` and an optional `onDragStart` callback directly on a `ToolbarBut
 
 Use `data` to attach a payload to a button. The button's `onDragStart` runs before the toolbar's `onItemDragStart`; both receive the original value and the drag event.
 
+The toolbar's `onItemDragStart` also receives drags of [drawer](drawer.md) catalogue tiles, with the tile item's `payload`. It runs after the drawer folder's own `onItemDragStart(item, event)`, so handle a tile drag in one place, not both.
+
 The drop target receives a serialized copy, not that object reference. The button writes `JSON.stringify(data ?? null)` to the `application/json` entry of the HTML5 `DataTransfer` and sets `effectAllowed` to `copy`. A button without `data` transfers the string `null`. Use JSON-serializable data; functions and class behavior do not survive this transfer.
 
 ## Handling the Drop on a Surface

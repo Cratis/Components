@@ -50,7 +50,8 @@ For backend results, choose a table to place in your existing layout or `DataPag
 | A full screen: a list, a toolbar of actions, detail panels | [`DataPage`](./DataPage/index.md)     | A resizable page composition with toolbar and detail areas wired to the query.                    |
 | A table over an Arc query or observable query              | [`DataTables`](./DataTables/index.md) | Query wrappers with server paging and loaded-page rendering.                                      |
 | A semantic table over an already-loaded array              | [`DataTableCore`](./DataTables/index.md) | Local rows, single or multiple selection, loaded-page filtering/sorting, scrolling, and stable parts.         |
-| Grouping, row expansion, or controlled lazy/server sorting | Product-owned/retained table adapter  | Components does not claim these advanced state contracts; keep the existing adapter deliberately. |
+| Server-side sorting and filtering of a query               | [`DataTableForQuery`](./DataTables/data-table-for-query.md#server-mode) with `serverQuery` | The query sorts and filters the complete result; controlled `sort`/`onSortChange` on `DataTableCore` covers other server sources. |
+| Grouping or row expansion                                  | Product-owned/retained table adapter  | Components does not claim these advanced state contracts; keep the existing adapter deliberately. |
 
 If you're building a list-screen-with-actions from scratch, start with the
 [list screen recipe](./list-screen-with-actions.md), which composes `DataPage` with `CommandDialog`
@@ -110,6 +111,6 @@ recipe to put them together. A `DataPage` lists the rows, an action-bar item ope
 `CommandDialog` to add one, and a selection-aware action opens another `CommandDialog` for the
 selected row.
 
-Components does not ship every toolkit widget. Tabs, general-purpose sidebars, knobs, select-button groups, general popovers, grouped or expandable tables, controlled lazy/server table sorting, and specialized locale-aware inputs remain product-owned or in a separately configured UI toolkit. See [Coming from PrimeReact](./coming-from-primereact.md) for the current replacement boundaries.
+Components does not ship every toolkit widget. For tabs and exclusive select-button groups, use [`Tabs` and `ToggleGroup`](./Common/collection-controls.md); for locale-aware numbers, use [`NumberInput`](./Common/number-input.md); for server-side table sorting, use [server mode](./DataTables/data-table-for-query.md#server-mode) or the controlled `sort` state described in [DataTables](./DataTables/index.md). General-purpose sidebars, knobs, general popovers, grouped or expandable tables, and other specialized locale-aware inputs remain product-owned or in a separately configured UI toolkit. See [Coming from PrimeReact](./coming-from-primereact.md) for the current replacement boundaries.
 
 Still deciding how to style any of this? See [Styling](./Styling/index.md).

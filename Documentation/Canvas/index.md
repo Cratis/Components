@@ -176,7 +176,7 @@ The Canvas entry point also exports:
 - `Note`, `NoteProps`, and `NoteData` for movable/resizable editable notes.
 - `Region`, `RegionProps`, and `RegionData` for labeled spatial grouping.
 - Chat composition primitives: `Chat`, `ChatBubble`, `ChatComposer`, `ChatMessageBubble`, `MessageReactions`, `ReactionPicker`, `TypingIndicator`, `FailedReply`, and their exported data/label types.
-- Avatar, emoji-memory/catalog, and mention parsing/application helpers used by the chat primitives.
+- Avatar helpers; `EmojiCategory`, `EmojiMemory`, `EmojiPicker`, `recentEmojis`, and `rememberEmoji`; `MentionSuggestions`; and the mention parsing helpers `extractMentions`, `findMentionRanges`, and `mentionSegments`. The emoji catalog and the helpers that apply a chosen mention stay internal to the composer.
 - `AnchoredOverlay` and its side/alignment types for body-level overlays attached to a control.
 - `canvasGesture`, `canvasTransformActivity`, and `createSelfSuspendingFrameLoop` for advanced canvas integrations.
 
