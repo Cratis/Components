@@ -109,7 +109,9 @@ export const AllowedDuplicates: Story = {
         const canvas = within(canvasElement);
         await userEvent.type(canvas.getByRole('textbox'), 'alpha{Enter}');
         await expect(canvas.getAllByText('alpha')).toHaveLength(2);
-        await userEvent.click(canvas.getAllByRole('button', { name: 'Remove alpha' })[0]);
+        const firstTag = canvas.getAllByRole('row', { name: 'alpha' })[0];
+        // React Aria's remove button name also includes its associated tag text.
+        await userEvent.click(within(firstTag).getByRole('button'));
         await expect(canvas.getAllByText('alpha')).toHaveLength(1);
     },
 };
