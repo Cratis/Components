@@ -6,7 +6,6 @@ import {
     useState,
     type HTMLAttributes,
     type InputHTMLAttributes,
-    type Key,
     type ReactNode,
 } from 'react';
 import {
@@ -19,6 +18,7 @@ import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { classNames } from '../ClassNames/classNames';
+import { useTagOccurrences } from './tagOccurrences';
 
 /** Attributes a consumer may hand to one {@link TagGroup} part: class, style, title and data attributes. */
 export type TagGroupPartAttributes = Pick<
@@ -122,27 +122,10 @@ export const TagGroup = ({
     const resolvedRemoveIcon = icon('remove', '×', removeIcon);
     const generatedId = useId();
     const inputId = id ?? `cratis-tag-group-${generatedId}`;
-    const [draft, setDraft] = useState('');
+    const { items, remove } = useTagOccurrences(value, onChange);
+    const entry = useTagGroupEntry({ value, onChange, separators, allowDuplicates }, () =>
+        remove(new Set([items[items.length - 1].id])));
 
-    const add = (candidates: string[]) => {
-        const next = [...value];
-        for (const candidate of candidates) {
-            const trimmed = candidate.trim();
-            if (!trimmed) continue;
-            if (!allowDuplicates && next.includes(trimmed)) continue;
-            next.push(trimmed);
-        }
-        if (next.length !== value.length) onChange(next);
-        setDraft('');
-    };
-
-    const remove = (keys: Set<Key>) =>
-        onChange(value.filter((entry) => !keys.has(entry)));
-
-    const splitOn = (text: string) =>
-        separators.length === 0
-            ? [text]
-            : text.split(new RegExp(`[${separators.map(escapeForClass).join('')}]`));
 
     return (
         <div
@@ -166,26 +149,26 @@ export const TagGroup = ({
             >
                 <AriaTagList
                     {...pt?.list}
-                    items={value.map((entry) => ({ id: entry }))}
+                    items={items}
                     className={classNames('cratis-tag-group__list', pt?.list?.className)}
                     data-cratis-part='list'
                 >
-                    {(item: { id: string }) => (
+                    {(item) => (
                         <AriaTag
                             {...pt?.tag}
                             id={item.id}
-                            textValue={item.id}
+                            textValue={item.label}
                             isDisabled={disabled}
                             className={classNames('cratis-tag-group__tag', pt?.tag?.className)}
                             data-cratis-part='tag'
                             data-disabled={disabled || undefined}
                         >
-                            <span className='cratis-tag-group__tag-label'>{item.id}</span>
+                            <span className='cratis-tag-group__tag-label'>{item.label}</span>
                             {!disabled && (
                                 <AriaButton
                                     {...pt?.remove}
                                     slot='remove'
-                                    aria-label={removeLabel?.(item.id)}
+                                    aria-label={removeLabel?.(item.label)}
                                     className={classNames(
                                         'cratis-tag-group__remove',
                                         pt?.remove?.className,
@@ -204,7 +187,7 @@ export const TagGroup = ({
                     {...pt?.input}
                     id={inputId}
                     type='text'
-                    value={draft}
+                    value={entry.draft}
                     disabled={disabled}
                     placeholder={placeholder}
                     aria-label={ariaLabelledBy ? undefined : ariaLabel}
@@ -214,32 +197,50 @@ export const TagGroup = ({
                     className={classNames('cratis-tag-group__input', pt?.input?.className)}
                     data-cratis-part='input'
                     data-invalid={invalid || undefined}
-                    onChange={(event) => setDraft(event.currentTarget.value)}
-                    onKeyDown={(event) => {
-                        if (event.key === 'Enter' || separators.includes(event.key)) {
-                            event.preventDefault();
-                            add([draft]);
-                        } else if (
-                            event.key === 'Backspace' &&
-                            draft === '' &&
-                            value.length > 0
-                        ) {
-                            onChange(value.slice(0, -1));
-                        }
-                    }}
-                    onPaste={(event) => {
-                        const text = event.clipboardData.getData('text');
-                        if (!separators.some((separator) => text.includes(separator))) return;
-                        event.preventDefault();
-                        add(splitOn(text));
-                    }}
-                    onBlur={() => {
-                        if (draft.trim()) add([draft]);
-                    }}
+                    onChange={(event) => entry.setDraft(event.currentTarget.value)}
+                    onKeyDown={entry.onKeyDown}
+                    onPaste={entry.onPaste}
+                    onBlur={entry.onBlur}
                 />
             )}
         </div>
     );
+};
+
+const useTagGroupEntry = (
+    { value, onChange, separators, allowDuplicates }: Required<Pick<TagGroupProps, 'value' | 'onChange' | 'separators' | 'allowDuplicates'>>,
+    removeLast: () => void,
+) => {
+    const [draft, setDraft] = useState('');
+    const add = (candidates: string[]) => {
+        const next = [...value];
+        for (const candidate of candidates) {
+            const trimmed = candidate.trim();
+            if (!trimmed) continue;
+            if (!allowDuplicates && next.includes(trimmed)) continue;
+            next.push(trimmed);
+        }
+        if (next.length !== value.length) onChange(next);
+        setDraft('');
+    };
+    const onKeyDown: InputHTMLAttributes<HTMLInputElement>['onKeyDown'] = (event) => {
+        if (event.key === 'Enter' || separators.includes(event.key)) {
+            event.preventDefault();
+            add([draft]);
+        } else if (event.key === 'Backspace' && draft === '' && value.length > 0) {
+            removeLast();
+        }
+    };
+    const onPaste: InputHTMLAttributes<HTMLInputElement>['onPaste'] = (event) => {
+        const text = event.clipboardData.getData('text');
+        if (!separators.some((separator) => text.includes(separator))) return;
+        event.preventDefault();
+        add(text.split(new RegExp(`[${separators.map(escapeForClass).join('')}]`)));
+    };
+    const onBlur = () => {
+        if (draft.trim()) add([draft]);
+    };
+    return { draft, setDraft, onKeyDown, onPaste, onBlur };
 };
 
 /** Escapes a separator for use inside a character class, so a `-` or `]` cannot reshape it. */
