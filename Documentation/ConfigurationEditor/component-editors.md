@@ -13,18 +13,43 @@ import {
     ConfigurationEditorProvider,
     OrderedItemEditor,
     PropertyControls,
+    type ConfigurationEditorMap,
+    type ConfigurationEditorRenderer,
+    type OrderedItem,
+    type OrderedItemCapabilities,
 } from '@cratis/components/ConfigurationEditor';
 
-const editors = {
-    navigation: ({ value, onChange, readOnly, context }) => (
-        <OrderedItemEditor
-            aria-label='Navigation'
-            items={value.items}
-            capabilities={readOnly ? lockedDown : context.capabilities}
-            onChange={(proposal) => onChange({ ...value, items: [...proposal.items] })}
-        />
-    ),
+interface NavigationConfiguration {
+    items: OrderedItem[];
+}
+
+interface EditorContext {
+    capabilities: OrderedItemCapabilities;
+}
+
+const lockedDown: OrderedItemCapabilities = {
+    add: false,
+    remove: false,
+    reorder: false,
+    fields: { label: 'readonly' },
 };
+
+const navigationEditor: ConfigurationEditorRenderer<NavigationConfiguration, EditorContext> = ({
+    value,
+    onChange,
+    readOnly,
+    context,
+}) => (
+    <OrderedItemEditor
+        aria-label='Navigation'
+        items={value.items}
+        capabilities={readOnly ? lockedDown : context?.capabilities ?? lockedDown}
+        onChange={(proposal) => onChange({ ...value, items: [...proposal.items] })}
+    />
+);
+
+// The registry holds editors for many configuration types, so a typed editor is cast when registered.
+const editors: ConfigurationEditorMap = { navigation: navigationEditor as never };
 
 <ConfigurationEditorProvider editors={editors}>
     <ConfigurationEditor
@@ -44,7 +69,9 @@ const editors = {
 </ConfigurationEditorProvider>
 ```
 
-Here `lockedDown`, `selected`, `saveConfiguration` and `groupsFor` stand for your own data and functions. The registry has no built-in component types: `selected.type` must match the `navigation` key to select that editor.
+Here `selected`, `capabilities`, `saveConfiguration` and `groupsFor` stand for your own data and functions. `context` is optional in the editor props, so the editor falls back to `lockedDown` when the host passes no capabilities.
+
+The provider stores editors for configuration types it cannot know in advance, so `ConfigurationEditorMap` declares them with `never` types. Write each editor with `ConfigurationEditorRenderer<TValue, TContext>` so its props are checked, and cast it with `as never` when you add it to the map. The cast does not change behavior: `ConfigurationEditor` passes the `value` and `context` it receives to the editor unchanged. The registry has no built-in component types: `selected.type` must match the `navigation` key to select that editor.
 
 The navigation editor receives `selected.configuration` as `value`. When its ordered items change, it proposes a replacement configuration that keeps the other fields and replaces `items`. `saveConfiguration` receives that proposal; the host decides whether to accept it and passes the accepted configuration back as a new `value`. The callback's name does not make saving automatic.
 

@@ -106,6 +106,23 @@ Next, wire [topic creation and naming](./topics-and-naming.md) so a new conversa
 | `modal`                                  | `boolean`                                     | `false`   | Adds a blocking backdrop with Escape and outside-click dismissal.                                    |
 | `labels`, `className`, `pt`              | `ChatSidebarLabels`, `string`, `ChatSidebarParts` | —     | English label overrides, panel class, and stable parts.                                              |
 
+## ChatConversation props
+
+Render `ChatConversation` on its own when your application already decides which topic is open, for example in a page instead of a sidebar. It shows one conversation and does not know its topic, so its send callback receives only the body and mentions; `ChatSidebar`'s callback also receives the topic id.
+
+| Prop                                     | Type                                          | Default   | Behavior                                                                                             |
+| ---------------------------------------- | --------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| `messages`                               | `TMessage[]`                                  | Required  | Rendered in the order given.                                                                         |
+| `onSendMessage`                          | `(body, mentions) => void`                    | Required  | Receives the trimmed body and who it mentions. Add the topic id yourself when you persist it.        |
+| `status`                                 | `ChatStatus`                                  | `Ready`   | See [Query display states](#query-display-states).                                                   |
+| `authorOf`, `renderAvatar`, `renderAuthorName`, `buildAvatarUrl` | callbacks             | —         | Author resolution and rendering. Without `authorOf`, the id is shown as the name.                    |
+| `renderMessageExtra`                     | `(message) => ReactNode`                      | —         | Content rendered under a message's body.                                                             |
+| `actions`, `quickReply`                  | `ChatMessageAction[]`, `boolean`              | —, `true` | Message actions and quick reply; see [Message actions](./message-actions.md).                         |
+| `mentionCandidates` / `resolveMentionCandidates` | array or callback                     | —         | See [Mentions and emoji](./mentions-and-emoji.md). Omit both to turn mentions off.                   |
+| `typingAuthors`                          | `ChatTypingAuthor[]`                          | —         | Who the conversation is waiting on.                                                                  |
+| `autoFocus`                              | `boolean`                                     | —         | Focuses the composer when it mounts.                                                                 |
+| `labels`, `className`                    | `ChatConversationLabels`, `string`            | —         | English label overrides (see [Labels](#labels)) and a class for the root element.                    |
+
 ## Query display states
 
 If your application owns the queries, import `ChatStatus` from `@cratis/components/Chat` and pass `topicsStatus` and `messagesStatus` to `ChatSidebar`. Both default to `ChatStatus.Ready`, so an empty array shows the ordinary empty-state text unless you supply another status. The standalone `ChatTopicList` and `ChatConversation` accept the same optional enum through their `status` prop.
@@ -174,7 +191,7 @@ The built-in avatar shows initials on a color derived from the id. It shows an i
 ```tsx
 <ChatConversation
     messages={messages}
-    onSendMessage={send}
+    onSendMessage={(body, mentions) => send(topicId, body, mentions)}
     authorOf={authorOf}
     renderAvatar={(authorId, author) => <MyAvatar id={authorId} title={author.name} />}
     renderAuthorName={(authorId, author) => (
@@ -227,6 +244,53 @@ import { ChatMessageBody, ChatAuthorKind } from '@cratis/components/Chat';
 | `mentions` | `ChatMention[]` | Known mentions to mark within the text. Omit it when the body contains no resolved mentions. |
 
 The component renders text, not HTML or Markdown. Each resolved mention gets the `cratis-chat-message__mention` class and a `data-kind` attribute so people and agents can be styled differently. Text that does not match a supplied mention remains unchanged.
+
+## Labels
+
+Every visible string has an English default that you can override through `labels`. Unset keys keep their defaults, so you pass only the strings you translate. On `ChatSidebar`, the conversation and topic-list labels nest under `labels.conversation` and `labels.topicList`; on a standalone `ChatConversation` or `ChatTopicList`, pass the same keys directly to its `labels`. Placeholders in braces are replaced at render time.
+
+| Path on `ChatSidebarLabels`      | Default                                                     |
+| -------------------------------- | ----------------------------------------------------------- |
+| `topics`                         | `Topics`                                                    |
+| `unnamedTopic`                   | `New topic`                                                 |
+| `back`                           | `Back to topics`                                            |
+| `close`                          | `Close chat`                                                |
+| `topicList.newTopic`             | `New topic`                                                 |
+| `topicList.unnamedTopic`         | `New topic`                                                 |
+| `topicList.startedBy`            | `Started by {name}`                                         |
+| `topicList.loading`              | `Loading topics…`                                           |
+| `topicList.failed`               | `Could not load topics.`                                    |
+| `topicList.unauthorized`         | `You are not authorized to view these topics.`              |
+| `topicList.empty`                | `No topics yet. Start the first one!`                       |
+| `topicList.timestamps`           | `RelativeTimestampLabels`, see below                        |
+| `conversation.loading`           | `Loading messages…`                                         |
+| `conversation.failed`            | `Could not load messages.`                                  |
+| `conversation.unauthorized`      | `You are not authorized to view these messages.`            |
+| `conversation.empty`             | `No messages yet. Say hello!`                               |
+| `conversation.typing`            | `{name} is typing`                                          |
+| `conversation.typingTwo`         | `{first} and {second} are typing`                           |
+| `conversation.typingSeveral`     | `Several people are typing`                                 |
+| `conversation.quickReplyTo`      | `Reply to {name}`                                           |
+| `conversation.timestamps`        | `RelativeTimestampLabels`, see below                        |
+| `conversation.composer.placeholder` | `Write a message… (Enter to send)`                       |
+| `conversation.composer.insertEmoji` | `Insert emoji`                                           |
+| `conversation.composer.send`     | `Send` (tooltip)                                            |
+| `conversation.composer.sendMessage` | `Send message` (accessible name)                         |
+| `conversation.composer.reactionPicker` | Emoji picker labels; see [Mentions and emoji](./mentions-and-emoji.md) |
+
+`RelativeTimestampLabels` has `justNow` (`just now`), `minutesAgo` (`{minutes}m ago`) and `hoursAgo` (`{hours}h ago`). Moments older than a day are shown as a locale date. The label types `ChatSidebarLabels`, `ChatConversationLabels`, `ChatTopicListLabels`, `ChatComposerLabels` and `RelativeTimestampLabels` are exported from `@cratis/components/Chat`.
+
+## Helpers
+
+`@cratis/components/Chat` also exports the small functions the components use, so your application can apply the same rules:
+
+| Helper | What it does |
+| ------ | ------------ |
+| `chatIdentifierString(identifier)` | Returns the string form the components use for keys and comparisons. |
+| `sameChatIdentifier(left, right)` | Compares two identifiers by their string form, so a `Guid` and the string it prints as are equal. Returns `false` when either is missing. |
+| `isTopicUnnamed(topic)` | The default unnamed-topic predicate: a missing or whitespace-only name. Compose it into your own `isTopicUnnamed` prop, for example `topic => isTopicUnnamed(topic) \|\| topic.name === 'New topic'`. |
+| `relativeTimestamp(moment, now?, labels?)` | Renders `just now`, `5m ago`, `3h ago`, or a locale date, using optional `RelativeTimestampLabels`. |
+| `topicsByActivity`, `shouldRequestTopicName` | The topic ordering and the naming check; see [Topics and naming](./topics-and-naming.md). |
 
 ## Styling
 
