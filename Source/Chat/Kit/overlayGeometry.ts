@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { measureProbe } from '../../Filter/measurePanelPlacement';
+import { measureProbe } from '../../renderer/fixedProbe';
 import type { OverlayPlacement } from './OverlayPlacement';
 import type { OverlayPlacementOptions } from './OverlayPlacementOptions';
 
