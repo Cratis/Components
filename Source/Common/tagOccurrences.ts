@@ -26,7 +26,7 @@ export const useTagOccurrences = (value: string[], onChange: (value: string[]) =
     const prefix = useId();
     const [stored, setStored] = useState(() => reconcile(value, [], prefix, 0));
     let current = stored;
-    if (stored.value !== value) {
+    if (stored.value !== value || !matches(stored.items, value)) {
         // Only an acknowledged local removal can disambiguate equal labels. Other replacements
         // match the nth new occurrence to the nth prior occurrence of the same label.
         const previous = matches(stored.pending, value) ? stored.pending : stored.items;

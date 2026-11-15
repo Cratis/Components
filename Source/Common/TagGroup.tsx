@@ -150,6 +150,7 @@ export const TagGroup = ({
                 <AriaTagList
                     {...pt?.list}
                     items={items}
+                    dependencies={[disabled, removeLabel, resolvedRemoveIcon, pt]}
                     className={classNames('cratis-tag-group__list', pt?.list?.className)}
                     data-cratis-part='list'
                 >
