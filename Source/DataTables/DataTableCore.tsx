@@ -18,6 +18,7 @@ import type { DataTableSort } from './DataTableSort';
 import { DataTableStatus } from './DataTableStatus';
 import { isFilterEntryActive } from './matchesFilterEntry';
 import { processRows } from './processRows';
+import { dataTableRowKeys } from './dataTableRowKeys';
 import { useDataTableMessages } from './useDataTableMessages';
 import { useDataTableState } from './useDataTableState';
 import { useRowSelection } from './useRowSelection';
@@ -213,8 +214,8 @@ export const DataTableCore = <TData extends object>({
             }),
         [data, filters, globalFilter, globalFilterFields, sort, rowProcessing],
     );
+    const rowKeys = useMemo(() => dataTableRowKeys(data, dataKey), [data, dataKey]);
     const {
-        dataKeyIdentity,
         isSelectedRow,
         isRowSelected,
         toggleRowSelection,
@@ -343,15 +344,12 @@ export const DataTableCore = <TData extends object>({
                         isFiltered={isFiltered && (isServerMode || data.length > 0)}
                         renderRows={() =>
                             filteredRows.map(({ row, loadedIndex }) => {
-                                const identity = dataKey
-                                    ? dataKeyIdentity(row)
-                                    : 'loaded-row';
                                 const isSelected =
                                     selectionMode === 'single' &&
                                     isSelectedRow(row, loadedIndex);
                                 return (
                                     <DataTableRow<TData>
-                                        key={`${identity}::${loadedIndex}`}
+                                        key={rowKeys[loadedIndex]}
                                         row={row}
                                         columns={columns}
                                         parts={pt}
