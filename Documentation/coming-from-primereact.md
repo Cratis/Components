@@ -17,13 +17,15 @@ Start with one screen. Replace its imports using the table below, then check dia
 | DataTable / Column               | `DataTableCore` and `Column` from `@cratis/components/DataTables`     |
 | Input fields in command forms    | Field components from `@cratis/components/CommandForm`                |
 | Tag / Badge / Message / Skeleton | `Tag`, `Badge`, `Message`, `Skeleton` from `@cratis/components/Display` |
+| TabView                          | `Tabs` from `@cratis/components/Common`                               |
+| SelectButton (single selection)  | `ToggleGroup` from `@cratis/components/Common`                        |
 | Toast / Toaster                  | `Toaster` and `toast` from `@cratis/components/Notifications`         |
 
 Import each component from its subpath; the package root exports only `CratisComponentsProvider` and its configuration helpers.
 
 Use native HTML for simple application-owned controls that do not need Components behavior. CommandForm fields are specifically for generated command properties; they are not a general local-state input suite.
 
-Components does not provide one-for-one replacements for every Prime widget. Keep an application-owned or direct Prime surface during migration when it requires tabs, sidebars, timelines, knobs, select-button groups, general popovers, grouped/expandable tables, or controlled lazy/server table sorting. Components `Toolbar` is a canvas/tool-palette control, not a replacement for every page action bar.
+Components does not provide one-for-one replacements for every Prime widget. Keep an application-owned or direct Prime surface during migration when it requires sidebars, timelines, knobs, multiple-selection select-button groups, general popovers, or grouped/expandable tables. `ToggleGroup` covers exclusive (single-value) selection only; see [Collection controls](Common/collection-controls.md). Components `Toolbar` is a canvas/tool-palette control, not a replacement for every page action bar.
 
 If you want to keep vendor presentation, the optional MUI, PrimeReact 11, and PrimeReact 10 adapters cover nine `common.*` presentation slots, named replacement points for basic controls: button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface. They do not replace Dialog, Dropdown, DatePicker, paginator, table, or another complete widget. Core retains focus, overlay, selection, and keyboard behavior; installing an adapter does not delegate key handling or recreate a Prime public API. See [Choose a renderer](renderers/index.md) before choosing an adapter.
 
@@ -44,7 +46,7 @@ A custom `buttons` footer owns its close result through `useDialogContext`; Comp
 
 Choose the table according to who owns the data. `DataTableCore` renders an already-loaded local array. For a paged Arc query, use `DataTableForQuery`; if that query also delivers later results, use `DataTableForObservableQuery`. `DataPage` adds actions and optional details around the table.
 
-Keep an application-owned/Prime adapter for grouping, row expansion, or controlled lazy/server sorting until an explicit state contract exists.
+For lazy or server-side sorting, set `serverQuery` on `DataTableForQuery` or `DataTableForObservableQuery` so the query sorts and filters the complete result (see [Server mode](DataTables/data-table-for-query.md#server-mode)). For another server source, control `DataTableCore` with `sort` and `onSortChange`, and set `rowProcessing={DataTableRowProcessing.None}` so the table renders the rows as returned. Keep an application-owned/Prime adapter for grouping or row expansion until an explicit state contract exists.
 
 For direct Prime migration, rename `value` to `data`. Replace compact size, stripes, and column alignment with `DataTableParts`, `Column` classes/styles, and product CSS. Prime `Column` cannot be passed to a Components table or `DataPage`; import the Cratis marker for those surfaces.
 
