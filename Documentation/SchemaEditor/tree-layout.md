@@ -89,6 +89,19 @@ const concepts = [
 <SchemaEditor layout='tree' schema={schema} concepts={concepts} />;
 ```
 
+`PropertyConceptsProvider` makes a set of concepts available to every editor rendered inside it, so you provide them once for a scope instead of passing `concepts` to each editor. An editor's own `concepts` prop takes precedence. Components inside the provider can read the same list with `usePropertyConcepts()`, which returns an empty array when no provider is above them:
+
+```tsx
+import { PropertyConceptsProvider, usePropertyConcepts } from '@cratis/components/SchemaEditor';
+
+const ConceptCount = () => <span>{usePropertyConcepts().length} concepts</span>;
+
+<PropertyConceptsProvider concepts={concepts}>
+    <ConceptCount />
+    <SchemaEditor layout='tree' schema={schema} />
+</PropertyConceptsProvider>;
+```
+
 Enable `allowRequired` to let users add a property to, or remove it from, its object's `required` list. This requires presence, not a non-empty value: `required` alone permits an empty string. Requiring a nested property does not require its parent.
 
 Enable `allowKeyProperty` to mark one property per object with `x-key: true`. Choosing another property moves the key; choosing the current key clears it. Pass a predicate to offer the toggle only on selected properties. The annotation does not validate uniqueness in stored data.
@@ -118,18 +131,18 @@ Use `@cratis/components/SchemaEditor/styles` with the [per-area stylesheet setup
 
 ## Localization
 
-Pass `labels` to translate visible text and accessible names. The tree shares this prop with the table and adds optional keys; omitted labels keep their English defaults. Labels that act on a property, such as `deletePropertyFor`, `propertyNameFor` and `addPropertyTo`, are functions receiving its name.
+Pass `labels` to translate visible text and accessible names. The tree shares this prop with the table and adds optional keys; omitted labels keep their English defaults. The `SchemaEditorLabels` type lists every key, and the `defaultSchemaEditorLabels` constant holds the English text for each; both are exported from `@cratis/components/SchemaEditor`. Type a translation as `Partial<SchemaEditorLabels>` to get completion and checking for the keys you override. Labels that act on a property, such as `deletePropertyFor`, `propertyNameFor` and `addPropertyTo`, are functions receiving its name.
 
 ```tsx
-<SchemaEditor
-    layout='tree'
-    schema={schema}
-    labels={{
-        addProperty: 'Legg til egenskap',
-        deletePropertyFor: name => `Slett ${name}`,
-        typeString: 'Tekst',
-    }}
-/>
+import { SchemaEditor, type SchemaEditorLabels } from '@cratis/components/SchemaEditor';
+
+const norwegian: Partial<SchemaEditorLabels> = {
+    addProperty: 'Legg til egenskap',
+    deletePropertyFor: name => `Slett ${name}`,
+    typeString: 'Tekst',
+};
+
+<SchemaEditor layout='tree' schema={schema} labels={norwegian} />;
 ```
 
 The Generated toggle uses `generatedProperty(name)` for its accessible name, `setAsGenerated` for its inactive tooltip, and `isGenerated` for its active tooltip. Defaults are `Generated: <name>`, `Mark as generated: the value is created when the command runs, not entered`, and `The value is generated. Select it again to mark it as entered.`. The non-interactive marker uses `generatedProperty(name)` for its name and tooltip.

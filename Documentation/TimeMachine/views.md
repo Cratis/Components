@@ -109,6 +109,41 @@ import { EventsView } from '@cratis/components/TimeMachine';
 
 Outside TimeMachine, no event is marked as selected.
 
+### Using ReadModelView on its own
+
+`ReadModelView` is also exported. It renders only the stacked version cards: no timeline, previous/next buttons, or view switcher. Selection and hover are controlled by the parent, so you hold that state yourself. It takes these props:
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `versions` | `Version[]` | The snapshots to show as cards, in order. |
+| `selectedIndex` | `number` | Index of the selected version. |
+| `hoveredIndex` | `number \| null` | Index of a version to preview in front of the selection, or `null`. When set, it is displayed instead of `selectedIndex`. |
+| `onVersionSelect` | `(index: number) => void` | Called when a card is clicked. |
+| `onHoveringCardChange` | `(isHovering: boolean) => void` | Called with `true` when the pointer enters a card and `false` when it leaves. |
+| `labels` | `TimeMachineLabels` | Optional complete labels object; defaults to `defaultTimeMachineLabels`. |
+
+The props interface itself is not exported. The cards are absolutely positioned to fill their container, so give the container a position and a height. The card styles come from `@cratis/components/styles`, or from `@cratis/components/TimeMachine/styles` if you use per-area stylesheets:
+
+```tsx
+import { useState } from 'react';
+import { ReadModelView, type Version } from '@cratis/components/TimeMachine';
+
+export const ProductHistory = ({ versions }: { versions: Version[] }) => {
+    const [selectedIndex, setSelectedIndex] = useState(versions.length - 1);
+
+    return (
+        <div style={{ position: 'relative', height: 480 }}>
+            <ReadModelView
+                versions={versions}
+                selectedIndex={selectedIndex}
+                hoveredIndex={null}
+                onVersionSelect={setSelectedIndex}
+                onHoveringCardChange={() => {}} />
+        </div>
+    );
+};
+```
+
 ## View Switcher
 
 TimeMachine starts in the read model view. Toggle between views using the switcher at the top center:

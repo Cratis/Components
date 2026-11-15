@@ -101,6 +101,26 @@ Every type badge carries `data-property-type="<type>"` (and `data-cratis-part="b
 
 To change the markup, pass `renderPropertyTypeBadge`. It receives the property, the row context and the badge the editor would render, and may return it unchanged, wrap it, or return something else. Inside an editable row the result stays within the button that opens the type menu.
 
+Two exported building blocks help a custom badge or row control match the built-in type menu:
+
+- `PropertyTypeGlyph` renders the colored chip for a `PropertyType` (`<PropertyTypeGlyph type={PropertyType.Number} />`). It is decorative and hidden from assistive technology, so keep the type's name next to it.
+- `GlyphMenu` is a single-choice menu that shows each entry as a glyph followed by its name, like the type menu. It takes `items` (each with a `key`, a `label` and the `glyph` type whose chip it borrows), the chosen `value`, `onChange(key)`, an accessible `label`, and optional `name` and `disabled`.
+
+```tsx
+import { GlyphMenu, PropertyType } from '@cratis/components/SchemaEditor';
+
+<GlyphMenu
+    label='Precision'
+    value={precision}
+    onChange={setPrecision}
+    items={[
+        { key: 'integer', label: 'Whole number', glyph: PropertyType.Number },
+        { key: 'decimal', label: 'Decimal', glyph: PropertyType.Number },
+    ]} />;
+```
+
+The chip colors come from the editor's stylesheet and are scoped to `.cratis-schema-editor` and its menus, so render these inside the editor, for example from a row slot.
+
 ## Selecting a row from a control
 
 A click on a button, input, label or link inside a row does not select the row, so the host's own controls do not trigger selection by accident. To opt a control in, put `data-schema-row-select` on it, or on any ancestor within the row. A click on it, or on anything inside it, calls `onPropertyClick` with the property's id:
@@ -139,7 +159,9 @@ Apply each callback with the pure functions `@cratis/components/SchemaEditor` ex
 | `validatePropertyName` | Runs after the built-in name checks; a message marks the name invalid and disables Save |
 | `onPropertyRenamed`, `onPropertyRemoved` | Called once the edit is applied to the editor's working copy |
 | `header`, `footer` | Rendered above and below the editor |
-| `labels` | The `keyColumn`, `requiredColumn`, `requiredProperty`, `keyProperty` and `protectedProperty` labels |
+| `labels` | The required keys of `SchemaEditorLabels` (`edit`, `save`, `cancel`, `addProperty`, `actions`, `navigateBack`, `emptyMessage`, `navigateToItemDefinition`, `navigateToProperties`, `propertyName`, `propertyType`, `arrayItemType`, `deleteProperty` and `invalidJson`), plus `keyColumn`, `requiredColumn`, `requiredProperty`, `keyProperty` and `protectedProperty` |
+
+The table's Property and Type column headers and its built-in name-validation messages are fixed English text that `labels` cannot change.
 
 Everything else on this page — `concepts`, controlled mode, the per-row slots, selection, `pt`, `readOnly` — is ignored by the table layout. The table has its own Edit, Save and Cancel workflow and drills into nested objects instead of showing them inline.
 
