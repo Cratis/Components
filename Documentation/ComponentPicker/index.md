@@ -47,6 +47,29 @@ In this example, confirming a component logs its name, optional id and presentat
 
 `start()` resolves with the confirmed `PickedComponent`, or `null` when picking was cancelled or `cancel()` was called. Starting again cancels the previous pick.
 
+To drive picking from your own state instead of the hook, render `ComponentPicker` directly. `active` turns picking on and off; while it is off, the picker listens to nothing and draws nothing. `onPick` receives the confirmed component, `onCancel` is called when the user presses Escape, and the optional `resolve` adds host context as above. Turn `active` off yourself in both callbacks:
+
+```tsx
+import { useState } from 'react';
+import { ComponentPicker, type PickedComponent } from '@cratis/components/ComponentPicker';
+
+export function ControlledPicker() {
+    const [active, setActive] = useState(false);
+    const [picked, setPicked] = useState<PickedComponent | null>(null);
+
+    return (
+        <>
+            <button onClick={() => setActive(true)}>Point at something</button>
+            <ComponentPicker
+                active={active}
+                onPick={(component) => { setPicked(component); setActive(false); }}
+                onCancel={() => setActive(false)}
+            />
+        </>
+    );
+}
+```
+
 ### How the user picks
 
 | Input | Effect |
@@ -141,6 +164,27 @@ Render from the props returned by `useComponentPresentation`, as `Banner` does w
 
 `knownComponentDescriptors()` lists the descriptors of components that have rendered so far.
 
+### Mark a component without presentation properties
+
+A component that has nothing to edit can still be pickable. Spread `componentMarker(name, id?)` on its root element; it returns the `data-cratis-component` attribute and, when you pass an `id`, `data-cratis-component-id`:
+
+```tsx
+import type { ReactNode } from 'react';
+import { componentMarker } from '@cratis/components/ComponentPicker';
+
+export const StatusPanel = ({ id, children }: { id?: string; children: ReactNode }) => (
+    <section {...componentMarker('StatusPanel', id)}>{children}</section>
+);
+```
+
+The module also exports these lower-level helpers:
+
+| Helper | What it does |
+| --- | --- |
+| `registeredComponentFor(element)` | Reads the descriptor and props a rendered component registered, from its root element. Returns `undefined` when it declares no presentation properties. |
+| `proposedChanges(picked, draft)` | Compares a draft of values by property name with the picked component and returns one `{ property, from, to }` per editable property that differs, the same shape `PresentationPropertyEditor` reports. |
+| `componentAttribute`, `componentIdAttribute`, `componentInstanceAttribute` | The attribute names `data-cratis-component`, `data-cratis-component-id` and `data-cratis-component-instance`, for querying the DOM without repeating the strings. |
+
 ## Highlight a component
 
 `ComponentHighlight` is a passive outline for an element or a `PickedComponent`, used to show what a piece of feedback is about after picking. It never takes focus or pointer input and is hidden from assistive technology.
@@ -148,6 +192,8 @@ Render from the props returned by `useComponentPresentation`, as `Banner` does w
 ```tsx
 <ComponentHighlight target={picked} />
 ```
+
+The highlight shows the component's name; pass `label` to show your own text instead. A `null` target draws nothing, so you can pass the current selection before one exists.
 
 ## Propose changes with the property editor
 
