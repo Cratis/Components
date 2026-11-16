@@ -1,28 +1,26 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Button } from '../Common/Button';
-import { Checkbox } from '../Common/Checkbox';
-import { DataTableCore } from '../DataTables/DataTableCore';
-import { Column } from '../DataTables/Column';
-import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
-import { Tooltip } from '../Common/Tooltip';
+import { useMemo, useCallback } from 'react';
+import { ActionMenubar } from '../Common/ActionMenubar';
 import { Message } from '../Display/Message';
-import * as faIcons from 'react-icons/fa6';
-import { NameCell } from './NameCell';
-import { TypeCell } from './TypeCell';
 import type { ReactNode } from 'react';
 import type { ChangeHandler } from '../types/ChangeHandler';
-import type { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
+import type { JsonSchema } from '../types/JsonSchema';
 import { type TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
-import { validatePropertyName, buildBreadcrumbItems, dropInapplicableKeywords } from './schemaHelpers';
 import { defaultSchemaEditorLabels } from './defaultSchemaEditorLabels';
 import type { SchemaEditorLabels } from './SchemaEditorLabels';
+import { findSchemaAtPath } from './schemaDocument';
+import { useSchemaDocument } from './useSchemaDocument';
+import { useSchemaEdits } from './useSchemaEdits';
+import { useSchemaNavigation } from './useSchemaNavigation';
+import { useSchemaRows } from './useSchemaRows';
+import { useSchemaEditorMenu } from './schemaEditorMenu';
+import { SchemaEditorNavigation } from './SchemaEditorNavigation';
+import { SchemaEditorTable } from './SchemaEditorTable';
 
 import type { SchemaEditorLayout } from './SchemaEditorLayout';
 import type { Property } from './Tree/Property';
-import { jsonSchemaToProperties, KEY_KEYWORD } from './Tree/schemaConversion';
 import { TreeSchemaEditor, type TreeSchemaEditorProps } from './Tree/TreeSchemaEditor';
 
 export { defaultSchemaEditorLabels };
@@ -50,86 +48,6 @@ type TreeOnlyProps = Omit<
 >;
 
 const emptySchema: JsonSchema = {};
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null && !Array.isArray(value);
-
-/**
- * Recursively validates that a parsed schema node, its required names, and every nested
- * `properties`, `definitions`, and `items` schema match the supported object shape. A JSON-valid
- * document can still contain malformed nested values (for example `properties.foo: null`,
- * `required: {}`, or `items: "string"`) that later code dereferences as schema data; those are
- * rejected here rather than crashing downstream.
- */
-const isValidSchemaNode = (node: unknown): node is JsonSchema => {
-    if (!isPlainObject(node)) {
-        return false;
-    }
-
-    if (
-        node.required !== undefined &&
-        (!Array.isArray(node.required) ||
-            !node.required.every((propertyName) => typeof propertyName === 'string'))
-    ) {
-        return false;
-    }
-
-    for (const nestedSchemas of [node.properties, node.definitions]) {
-        if (nestedSchemas === undefined) continue;
-        if (!isPlainObject(nestedSchemas)) return false;
-        for (const nestedSchema of Object.values(nestedSchemas)) {
-            if (!isValidSchemaNode(nestedSchema)) return false;
-        }
-    }
-
-    if (node.items !== undefined && !isValidSchemaNode(node.items)) {
-        return false;
-    }
-
-    return true;
-};
-
-const cloneSchema = (schema: JsonSchema): JsonSchema | undefined => {
-    try {
-        const serializedSchema = JSON.stringify(schema);
-        if (serializedSchema === undefined) return undefined;
-
-        const parsedSchema: unknown = JSON.parse(serializedSchema);
-        if (!isValidSchemaNode(parsedSchema)) {
-            return undefined;
-        }
-
-        return parsedSchema;
-    } catch {
-        return undefined;
-    }
-};
-
-/** Follows a drill-down path (property names and `$items`) to the schema it points at. */
-const findSchemaAtPath = (root: JsonSchema, path: string[]): JsonSchema | undefined => {
-    let target: JsonSchema | JsonSchemaProperty = root;
-    for (const segment of path) {
-        if (target.type === 'array' && segment === '$items') {
-            target = target.items || {};
-        } else if (target.properties && target.properties[segment]) {
-            target = target.properties[segment];
-        } else {
-            return undefined;
-        }
-    }
-    return target as unknown as JsonSchema;
-};
-
-const asJsonSchema = (property: JsonSchemaProperty): JsonSchema => {
-    // SAFETY: A nested "object" property has the same editable shape as a schema —
-    // `properties`, `items`, and `required` all mean the same thing on both types.
-    return property as unknown as JsonSchema;
-};
-
-const asJsonSchemaProperty = (schema: JsonSchema): JsonSchemaProperty => {
-    // SAFETY: The inverse of asJsonSchema; the shapes are structurally interchangeable.
-    return schema as unknown as JsonSchemaProperty;
-};
 
 /**
  * Props for {@link SchemaEditor}.
@@ -268,527 +186,51 @@ const TableSchemaEditor = ({
     header,
     footer,
 }: SchemaEditorProps) => {
-    const schema = suppliedSchema ?? emptySchema;
     const l = useMemo(() => ({ ...defaultSchemaEditorLabels, ...labels }) as Required<SchemaEditorLabels>, [labels]);
-    const showKey = allowKeyProperty !== undefined && allowKeyProperty !== false;
-    const showRequired = allowRequired === true;
-    const [currentPath, setCurrentPath] = useState<string[]>([]);
-    const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
-    const [initialParsedSchema] = useState<JsonSchema | undefined>(() =>
-        cloneSchema(schema),
+    const document = useSchemaDocument({
+        schema: suppliedSchema ?? emptySchema,
+        editMode,
+        onChange,
+        onSave,
+        onCancel,
+    });
+    const { currentSchema, schemaJsonIsInvalid, isEditMode } = document;
+    const navigation = useSchemaNavigation(eventTypeName, isEditMode);
+    const { currentPath } = navigation;
+    const { properties, validationErrors } = useSchemaRows(
+        currentSchema,
+        currentPath,
+        isEditMode,
+        validateCustomPropertyName,
     );
-    const [currentSchema, setCurrentSchema] = useState<JsonSchema>(
-        initialParsedSchema ?? {},
-    );
-    const [isEditMode, setIsEditMode] = useState(editMode ?? false);
-    const [initialSchema, setInitialSchema] = useState<JsonSchema>(
-        initialParsedSchema ?? {},
-    );
-    const [schemaJsonIsInvalid, setSchemaJsonIsInvalid] = useState(
-        initialParsedSchema === undefined,
-    );
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const markInvalid = useCallback(() => document.setSchemaJsonIsInvalid(true), [document.setSchemaJsonIsInvalid]);
+    const edits = useSchemaEdits({
+        currentSchema,
+        currentPath,
+        setCurrentSchema: document.setCurrentSchema,
+        markInvalid,
+        onChange,
+        isPropertyProtected,
+        onPropertyRemoved,
+        onPropertyRenamed,
+    });
 
-    useEffect(() => {
-        if (!isEditMode) {
-            setCurrentPath([]);
-        }
-    }, [isEditMode]);
+    const hasValidationErrors = schemaJsonIsInvalid || Object.keys(validationErrors).length > 0;
+    const menuItems = useSchemaEditorMenu({
+        isEditMode,
+        canEdit,
+        canNotEditReason,
+        schemaJsonIsInvalid,
+        hasValidationErrors,
+        saveDisabled,
+        cancelDisabled,
+        labels: l,
+        onEdit: document.handleEdit,
+        onSave: document.handleSave,
+        onCancel: document.handleCancel,
+        onAddProperty: edits.addProperty,
+    });
 
-    const validateAllProperties = useCallback(
-        (properties: JsonSchemaProperty[], level: Property[] = []) => {
-            const errors: Record<string, string> = {};
-
-            properties.forEach((prop) => {
-                let error = validatePropertyName(prop.name ?? '', prop.id!, properties);
-                if (!error && validateCustomPropertyName) {
-                    const property = level.find((candidate) => candidate.name === prop.name);
-                    if (property) {
-                        error = validateCustomPropertyName(property.name, property, level);
-                    }
-                }
-                if (error) {
-                    errors[prop.id!] = error;
-                }
-            });
-
-            setValidationErrors(errors);
-            return Object.keys(errors).length === 0;
-        },
-        [validatePropertyName, validateCustomPropertyName],
-    );
-
-    useEffect(() => {
-        const parsedSchema = cloneSchema(schema);
-        if (!parsedSchema) {
-            setSchemaJsonIsInvalid(true);
-            return;
-        }
-
-        setSchemaJsonIsInvalid(false);
-        setCurrentSchema(parsedSchema);
-        setInitialSchema(parsedSchema);
-    }, [schema]);
-
-    useEffect(() => {
-        loadPropertiesForCurrentPath();
-    }, [currentPath, currentSchema, isEditMode]);
-
-    const loadPropertiesForCurrentPath = () => {
-        let targetSchema: JsonSchema | JsonSchemaProperty = currentSchema;
-
-        for (const segment of currentPath) {
-            if (targetSchema.type === 'array' && segment === '$items') {
-                targetSchema = targetSchema.items || {};
-            } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                targetSchema = targetSchema.properties[segment] as
-                    JsonSchema | JsonSchemaProperty;
-            } else {
-                return;
-            }
-        }
-
-        const schemaProps: JsonSchemaProperty[] = [];
-        if (targetSchema.properties) {
-            let idCounter = 0;
-            for (const [name, property] of Object.entries(targetSchema.properties)) {
-                schemaProps.push({
-                    id: `prop-${currentPath.join('-')}-${idCounter++}`,
-                    name,
-                    type: property.type || 'string',
-                    format: property.format,
-                    description: property.description,
-                    items: property.items,
-                    properties: property.properties,
-                    // A property's own `required` array (populated when its `type`
-                    // is "object") lists which of *its* properties are required.
-                    // It is scoped to this property alone — never to the parent
-                    // schema's `required` array — and is carried through verbatim
-                    // so navigating into it (see asJsonSchema) sees it intact.
-                    required: property.required,
-                });
-            }
-        }
-
-        setProperties(schemaProps);
-        if (isEditMode) {
-            validateAllProperties(schemaProps, jsonSchemaToProperties(targetSchema as unknown as JsonSchema));
-        }
-    };
-
-    const updateSchemaAtPath = useCallback(
-        (path: string[], updater: (schema: JsonSchema) => JsonSchema) => {
-            const newSchema = cloneSchema(currentSchema);
-            if (!newSchema) {
-                setSchemaJsonIsInvalid(true);
-                return;
-            }
-
-            if (path.length === 0) {
-                const updated = updater(newSchema);
-                setCurrentSchema(updated);
-                onChange?.(updated, { source: 'user' });
-                return;
-            }
-
-            let targetSchema = newSchema;
-            for (let i = 0; i < path.length - 1; i++) {
-                const segment = path[i];
-                if (targetSchema.type === 'array' && segment === '$items') {
-                    if (!targetSchema.items) {
-                        targetSchema.items = { type: 'object', properties: {} };
-                    }
-                    targetSchema = targetSchema.items;
-                } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                    targetSchema = asJsonSchema(targetSchema.properties[segment]);
-                }
-            }
-
-            const lastSegment = path[path.length - 1];
-            if (targetSchema.type === 'array' && lastSegment === '$items') {
-                targetSchema.items = updater(targetSchema.items || {});
-            } else {
-                if (!targetSchema.properties) {
-                    targetSchema.properties = {};
-                }
-                const propertySchema = targetSchema.properties[lastSegment];
-                targetSchema.properties[lastSegment] = asJsonSchemaProperty(
-                    updater(propertySchema ? asJsonSchema(propertySchema) : {}),
-                );
-            }
-
-            setCurrentSchema(newSchema);
-            onChange?.(newSchema, { source: 'user' });
-        },
-        [currentSchema, onChange],
-    );
-
-    const addProperty = useCallback(() => {
-        updateSchemaAtPath(currentPath, (schema) => {
-            const newProps = { ...(schema.properties || {}) };
-            let newName = 'newProperty';
-            let counter = 1;
-            while (newProps[newName]) {
-                newName = `newProperty${counter++}`;
-            }
-            newProps[newName] = { type: 'string' };
-            return { ...schema, properties: newProps };
-        });
-    }, [currentPath, updateSchemaAtPath]);
-
-    /** The editable view of the properties at the current path, for the host callbacks. */
-    const getLevelProperties = useCallback(
-        () => jsonSchemaToProperties(findSchemaAtPath(currentSchema, currentPath)),
-        [currentSchema, currentPath],
-    );
-
-    const isProtected = useCallback(
-        (propertyName: string) => {
-            if (!isPropertyProtected) return false;
-            const property = getLevelProperties().find((candidate) => candidate.name === propertyName);
-            return property !== undefined && isPropertyProtected(property);
-        },
-        [isPropertyProtected, getLevelProperties],
-    );
-
-    const removeProperty = useCallback(
-        (propertyName: string) => {
-            const removed = getLevelProperties().find((candidate) => candidate.name === propertyName);
-            if (removed && isPropertyProtected?.(removed)) return;
-            updateSchemaAtPath(currentPath, (schema) => {
-                const newProps = { ...(schema.properties || {}) };
-                delete newProps[propertyName];
-
-                // Deleting a property must also drop it from this schema's own
-                // `required` array, or the array keeps naming a property that no
-                // longer exists in `properties`.
-                const updated: JsonSchema = { ...schema, properties: newProps };
-                if (schema.required?.includes(propertyName)) {
-                    updated.required = schema.required.filter(
-                        (name) => name !== propertyName,
-                    );
-                }
-
-                return updated;
-            });
-            if (removed) onPropertyRemoved?.(removed);
-        },
-        [currentPath, updateSchemaAtPath, getLevelProperties, isPropertyProtected, onPropertyRemoved],
-    );
-
-    const setRequired = useCallback(
-        (propertyName: string, isRequired: boolean) => {
-            updateSchemaAtPath(currentPath, (schema) => {
-                const others = (schema.required ?? []).filter((name) => name !== propertyName);
-                const required = isRequired ? [...others, propertyName] : others;
-                const updated: JsonSchema = { ...schema };
-                if (required.length > 0) {
-                    updated.required = required;
-                } else {
-                    delete updated.required;
-                }
-                return updated;
-            });
-        },
-        [currentPath, updateSchemaAtPath],
-    );
-
-    const setKey = useCallback(
-        (propertyName: string) => {
-            updateSchemaAtPath(currentPath, (schema) => {
-                const newProps: Record<string, JsonSchemaProperty> = {};
-                for (const [name, property] of Object.entries(schema.properties || {})) {
-                    const { [KEY_KEYWORD]: previousKey, ...rest } = property as JsonSchemaProperty & Record<string, unknown>;
-                    const makeKey = name === propertyName && previousKey !== true;
-                    newProps[name] = (makeKey ? { ...rest, [KEY_KEYWORD]: true } : rest) as JsonSchemaProperty;
-                }
-                return { ...schema, properties: newProps };
-            });
-        },
-        [currentPath, updateSchemaAtPath],
-    );
-
-    const updateProperty = useCallback(
-        (
-            oldName: string,
-            field: keyof JsonSchemaProperty,
-            value: unknown,
-            additionalUpdates?: Partial<JsonSchemaProperty>,
-        ) => {
-            let renamed: Property | undefined;
-            updateSchemaAtPath(currentPath, (schema) => {
-                const newProps = { ...(schema.properties || {}) };
-                const prop = { ...(newProps[oldName] || {}) };
-
-                let newRequired = schema.required;
-
-                if (field === 'name') {
-                    const newName = value as string;
-                    if (newName !== oldName && !newProps[newName] && !isProtected(oldName)) {
-                        renamed = jsonSchemaToProperties({ properties: { [newName]: prop } })[0];
-                        newProps[newName] = prop;
-                        delete newProps[oldName];
-
-                        // Renaming a required property must keep the `required`
-                        // array pointing at the new name, or it goes stale and
-                        // silently references a property that no longer exists.
-                        if (schema.required?.includes(oldName)) {
-                            newRequired = schema.required.map((name) =>
-                                name === oldName ? newName : name,
-                            );
-                        }
-                    }
-                } else if (field === 'type') {
-                    const previousNode = { ...prop } as Record<string, unknown>;
-                    prop.type = value as string;
-                    // A concept belongs to the type it was chosen for; the table offers no concepts.
-                    delete (prop as Record<string, unknown>)['x-concept'];
-                    if (value === 'array') {
-                        prop.items = { type: 'string' };
-                        delete prop.format;
-                        // Only an "object" property has a meaningful `required`
-                        // array of its own; any prior one is now stale.
-                        delete prop.required;
-                    } else if (value === 'object') {
-                        prop.properties = {};
-                        delete prop.format;
-                        delete prop.items;
-                        // Starting fresh with empty `properties`, so any prior
-                        // `required` array (naming properties that no longer
-                        // exist here) would be stale.
-                        delete prop.required;
-                    } else {
-                        delete prop.items;
-                        delete prop.properties;
-                        delete prop.required;
-                    }
-
-                    if (additionalUpdates) {
-                        if ('format' in additionalUpdates) {
-                            if (additionalUpdates.format) {
-                                prop.format = additionalUpdates.format as string;
-                            } else {
-                                delete prop.format;
-                            }
-                        }
-                    }
-
-                    dropInapplicableKeywords(prop as Record<string, unknown>, previousNode);
-                    newProps[oldName] = prop;
-                } else if (field === 'format') {
-                    if (value && value !== 'none') {
-                        prop.format = value as string;
-                    } else {
-                        delete prop.format;
-                    }
-                    newProps[oldName] = prop;
-                }
-
-                return { ...schema, properties: newProps, required: newRequired };
-            });
-            if (renamed) onPropertyRenamed?.(renamed, oldName);
-        },
-        [currentPath, updateSchemaAtPath, isProtected, onPropertyRenamed],
-    );
-
-    const updateArrayItemType = useCallback(
-        (propertyName: string, itemType: string) => {
-            updateSchemaAtPath(currentPath, (schema) => {
-                const newProps = { ...(schema.properties || {}) };
-                const prop = { ...(newProps[propertyName] || {}) };
-
-                if (itemType === 'object') {
-                    prop.items = { type: 'object', properties: {} };
-                } else if (itemType === 'array') {
-                    prop.items = { type: 'array', items: { type: 'string' } };
-                } else {
-                    prop.items = { type: itemType };
-                }
-
-                newProps[propertyName] = prop;
-                return { ...schema, properties: newProps };
-            });
-        },
-        [currentPath, updateSchemaAtPath],
-    );
-
-    const navigateToProperty = useCallback(
-        (propertyName: string) => {
-            setCurrentPath([...currentPath, propertyName]);
-        },
-        [currentPath],
-    );
-
-    const navigateToArrayItems = useCallback(
-        (propertyName: string) => {
-            setCurrentPath([...currentPath, propertyName, '$items']);
-        },
-        [currentPath],
-    );
-
-    const navigateBack = useCallback(() => {
-        if (currentPath.length > 0) {
-            setCurrentPath(currentPath.slice(0, -1));
-        }
-    }, [currentPath]);
-
-    const navigateToBreadcrumb = useCallback(
-        (index: number) => {
-            const items = getBreadcrumbItems();
-            setCurrentPath(items[index].path);
-        },
-        [currentPath, eventTypeName],
-    );
-
-    const handleSave = useCallback(() => {
-        if (schemaJsonIsInvalid) return;
-
-        onSave?.();
-        setIsEditMode(false);
-    }, [onSave, schemaJsonIsInvalid]);
-
-    const handleCancel = useCallback(() => {
-        const restoredSchema = cloneSchema(initialSchema);
-        const changedSchema = cloneSchema(initialSchema);
-        if (!restoredSchema || !changedSchema) {
-            setSchemaJsonIsInvalid(true);
-            return;
-        }
-
-        const hasChanges = JSON.stringify(currentSchema) !== JSON.stringify(initialSchema);
-        setCurrentSchema(restoredSchema);
-        if (hasChanges) {
-            onChange?.(changedSchema, { source: 'reset' });
-        }
-        setIsEditMode(false);
-        onCancel?.();
-    }, [currentSchema, initialSchema, onChange, onCancel]);
-
-    const handleEdit = useCallback(() => {
-        if (schemaJsonIsInvalid) return;
-
-        const parsedSchema = cloneSchema(currentSchema);
-        if (!parsedSchema) {
-            setSchemaJsonIsInvalid(true);
-            return;
-        }
-
-        setInitialSchema(parsedSchema);
-        setIsEditMode(true);
-    }, [currentSchema, schemaJsonIsInvalid]);
-
-    const getBreadcrumbItems = () => buildBreadcrumbItems(eventTypeName, currentPath);
-
-    const getCurrentDescription = useCallback(() => {
-        let targetSchema: JsonSchema | JsonSchemaProperty = currentSchema;
-
-        for (const segment of currentPath) {
-            if (targetSchema.type === 'array' && segment === '$items') {
-                targetSchema = targetSchema.items || {};
-            } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                targetSchema = targetSchema.properties[segment] as
-                    JsonSchema | JsonSchemaProperty;
-            } else {
-                return undefined;
-            }
-        }
-
-        return targetSchema.description;
-    }, [currentSchema, currentPath]);
-
-    const hasValidationErrors =
-        schemaJsonIsInvalid || Object.keys(validationErrors).length > 0;
-
-    const menuItems = useMemo<ActionMenuItem[]>(
-        () => [
-            ...(isEditMode
-                ? []
-                : [
-                      {
-                          label: l.edit,
-                          icon: <faIcons.FaPencil className='cratis:mr-2' />,
-                          command:
-                              canEdit && !schemaJsonIsInvalid ? handleEdit : undefined,
-                          disabled: schemaJsonIsInvalid,
-                          className: canEdit ? undefined : 'edit-disabled-with-reason',
-                          template:
-                              !canEdit && canNotEditReason
-                                  ? (item: ActionMenuItem) => (
-                                        <Tooltip
-                                            content={canNotEditReason}
-                                            position='bottom'
-                                        >
-                                            <button
-                                                type='button'
-                                                aria-disabled='true'
-                                                style={{
-                                                    border: 0,
-                                                    background: 'transparent',
-                                                    color: 'inherit',
-                                                    cursor: 'not-allowed',
-                                                    opacity: 0.6,
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    padding: '0.5rem 0.75rem',
-                                                }}
-                                            >
-                                                {item.icon}
-                                                <span>{item.label}</span>
-                                            </button>
-                                        </Tooltip>
-                                    )
-                                  : undefined,
-                      },
-                  ]),
-            ...(isEditMode
-                ? [
-                      ...(saveDisabled
-                          ? []
-                          : [
-                                {
-                                    label: l.save,
-                                    icon: <faIcons.FaCheck className='cratis:mr-2' />,
-                                    command: hasValidationErrors ? undefined : handleSave,
-                                    disabled: hasValidationErrors,
-                                },
-                            ]),
-                      ...(cancelDisabled
-                          ? []
-                          : [
-                                {
-                                    label: l.cancel,
-                                    icon: <faIcons.FaXmark className='cratis:mr-2' />,
-                                    command: handleCancel,
-                                },
-                            ]),
-                      {
-                          label: l.addProperty,
-                          icon: <faIcons.FaPlus className='cratis:mr-2' />,
-                          command: schemaJsonIsInvalid ? undefined : addProperty,
-                          disabled: schemaJsonIsInvalid,
-                      },
-                  ]
-                : []),
-        ],
-        [
-            isEditMode,
-            handleSave,
-            handleCancel,
-            handleEdit,
-            addProperty,
-            canEdit,
-            canNotEditReason,
-            hasValidationErrors,
-            schemaJsonIsInvalid,
-            saveDisabled,
-            cancelDisabled,
-            l,
-        ],
-    );
-
-    const breadcrumbItems = getBreadcrumbItems();
-    const isAtRoot = currentPath.length === 0;
-    const currentDescription = getCurrentDescription();
     const currentLevel = findSchemaAtPath(currentSchema, currentPath);
 
     return (
@@ -801,195 +243,40 @@ const TableSchemaEditor = ({
                 <div className='schema-editor-menubar'>
                     <ActionMenubar aria-label={l.actions} model={menuItems} />
                 </div>
-                {schemaJsonIsInvalid && (
-                    <Message
-                        severity='error'
-                        text={l.invalidJson}
-                        className='cratis:mt-3'
-                    />
-                )}
+                {schemaJsonIsInvalid && <Message severity='error' text={l.invalidJson} className='cratis:mt-3' />}
             </div>
 
-            <div className='cratis:px-4 cratis:py-2 cratis-schema-editor-bottom-border'>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Tooltip content={l.navigateBack} position='top'>
-                        <Button
-                            variant='ghost'
-                            size='small'
-                            icon={<faIcons.FaArrowLeft />}
-                            onClick={navigateBack}
-                            disabled={isAtRoot}
-                            aria-label={l.navigateBack}
-                        />
-                    </Tooltip>
-                    <div
-                        style={{
-                            fontSize: '0.9rem',
-                            color: 'var(--cratis-text-color-secondary)',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {breadcrumbItems.map((item, index) => (
-                            <span key={index}>
-                                {index > 0 && <span className='cratis:mx-2'>&gt;</span>}
-                                <button
-                                    type='button'
-                                    onClick={() => navigateToBreadcrumb(index)}
-                                    aria-current={
-                                        index === breadcrumbItems.length - 1
-                                            ? 'location'
-                                            : undefined
-                                    }
-                                    style={{
-                                        padding: 0,
-                                        border: 0,
-                                        background: 'transparent',
-                                        color: 'inherit',
-                                        font: 'inherit',
-                                        cursor: 'pointer',
-                                        textDecoration:
-                                            index < breadcrumbItems.length - 1
-                                                ? 'underline'
-                                                : 'none',
-                                    }}
-                                >
-                                    {item.name}
-                                </button>
-                            </span>
-                        ))}
-                    </div>
-                </div>
-                {currentDescription && (
-                    <div
-                        style={{
-                            fontSize: '0.875rem',
-                            color: 'var(--cratis-text-color-secondary)',
-                            marginTop: '0.5rem',
-                            marginLeft: '2.5rem',
-                            fontStyle: 'italic',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                        }}
-                    >
-                        <faIcons.FaCircleInfo />
-                        <span>{currentDescription}</span>
-                    </div>
-                )}
-            </div>
+            <SchemaEditorNavigation
+                items={navigation.breadcrumbItems}
+                description={currentLevel?.description}
+                isAtRoot={currentPath.length === 0}
+                navigateBackLabel={l.navigateBack}
+                onNavigateBack={navigation.navigateBack}
+                onNavigateToBreadcrumb={navigation.navigateToBreadcrumb}
+            />
 
             <div style={{ flex: 1, overflow: 'auto', padding: '1rem' }}>
-                <DataTableCore<JsonSchemaProperty>
-                    key={`${isEditMode}-${currentPath.join('/')}`}
-                    data={properties}
-                    dataKey='id'
-                    emptyMessage={l.emptyMessage}
-                    rowClassName={(rowData) => {
-                        if (
-                            !isEditMode &&
-                            (rowData.type === 'object' ||
-                                (rowData.type === 'array' &&
-                                    rowData.items?.type === 'object'))
-                        ) {
-                            return 'cratis-schema-editor-navigable-row';
-                        }
-                        return '';
+                <SchemaEditorTable
+                    properties={properties}
+                    currentPath={currentPath}
+                    currentLevel={currentLevel}
+                    isEditMode={isEditMode}
+                    showRequired={allowRequired === true}
+                    showKey={allowKeyProperty !== undefined && allowKeyProperty !== false}
+                    validationErrors={validationErrors}
+                    typeFormats={typeFormats}
+                    labels={l}
+                    actions={{
+                        ...edits,
+                        navigateToProperty: navigation.navigateToProperty,
+                        navigateToArrayItems: navigation.navigateToArrayItems,
                     }}
-                    onRowClick={(e) => {
-                        if (!isEditMode) {
-                            const rowData = e.data;
-                            if (rowData.name) {
-                                if (rowData.type === 'object') {
-                                    navigateToProperty(rowData.name);
-                                } else if (
-                                    rowData.type === 'array' &&
-                                    rowData.items?.type === 'object'
-                                ) {
-                                    navigateToArrayItems(rowData.name);
-                                }
-                            }
-                        }
-                    }}
-                    pt={{
-                        root: { style: { border: 'none' } },
-                        body: {
-                            style: {
-                                borderTop: '1px solid var(--cratis-surface-border)',
-                            },
-                        },
-                    }}
-                >
-                    <Column
-                        field='name'
-                        header='Property'
-                        body={(rowData: JsonSchemaProperty) => (
-                            <NameCell
-                                rowData={rowData}
-                                isEditMode={isEditMode}
-                                onUpdate={updateProperty}
-                                validationError={validationErrors[rowData.id!]}
-                                propertyNameLabel={l.propertyName}
-                                isLocked={isProtected(rowData.name ?? '')}
-                                lockedReason={l.protectedProperty}
-                            />
-                        )}
-                        style={{ width: '30%' }}
-                    />
-                    {showRequired && (
-                        <Column
-                            header={l.requiredColumn}
-                            body={(rowData: JsonSchemaProperty) => (
-                                <Checkbox
-                                    aria-label={l.requiredProperty(rowData.name ?? '')}
-                                    checked={Boolean(currentLevel?.required?.includes(rowData.name ?? ''))}
-                                    readOnly={!isEditMode}
-                                    onChange={(checked) => setRequired(rowData.name ?? '', checked)}
-                                />
-                            )}
-                            style={{ width: '6rem' }}
-                        />
-                    )}
-                    {showKey && (
-                        <Column
-                            header={l.keyColumn}
-                            body={(rowData: JsonSchemaProperty) => (
-                                <Checkbox
-                                    aria-label={l.keyProperty(rowData.name ?? '')}
-                                    checked={isKeyProperty(currentLevel, rowData.name ?? '')}
-                                    readOnly={!isEditMode}
-                                    onChange={() => setKey(rowData.name ?? '')}
-                                />
-                            )}
-                            style={{ width: '6rem' }}
-                        />
-                    )}
-                    <Column
-                        header='Type'
-                        body={(rowData: JsonSchemaProperty) => (
-                            <TypeCell
-                                rowData={rowData}
-                                isEditMode={isEditMode}
-                                typeFormats={typeFormats}
-                                onUpdateProperty={updateProperty}
-                                onUpdateArrayItemType={updateArrayItemType}
-                                onNavigateToProperty={navigateToProperty}
-                                onNavigateToArrayItems={navigateToArrayItems}
-                                onRemoveProperty={removeProperty}
-                                canRemove={!isProtected(rowData.name ?? '')}
-                                labels={l}
-                            />
-                        )}
-                        style={{ width: '70%' }}
-                    />
-                </DataTableCore>
+                />
             </div>
             {footer}
         </div>
     );
 };
-
-const isKeyProperty = (level: JsonSchema | undefined, propertyName: string): boolean =>
-    (level?.properties?.[propertyName] as Record<string, unknown> | undefined)?.[KEY_KEYWORD] === true;
 
 /**
  * Edits the properties of a JSON Schema. By default (`layout='table'`) it is a breadcrumb-navigated table: it

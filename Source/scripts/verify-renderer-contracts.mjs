@@ -272,13 +272,16 @@ const overlayImplementationFiles = [
     'Common/TooltipImplementation.tsx',
     'Common/DatePickerInputImplementation.tsx',
     'Dropdown/DropdownImplementation.tsx',
-    'Dialogs/DialogImplementation.tsx',
+    'Dialogs/DialogShells.tsx',
 ];
 for (const relative of overlayImplementationFiles) {
     const source = readFileSync(path.join(packageDir, relative), 'utf8');
     if (
         !source.includes("from 'react-aria'") ||
-        !source.includes('getContainer={overlayEnvironment.getContainer}')
+        !(
+            source.includes('getContainer={overlayEnvironment.getContainer}') ||
+            source.includes('getContainer={props.portalContainer}')
+        )
     ) {
         console.error(
             `Atomic overlay implementation '${relative}' must use the local overlay-environment callback through UNSAFE_PortalProvider.`,

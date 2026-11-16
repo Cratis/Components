@@ -1,27 +1,22 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { Modal, ModalOverlay } from 'react-aria-components';
 import type { ChatConversationLabels, ChatConversationProps } from './ChatConversation';
-import { ChatConversation } from './ChatConversation';
-import { sameChatIdentifier, type ChatIdentifier } from './ChatIdentifier';
+import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTopic } from './ChatTopic';
 import type { ChatTopicAction } from './ChatTopicAction';
 import type { ChatStatus } from './ChatStatus';
 import type { ChatTopicListLabels } from './ChatTopicList';
-import { ChatTopicList } from './ChatTopicList';
-import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
-import { shouldRequestTopicName } from './shouldRequestTopicName';
-import { useCratisIcon } from '../configuration/useCratisIcon';
-import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
+import { ChatSidebarContent } from './ChatSidebarContent';
+import { ChatSidebarHeader } from './ChatSidebarHeader';
+import { ModalChatSidebar, NonModalChatSidebar } from './ChatSidebarShells';
+import { useNonModalPhase } from './useNonModalPhase';
+import { useTopicSelection } from './useTopicSelection';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { classNames } from '../ClassNames/classNames';
 
 type ChatSidebarPartAttributes<TElement> = HTMLAttributes<TElement> & {
     [attribute: `data-${string}`]: string | number | boolean | undefined;
@@ -202,21 +197,6 @@ export interface ChatSidebarProps<
     pt?: ChatSidebarParts;
 }
 
-const BackIcon = () => (
-    <svg
-        width='14'
-        height='14'
-        viewBox='0 0 24 24'
-        fill='none'
-        stroke='currentColor'
-        strokeWidth='2.5'
-        aria-hidden='true'
-    >
-        <line x1='19' y1='12' x2='5' y2='12' />
-        <polyline points='12 19 5 12 12 5' />
-    </svg>
-);
-
 /**
  * A topic-based chat in a sidebar next to the view, built on Components' own overlay primitives
  * (React Aria internally, for accessible dismissal and focus handling). It opens on the topic
@@ -253,281 +233,64 @@ export const ChatSidebar = <
     pt,
     ...conversation
 }: ChatSidebarProps<TMessage, TTopic>) => {
-    const icon = useCratisIcon();
-    const overlayEnvironment = unstable_useOverlayEnvironment();
-    const [mounted, setMounted] = useState(false);
-    const nonModalPanel = useRef<HTMLDivElement>(null);
-    const [nonModalPhase, setNonModalPhase] = useState<
-        'closed' | 'entering' | 'open' | 'exiting'
-    >('closed');
-
-    useEffect(() => setMounted(true), []);
-    useEffect(() => {
-        setNonModalPhase((phase) =>
-            open ? 'entering' : phase === 'closed' ? 'closed' : 'exiting',
-        );
-    }, [open]);
-    const portalContainer = !modal && mounted && nonModalPhase !== 'closed'
-        ? overlayEnvironment.getContainer()
-        : null;
-    useEffect(() => {
-        if (nonModalPhase !== 'entering' && nonModalPhase !== 'exiting') return;
-        if (!modal && (
-            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
-            nonModalPanel.current?.getAnimations?.().length === 0
-        )) {
-            setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
-            return;
-        }
-        const timeout = setTimeout(() => {
-            setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
-        }, 250);
-        return () => clearTimeout(timeout);
-    }, [modal, nonModalPhase, portalContainer]);
-
-    const [internalSelectedId, setInternalSelectedId] = useState<
-        ChatIdentifier | undefined
-    >();
-    const isControlled = selectedTopicId !== undefined;
-    const openTopicId = isControlled
-        ? (selectedTopicId ?? undefined)
-        : internalSelectedId;
-    const openTopic =
-        openTopicId === undefined
-            ? undefined
-            : topics.find((topic) => sameChatIdentifier(topic.id, openTopicId));
-    const unnamed = isTopicUnnamed ?? defaultIsTopicUnnamed;
-
-    const select = (topicId: ChatIdentifier | undefined, topic?: TTopic) => {
-        if (!isControlled) {
-            setInternalSelectedId(topicId);
-        }
-        onTopicSelected?.(
-            topicId,
-            topic ??
-                (topicId === undefined
-                    ? undefined
-                    : topics.find((candidate) =>
-                          sameChatIdentifier(candidate.id, topicId),
-                      )),
-        );
-    };
-
-    const startTopic = async () => {
-        const topicId = await onStartTopic?.();
-        if (topicId !== undefined) {
-            select(topicId);
-        }
-    };
-
-    const openMessages =
-        openTopicId === undefined
-            ? []
-            : messages.filter((message) =>
-                  sameChatIdentifier(message.topicId, openTopicId),
-              );
-
-    const send = (body: string, mentions: ChatMention[]) => {
-        if (openTopicId === undefined) return;
-        onSendMessage(openTopicId, body, mentions);
-        if (
-            openTopic &&
-            shouldRequestTopicName(unnamed(openTopic), openMessages.length)
-        ) {
-            onRequestTopicName?.(openTopic, body);
-        }
-    };
-
-    const title =
-        openTopicId === undefined
-            ? (labels?.topics ?? 'Topics')
-            : openTopic && !unnamed(openTopic)
-              ? openTopic.name
-              : (labels?.unnamedTopic ?? 'New topic');
-    const titleIsPending =
-        openTopicId !== undefined && (!openTopic || unnamed(openTopic));
+    const nonModal = useNonModalPhase(open, modal);
+    const selection = useTopicSelection<TMessage, TTopic>({
+        topics,
+        messages,
+        selectedTopicId,
+        onTopicSelected,
+        onStartTopic,
+        onSendMessage,
+        onRequestTopicName,
+        isTopicUnnamed,
+    });
+    const { openTopicId, openTopic, select } = selection;
 
     const panel = (
         <>
-            <header
-                {...pt?.header}
-                className={classNames(
-                    'cratis-chat-sidebar__header',
-                    pt?.header?.className,
-                )}
-                data-cratis-part='header'
-            >
-                {openTopicId !== undefined && (
-                    <button
-                        {...pt?.back}
-                        type='button'
-                        className={classNames(
-                            'cratis-chat-sidebar__back',
-                            pt?.back?.className,
-                        )}
-                        data-cratis-part='back'
-                        title={labels?.back ?? 'Back to topics'}
-                        aria-label={labels?.back ?? 'Back to topics'}
-                        onClick={() => select(undefined)}
-                    >
-                        <BackIcon />
-                    </button>
-                )}
-                <h2
-                    {...pt?.title}
-                    className={classNames(
-                        'cratis-chat-sidebar__title',
-                        titleIsPending
-                            ? 'cratis-chat-sidebar__title--pending'
-                            : undefined,
-                        pt?.title?.className,
-                    )}
-                    data-cratis-part='title'
-                >
-                    {title}
-                </h2>
-                {renderHeaderActions?.(openTopic)}
-                <button
-                    {...pt?.close}
-                    type='button'
-                    className={classNames(
-                        'cratis-chat-sidebar__close',
-                        pt?.close?.className,
-                    )}
-                    data-cratis-part='close'
-                    aria-label={labels?.close ?? 'Close chat'}
-                    onClick={onClose}
-                >
-                    <span aria-hidden='true'>{icon('close', '×')}</span>
-                </button>
-            </header>
-            <div
-                {...pt?.content}
-                className={classNames(
-                    'cratis-chat-sidebar__content',
-                    pt?.content?.className,
-                )}
-                data-cratis-part='content'
-            >
-                {openTopicId === undefined ? (
-                    <ChatTopicList<TTopic>
-                        topics={topics}
-                        topicActions={topicActions}
-                        status={topicsStatus}
-                        onOpen={(topic) => select(topic.id, topic)}
-                        onStart={
-                            onStartTopic
-                                ? () => {
-                                      void startTopic();
-                                  }
-                                : undefined
-                        }
-                        authorOf={conversation.authorOf}
-                        renderAvatar={conversation.renderAvatar}
-                        isTopicUnnamed={isTopicUnnamed}
-                        buildAvatarUrl={conversation.buildAvatarUrl}
-                        labels={{
-                            unnamedTopic: labels?.unnamedTopic,
-                            ...labels?.topicList,
-                        }}
-                    />
-                ) : (
-                    <ChatConversation<TMessage>
-                        {...conversation}
-                        messages={openMessages}
-                        status={messagesStatus}
-                        onSendMessage={send}
-                        labels={labels?.conversation}
-                    />
-                )}
-            </div>
+            <ChatSidebarHeader<TTopic>
+                openTopicId={openTopicId}
+                openTopic={openTopic}
+                unnamed={selection.unnamed}
+                headerActions={renderHeaderActions?.(openTopic)}
+                labels={labels}
+                pt={pt}
+                onBack={() => select(undefined)}
+                onClose={onClose}
+            />
+            <ChatSidebarContent<TMessage, TTopic>
+                openTopicId={openTopicId}
+                openMessages={selection.openMessages}
+                topics={topics}
+                topicActions={topicActions}
+                topicsStatus={topicsStatus}
+                messagesStatus={messagesStatus}
+                isTopicUnnamed={isTopicUnnamed}
+                conversation={conversation}
+                labels={labels}
+                pt={pt}
+                onOpenTopic={(topic) => select(topic.id, topic)}
+                onStart={selection.onStart}
+                onSend={selection.send}
+            />
         </>
     );
 
+    const shell = { open, hasOpenTopic: openTopicId !== undefined, position, width, className, pt };
+
     return modal ? (
-        <ModalOverlay
-            {...pt?.backdrop}
-            isOpen={open}
-            onOpenChange={(openState) => {
-                if (!openState) onClose();
-            }}
-            isDismissable={modal}
-            isKeyboardDismissDisabled={!modal}
-            className={classNames(
-                'cratis-chat-sidebar__backdrop',
-                pt?.backdrop?.className,
-            )}
-            data-cratis-part='backdrop'
-            data-modal={modal}
-            data-open={open || undefined}
-            data-selected={openTopicId !== undefined || undefined}
-        >
-            <Modal
-                {...pt?.root}
-                className={classNames(
-                    'cratis-chat-sidebar',
-                    pt?.root?.className,
-                    className,
-                )}
-                style={{ width, ...pt?.root?.style }}
-                data-cratis-part='root'
-                data-cratis-component='ChatSidebar'
-                data-position={position}
-                data-open={open || undefined}
-                data-selected={openTopicId !== undefined || undefined}
-            >
-                {panel}
-            </Modal>
-        </ModalOverlay>
+        <ModalChatSidebar {...shell} onClose={onClose}>
+            {panel}
+        </ModalChatSidebar>
     ) : (
-        // Non-modal: a chat lives *next to* the work, so the background must stay visible and
-        // interactive. React Aria's Modal blocks its backdrop by design (its dismissal props only
-        // gate how it closes, never whether it intercepts), so the default is a plain portaled
-        // layer with no dismissal behavior at all — only the close/back affordances dismiss it.
-        nonModalPhase !== 'closed' &&
-        portalContainer &&
-        createPortal(
-            <div
-                {...pt?.backdrop}
-                className={classNames(
-                    'cratis-chat-sidebar__backdrop',
-                    pt?.backdrop?.className,
-                )}
-                data-cratis-part='backdrop'
-                data-modal={false}
-                data-open={open || undefined}
-                data-selected={openTopicId !== undefined || undefined}
-                data-entering={nonModalPhase === 'entering' || undefined}
-                data-exiting={nonModalPhase === 'exiting' || undefined}
-            >
-                <div
-                    {...pt?.root}
-                    ref={nonModalPanel}
-                    className={classNames(
-                        'cratis-chat-sidebar',
-                        pt?.root?.className,
-                        className,
-                    )}
-                    style={{ width, ...pt?.root?.style }}
-                    data-cratis-part='root'
-                    data-cratis-component='ChatSidebar'
-                    data-position={position}
-                    data-open={open || undefined}
-                    data-selected={openTopicId !== undefined || undefined}
-                    data-entering={nonModalPhase === 'entering' || undefined}
-                    data-exiting={nonModalPhase === 'exiting' || undefined}
-                    onAnimationEnd={(event) => {
-                        pt?.root?.onAnimationEnd?.(event);
-                        if (event.target !== event.currentTarget) return;
-                        setNonModalPhase((phase) =>
-                            phase === 'entering' ? 'open' : phase === 'exiting' ? 'closed' : phase,
-                        );
-                    }}
-                >
-                    {panel}
-                </div>
-            </div>,
-            portalContainer,
-        )
+        <NonModalChatSidebar
+            {...shell}
+            phase={nonModal.phase}
+            panelRef={nonModal.panelRef}
+            portalContainer={nonModal.portalContainer}
+            onPhaseSettled={nonModal.setPhase}
+        >
+            {panel}
+        </NonModalChatSidebar>
     );
 };

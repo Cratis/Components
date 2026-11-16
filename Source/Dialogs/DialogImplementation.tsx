@@ -1,54 +1,23 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
-import { Modal, ModalOverlay } from 'react-aria-components/Modal';
-import { UNSAFE_PortalProvider } from 'react-aria';
-import type React from 'react';
-import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { DialogResult, DialogButtons } from '@cratis/arc.react/dialogs';
+import { useId, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { resolveDialogDismissal } from './resolveDialogDismissal';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
-import {
-    DIALOG_ZINDEX_TOKEN,
-    closeDialogTier,
-    dialogZIndexForTier,
-    openDialogTier,
-} from '../renderer/dialogStack';
-import { DialogStackContext } from '../renderer/DialogStackContext';
-import { classNames } from '../ClassNames/classNames';
-import { DialogGlobalHeaderActions } from './DialogGlobalHeaderActions';
+import { DIALOG_ZINDEX_TOKEN } from '../renderer/dialogStack';
 import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 import { dialogDescriptor } from './dialogDescriptor';
-
-// Inline rather than in Dialog.css: the packed aggregate stylesheet has a reviewed size budget.
-const visuallyHidden: React.CSSProperties = {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    margin: -1,
-    padding: 0,
-    overflow: 'hidden',
-    clipPath: 'inset(50%)',
-    whiteSpace: 'nowrap',
-    border: 0,
-};
-
-// Header actions sit in the close button's grid column, to its left. Inline rather than in Dialog.css:
-// the packed aggregate stylesheet has a reviewed size budget.
-const headerActionsStyle = (hasCloseButton: boolean): React.CSSProperties => ({
-    display: 'inline-flex',
-    gridColumn: 2,
-    gridRow: 1,
-    justifySelf: 'end',
-    alignItems: 'center',
-    gap: '0.25rem',
-    marginInlineEnd: hasCloseButton ? '2.25rem' : undefined,
-});
+import { DialogDocument } from './DialogDocument';
+import { DialogModalShell, DialogServerShell } from './DialogShells';
+import { resolveDialogLabels } from './resolveDialogLabels';
+import { useDialogClose } from './useDialogClose';
+import { useDialogFocus } from './useDialogFocus';
+import { useDialogZIndex } from './useDialogZIndex';
 
 const subscribeToBrowserEnvironment = () => () => undefined;
 const useIsBrowser = () =>
@@ -57,6 +26,23 @@ const useIsBrowser = () =>
         () => true,
         () => false,
     );
+
+// A cancel-focused dialog without a dismissing button falls back to focusing the content.
+const resolveInitialFocus = (initialFocus: DialogInitialFocus, buttons: DialogProps['buttons']) => {
+    const hasDismissingButton = typeof buttons === 'number' && buttons !== DialogButtons.Ok;
+    return initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton ? DialogInitialFocus.Content : initialFocus;
+};
+
+const dismissalFor = (props: DialogProps, isBusy: boolean) =>
+    resolveDialogDismissal({
+        // An explicit null (no footer) must stay null; only an omitted set defaults.
+        buttons: props.buttons === undefined ? DialogButtons.OkCancel : props.buttons,
+        dismissable: props.dismissable,
+        dismissOnOutsideClick: props.dismissOnOutsideClick,
+        closeOnEscape: props.closeOnEscape,
+        showCloseButton: props.showCloseButton,
+        isBusy,
+    });
 
 /**
  * A modal dialog with Arc host integration, typed footer actions, busy/validity
@@ -74,520 +60,114 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
         sliceLocation,
         isCommandDialog = false,
         visible = true,
-        onClose,
-        onConfirm,
-        onCancel,
         buttons = DialogButtons.OkCancel,
         initialFocus = DialogInitialFocus.Confirm,
         children,
         width = '450px',
-        style,
-        contentStyle,
         isValid,
         isBusy = false,
-        okLabel,
-        cancelLabel,
-        yesLabel,
-        noLabel,
-        closeAriaLabel,
-        dismissable,
-        dismissOnOutsideClick,
-        closeOnEscape,
-        showCloseButton,
-        className,
         pt,
     } = props;
-    const overlayEnvironment = unstable_useOverlayEnvironment();
     const { messages, dialogHeaderActions } = useCratisComponentsConfig();
     const dialogId = useId();
-    const dialogMessages = messages?.dialog;
-    const resolvedOkLabel = okLabel ?? dialogMessages?.ok ?? 'Ok';
-    const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
-    const resolvedYesLabel = yesLabel ?? dialogMessages?.yes ?? 'Yes';
-    const resolvedNoLabel = noLabel ?? dialogMessages?.no ?? 'No';
-    const resolvedCloseAriaLabel = closeAriaLabel ?? dialogMessages?.close ?? 'Close';
-    const resolvedRefusedMessage =
-        dialogMessages?.refused ??
-        'The action was not completed. Review the dialog and try again.';
+    const subtitleId = useId();
+    const labels = resolveDialogLabels(props, messages?.dialog);
     const icon = useCratisIcon();
-    const resolvedCloseIcon = icon('close', '×', closeIcon);
-    let contextCloseDialog: ((result: DialogResult) => void) | undefined;
-    try {
-        const context = useDialogContext();
-        contextCloseDialog = context?.closeDialog;
-    } catch {
-        contextCloseDialog = undefined;
-    }
+    const isBrowser = useIsBrowser();
+    const overlayEnvironment = unstable_useOverlayEnvironment();
 
     const hasHeaderActions =
         headerActions != null || (dialogHeaderActions !== undefined && !hideGlobalHeaderActions);
-    const isBrowser = useIsBrowser();
-    const subtitleId = useId();
     const hasSubtitle = subtitle !== undefined && subtitle !== null && subtitle !== false;
-    const titleRef = useRef<HTMLHeadingElement>(null);
-    const confirmRef = useRef<HTMLButtonElement>(null);
-    const cancelRef = useRef<HTMLButtonElement>(null);
+    const resolvedInitialFocus = resolveInitialFocus(initialFocus, buttons);
+    const focus = {
+        confirm: resolvedInitialFocus === DialogInitialFocus.Confirm,
+        dismissing: resolvedInitialFocus === DialogInitialFocus.Cancel,
+    };
+    const { allowsOutsideDismissal, allowsEscapeDismissal, showsCloseButton } = dismissalFor(props, isBusy);
 
-    const [refusals, setRefusals] = useState(0);
-    const handledRefusals = useRef(0);
-    const [announcement, setAnnouncement] = useState<{ key: number; text: string } | null>(null);
-    const isDialogValid = isValid !== false;
-    const hasDismissingButton =
-        typeof buttons === 'number' && buttons !== DialogButtons.Ok;
-    const resolvedInitialFocus =
-        initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton
-            ? DialogInitialFocus.Content
-            : initialFocus;
-    const focusesConfirmButton = resolvedInitialFocus === DialogInitialFocus.Confirm;
-    const focusesDismissingButton = resolvedInitialFocus === DialogInitialFocus.Cancel;
-    const focusesTitle = resolvedInitialFocus === DialogInitialFocus.Content;
-    const { allowsOutsideDismissal, allowsEscapeDismissal, showsCloseButton } = resolveDialogDismissal({
-        buttons, dismissable, dismissOnOutsideClick, closeOnEscape, showCloseButton, isBusy,
+    const resolvedZIndex = useDialogZIndex(visible);
+    const { titleRef, confirmRef, cancelRef, announcement, onRefused } = useDialogFocus({
+        visible,
+        isBusy,
+        initialFocus: resolvedInitialFocus,
+        refusedMessage: labels.refused,
     });
-
-    // Assigns this dialog a strictly increasing tier for as long as it is visible, so a second
-    // dialog opened while this one is still open - from anywhere, not necessarily as a React
-    // child of this one - stacks above it rather than colliding on the same static z-index.
-    const [dialogTier, setDialogTier] = useState<number | null>(null);
-    useLayoutEffect(() => {
-        if (!visible) {
-            setDialogTier(null);
-            return;
-        }
-        const tier = openDialogTier();
-        setDialogTier(tier);
-        return () => closeDialogTier(tier);
-    }, [visible]);
-    const resolvedZIndex = dialogTier === null ? undefined : dialogZIndexForTier(dialogTier);
-
-    useEffect(() => {
-        if (!visible) return;
-        const target = focusesConfirmButton
-            ? confirmRef.current
-            : focusesDismissingButton
-              ? cancelRef.current
-              : titleRef.current;
-        const frame = requestAnimationFrame(() => target?.focus());
-        return () => cancelAnimationFrame(frame);
-    }, [focusesConfirmButton, focusesDismissingButton, visible]);
-
-    // Keyboard focus must never be stranded on <body> while work is in flight: the confirm
-    // button stays focusable (aria-disabled), and a focus held by a now-inert field moves to it.
-    useEffect(() => {
-        if (!visible || !isBusy) return;
-        setAnnouncement(null);
-        const active = document.activeElement;
-        if (active && active !== document.body) return;
-        if (confirmRef.current) {
-            confirmRef.current.focus();
-        } else if (titleRef.current) {
-            titleRef.current.tabIndex = -1;
-            titleRef.current.focus();
-        }
-    }, [isBusy, visible]);
-
-    // A refused confirm (the dialog stays open) returns focus to the confirm button, or to the
-    // title when confirm is not enabled, and announces the outcome through the live region.
-    useEffect(() => {
-        // Each refusal is handled once: a later busy-to-idle change, such as a successful retry,
-        // must neither move focus nor announce the earlier refusal again.
-        if (refusals === handledRefusals.current || isBusy) return;
-        handledRefusals.current = refusals;
-        const confirm = confirmRef.current;
-        if (confirm && !confirm.disabled) {
-            confirm.focus();
-        } else if (titleRef.current) {
-            titleRef.current.tabIndex = -1;
-            titleRef.current.focus();
-        }
-        setAnnouncement({ key: refusals, text: resolvedRefusedMessage });
-    }, [refusals, isBusy, resolvedRefusedMessage]);
-
-    const handleClose = async (result: DialogResult) => {
-        let shouldCloseThroughContext = true;
-        const isConfirming = result === DialogResult.Ok || result === DialogResult.Yes;
-
-        if (result === DialogResult.Ok || result === DialogResult.Yes) {
-            if (onConfirm) {
-                const closeResult = await onConfirm();
-                shouldCloseThroughContext = closeResult === true;
-            } else if (onClose) {
-                const closeResult = await onClose(result);
-                shouldCloseThroughContext = closeResult !== false;
-            }
-        } else if (onCancel) {
-            const closeResult = await onCancel();
-            shouldCloseThroughContext = closeResult === true;
-        } else if (onClose) {
-            const closeResult = await onClose(result);
-            shouldCloseThroughContext = closeResult !== false;
-        }
-
-        if (shouldCloseThroughContext) contextCloseDialog?.(result);
-        else if (isConfirming) setRefusals((count) => count + 1);
-    };
-
-    const footerButton = (
-        result: DialogResult,
-        label: string,
-        primary: boolean,
-        focused: boolean,
-    ) => (
-        <button
-            key={`${result}-${label}`}
-            {...(primary ? pt?.confirm : pt?.cancel)}
-            type='button'
-            className={classNames(
-                'cratis-dialog__button',
-                primary
-                    ? 'cratis-dialog__button--primary'
-                    : 'cratis-dialog__button--secondary',
-                primary ? pt?.confirm?.className : pt?.cancel?.className,
-            )}
-            data-cratis-part={primary ? 'confirm' : 'cancel'}
-            data-disabled={(primary ? !isDialogValid || isBusy : isBusy) || undefined}
-            data-busy={isBusy || undefined}
-            ref={primary ? confirmRef : focused ? cancelRef : undefined}
-            onClick={() => {
-                if (isBusy) return;
-                void handleClose(result);
-            }}
-            onKeyDown={
-                primary
-                    ? (event) => {
-                          // A held key must not re-submit when focus returns after a refusal.
-                          if (event.repeat && (event.key === 'Enter' || event.key === ' '))
-                              event.preventDefault();
-                      }
-                    : undefined
-            }
-            disabled={primary ? !isDialogValid : isBusy}
-            autoFocus={focused}
-            aria-disabled={primary && isBusy ? true : undefined}
-            aria-busy={primary && isBusy ? true : undefined}
-        >
-            {primary && isBusy && (
-                <span className='cratis-dialog__spinner' aria-hidden='true' />
-            )}
-            <span>{label}</span>
-        </button>
-    );
-
-    // The predefined footer keeps the confirm button focusable while busy, so only a custom
-    // footer needs the whole scope disabled; predefined secondary buttons disable themselves.
-    const isFooterScopeBusy = isBusy && typeof buttons !== 'number';
-
-    const predefinedFooter = () => {
-        if (typeof buttons !== 'number') return buttons;
-
-        switch (buttons) {
-            case DialogButtons.Ok:
-                return footerButton(
-                    DialogResult.Ok,
-                    resolvedOkLabel,
-                    true,
-                    focusesConfirmButton,
-                );
-            case DialogButtons.OkCancel:
-                return (
-                    <>
-                        {footerButton(
-                            DialogResult.Ok,
-                            resolvedOkLabel,
-                            true,
-                            focusesConfirmButton,
-                        )}
-                        {footerButton(
-                            DialogResult.Cancelled,
-                            resolvedCancelLabel,
-                            false,
-                            focusesDismissingButton,
-                        )}
-                    </>
-                );
-            case DialogButtons.YesNo:
-                return (
-                    <>
-                        {footerButton(
-                            DialogResult.Yes,
-                            resolvedYesLabel,
-                            true,
-                            focusesConfirmButton,
-                        )}
-                        {footerButton(
-                            DialogResult.No,
-                            resolvedNoLabel,
-                            false,
-                            focusesDismissingButton,
-                        )}
-                    </>
-                );
-            case DialogButtons.YesNoCancel:
-                return (
-                    <>
-                        {footerButton(
-                            DialogResult.Yes,
-                            resolvedYesLabel,
-                            true,
-                            focusesConfirmButton,
-                        )}
-                        {footerButton(DialogResult.No, resolvedNoLabel, false, false)}
-                        {footerButton(
-                            DialogResult.Cancelled,
-                            resolvedCancelLabel,
-                            false,
-                            focusesDismissingButton,
-                        )}
-                    </>
-                );
-            default:
-                return null;
-        }
-    };
+    const handleClose = useDialogClose(props, onRefused);
 
     const dialogDocument = (
-        <DialogStackContext.Provider value={resolvedZIndex ?? DIALOG_ZINDEX_TOKEN}>
-        <AriaDialog
-            className='cratis-dialog__document'
-            aria-describedby={hasSubtitle ? subtitleId : undefined}
+        <DialogDocument
+            stackZIndex={resolvedZIndex ?? DIALOG_ZINDEX_TOKEN}
+            visible={visible}
+            contentStyle={props.contentStyle}
+            announcement={announcement}
+            header={{
+                dialogId,
+                title,
+                subtitle,
+                subtitleId,
+                hasSubtitle,
+                hasHeaderActions,
+                headerActions,
+                globalHeaderActions: dialogHeaderActions,
+                hideGlobalHeaderActions,
+                isCommandDialog,
+                sliceLocation,
+                showsCloseButton,
+                focusesTitle: resolvedInitialFocus === DialogInitialFocus.Content,
+                titleRef,
+                isBusy,
+                closeAriaLabel: labels.closeAria,
+                closeIcon: icon('close', '×', closeIcon),
+                onClose: () => void handleClose(DialogResult.Cancelled),
+                pt,
+            }}
+            footer={
+                buttons === null
+                    ? null
+                    : {
+                          buttons,
+                          labels,
+                          focus,
+                          isBusy,
+                          isValid: isValid !== false,
+                          pt,
+                          confirmRef,
+                          cancelRef,
+                          onResult: (result) => void handleClose(result),
+                      }
+            }
         >
-            <>
-                <header
-                    {...pt?.header}
-                    className={classNames('cratis-dialog__header', pt?.header?.className)}
-                    style={pt?.header?.style}
-                    data-cratis-part='header'
-                >
-                    <Heading
-                        {...pt?.title}
-                        slot='title'
-                        tabIndex={focusesTitle ? -1 : undefined}
-                        ref={titleRef}
-                        className={classNames(
-                            'cratis-dialog__title',
-                            pt?.title?.className,
-                        )}
-                        style={pt?.title?.style}
-                        data-cratis-part='title'
-                    >
-                        {title}
-                    </Heading>
-                    {hasSubtitle && (
-                        <p
-                            {...pt?.subtitle}
-                            id={subtitleId}
-                            className={classNames(
-                                'cratis-dialog__subtitle',
-                                pt?.subtitle?.className,
-                            )}
-                            style={pt?.subtitle?.style}
-                            data-cratis-part='subtitle'
-                        >
-                            {subtitle}
-                        </p>
-                    )}
-                    {hasHeaderActions && (
-                        <div
-                            {...pt?.headerActions}
-                            className={classNames(
-                                'cratis-dialog__header-actions',
-                                pt?.headerActions?.className,
-                            )}
-                            style={{ ...headerActionsStyle(showsCloseButton), ...pt?.headerActions?.style }}
-                            data-cratis-part='header-actions'
-                        >
-                            {headerActions}
-                            {dialogHeaderActions && !hideGlobalHeaderActions && (
-                                <DialogGlobalHeaderActions
-                                    render={dialogHeaderActions}
-                                    context={{ dialogId, title, isCommandDialog, sliceLocation }}
-                                />
-                            )}
-                        </div>
-                    )}
-                    {showsCloseButton && (
-                        <button
-                            {...pt?.close}
-                            type='button'
-                            disabled={isBusy}
-                            className={classNames(
-                                'cratis-dialog__close',
-                                pt?.close?.className,
-                            )}
-                            style={hasHeaderActions ? { justifySelf: 'end', ...pt?.close?.style } : pt?.close?.style}
-                            data-cratis-part='close'
-                            data-disabled={isBusy || undefined}
-                            data-busy={isBusy || undefined}
-                            aria-label={resolvedCloseAriaLabel}
-                            onClick={() => void handleClose(DialogResult.Cancelled)}
-                        >
-                            <span aria-hidden='true'>{resolvedCloseIcon}</span>
-                        </button>
-                    )}
-                </header>
-                <div
-                    {...pt?.content}
-                    className={classNames(
-                        'cratis-dialog__content',
-                        pt?.content?.className,
-                    )}
-                    style={{ ...pt?.content?.style, ...contentStyle }}
-                    data-cratis-part='content'
-                    data-open={visible || undefined}
-                    data-busy={isBusy || undefined}
-                >
-                    <fieldset
-                        className='cratis-dialog__busy-scope'
-                        data-cratis-part='busy-scope'
-                        data-busy={isBusy || undefined}
-                        disabled={isBusy}
-                        inert={isBusy}
-                        aria-busy={isBusy || undefined}
-                    >
-                        {children}
-                    </fieldset>
-                </div>
-                {buttons !== null && (
-                    <footer
-                        {...pt?.footer}
-                        className={classNames(
-                            'cratis-dialog__footer',
-                            pt?.footer?.className,
-                        )}
-                        style={pt?.footer?.style}
-                        data-cratis-part='footer'
-                    >
-                        <fieldset
-                            className='cratis-dialog__busy-scope cratis-dialog__busy-scope--footer'
-                            data-cratis-part='busy-scope'
-                            data-busy={isBusy || undefined}
-                            disabled={isFooterScopeBusy}
-                            inert={isFooterScopeBusy}
-                            aria-busy={isBusy || undefined}
-                        >
-                            {predefinedFooter()}
-                        </fieldset>
-                    </footer>
-                )}
-                <div
-                    className='cratis-dialog__live-region'
-                    style={visuallyHidden}
-                    role='status'
-                    aria-live='polite'
-                    aria-atomic='true'
-                >
-                    {announcement && <span key={announcement.key}>{announcement.text}</span>}
-                </div>
-            </>
-        </AriaDialog>
-        </DialogStackContext.Provider>
+            {children}
+        </DialogDocument>
     );
 
-    const dialogStyle = { width, ...pt?.root?.style, ...style };
+    const shell = {
+        placement,
+        visible,
+        isBusy,
+        zIndex: resolvedZIndex,
+        width,
+        style: props.style,
+        className: props.className,
+        dialogId,
+        marker,
+        pt,
+        children: dialogDocument,
+    };
 
     // useSyncExternalStore supplies the server snapshot during hydration, so this
     // fallback is identical on the server and on the client's first render. React
     // switches to the portaled React Aria modal only after hydration completes.
-    if (!isBrowser) {
-        if (!visible) return null;
-        return (
-            <div
-                {...pt?.backdrop}
-                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-                style={{
-                    zIndex: resolvedZIndex ?? DIALOG_ZINDEX_TOKEN,
-                    ...pt?.backdrop?.style,
-                }}
-                data-cratis-part='backdrop'
-                data-placement={placement}
-                data-open={visible || undefined}
-                data-busy={isBusy || undefined}
-            >
-                <div
-                    {...pt?.positioner}
-                    className={classNames(
-                        'cratis-dialog__positioner',
-                        pt?.positioner?.className,
-                    )}
-                    style={pt?.positioner?.style}
-                    data-cratis-part='positioner'
-                    data-placement={placement}
-                    data-open={visible || undefined}
-                    data-busy={isBusy || undefined}
-                >
-                    <section
-                        {...pt?.root}
-                        className={classNames(
-                            'cratis-dialog',
-                            pt?.root?.className,
-                            className,
-                        )}
-                        style={dialogStyle}
-                        data-cratis-part='root'
-                        {...marker}
-                        data-cratis-dialog-id={dialogId}
-                        data-placement={placement}
-                        data-open={visible || undefined}
-                        data-busy={isBusy || undefined}
-                    >
-                        {dialogDocument}
-                    </section>
-                </div>
-            </div>
-        );
-    }
+    if (!isBrowser) return <DialogServerShell {...shell} />;
 
     return (
-        <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
-            <ModalOverlay
-                {...pt?.backdrop}
-                isOpen={visible}
-                onOpenChange={(open) => {
-                    if (!open && !isBusy) void handleClose(DialogResult.Cancelled);
-                }}
-                isDismissable={allowsOutsideDismissal}
-                isKeyboardDismissDisabled={!allowsEscapeDismissal}
-                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-                style={{
-                    zIndex: resolvedZIndex ?? DIALOG_ZINDEX_TOKEN,
-                    ...pt?.backdrop?.style,
-                }}
-                data-cratis-part='backdrop'
-                data-placement={placement}
-                data-open={visible || undefined}
-                data-busy={isBusy || undefined}
-            >
-                <div
-                    {...pt?.positioner}
-                    className={classNames(
-                        'cratis-dialog__positioner',
-                        pt?.positioner?.className,
-                    )}
-                    style={pt?.positioner?.style}
-                    data-cratis-part='positioner'
-                    data-placement={placement}
-                    data-open={visible || undefined}
-                    data-busy={isBusy || undefined}
-                >
-                    <Modal
-                        {...pt?.root}
-                        className={classNames(
-                            'cratis-dialog',
-                            pt?.root?.className,
-                            className,
-                        )}
-                        style={dialogStyle}
-                        data-cratis-part='root'
-                        {...marker}
-                        data-cratis-dialog-id={dialogId}
-                        data-placement={placement}
-                        data-open={visible || undefined}
-                        data-busy={isBusy || undefined}
-                    >
-                        {dialogDocument}
-                    </Modal>
-                </div>
-            </ModalOverlay>
-        </UNSAFE_PortalProvider>
+        <DialogModalShell
+            {...shell}
+            portalContainer={overlayEnvironment.getContainer}
+            allowsOutsideDismissal={allowsOutsideDismissal}
+            allowsEscapeDismissal={allowsEscapeDismissal}
+            onDismiss={() => void handleClose(DialogResult.Cancelled)}
+        />
     );
 };

@@ -98,6 +98,14 @@ describe('when configuring dismissal', () => {
         hasCloseButton().should.equal(true);
     });
 
+    it('should not dismiss in any way when buttons are explicitly null', async () => {
+        await mount({ buttons: null });
+        hasCloseButton().should.equal(false);
+        await pressEscape();
+        await clickOutside();
+        onCancel.mock.calls.should.have.lengthOf(0);
+    });
+
     it('should keep explicit dismissal overrides inert while busy', async () => {
         await mount({
             isBusy: true,

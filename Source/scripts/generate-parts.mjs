@@ -337,7 +337,13 @@ export const partDefinitions = {
             'confirm',
             'cancel',
         ],
-        sources: ['Dialogs/DialogImplementation.tsx'],
+        sources: [
+            'Dialogs/DialogImplementation.tsx',
+            'Dialogs/DialogDocument.tsx',
+            'Dialogs/DialogFooter.tsx',
+            'Dialogs/DialogHeader.tsx',
+            'Dialogs/DialogShells.tsx',
+        ],
         ptFiles: ['Dialogs/Dialog.tsx'],
         ptKeys: [
             'backdrop',
@@ -458,7 +464,12 @@ export const partDefinitions = {
     },
     ColumnFilterMenu: {
         parts: ['filter-trigger', 'filter-popover', 'filter-menu', 'filter-actions'],
-        sources: ['DataTables/ColumnFilterMenu.tsx'],
+        sources: [
+            'DataTables/ColumnFilterMenu.tsx',
+            'DataTables/ColumnFilterTrigger.tsx',
+            'DataTables/ColumnFilterActions.tsx',
+            'DataTables/ColumnFilterValueInput.tsx',
+        ],
         ptKeys: [
             'trigger',
             'popover',
@@ -506,7 +517,12 @@ export const partDefinitions = {
     },
     ChatSidebar: {
         parts: ['backdrop', 'root', 'header', 'back', 'title', 'close', 'content'],
-        sources: ['Chat/ChatSidebar.tsx'],
+        sources: [
+            'Chat/ChatSidebar.tsx',
+            'Chat/ChatSidebarHeader.tsx',
+            'Chat/ChatSidebarContent.tsx',
+            'Chat/ChatSidebarShells.tsx',
+        ],
         ptKeys: ['backdrop', 'root', 'header', 'title', 'back', 'close', 'content'],
     },
     Toolbar: {
@@ -1409,7 +1425,7 @@ export const implicitPartStateAllowlist = [
     },
     {
         component: 'ColumnFilterMenu',
-        file: 'DataTables/ColumnFilterMenu.tsx',
+        file: 'DataTables/ColumnFilterTrigger.tsx',
         part: 'filter-trigger',
         states: ['pressed'],
         reason: 'React Aria Button emits data-pressed during pointer activation.',
@@ -1418,11 +1434,6 @@ export const implicitPartStateAllowlist = [
 
 /** Exact dynamic production expressions that intentionally emit known parts. */
 export const dynamicPartExpressions = [
-    {
-        file: 'Dialogs/DialogImplementation.tsx',
-        expression: "primary ? 'confirm' : 'cancel'",
-        parts: ['confirm', 'cancel'],
-    },
     {
         file: 'SchemaEditor/Tree/PropertyTypeMenu.tsx',
         expression: "triggerPart === 'add' ? 'add' : 'typeButton'",
