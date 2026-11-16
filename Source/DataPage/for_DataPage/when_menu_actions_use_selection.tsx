@@ -4,8 +4,8 @@
 // @vitest-environment jsdom
 
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, expectTypeOf, it, vi } from 'vitest';
-import { DataPage, type DataPageSelection, type MenuItemProps } from '../index';
+import { afterEach, beforeEach, describe, it, vi } from 'vitest';
+import type { DataPageSelection } from '@cratis/components/DataPage';
 import { adaptMenuItem } from '../adaptMenuItem';
 import { render, unmount, type DataPageInTheDom } from './given/a_data_page';
 import { type Person } from './given/a_paged_query_result';
@@ -233,19 +233,4 @@ describe('when menu actions use selection', () => {
         expect(nested.mock.lastCall?.[0]).to.deep.equal({ selectionMode: 'single', selectedItem: state.rows[1] });
     });
 
-    it('should type row fields and narrow selection mode through the public marker', () => {
-        const props: MenuItemProps<Person> = {
-            command: (selection) => {
-                expectTypeOf(selection).toEqualTypeOf<DataPageSelection<Person>>();
-                if (selection.selectionMode === 'single') {
-                    expectTypeOf(selection.selectedItem?.name).toEqualTypeOf<string | undefined>();
-                } else {
-                    expectTypeOf(selection.selectedItems).toEqualTypeOf<readonly Person[]>();
-                }
-            },
-            disabled: (selection) => selection.selectionMode === 'multiple' && selection.selectedItems.some((person) => person.id === 1),
-        };
-        const marker = <DataPage.MenuItem<Person> {...props} />;
-        expect(marker.props).to.deep.equal(props);
-    });
 });

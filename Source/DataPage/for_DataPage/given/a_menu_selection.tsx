@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { act, type ReactNode } from 'react';
-import { DataPage, type MenuItemProps } from '../../DataPage';
-import { Column } from '../../../DataTables/Column';
+import { DataPage, Column, type MenuItemProps } from '../../index';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { PersonsQuery, type Person } from './a_paged_query_result';
 import type { DataPageInTheDom } from './a_data_page';
