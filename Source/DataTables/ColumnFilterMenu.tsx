@@ -1,33 +1,25 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-    type ButtonHTMLAttributes,
-    type CSSProperties,
-    type HTMLAttributes,
-    type InputHTMLAttributes,
-    type ReactNode,
-    type SyntheticEvent,
-} from 'react';
-import { Button as AriaButton } from 'react-aria-components/Button';
+import { useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SyntheticEvent } from 'react';
 import { Dialog as AriaDialog, DialogTrigger } from 'react-aria-components/Dialog';
 import { Popover } from 'react-aria-components/Popover';
-import { Button, type ButtonParts } from '../Common/Button';
-import { DatePickerInput } from '../Common/DatePickerInput';
+import { type ButtonParts } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { asReactAriaButtonProps } from '../Common/reactAriaProps';
 import { Dropdown, type DropdownParts } from '../Dropdown/Dropdown';
 import type { ChangeHandler } from '../types/ChangeHandler';
-import {
-    DataTableFilterMatchMode,
-    type DataTableFilterConstraint,
-    type DataTableFilterMatchMode as FilterMatchMode,
-} from './DataTableFilterMeta';
+import type { DataTableFilterConstraint, DataTableFilterMatchMode as FilterMatchMode } from './DataTableFilterMeta';
 import { classNames } from '../ClassNames/classNames';
+import { ColumnFilterActions } from './ColumnFilterActions';
+import { ColumnFilterTrigger } from './ColumnFilterTrigger';
+import { ColumnFilterValueInput } from './ColumnFilterValueInput';
+import { buildModeOptions } from './columnFilterMatchModes';
+import { resolveColumnFilterLabels } from './resolveColumnFilterLabels';
+import { useColumnFilterDraft } from './useColumnFilterDraft';
+import { useRestoreFocusOnClose } from './useRestoreFocusOnClose';
+
+const hasAppliedValue = (constraint?: DataTableFilterConstraint): boolean =>
+    constraint?.value !== null && constraint?.value !== undefined && constraint?.value !== '';
 
 /** Value editor used by a built-in column filter. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';
@@ -149,56 +141,6 @@ export interface ColumnFilterMenuProps {
     onClear: () => void;
 }
 
-interface MatchModeOption {
-    label: string;
-    value: FilterMatchMode;
-}
-
-// A column that filters over a known set of values has only two questions worth asking of it - is it
-// this one, or is it not - so the free-text and numeric comparisons are not offered for it.
-const valueMatchModeOptions: MatchModeOption[] = [
-    { label: 'Equals', value: DataTableFilterMatchMode.Equals },
-    { label: 'Not equals', value: DataTableFilterMatchMode.NotEquals },
-];
-
-const optionsFor = (dataType: ColumnFilterDataType): MatchModeOption[] => {
-    switch (dataType) {
-        case 'numeric':
-            return [
-                ['Equals', DataTableFilterMatchMode.Equals],
-                ['Not equals', DataTableFilterMatchMode.NotEquals],
-                ['Less than', DataTableFilterMatchMode.LessThan],
-                ['Less than or equal', DataTableFilterMatchMode.LessThanOrEqual],
-                ['Greater than', DataTableFilterMatchMode.GreaterThan],
-                ['Greater than or equal', DataTableFilterMatchMode.GreaterThanOrEqual],
-            ].map(([label, value]) => ({ label, value }) as MatchModeOption);
-        case 'date':
-            return [
-                ['Date is', DataTableFilterMatchMode.DateIs],
-                ['Date is not', DataTableFilterMatchMode.DateIsNot],
-                ['Before', DataTableFilterMatchMode.DateBefore],
-                ['After', DataTableFilterMatchMode.DateAfter],
-            ].map(([label, value]) => ({ label, value }) as MatchModeOption);
-        case 'boolean':
-            return [{ label: 'Equals', value: DataTableFilterMatchMode.Equals }];
-        default:
-            return [
-                ['Contains', DataTableFilterMatchMode.Contains],
-                ['Starts with', DataTableFilterMatchMode.StartsWith],
-                ['Ends with', DataTableFilterMatchMode.EndsWith],
-                ['Equals', DataTableFilterMatchMode.Equals],
-                ['Not contains', DataTableFilterMatchMode.NotContains],
-                ['Not equals', DataTableFilterMatchMode.NotEquals],
-            ].map(([label, value]) => ({ label, value }) as MatchModeOption);
-    }
-};
-
-const defaultModeFor = (dataType: ColumnFilterDataType): FilterMatchMode => {
-    if (dataType === 'text') return DataTableFilterMatchMode.Contains;
-    if (dataType === 'date') return DataTableFilterMatchMode.DateIs;
-    return DataTableFilterMatchMode.Equals;
-};
-
 /** Cratis-owned column filter popup with draft/apply behavior. */
 export const ColumnFilterMenu = ({
     field,
@@ -213,234 +155,43 @@ export const ColumnFilterMenu = ({
     onApply,
     onClear,
 }: ColumnFilterMenuProps) => {
-    const [draftValue, setDraftValue] = useState<unknown>(constraint?.value ?? null);
-    const [draftMode, setDraftMode] = useState<FilterMatchMode>(
-        constraint?.matchMode ?? defaultModeFor(dataType),
+    const { draftValue, draftMode, setDraftValue, setDraftMode, apply, clear } = useColumnFilterDraft(
+        dataType,
+        constraint,
+        onApply,
+        onClear,
     );
     const [isOpen, setIsOpen] = useState(false);
     const triggerRef = useRef<HTMLButtonElement>(null);
-    const popoverRef = useRef<HTMLElement | null>(null);
-    // Sticky on purpose: React detaches the popover's ref during the same commit that closes the
-    // menu, before the effect cleanup below runs, so the last element we saw is the only handle we
-    // still have on the popover that is going away.
-    const capturePopover = useCallback((element: HTMLElement | null) => {
-        if (element) popoverRef.current = element;
-    }, []);
-
-    useEffect(() => {
-        setDraftValue(constraint?.value ?? null);
-        setDraftMode(constraint?.matchMode ?? defaultModeFor(dataType));
-    }, [constraint, dataType]);
-
-    // Restore focus to the trigger on close, but only when the close actually dropped focus.
-    //
-    // React Aria's FocusScope already draws that distinction - at teardown it asks whether the
-    // active element is still inside the dying scope or has already fallen to `document.body`, and
-    // it leaves focus alone otherwise. Its weakness is only the timing: it defers the real restore
-    // to a `requestAnimationFrame` that re-tests `activeElement === body`, which lands a frame after
-    // focus has visibly left the trigger's neighborhood and silently does nothing if anything else
-    // claims focus first. We keep its question and drop its delay: the same predicate is evaluated
-    // synchronously in this cleanup, so the restore happens in the commit that closed the menu.
-    //
-    // "Dropped" has to be read at the moment this cleanup runs, while the popover is still exiting.
-    // Focus is typically still on the popover's own content (its value input), which is about to be
-    // removed - that is a drop in progress, not a destination. So a drop is: nothing focused, the
-    // body, a node already detached from the document, or anything inside this menu's own popover.
-    // Focus anywhere else is somewhere the user deliberately went, such as another column's filter
-    // trigger, and must be left alone.
-    useEffect(() => {
-        if (!isOpen) return;
-        return () => {
-            const trigger = triggerRef.current;
-            if (!trigger) return;
-            const ownerDocument = trigger.ownerDocument;
-            const focusedElement = ownerDocument.activeElement;
-            const focusWasDropped =
-                !focusedElement ||
-                focusedElement === ownerDocument.body ||
-                !focusedElement.isConnected ||
-                popoverRef.current?.contains(focusedElement) === true;
-            if (focusWasDropped) trigger.focus();
-        };
-    }, [isOpen]);
+    const capturePopover = useRestoreFocusOnClose(isOpen, triggerRef);
 
     const { messages } = useCratisComponentsConfig();
-    const columnFilterMessages = messages?.columnFilter;
-    const resolvedLabels: ColumnFilterMenuLabels = {
-        filterTriggerAriaLabel:
-            labels?.filterTriggerAriaLabel ??
-            columnFilterMessages?.filterTriggerAriaLabel ??
-            defaultColumnFilterMenuLabels.filterTriggerAriaLabel,
-        valueAriaLabel:
-            labels?.valueAriaLabel ??
-            columnFilterMessages?.valueAriaLabel ??
-            defaultColumnFilterMenuLabels.valueAriaLabel,
-        matchModeAriaLabel:
-            labels?.matchModeAriaLabel ??
-            columnFilterMessages?.matchModeAriaLabel ??
-            defaultColumnFilterMenuLabels.matchModeAriaLabel,
-        matchModeLabel:
-            labels?.matchModeLabel ??
-            columnFilterMessages?.matchModeLabel ??
-            defaultColumnFilterMenuLabels.matchModeLabel,
-        clear: labels?.clear ?? columnFilterMessages?.clear ?? defaultColumnFilterMenuLabels.clear,
-        apply: labels?.apply ?? columnFilterMessages?.apply ?? defaultColumnFilterMenuLabels.apply,
-        true: labels?.true ?? columnFilterMessages?.true ?? defaultColumnFilterMenuLabels.true,
-        false: labels?.false ?? columnFilterMessages?.false ?? defaultColumnFilterMenuLabels.false,
-    };
-    const modeOptions = (filterOptions ? valueMatchModeOptions : optionsFor(dataType)).map(
-        (option) => ({
-            ...option,
-            label: resolvedLabels.matchModeLabel(option.value, option.label),
-        }),
+    const resolvedLabels = resolveColumnFilterLabels(
+        labels,
+        messages?.columnFilter,
+        defaultColumnFilterMenuLabels,
     );
-    if (!modeOptions.some((option) => option.value === draftMode)) {
-        modeOptions.push({
-            label: resolvedLabels.matchModeLabel(draftMode, String(draftMode)),
-            value: draftMode,
-        });
-    }
-
-    const hasConstraint =
-        constraint?.value !== null &&
-        constraint?.value !== undefined &&
-        constraint?.value !== '';
-
-    const clear = (event?: SyntheticEvent) => {
-        setDraftValue(null);
-        onClear();
-        event?.preventDefault();
-    };
-    const apply = (event?: SyntheticEvent) => {
-        onApply({ value: draftValue, matchMode: draftMode });
-        event?.preventDefault();
-    };
-
-    const valueInput = filterOptions
-        ? (
-              <Dropdown
-                  value={draftValue}
-                  options={filterOptions}
-                  optionLabel='label'
-                  optionValue='value'
-                  placeholder={placeholder}
-                  showClear
-                  onChange={(value) => setDraftValue(() => value)}
-                  aria-label={resolvedLabels.valueAriaLabel(field)}
-                  className={pt?.input?.className}
-                  style={pt?.input?.style}
-              />
-          )
-        : filterElement
-        ? filterElement({
-              field,
-              value: draftValue,
-              matchMode: draftMode,
-              onChange: (value) => setDraftValue(() => value),
-              onMatchModeChange: (matchMode) => setDraftMode(matchMode),
-              onApply: apply,
-              onClear: clear,
-          })
-        : (() => {
-              switch (dataType) {
-                  case 'numeric':
-                      return (
-                          <input
-                              {...pt?.input}
-                              type='number'
-                              aria-label={resolvedLabels.valueAriaLabel(field)}
-                              value={typeof draftValue === 'number' ? draftValue : ''}
-                              placeholder={placeholder}
-                              className={classNames(
-                                  'cratis-filter-menu__input',
-                                  pt?.input?.className,
-                              )}
-                              onChange={(event) =>
-                                  setDraftValue(
-                                      event.target.value === ''
-                                          ? null
-                                          : event.target.valueAsNumber,
-                                  )
-                              }
-                          />
-                      );
-                  case 'date':
-                      return (
-                          <DatePickerInput
-                              value={draftValue instanceof Date ? draftValue : null}
-                              onChange={(value) => setDraftValue(value)}
-                              showIcon
-                              aria-label={resolvedLabels.valueAriaLabel(field)}
-                              className={pt?.input?.className}
-                              style={pt?.input?.style}
-                          />
-                      );
-                  case 'boolean':
-                      return (
-                          <Dropdown
-                              value={draftValue}
-                              options={[
-                                  { label: resolvedLabels.true, value: true },
-                                  { label: resolvedLabels.false, value: false },
-                              ]}
-                              placeholder={placeholder}
-                              showClear
-                              onChange={(value) => setDraftValue(value)}
-                              aria-label={resolvedLabels.valueAriaLabel(field)}
-                              className={pt?.input?.className}
-                              style={pt?.input?.style}
-                          />
-                      );
-                  default:
-                      return (
-                          <input
-                              {...pt?.input}
-                              value={typeof draftValue === 'string' ? draftValue : ''}
-                              aria-label={resolvedLabels.valueAriaLabel(field)}
-                              placeholder={placeholder}
-                              className={classNames(
-                                  'cratis-filter-menu__input',
-                                  pt?.input?.className,
-                              )}
-                              onChange={(event) => setDraftValue(event.target.value)}
-                          />
-                      );
-              }
-          })();
+    const modeOptions = buildModeOptions(
+        dataType,
+        Boolean(filterOptions),
+        draftMode,
+        resolvedLabels.matchModeLabel,
+    );
+    const label = resolvedLabels.filterTriggerAriaLabel(field);
 
     return (
         <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
-            <AriaButton
-                {...asReactAriaButtonProps(pt?.trigger)}
-                ref={triggerRef}
-                aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
-                className={classNames(
-                    'cratis-filter-trigger',
-                    pt?.trigger?.className,
-                )}
-                data-active={hasConstraint || undefined}
-                data-selected={hasConstraint || undefined}
-                data-open={isOpen || undefined}
-                data-cratis-part='filter-trigger'
-                data-cratis-component='ColumnFilterMenu'
-            >
-                <svg
-                    className='cratis-filter-trigger__icon'
-                    viewBox='0 0 16 16'
-                    fill='currentColor'
-                    aria-hidden='true'
-                    focusable='false'
-                >
-                    <path d='M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .38.82L10 8.1v4.52a.5.5 0 0 1-.24.43l-3 1.8A.5.5 0 0 1 6 14.42V8.1L1.62 2.82a.5.5 0 0 1-.12-.32Z' />
-                </svg>
-            </AriaButton>
+            <ColumnFilterTrigger
+                label={label}
+                hasConstraint={hasAppliedValue(constraint)}
+                isOpen={isOpen}
+                triggerRef={triggerRef}
+                pt={pt}
+            />
             <Popover
                 {...pt?.popover}
                 ref={capturePopover}
-                className={classNames(
-                    'cratis-filter-popover',
-                    pt?.popover?.className,
-                )}
+                className={classNames('cratis-filter-popover', pt?.popover?.className)}
                 data-cratis-part='filter-popover'
                 data-open={isOpen || undefined}
                 placement='bottom end'
@@ -450,7 +201,7 @@ export const ColumnFilterMenu = ({
                     className={classNames('cratis-filter-menu', pt?.menu?.className)}
                     data-cratis-part='filter-menu'
                     data-open={isOpen || undefined}
-                    aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
+                    aria-label={label}
                 >
                     {showMatchModes && (
                         <Dropdown
@@ -463,27 +214,22 @@ export const ColumnFilterMenu = ({
                             pt={pt?.matchMode}
                         />
                     )}
-                    {valueInput}
-                    <div
-                        {...pt?.actions}
-                        className={classNames(
-                            'cratis-filter-menu-actions',
-                            pt?.actions?.className,
-                        )}
-                        data-cratis-part='filter-actions'
-                    >
-                        <Button
-                            variant='outline'
-                            onClick={clear}
-                            label={resolvedLabels.clear}
-                            pt={pt?.clear}
-                        />
-                        <Button
-                            onClick={apply}
-                            label={resolvedLabels.apply}
-                            pt={pt?.apply}
-                        />
-                    </div>
+                    <ColumnFilterValueInput
+                        field={field}
+                        dataType={dataType}
+                        placeholder={placeholder}
+                        filterOptions={filterOptions}
+                        filterElement={filterElement}
+                        draftValue={draftValue}
+                        draftMode={draftMode}
+                        setDraftValue={setDraftValue}
+                        setDraftMode={setDraftMode}
+                        apply={apply}
+                        clear={clear}
+                        labels={resolvedLabels}
+                        pt={pt}
+                    />
+                    <ColumnFilterActions labels={resolvedLabels} apply={apply} clear={clear} pt={pt} />
                 </AriaDialog>
             </Popover>
         </DialogTrigger>
