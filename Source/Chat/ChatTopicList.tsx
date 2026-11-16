@@ -2,33 +2,20 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useRef, type ReactNode } from 'react';
-import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
+import type { BuildAvatarUrlParams } from './Kit/Avatar';
 import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatTopic } from './ChatTopic';
 import type { ChatTopicAction } from './ChatTopicAction';
-import { ChatTopicActions } from './ChatTopicActions';
+import { ChatTopicEmptyMessage } from './ChatTopicEmptyMessage';
+import { ChatTopicRow } from './ChatTopicRow';
+import { ChatTopicStartButton } from './ChatTopicStartButton';
 import { ChatStatus } from './ChatStatus';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
-import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
+import type { RelativeTimestampLabels } from './relativeTimestamp';
 import { useTopicActionFocusRecovery } from './useTopicActionFocusRecovery';
 import { topicsByActivity } from './topicsByActivity';
-
-const PlusIcon = () => (
-    <svg
-        width='14'
-        height='14'
-        viewBox='0 0 24 24'
-        fill='none'
-        stroke='currentColor'
-        strokeWidth='2.5'
-        aria-hidden='true'
-    >
-        <line x1='12' y1='5' x2='12' y2='19' />
-        <line x1='5' y1='12' x2='19' y2='12' />
-    </svg>
-);
 
 /** Overrides for every label the {@link ChatTopicList} renders. Any field left unset falls back
  *  to a literal English default. */
@@ -155,116 +142,28 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
             kind: ChatAuthorKind.User,
         };
 
+    const showMessage = topics.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized;
+
     return (
         <div className={`cratis-chat-topics${className ? ` ${className}` : ''}`} aria-busy={status === ChatStatus.Loading && topics.length > 0 || undefined}>
-            {onStart && (
-                <button
-                    type='button'
-                    className='cratis-chat-topics__start'
-                    disabled={status === ChatStatus.Unauthorized}
-                    onClick={onStart}
-                >
-                    <PlusIcon />
-                    <span>{labels?.newTopic ?? 'New topic'}</span>
-                </button>
-            )}
-            {(topics.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
-                <p className='cratis-chat-topics__empty'>
-                    {status === ChatStatus.Loading ? (
-                        <span key={status} role='status'>{labels?.loading ?? 'Loading topics…'}</span>
-                    ) : status === ChatStatus.Failed ? (
-                        <span key={status} role='alert'>{labels?.failed ?? 'Could not load topics.'}</span>
-                    ) : status === ChatStatus.Unauthorized ? (
-                        <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these topics.'}</span>
-                    ) : (
-                        labels?.empty ?? 'No topics yet. Start the first one!'
-                    )}
-                </p>
-            )}
+            {onStart && <ChatTopicStartButton label={labels?.newTopic} disabled={status === ChatStatus.Unauthorized} onStart={onStart} />}
+            {showMessage && <ChatTopicEmptyMessage status={status} labels={labels} />}
             <ul ref={listRef} className='cratis-chat-topics__list'>
-                {status !== ChatStatus.Unauthorized && orderedTopics.map((topic) => {
-                    const starter =
-                        topic.startedBy === undefined
-                            ? undefined
-                            : authorFor(topic.startedBy);
-                    const isPending = unnamed(topic);
-                    const activity = topic.lastActivity ?? topic.started;
-                    const topicName = isPending ? (labels?.unnamedTopic ?? 'New topic') : topic.name;
-                    const availableActions = (topicActions ?? []).filter(
-                        (action) => action.isAvailable?.(topic) ?? true,
-                    );
-
-                    const topicButton = (
-                        <button
-                            type='button'
-                            className='cratis-chat-topics__topic'
-                            onClick={() => onOpen(topic)}
-                        >
-                            {topic.startedBy !== undefined &&
-                                starter &&
-                                (renderAvatar ? (
-                                    renderAvatar(topic.startedBy, starter)
-                                ) : (
-                                    <PersonAvatarCircle
-                                        userId={chatIdentifierString(topic.startedBy)}
-                                        name={starter.name}
-                                        hasAvatar={starter.hasAvatar ?? false}
-                                        size={28}
-                                        ownerType={
-                                            starter.kind === ChatAuthorKind.Agent
-                                                ? 'Agents'
-                                                : 'Users'
-                                        }
-                                        version={starter.avatarVersion}
-                                        buildAvatarUrl={buildAvatarUrl}
-                                    />
-                                ))}
-                            <span className='cratis-chat-topics__details'>
-                                <span
-                                    className={`cratis-chat-topics__name${isPending ? ' cratis-chat-topics__name--pending' : ''}`}
-                                >
-                                    {topicName}
-                                </span>
-                                {starter && (
-                                    <span className='cratis-chat-topics__started-by'>
-                                        {(
-                                            labels?.startedBy ?? 'Started by {name}'
-                                        ).replace('{name}', starter.name)}
-                                    </span>
-                                )}
-                            </span>
-                            {activity !== undefined && (
-                                <span className='cratis-chat-topics__activity'>
-                                    {relativeTimestamp(
-                                        activity,
-                                        new Date(),
-                                        labels?.timestamps,
-                                    )}
-                                </span>
-                            )}
-                        </button>
-                    );
-
-                    const topicKey = chatIdentifierString(topic.id);
-                    // Reuses the message action overlay styling; keyboard focus reveals the controls.
-                    return (
-                        <li
-                            key={topicKey}
-                            className={availableActions.length > 0 ? 'cratis-chat-topics__row' : undefined}
-                        >
-                            {topicButton}
-                            {availableActions.length > 0 && (
-                                <ChatTopicActions<TTopic>
-                                    topic={topic}
-                                    topicName={topicName}
-                                    actions={availableActions}
-                                    onActionFocus={onActionFocus(topicKey)}
-                                    onActionBlur={onActionBlur}
-                                />
-                            )}
-                        </li>
-                    );
-                })}
+                {orderedTopics.map((topic) => (
+                    <ChatTopicRow<TTopic>
+                        key={chatIdentifierString(topic.id)}
+                        topic={topic}
+                        isPending={unnamed(topic)}
+                        starter={topic.startedBy === undefined ? undefined : authorFor(topic.startedBy)}
+                        labels={labels}
+                        availableActions={(topicActions ?? []).filter((action) => action.isAvailable?.(topic) ?? true)}
+                        onOpen={onOpen}
+                        renderAvatar={renderAvatar}
+                        buildAvatarUrl={buildAvatarUrl}
+                        onActionFocus={onActionFocus}
+                        onActionBlur={onActionBlur}
+                    />
+                ))}
             </ul>
         </div>
     );
