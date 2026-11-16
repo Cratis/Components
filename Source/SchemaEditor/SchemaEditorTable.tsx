@@ -11,16 +11,19 @@ import type { SchemaEditorLabels } from './SchemaEditorLabels';
 import { TypeCell, type TypeCellProps } from './TypeCell';
 import { KEY_KEYWORD } from './Tree/schemaConversion';
 
+/** The name of a property at the current schema level. */
+type PropertyName = string;
+
 /** The edits the table's cells can request. */
 export interface SchemaEditorTableActions {
     updateProperty: TypeCellProps['onUpdateProperty'];
     updateArrayItemType: TypeCellProps['onUpdateArrayItemType'];
-    navigateToProperty: (propertyName: string) => void;
-    navigateToArrayItems: (propertyName: string) => void;
-    removeProperty: (propertyName: string) => void;
-    setRequired: (propertyName: string, isRequired: boolean) => void;
-    setKey: (propertyName: string) => void;
-    isProtected: (propertyName: string) => boolean;
+    navigateToProperty: (propertyName: PropertyName) => void;
+    navigateToArrayItems: (propertyName: PropertyName) => void;
+    removeProperty: (propertyName: PropertyName) => void;
+    setRequired: (propertyName: PropertyName, isRequired: boolean) => void;
+    setKey: (propertyName: PropertyName) => void;
+    isProtected: (propertyName: PropertyName) => boolean;
 }
 
 /** Props of the table layout's property table. */
@@ -37,7 +40,7 @@ export interface SchemaEditorTableProps {
     actions: SchemaEditorTableActions;
 }
 
-const isKeyProperty = (level: JsonSchema | undefined, propertyName: string): boolean =>
+const isKeyProperty = (level: JsonSchema | undefined, propertyName: PropertyName): boolean =>
     (level?.properties?.[propertyName] as Record<string, unknown> | undefined)?.[KEY_KEYWORD] === true;
 
 const isNavigable = (row: JsonSchemaProperty) =>
@@ -74,9 +77,9 @@ const nameColumn = ({ isEditMode, validationErrors, labels, actions }: SchemaEdi
 interface CheckboxColumnOptions {
     header: string;
     isEditMode: boolean;
-    ariaLabel: (propertyName: string) => string;
-    isChecked: (propertyName: string) => boolean;
-    onChange: (propertyName: string, checked: boolean) => void;
+    ariaLabel: (propertyName: PropertyName) => string;
+    isChecked: (propertyName: PropertyName) => boolean;
+    onChange: (propertyName: PropertyName, checked: boolean) => void;
 }
 
 const checkboxColumn = ({ header, isEditMode, ariaLabel, isChecked, onChange }: CheckboxColumnOptions) => (
