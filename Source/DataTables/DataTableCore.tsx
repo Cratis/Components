@@ -2,26 +2,23 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useId, useMemo, type CSSProperties, type ReactNode } from 'react';
-import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ColumnProps } from './Column';
 import { classNames } from '../ClassNames/classNames';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
-import { DataTableHeaderCell } from './DataTableHeaderCell';
+import { DataTableHead } from './DataTableHead';
 import type { DataTableParts } from './DataTableParts';
 import type { DataTableRowClickEvent } from './DataTableRowClickEvent';
 import { DataTableBody } from './DataTableBody';
-import { DataTableRow } from './DataTableRow';
+import { DataTableRows } from './DataTableRows';
 import { DataTableSearch } from './DataTableSearch';
 import { DataTableRowProcessing } from './DataTableRowProcessing';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableSort } from './DataTableSort';
 import { DataTableStatus } from './DataTableStatus';
-import { isFilterEntryActive } from './matchesFilterEntry';
-import { processRows } from './processRows';
-import { dataTableRowKeys } from './dataTableRowKeys';
+import { DataTableTable } from './DataTableTable';
 import { useDataTableMessages } from './useDataTableMessages';
+import { useDataTableRows } from './useDataTableRows';
 import { useDataTableState } from './useDataTableState';
-import { useRowSelection } from './useRowSelection';
 
 export type { DataTableParts } from './DataTableParts';
 export type { DataTableRowClickEvent } from './DataTableRowClickEvent';
@@ -130,122 +127,30 @@ export interface DataTableCoreProps<TData extends object> {
 }
 
 /** A semantic, renderer-independent data table over one already-loaded page. */
-export const DataTableCore = <TData extends object>({
-    data,
-    children,
-    dataKey,
-    emptyMessage,
-    filteredEmptyMessage,
-    status = DataTableStatus.Ready,
-    loadingMessage,
-    failureMessage,
-    unauthorizedMessage,
-    selectionMode,
-    selectionAriaLabel,
-    selectAllAriaLabel,
-    selection,
-    onSelectionChange,
-    selectedItems,
-    onSelectedItemsChange,
-    onRowClick,
-    rowClassName,
-    globalFilterFields,
-    globalSearchPlaceholder,
-    globalSearchAriaLabel,
-    defaultFilters,
-    filters: filtersProp,
-    onFilter,
-    globalFilter: globalFilterProp,
-    onGlobalFilterChange,
-    sort: sortProp,
-    onSortChange,
-    rowProcessing = DataTableRowProcessing.Loaded,
-    scrollable,
-    scrollHeight,
-    className,
-    style,
-    pt,
-}: DataTableCoreProps<TData>) => {
-    const messages = useDataTableMessages({
-        selectionAriaLabel,
-        selectAllAriaLabel,
-        globalSearchPlaceholder,
-        globalSearchAriaLabel,
-        loadingMessage,
-        failureMessage,
-        unauthorizedMessage,
-        filteredEmptyMessage,
-    }, rowProcessing === DataTableRowProcessing.None);
+export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TData>) => {
     const {
-        resolvedSelectionAriaLabel,
-        resolvedSelectAllAriaLabel,
-        resolvedGlobalSearchPlaceholder,
-        resolvedGlobalSearchAriaLabel,
-    } = messages;
+        data,
+        status = DataTableStatus.Ready,
+        rowProcessing = DataTableRowProcessing.Loaded,
+        globalFilterFields,
+        scrollable,
+        className,
+        style,
+        pt,
+    } = props;
+    const messages = useDataTableMessages(props, rowProcessing === DataTableRowProcessing.None);
     const isBusy = status === DataTableStatus.Loading && data.length > 0;
-    const icon = useCratisIcon();
-    const sortAscendingIcon = icon('sortAscending', '▲');
-    const sortDescendingIcon = icon('sortDescending', '▼');
-    const columns = useColumns(children);
+    const columns = useColumns(props.children);
     const selectionGroupName = useId();
     const { filters, updateFilter, globalFilter, setGlobalFilter, sort, setSort } =
-        useDataTableState({
-            defaultFilters,
-            filters: filtersProp,
-            onFilter,
-            globalFilter: globalFilterProp,
-            onGlobalFilterChange,
-            sort: sortProp,
-            onSortChange,
-        });
-
-    const isServerMode = rowProcessing === DataTableRowProcessing.None;
-    const isFiltered =
-        (globalFilter.trim() !== '' && !!globalFilterFields?.length) ||
-        Object.values(filters).some(isFilterEntryActive);
-    const filteredRows = useMemo(
-        () =>
-            processRows(data, {
-                filters,
-                globalFilter,
-                globalFilterFields,
-                sort,
-                rowProcessing,
-            }),
-        [data, filters, globalFilter, globalFilterFields, sort, rowProcessing],
-    );
-    const rowKeys = useMemo(() => dataTableRowKeys(data, dataKey), [data, dataKey]);
-    const {
-        isSelectedRow,
-        isRowSelected,
-        toggleRowSelection,
-        allFilteredRowsSelected,
-        selectAllRef,
-        toggleSelectAll,
-    } = useRowSelection({
-        data,
-        visibleRows: filteredRows.map(({ row }) => row),
-        dataKey,
-        selection,
-        selectedItems,
-        onSelectedItemsChange,
+        useDataTableState(props);
+    const rows = useDataTableRows<TData>({
+        ...props,
+        filters,
+        globalFilter,
+        sort,
+        rowProcessing,
     });
-    const isInteractive =
-        Boolean(onRowClick) || selectionMode === 'single' || selectionMode === 'multiple';
-
-    const activateRow = (
-        row: TData,
-        index: number,
-        originalEvent: React.SyntheticEvent,
-    ) => {
-        onRowClick?.({ data: row, index });
-        if (selectionMode === 'single') {
-            onSelectionChange?.({ value: row, originalEvent });
-        }
-        if (selectionMode === 'multiple') {
-            toggleRowSelection(row);
-        }
-    };
 
     return (
         <div
@@ -265,114 +170,51 @@ export const DataTableCore = <TData extends object>({
                 <DataTableSearch
                     parts={pt}
                     value={globalFilter}
-                    placeholder={resolvedGlobalSearchPlaceholder}
-                    ariaLabel={resolvedGlobalSearchAriaLabel}
+                    placeholder={messages.resolvedGlobalSearchPlaceholder}
+                    ariaLabel={messages.resolvedGlobalSearchAriaLabel}
                     onChange={setGlobalFilter}
                 />
             )}
-            <div
-                {...pt?.tableContainer}
-                className={classNames(
-                    'cratis-datatable__container',
-                    pt?.tableContainer?.className,
-                )}
-                style={{
-                    ...pt?.tableContainer?.style,
-                    ...(scrollable
-                        ? { maxHeight: scrollHeight ?? '100%', overflow: 'auto' }
-                        : {}),
-                }}
-                data-cratis-part='table-container'
-            >
-                <table
-                    {...pt?.table}
-                    className={classNames(
-                        'cratis-datatable__table',
-                        pt?.table?.className,
-                    )}
-                    data-cratis-part='table'
-                    aria-busy={isBusy || undefined}
-                >
-                    <thead
-                        {...pt?.head}
-                        className={classNames(
-                            'cratis-datatable__head',
-                            pt?.head?.className,
-                        )}
-                        data-cratis-part='head'
-                    >
-                        <tr
-                            {...pt?.headerRow}
-                            className={classNames(
-                                'cratis-datatable__header-row',
-                                pt?.headerRow?.className,
-                            )}
-                            data-cratis-part='header-row'
-                        >
-                            {columns.map((column, index) => (
-                                <DataTableHeaderCell
-                                    key={index}
-                                    column={column}
-                                    parts={pt}
-                                    sort={sort}
-                                    onSort={setSort}
-                                    filters={filters}
-                                    updateFilter={updateFilter}
-                                    resolvedSelectionAriaLabel={
-                                        resolvedSelectionAriaLabel
-                                    }
-                                    resolvedSelectAllAriaLabel={
-                                        resolvedSelectAllAriaLabel
-                                    }
-                                    allFilteredRowsSelected={allFilteredRowsSelected}
-                                    selectAllRef={selectAllRef}
-                                    toggleSelectAll={toggleSelectAll}
-                                    sortAscendingIcon={sortAscendingIcon}
-                                    sortDescendingIcon={sortDescendingIcon}
-                                />
-                            ))}
-                        </tr>
-                    </thead>
-                    <DataTableBody
-                        status={status}
-                        hasLoadedRows={data.length > 0}
-                        rowCount={filteredRows.length}
-                        columnCount={columns.length}
+            <DataTableTable
+                parts={pt}
+                isBusy={isBusy}
+                scrollable={scrollable}
+                scrollHeight={props.scrollHeight}
+                head={
+                    <DataTableHead
+                        columns={columns}
                         parts={pt}
+                        sort={sort}
+                        onSort={setSort}
+                        filters={filters}
+                        updateFilter={updateFilter}
                         messages={messages}
-                        emptyMessage={emptyMessage}
-                        isFiltered={isFiltered && (isServerMode || data.length > 0)}
-                        renderRows={() =>
-                            filteredRows.map(({ row, loadedIndex }) => {
-                                const isSelected =
-                                    selectionMode === 'single' &&
-                                    isSelectedRow(row, loadedIndex);
-                                return (
-                                    <DataTableRow<TData>
-                                        key={rowKeys[loadedIndex]}
-                                        row={row}
-                                        columns={columns}
-                                        parts={pt}
-                                        selectionMode={selectionMode}
-                                        isSelected={isSelected}
-                                        isInteractive={isInteractive}
-                                        isRowSelected={isRowSelected(row)}
-                                        rowClassName={rowClassName}
-                                        resolvedSelectionAriaLabel={
-                                            resolvedSelectionAriaLabel
-                                        }
-                                        selectionGroupName={selectionGroupName}
-                                        onActivate={(event) =>
-                                            activateRow(row, loadedIndex, event)
-                                        }
-                                        onToggleSelection={() => toggleRowSelection(row)}
-                                    />
-                                );
-                            })
-                        }
+                        selection={rows}
                     />
-                </table>
-            </div>
+                }
+            >
+                <DataTableBody
+                    status={status}
+                    hasLoadedRows={data.length > 0}
+                    rowCount={rows.filteredRows.length}
+                    columnCount={columns.length}
+                    parts={pt}
+                    messages={messages}
+                    emptyMessage={props.emptyMessage}
+                    isFiltered={rows.isFiltered}
+                    renderRows={() => (
+                        <DataTableRows<TData>
+                            state={rows}
+                            columns={columns}
+                            parts={pt}
+                            selectionMode={props.selectionMode}
+                            rowClassName={props.rowClassName}
+                            resolvedSelectionAriaLabel={messages.resolvedSelectionAriaLabel}
+                            selectionGroupName={selectionGroupName}
+                        />
+                    )}
+                />
+            </DataTableTable>
         </div>
     );
 };

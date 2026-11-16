@@ -434,6 +434,8 @@ export const partDefinitions = {
         ],
         sources: [
             'DataTables/DataTableCore.tsx',
+            'DataTables/DataTableTable.tsx',
+            'DataTables/DataTableHead.tsx',
             'DataTables/DataTableSearch.tsx',
             'DataTables/DataTableHeaderCell.tsx',
             'DataTables/DataTableBody.tsx',
