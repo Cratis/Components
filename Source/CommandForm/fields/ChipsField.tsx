@@ -1,14 +1,16 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState, type HTMLAttributes, type InputHTMLAttributes } from 'react';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { appendChipCandidates } from './chipValues';
-import { useCratisIcon } from '../../configuration/useCratisIcon';
+import { classNames } from '../../ClassNames/classNames';
+import { ChipsInput } from './ChipsInput';
+import { ChipsItem } from './ChipsItem';
+import { useChipsDraft } from './useChipsDraft';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -43,41 +45,22 @@ interface ChipsFieldComponentProps
 }
 
 const ChipsControl = (props: ChipsFieldComponentProps) => {
-    const [draft, setDraft] = useState('');
-    const icon = useCratisIcon();
+    const { draft, setDraft, commit } = useChipsDraft(props);
     const accessibility = useFieldAccessibility(props, {
         id: props.pt?.input?.id,
         ariaLabel: props.pt?.input?.['aria-label'],
         ariaDescribedBy: props.pt?.input?.['aria-describedby'],
     });
 
-    const commit = () => {
-        const candidates = (props.separator ? draft.split(props.separator) : [draft])
-            .map((value) => value.trim())
-            .filter(Boolean);
-        if (candidates.length === 0) return;
-        props.onChange(
-            appendChipCandidates(
-                props.value,
-                candidates,
-                props.max,
-                props.allowDuplicate ?? false,
-            ),
-        );
-        setDraft('');
-    };
-
     return (
         <div
             {...props.pt?.root}
-            className={[
+            className={classNames(
                 'cratis-chips-field',
                 'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
-            ]
-                .filter(Boolean)
-                .join(' ')}
+            )}
             onBlur={(event) => {
                 props.onBlur?.();
                 if (props.addOnBlur && !event.currentTarget.contains(event.relatedTarget))
@@ -90,65 +73,27 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
             data-readonly={props.pt?.input?.readOnly || undefined}
         >
             {props.value.map((item, index) => (
-                <span
+                <ChipsItem
                     key={`${item}-${index}`}
-                    {...props.pt?.item}
-                    className={['cratis-chips-field__item', props.pt?.item?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='item'
-                    data-selected
-                >
-                    <span>{item}</span>
-                    <button
-                        {...props.pt?.remove}
-                        type='button'
-                        className={[
-                            'cratis-chips-field__remove',
-                            props.pt?.remove?.className,
-                        ]
-                            .filter(Boolean)
-                            .join(' ')}
-                        data-cratis-part='remove'
-                        data-disabled={props.pt?.remove?.disabled || undefined}
-                        data-selected
-                        aria-label={
-                            typeof props.removeAriaLabel === 'function'
-                                ? props.removeAriaLabel(item, index)
-                                : (props.removeAriaLabel ?? `Remove ${item}`)
-                        }
-                        onClick={() =>
-                            props.onChange(
-                                props.value.filter((_, itemIndex) => itemIndex !== index),
-                            )
-                        }
-                    >
-                        {icon('remove', '×')}
-                    </button>
-                </span>
-            ))}
-            <input
-                {...props.pt?.input}
-                id={accessibility.controlId}
-                aria-label={accessibility.ariaLabel}
-                aria-describedby={accessibility.ariaDescribedBy}
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        commit();
+                    item={item}
+                    index={index}
+                    removeAriaLabel={props.removeAriaLabel}
+                    parts={props.pt}
+                    onRemove={() =>
+                        props.onChange(props.value.filter((_, itemIndex) => itemIndex !== index))
                     }
-                }}
+                />
+            ))}
+            <ChipsInput
+                id={accessibility.controlId}
+                ariaLabel={accessibility.ariaLabel}
+                ariaDescribedBy={accessibility.ariaDescribedBy}
+                draft={draft}
+                onDraftChange={setDraft}
+                onCommit={commit}
                 placeholder={props.placeholder}
-                aria-invalid={props.invalid || undefined}
-                data-disabled={props.pt?.input?.disabled || undefined}
-                data-invalid={props.invalid || undefined}
-                data-readonly={props.pt?.input?.readOnly || undefined}
-                className={['cratis-chips-field__input', props.pt?.input?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='input'
+                invalid={props.invalid}
+                parts={props.pt}
             />
             {accessibility.hiddenError}
         </div>
