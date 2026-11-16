@@ -7,13 +7,11 @@ import {
     useEffect,
     useMemo,
     useRef,
-    useSyncExternalStore,
 } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
-import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type {
     FilterDefinition,
     FilterValues,
@@ -22,10 +20,9 @@ import type {
 } from './types';
 import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
-import { FilterGroup } from './FilterGroup';
+import { FilterPanelContent } from './FilterPanelContent';
 import { usePanelPosition } from './usePanelPosition';
-import { useResolvedAnchor } from './useResolvedAnchor';
-import { FilterSearchBox } from './FilterSearchBox';
+import { usePortalTarget } from './usePortalTarget';
 import { useDismissOnOutsideClick, useCloseOnAnchorEscape, closeOnPanelEscape, focusPanelUnlessFocused } from './usePanelDismissal';
 
 /**
@@ -105,20 +102,6 @@ function buildEditorMap(
 }
 
 /**
- * A shared overlay root sits outside a modal's focus scope and is hidden from assistive
- * technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
- * An explicitly unavailable container still defers the portal; it is never a body fallback.
- */
-function resolvePortalContainer(
-    environmentContainer: HTMLElement | null,
-    modalRoot: HTMLElement | null | undefined,
-): HTMLElement | null {
-    return environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
-        ? modalRoot
-        : environmentContainer;
-}
-
-/**
  * Renders a filter dropdown panel anchored below a trigger button. The panel
  * appears as a portal at a fixed position on the page and includes search,
  * collapsible filter groups, and per-filter editors (option lists, numeric
@@ -187,10 +170,6 @@ function resolvePortalContainer(
  *
  * @param props - {@link FilterPanelProps}.
  */
-const subscribeToBrowserState = () => () => undefined;
-const browserSnapshot = () => true;
-const serverSnapshot = () => false;
-
 /**
  * A filter dropdown panel anchored below a trigger button. Renders filter
  * groups, search, numeric range histograms, and custom editors. The panel
@@ -222,17 +201,8 @@ export function FilterPanel({
     onCustomValueChange,
     children,
 }: FilterPanelProps) {
-    const isBrowser = useSyncExternalStore(
-        subscribeToBrowserState,
-        browserSnapshot,
-        serverSnapshot,
-    );
     const { messages } = useCratisComponentsConfig();
-    const overlayEnvironment = unstable_useOverlayEnvironment();
-    const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
-    const resolvedAnchor = useResolvedAnchor(anchorRef);
-    const modalRoot = resolvedAnchor?.modalRoot;
-    const portalContainer = resolvePortalContainer(environmentContainer, modalRoot);
+    const { resolvedAnchor, modalRoot, portalContainer } = usePortalTarget(anchorRef);
     const panelRef = useRef<HTMLDivElement>(null);
     const position = usePanelPosition({
         isOpen,
@@ -280,37 +250,25 @@ export function FilterPanel({
                     data-open={isOpen || undefined}
                     data-cratis-component='FilterPanel'
                 >
-                    <div className='pv-filter-dropdown-content'>
-                        {onSearchChange && (
-                            <FilterSearchBox
-                                search={search}
-                                placeholder={searchPlaceholder}
-                                ariaLabel={searchAriaLabel}
-                                onSearchChange={onSearchChange}
-                            />
-                        )}
-                        <div className='pv-filter-groups'>
-                            {filters.map((filter) => (
-                                <FilterGroup
-                                    key={filter.key}
-                                    filter={filter}
-                                    selections={filterValues[filter.key] ?? new Set<string>()}
-                                    rangeSelection={rangeValues[filter.key]}
-                                    customValue={customValues?.[filter.key]}
-                                    isExpanded={expandedFilterKey === filter.key}
-                                    editorRender={editorMap[filter.key]}
-                                    searchPlaceholder={searchPlaceholder}
-                                    clearFilterAriaLabel={clearFilterAriaLabel}
-                                    clearRangeAriaLabel={clearRangeAriaLabel}
-                                    onFilterToggle={onFilterToggle}
-                                    onFilterClear={onFilterClear}
-                                    onRangeChange={onRangeChange}
-                                    onExpandedFilterChange={onExpandedFilterChange}
-                                    onCustomValueChange={onCustomValueChange}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    <FilterPanelContent
+                        filters={filters}
+                        filterValues={filterValues}
+                        rangeValues={rangeValues}
+                        customValues={customValues}
+                        search={search}
+                        searchPlaceholder={searchPlaceholder}
+                        searchAriaLabel={searchAriaLabel}
+                        clearFilterAriaLabel={clearFilterAriaLabel}
+                        clearRangeAriaLabel={clearRangeAriaLabel}
+                        expandedFilterKey={expandedFilterKey}
+                        editorMap={editorMap}
+                        onSearchChange={onSearchChange}
+                        onFilterToggle={onFilterToggle}
+                        onFilterClear={onFilterClear}
+                        onRangeChange={onRangeChange}
+                        onExpandedFilterChange={onExpandedFilterChange}
+                        onCustomValueChange={onCustomValueChange}
+                    />
                 </motion.div>
             )}
         </AnimatePresence>,

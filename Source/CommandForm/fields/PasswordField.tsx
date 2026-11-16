@@ -12,6 +12,9 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { PasswordInput } from './PasswordInput';
+import { PasswordRoot } from './PasswordRoot';
+import { PasswordToggle } from './PasswordToggle';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -48,60 +51,33 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
         ariaDescribedBy: props.pt?.input?.['aria-describedby'],
     });
     return (
-        <div
-            {...props.pt?.root}
+        <PasswordRoot
+            attributes={props.pt?.root}
+            input={props.pt?.input}
+            className={props.className}
+            invalid={props.invalid}
             onBlur={props.onBlur}
-            className={[
-                'cratis-password-field',
-                'cratis:w-full',
-                props.pt?.root?.className,
-                props.className,
-            ]
-                .filter(Boolean)
-                .join(' ')}
-            data-cratis-part='root'
-            data-cratis-component='PasswordField'
-            data-disabled={props.pt?.input?.disabled || undefined}
-            data-invalid={props.invalid || undefined}
-            data-readonly={props.pt?.input?.readOnly || undefined}
         >
-            <input
-                {...props.pt?.input}
+            <PasswordInput
+                attributes={props.pt?.input}
                 id={accessibility.controlId}
-                aria-label={accessibility.ariaLabel}
-                aria-describedby={accessibility.ariaDescribedBy}
-                type={visible ? 'text' : 'password'}
+                ariaLabel={accessibility.ariaLabel}
+                ariaDescribedBy={accessibility.ariaDescribedBy}
+                visible={visible}
                 value={props.value}
-                onChange={(event) => props.onChange(event.currentTarget.value)}
+                onChange={props.onChange}
                 placeholder={props.placeholder}
-                aria-invalid={props.invalid || undefined}
-                data-disabled={props.pt?.input?.disabled || undefined}
-                data-invalid={props.invalid || undefined}
-                data-readonly={props.pt?.input?.readOnly || undefined}
-                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='input'
+                invalid={props.invalid}
             />
-            <button
-                {...props.pt?.toggle}
-                type='button'
-                className={['cratis-password-field__toggle', props.pt?.toggle?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='toggle'
-                data-disabled={props.pt?.toggle?.disabled || undefined}
-                aria-label={
-                    visible
-                        ? (props.hideLabel ?? 'Hide password')
-                        : (props.showLabel ?? 'Show password')
-                }
-                onClick={() => setVisible((current) => !current)}
-            >
-                <span aria-hidden='true'>{visible ? '◉' : '○'}</span>
-            </button>
+            <PasswordToggle
+                attributes={props.pt?.toggle}
+                visible={visible}
+                showLabel={props.showLabel}
+                hideLabel={props.hideLabel}
+                onToggle={() => setVisible((current) => !current)}
+            />
             {accessibility.hiddenError}
-        </div>
+        </PasswordRoot>
     );
 };
 

@@ -7,9 +7,9 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { classNames } from '../../ClassNames/classNames';
 import { ChipsInput } from './ChipsInput';
 import { ChipsItem } from './ChipsItem';
+import { ChipsRoot } from './ChipsRoot';
 import { useChipsDraft } from './useChipsDraft';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
@@ -53,24 +53,13 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
     });
 
     return (
-        <div
-            {...props.pt?.root}
-            className={classNames(
-                'cratis-chips-field',
-                'cratis:w-full',
-                props.pt?.root?.className,
-                props.className,
-            )}
-            onBlur={(event) => {
-                props.onBlur?.();
-                if (props.addOnBlur && !event.currentTarget.contains(event.relatedTarget))
-                    commit();
-            }}
-            data-cratis-part='root'
-            data-cratis-component='ChipsField'
-            data-disabled={props.pt?.input?.disabled || undefined}
-            data-invalid={props.invalid || undefined}
-            data-readonly={props.pt?.input?.readOnly || undefined}
+        <ChipsRoot
+            parts={props.pt}
+            className={props.className}
+            invalid={props.invalid}
+            addOnBlur={props.addOnBlur}
+            onBlur={props.onBlur}
+            onCommit={commit}
         >
             {props.value.map((item, index) => (
                 <ChipsItem
@@ -96,7 +85,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                 parts={props.pt}
             />
             {accessibility.hiddenError}
-        </div>
+        </ChipsRoot>
     );
 };
 

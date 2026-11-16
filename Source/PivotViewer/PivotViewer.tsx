@@ -1,15 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import type { PivotViewerProps } from './types';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
-import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT } from './constants';
-import { PivotViewerMain } from './components/PivotViewerMain';
-import { FilterPanelContainer } from './components/FilterPanelContainer';
-import { ToolbarContainer } from './components/ToolbarContainer';
+import { PivotViewerContent } from './components/PivotViewerContent';
+import { usePivotViewerViewState } from './hooks/usePivotViewerViewState';
 import { usePanning, useWheelZoom, useZoomScrollAnchor, useFilterOptions } from './hooks';
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
@@ -70,80 +69,26 @@ function buildViewerClassName(
  * @typeParam TItem - The item type contained in {@link PivotViewerProps.data}.
  * @param props - {@link PivotViewerProps}.
  */
-export function PivotViewer<TItem extends object>({
-    data,
-    dimensions,
-    filters,
-    defaultDimensionKey,
-    cardRenderer,
-    detailRenderer,
-    getItemId,
-    searchFields,
-    title,
-    className,
-    emptyContent,
-    isLoading = false,
-    loadingLabel,
-    labels,
-    colors,
-}: PivotViewerProps<TItem>) {
+export function PivotViewer<TItem extends object>(props: PivotViewerProps<TItem>) {
+    const { data, dimensions, filters, defaultDimensionKey, getItemId, searchFields, className, isLoading = false, colors } = props;
+
     // Refs
     const containerRef = useRef<HTMLDivElement>(null!);
     const filterButtonRef = useRef<HTMLButtonElement>(null!);
     const axisLabelsRef = useRef<HTMLDivElement>(null!);
     const spacerRef = useRef<HTMLDivElement>(null!);
 
-    // State
-    const [search, setSearch] = useState('');
-    const [viewMode, setViewMode] = useState<ViewMode>('collection');
-    const [filtersOpen, setFiltersOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<TItem | null>(null);
-    const [isZooming, setIsZooming] = useState(false);
-    const [hoveredGroupIndex, setHoveredGroupIndex] = useState<number | null>(null);
-    const [preSelectionState, setPreSelectionState] = useState<{
-        zoom: number;
-        scrollLeft: number;
-        scrollTop: number;
-    } | null>(null);
-    const [, setAnimationMode] = useState<'layout' | 'filter'>('layout');
-    const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
+    const view = usePivotViewerViewState<TItem>();
+    const { search, viewMode, selectedItem, preSelectionState, scrollPosition } = view;
 
-    // Filter hooks
-    const {
-        filterState,
-        rangeFilterState,
-        expandedFilterKey,
-        setExpandedFilterKey,
-        handleToggleFilter,
-        handleClearFilter,
-        handleRangeChange,
-    } = useFilterState(filters);
+    const filter = useFilterState(filters);
+    const { filterState, rangeFilterState } = filter;
+    const dimension = useDimensionState(dimensions, defaultDimensionKey);
+    const { activeDimensionKey, activeDimension, dimensionFilter } = dimension;
+    const zoom = useZoomState(1);
+    const { zoomLevel, setZoomLevel } = zoom;
 
-    // Dimension hooks
-    const {
-        activeDimensionKey,
-        setActiveDimensionKey,
-        activeDimension,
-        dimensionFilter,
-        handleAxisLabelClick,
-    } = useDimensionState(dimensions, defaultDimensionKey);
-
-    // Zoom and pan hooks
-    const {
-        zoomLevel,
-        setZoomLevel,
-        handleZoomIn,
-        handleZoomOut,
-        handleZoomSlider,
-        handleZoomReset,
-        handleZoomChange,
-    } = useZoomState(1);
-
-    const { isPanning, handlePanStart, handlePanMove, handlePanEnd } = usePanning(
-        containerRef,
-        undefined,
-        setScrollPosition,
-    );
+    const pan = usePanning(containerRef, undefined, view.setScrollPosition);
 
     useWheelZoom(containerRef, zoomLevel, setZoomLevel);
     useZoomScrollAnchor(containerRef, spacerRef, viewMode);
@@ -151,7 +96,7 @@ export function PivotViewer<TItem extends object>({
     // Track container dimensions for responsive layout
     const containerDimensions = useContainerDimensions(containerRef, isLoading);
 
-    useScrollPositionTracking(containerRef, setScrollPosition);
+    useScrollPositionTracking(containerRef, view.setScrollPosition);
 
     const { ready, visibleIds, grouping } = usePivotViewerGrouping({
         data,
@@ -171,7 +116,7 @@ export function PivotViewer<TItem extends object>({
 
     const { resolveId, handleCardClick, closeDetail } = usePivotViewerInteractions({
         data,
-        isPanning,
+        isPanning: pan.isPanning,
         selectedItem,
         zoomLevel,
         viewMode,
@@ -188,111 +133,53 @@ export function PivotViewer<TItem extends object>({
         rangeFilterState,
         search,
         activeDimensionKey,
-        setAnimationMode,
+        setAnimationMode: view.setAnimationMode,
         setZoomLevel,
-        setIsZooming,
-        setSelectedItem,
-        setPreSelectionState,
+        setIsZooming: view.setIsZooming,
+        setSelectedItem: view.setSelectedItem,
+        setPreSelectionState: view.setPreSelectionState,
     });
-
-    // Use base card dimensions - zoom is applied as transform in canvas
-    const cardWidth = BASE_CARD_WIDTH;
-    const cardHeight = BASE_CARD_HEIGHT;
 
     // Calculate filter options
     const filterOptions = useFilterOptions(data, filters, filterState, rangeFilterState);
 
     const hasFilters = Boolean(filters && filters.length > 0);
     const activeFilterCount = countActiveFilters(filterState, rangeFilterState);
-    const viewerClassName = buildViewerClassName(className, hasFilters, filtersOpen, viewMode);
+    const viewerClassName = buildViewerClassName(className, hasFilters, view.filtersOpen, viewMode);
 
     // Deselect any selected card when switching between view modes
     useEffect(() => {
-        setSelectedItem(null);
+        view.setSelectedItem(null);
     }, [viewMode]);
 
     const cssVariables = useColorCssVariables(colors);
 
     return (
-        <div className={viewerClassName} style={cssVariables as React.CSSProperties}>
-            <FilterPanelContainer
-                isOpen={filtersOpen && hasFilters}
-                filterLabel={labels?.filters}
-                searchPlaceholder={labels?.search}
-                searchGroup={labels?.searchGroup}
-                search={search}
-                filterState={filterState}
-                rangeFilterState={rangeFilterState}
-                expandedFilterKey={expandedFilterKey}
-                filterOptions={filterOptions}
-                anchorRef={filterButtonRef}
-                onClose={() => setFiltersOpen(false)}
-                onSearchChange={setSearch}
-                onFilterToggle={handleToggleFilter}
-                onFilterClear={handleClearFilter}
-                onRangeChange={handleRangeChange}
-                onExpandedFilterChange={setExpandedFilterKey}
-            />
-
-            <main className='pv-main'>
-                <ToolbarContainer
-                    hasFilters={hasFilters}
-                    filtersOpen={filtersOpen}
-                    filteredCount={visibleIds.length}
-                    viewMode={viewMode}
-                    zoomLevel={zoomLevel}
-                    activeDimensionKey={activeDimensionKey}
-                    dimensions={dimensions}
-                    activeFilterCount={activeFilterCount}
-                    title={title}
-                    labels={labels}
-                    onFiltersToggle={() => setFiltersOpen((prev) => !prev)}
-                    onViewModeChange={setViewMode}
-                    onZoomIn={handleZoomIn}
-                    onZoomOut={handleZoomOut}
-                    onZoomSlider={handleZoomSlider}
-                    onZoomReset={handleZoomReset}
-                    onZoomChange={handleZoomChange}
-                    onDimensionChange={setActiveDimensionKey}
-                    filterButtonRef={filterButtonRef}
-                />
-
-                <PivotViewerMain
-                    data={data}
-                    ready={ready}
-                    isLoading={isLoading}
-                    loadingLabel={loadingLabel ?? labels?.loading ?? 'Loading…'}
-                    viewportLabel={labels?.viewport ?? 'Card area'}
-                    visibleIds={visibleIds}
-                    grouping={grouping}
-                    layout={layout}
-                    cardWidth={cardWidth}
-                    cardHeight={cardHeight}
-                    zoomLevel={zoomLevel}
-                    scrollPosition={scrollPosition}
-                    containerDimensions={containerDimensions}
-                    selectedItem={selectedItem}
-                    hoveredGroupIndex={hoveredGroupIndex}
-                    isZooming={isZooming}
-                    viewMode={viewMode}
-                    cardRenderer={cardRenderer}
-                    colorOverrides={colors}
-                    detailRenderer={detailRenderer}
-                    resolveId={resolveId}
-                    emptyContent={emptyContent}
-                    dimensionFilter={dimensionFilter}
-                    onCardClick={handleCardClick}
-                    onPanStart={handlePanStart as (e: React.MouseEvent) => void}
-                    onPanMove={handlePanMove as (e: React.MouseEvent) => void}
-                    onPanEnd={handlePanEnd}
-                    onGroupHover={setHoveredGroupIndex}
-                    onAxisLabelClick={handleAxisLabelClick}
-                    onCloseDetail={closeDetail}
-                    containerRef={containerRef}
-                    axisLabelsRef={axisLabelsRef}
-                    spacerRef={spacerRef}
-                />
-            </main>
-        </div>
+        <PivotViewerContent<TItem>
+            viewer={props}
+            isLoading={isLoading}
+            viewerClassName={viewerClassName}
+            cssVariables={cssVariables as CSSProperties}
+            hasFilters={hasFilters}
+            activeFilterCount={activeFilterCount}
+            filterOptions={filterOptions}
+            view={view}
+            filter={filter}
+            dimension={dimension}
+            zoom={zoom}
+            pan={pan}
+            ready={ready}
+            visibleIds={visibleIds}
+            grouping={grouping}
+            layout={layout}
+            containerDimensions={containerDimensions}
+            resolveId={resolveId}
+            onCardClick={handleCardClick}
+            onCloseDetail={closeDetail}
+            containerRef={containerRef}
+            filterButtonRef={filterButtonRef}
+            axisLabelsRef={axisLabelsRef}
+            spacerRef={spacerRef}
+        />
     );
 }

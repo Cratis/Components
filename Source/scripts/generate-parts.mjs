@@ -38,6 +38,7 @@ export const partDefinitions = {
         parts: ['root', 'item', 'remove', 'input'],
         sources: [
             'CommandForm/fields/ChipsField.tsx',
+            'CommandForm/fields/ChipsRoot.tsx',
             'CommandForm/fields/ChipsItem.tsx',
             'CommandForm/fields/ChipsInput.tsx',
         ],
@@ -127,7 +128,12 @@ export const partDefinitions = {
     },
     PasswordField: {
         parts: ['root', 'input', 'toggle'],
-        sources: ['CommandForm/fields/PasswordField.tsx'],
+        sources: [
+            'CommandForm/fields/PasswordField.tsx',
+            'CommandForm/fields/PasswordRoot.tsx',
+            'CommandForm/fields/PasswordInput.tsx',
+            'CommandForm/fields/PasswordToggle.tsx',
+        ],
         ptKeys: ['root', 'input', 'toggle'],
     },
     InputTextField: {
@@ -509,7 +515,11 @@ export const partDefinitions = {
             'close',
             'action',
         ],
-        sources: ['Notifications/Toaster.tsx'],
+        sources: [
+            'Notifications/Toaster.tsx',
+            'Notifications/ToastContent.tsx',
+            'Notifications/ToastCloseButton.tsx',
+        ],
         ptKeys: [
             'region',
             'toast',
@@ -523,7 +533,11 @@ export const partDefinitions = {
     },
     EventsView: {
         parts: ['timeline', 'event', 'separator', 'marker', 'connector', 'content'],
-        sources: ['TimeMachine/EventsView.tsx'],
+        sources: [
+            'TimeMachine/EventsView.tsx',
+            'TimeMachine/EventTimelineItem.tsx',
+            'TimeMachine/EventSeparator.tsx',
+        ],
         ptKeys: ['timeline', 'event', 'separator', 'marker', 'connector', 'content'],
     },
     ChatSidebar: {
@@ -1465,6 +1479,16 @@ export const dynamicPartExpressions = [
 
 /** Exact dynamic test selectors and the concrete values supplied by their fixtures. */
 export const dynamicTestSelectors = [
+    {
+        file: 'Notifications/for_Toaster/when_rendering_toasts.tsx',
+        expression: '[data-cratis-part="${name}"]',
+        parts: ['toast', 'icon', 'title', 'description', 'close', 'action'],
+    },
+    {
+        file: 'TimeMachine/for_EventsView/when_rendering_events.tsx',
+        expression: '[data-cratis-part="${part}"]',
+        parts: ['timeline', 'event', 'separator', 'marker', 'connector', 'content'],
+    },
     {
         file: 'Common/for_DatePickerInput/when_choosing_dates.tsx',
         expression: '[data-cratis-part="${name}"]',
