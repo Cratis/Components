@@ -35,7 +35,8 @@ const resolveInitialFocus = (initialFocus: DialogInitialFocus, buttons: DialogPr
 
 const dismissalFor = (props: DialogProps, isBusy: boolean) =>
     resolveDialogDismissal({
-        buttons: props.buttons ?? DialogButtons.OkCancel,
+        // An explicit null (no footer) must stay null; only an omitted set defaults.
+        buttons: props.buttons === undefined ? DialogButtons.OkCancel : props.buttons,
         dismissable: props.dismissable,
         dismissOnOutsideClick: props.dismissOnOutsideClick,
         closeOnEscape: props.closeOnEscape,
