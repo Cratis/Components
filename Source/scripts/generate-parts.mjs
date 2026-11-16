@@ -36,7 +36,11 @@ export const partDefinitions = {
     },
     ChipsField: {
         parts: ['root', 'item', 'remove', 'input'],
-        sources: ['CommandForm/fields/ChipsField.tsx'],
+        sources: [
+            'CommandForm/fields/ChipsField.tsx',
+            'CommandForm/fields/ChipsItem.tsx',
+            'CommandForm/fields/ChipsInput.tsx',
+        ],
         ptKeys: ['root', 'item', 'remove', 'input'],
     },
     ToggleSwitchField: {
