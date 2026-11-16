@@ -1,6 +1,6 @@
 ---
 title: DataPage menu items for row actions
-description: Add actions to a DataPage toolbar, enable them when rows are selected, and pass the selected record from your state to a dialog or command.
+description: Add DataPage toolbar actions that receive the current selection and use selection predicates to control availability.
 ---
 
 ## MenuItems Component
@@ -26,7 +26,7 @@ import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa6';
 </DataPage>;
 ```
 
-In this excerpt, `AllAuthors` is a generated query proxy and the three handlers belong to your page. **Add** is available immediately; **Edit** and **Remove** become available after a row is selected. The buttons do not receive that row as a command argument: [Accessing Selected Item](#accessing-selected-item) shows how to retain it for your handlers. `MenuItem` is also available as `DataPage.MenuItem`.
+In this excerpt, `AllAuthors` is a generated query proxy and the three handlers belong to your page. **Add** is available immediately; **Edit** and **Remove** become available after a row is selected. Commands receive the current selection: [Accessing Selected Item](#accessing-selected-item) shows how to use it without mirroring page state. `MenuItem` is also available as `DataPage.MenuItem`.
 
 ## MenuItem Props
 
@@ -35,9 +35,9 @@ Give each item a `label` so users can identify it and a `command` so activating 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `label` | `string` | — | Button text, and the button's accessible name |
-| `command` | `() => void` | — | Called when the button is activated. Receives no arguments. |
+| `command` | `(selection: DataPageSelection<TDataType>) => void` | — | Called with the current immutable selection snapshot when the enabled button is activated. Existing no-argument handlers remain valid. |
 | `icon` | `React.ComponentType<{ className?: string }>` | — | Icon **component type** rendered before the label, for example a `react-icons` icon such as `FaPlus` |
-| `disabled` | `boolean` | `false` | Disables the item regardless of selection |
+| `disabled` | `boolean \| ((selection: DataPageSelection<TDataType>) => boolean)` | `false` | Disables the item when the boolean or selection predicate is true |
 | `disableOnUnselected` | `boolean` | `false` | Disables the item while no row is selected (in `selectionMode='multiple'`, while the selected set is empty) |
 
 These are the only props supported by the Cratis `MenuItem`. It does not accept navigation-menu props such as nested `items`, `separator`, `url`, or renderer templates.
@@ -62,7 +62,7 @@ import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 
 With single selection, `disableOnUnselected` follows the selected row, including a controlled `selection`. With multiple selection, it follows whether `selectedItems` is empty, not the separate single row used by the details pane.
 
-An action may also depend on another condition. Set `disabled={!canArchive}`, for example, to keep archive unavailable even after a row is selected. Either condition can disable the button; `disabled={false}` cannot override a missing selection.
+An action may also depend on another condition. Set `disabled={!canArchive}`, for example, or supply a predicate that reads the current selection. The predicate is evaluated during rendering and must be pure. The effective disabled state is the boolean/predicate result **or** `disableOnUnselected` with an empty selection. A false result cannot override the empty-selection rule, and a disabled action never dispatches its command.
 
 ## Icons
 
@@ -87,20 +87,19 @@ DataPage passes a `className` to the icon for spacing, so a custom icon componen
 
 ## Accessing Selected Item
 
-Keep the row reported by `onSelectionChange` in your own state, then read that state when the action runs. `command` receives no arguments, and there is no public selection hook or context to read instead:
+Use the `selection` argument to read the row already owned by DataPage. Supply the **same row type as the surrounding page** explicitly on each marker (`<MenuItem<Author>>` or `<DataPage.MenuItem<Author>>`): JSX parent generics do not flow into arbitrary child elements. Without that type argument, rows are typed as `object`. The parent cannot verify that a marker's explicit type matches its query, so keep them aligned.
+
+The public `DataPageSelection<TDataType>` type is exported from `@cratis/components/DataPage`. Narrow its `selectionMode` discriminator before accessing `selectedItem` or `selectedItems`:
 
 ```tsx
-import { useState } from 'react';
-import { DataPage, MenuItem, Column } from '@cratis/components/DataPage';
+import { DataPage, MenuItem, Column, type DataPageSelection } from '@cratis/components/DataPage';
 import { FaPencil } from 'react-icons/fa6';
 import { AllAuthors, type Author } from './Author'; // generated Arc query proxy and read model
 
 export function Authors() {
-    const [selected, setSelected] = useState<Author | null>(null);
-
-    const editAuthor = () => {
-        if (!selected) return;
-        // open your edit dialog for `selected` here
+    const editAuthor = (selection: DataPageSelection<Author>) => {
+        if (selection.selectionMode !== 'single' || !selection.selectedItem) return;
+        // open your edit dialog for `selection.selectedItem` here
     };
 
     return (
@@ -110,10 +109,11 @@ export function Authors() {
                 query={AllAuthors}
                 emptyMessage='No authors found'
                 dataKey='id'
-                onSelectionChange={(event) => setSelected(event.value)}
             >
                 <DataPage.MenuItems>
-                    <MenuItem label='Edit' icon={FaPencil} disableOnUnselected command={editAuthor} />
+                    <MenuItem<Author> label='Edit' icon={FaPencil} disableOnUnselected
+                        disabled={(selection) => selection.selectionMode === 'single' && !selection.selectedItem}
+                        command={editAuthor} />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
                     <Column field='name' header='Name' sortable />
@@ -124,13 +124,20 @@ export function Authors() {
 }
 ```
 
-The explicit type arguments give `event.value` the type `Author | null`; without them it is `object | null`. If you also need to set or clear the selection yourself, pass `selection={selected}` as well to make it controlled. See [DataPage selection](index.md#selection).
+In single mode, the snapshot has `readonly selectedItem: Author | null | undefined`. In multiple mode, it has `readonly selectedItems: readonly Author[]`, independent of the single item shown in the details pane:
 
-:::note[Selection is not a command argument]
-The handler closes over your state; DataPage does not pass the selected row to `command`. Keep the null guard even when the button uses `disableOnUnselected`.
-:::
+```tsx
+<MenuItem<Author> label='Review selected authors' disableOnUnselected
+    disabled={(selection) => selection.selectionMode === 'multiple' && selection.selectedItems.length > 10}
+    command={(selection) => {
+        if (selection.selectionMode !== 'multiple') return;
+        // open your review dialog for `selection.selectedItems` here
+    }} />
+```
 
-For multiple selection, retain the set from `onSelectedItemsChange`, use `selectedItems` if controlling it, and guard an empty set in the handler. That set is independent of the single item shown in the details pane.
+Both the snapshot container and its copied multiple-selection array are frozen; application row objects are **not** deep-frozen. Keep the null/empty guard in handlers. Switching between selected rows updates both the predicate and command payload, even when the selected count is unchanged.
+
+Snapshots follow the page's existing committed selection rules. Uncontrolled single selection follows query-row replacement/removal; multiple selection retains the existing selected set until it changes. For controlled `selection` or `selectedItems`, a proposed table change is not exposed until the parent supplies its accepted value. You can still lift selection through the existing callbacks when other UI needs it; no public context, clear-selection helper, or automatic bulk execution is added. See [DataPage selection](index.md#selection).
 
 For a selection-aware dialog, follow the [Add book handoff](../tutorial/list-and-detail.mdx#check-the-selection-handoff) from the selected author id to the dialog's `initialValues`.
 
@@ -161,7 +168,7 @@ Localize both the toolbar name and the individual labels. Style the buttons thro
 
 ## Action Handlers
 
-The handlers below read `selectedItem` from your own selection state, as shown in [Accessing Selected Item](#accessing-selected-item).
+The handlers below use `DataPageSelection<Author>` imported from `@cratis/components/DataPage`, as shown in [Accessing Selected Item](#accessing-selected-item). Pair them with `<MenuItem<Author>>`.
 
 ### Simple Actions
 
@@ -174,10 +181,10 @@ const handleCreate = () => {
 ### Actions with Selected Item
 
 ```tsx
-const handleEdit = () => {
-    if (!selectedItem) return;
+const handleEdit = (selection: DataPageSelection<Author>) => {
+    if (selection.selectionMode !== 'single' || !selection.selectedItem) return;
 
-    setEditItem(selectedItem);
+    setEditItem(selection.selectedItem);
     setShowEditDialog(true);
 };
 ```
@@ -187,10 +194,10 @@ const handleEdit = () => {
 A confirmation dialog lets the user reconsider; it does not authorize the command. The backend must still authorize the operation and validate its current target, even if the action was enabled and the user confirmed it. Hiding or disabling the action is not a security check either.
 
 ```tsx
-const handleDelete = () => {
-    if (!selectedItem) return;
+const handleDelete = (selection: DataPageSelection<Author>) => {
+    if (selection.selectionMode !== 'single' || !selection.selectedItem) return;
 
-    setDeleteItem(selectedItem);
+    setDeleteItem(selection.selectedItem);
     setShowConfirmDialog(true);
 };
 ```
@@ -200,11 +207,11 @@ const handleDelete = () => {
 DataPage invokes `command` without awaiting a returned promise. Handle errors in your async handler and manage pending state yourself if repeated clicks could submit the same operation twice. The example below catches failures, but does not yet guard repeated clicks:
 
 ```tsx
-const handleArchive = async () => {
-    if (!selectedItem) return;
+const handleArchive = async (selection: DataPageSelection<Author>) => {
+    if (selection.selectionMode !== 'single' || !selection.selectedItem) return;
 
     try {
-        await archiveItem(selectedItem.id);
+        await archiveItem(selection.selectedItem.id);
         // An observable query updates the table on its own
     } catch (error) {
         console.error('Failed to archive item:', error);
