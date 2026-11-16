@@ -12,6 +12,7 @@ import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from '../configuration/CratisComponentsContext';
 import { cratisDefaults } from '../configuration/CratisComponentsDefaults';
 import type { DialogHeaderActionsRenderer } from '../configuration/DialogHeaderActionsRenderer';
+import { withLegacyLocaleMessages } from './legacyLocaleMessages';
 
 const RendererRoot = unstable_RendererRoot;
 
@@ -314,63 +315,6 @@ export const mergeCratisComponentsConfig = (
     const { icons, ...rest } = value ?? {};
     const merged = merge(cratisDefaults, rest) as CratisComponentsConfig;
     return icons ? { ...merged, icons: { ...cratisDefaults.icons, ...icons } } : merged;
-};
-
-const withLegacyLocaleMessages = (
-    config: CratisComponentsConfig,
-    explicitMessages: CratisComponentsMessages | undefined,
-): CratisComponentsConfig => {
-    const legacy = config.locale ? config.locales?.[config.locale] : undefined;
-    if (!legacy) return config;
-    return {
-        ...config,
-        messages: {
-            ...config.messages,
-            paginator: {
-                ...config.messages?.paginator,
-                navigation:
-                    explicitMessages?.paginator?.navigation ??
-                    legacy.aria?.navigation ??
-                    config.messages?.paginator?.navigation,
-                first:
-                    explicitMessages?.paginator?.first ??
-                    legacy.aria?.firstPageLabel ??
-                    config.messages?.paginator?.first,
-                previous:
-                    explicitMessages?.paginator?.previous ??
-                    legacy.aria?.prevPageLabel ??
-                    config.messages?.paginator?.previous,
-                next:
-                    explicitMessages?.paginator?.next ??
-                    legacy.aria?.nextPageLabel ??
-                    config.messages?.paginator?.next,
-                last:
-                    explicitMessages?.paginator?.last ??
-                    legacy.aria?.lastPageLabel ??
-                    config.messages?.paginator?.last,
-            },
-            datePicker: {
-                ...config.messages?.datePicker,
-                today:
-                    explicitMessages?.datePicker?.today ??
-                    legacy.today ??
-                    config.messages?.datePicker?.today,
-                clear:
-                    explicitMessages?.datePicker?.clear ??
-                    legacy.clear ??
-                    config.messages?.datePicker?.clear,
-                openCalendar:
-                    explicitMessages?.datePicker?.openCalendar ??
-                    config.messages?.datePicker?.openCalendar,
-                previousMonth:
-                    explicitMessages?.datePicker?.previousMonth ??
-                    config.messages?.datePicker?.previousMonth,
-                nextMonth:
-                    explicitMessages?.datePicker?.nextMonth ??
-                    config.messages?.datePicker?.nextMonth,
-            },
-        },
-    };
 };
 
 const validLocale = (locale: string | undefined) => {
