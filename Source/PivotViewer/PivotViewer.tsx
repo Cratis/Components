@@ -67,10 +67,10 @@ function buildViewerClassName(
  * or {@link DataTableForQuery}.
  *
  * @typeParam TItem - The item type contained in {@link PivotViewerProps.data}.
- * @param viewer - {@link PivotViewerProps}.
+ * @param props - {@link PivotViewerProps}.
  */
-export function PivotViewer<TItem extends object>(viewer: PivotViewerProps<TItem>) {
-    const { data, dimensions, filters, defaultDimensionKey, getItemId, searchFields, className, isLoading = false, colors } = viewer;
+export function PivotViewer<TItem extends object>(props: PivotViewerProps<TItem>) {
+    const { data, dimensions, filters, defaultDimensionKey, getItemId, searchFields, className, isLoading = false, colors } = props;
 
     // Refs
     const containerRef = useRef<HTMLDivElement>(null!);
@@ -156,7 +156,7 @@ export function PivotViewer<TItem extends object>(viewer: PivotViewerProps<TItem
 
     return (
         <PivotViewerContent<TItem>
-            viewer={viewer}
+            viewer={props}
             isLoading={isLoading}
             viewerClassName={viewerClassName}
             cssVariables={cssVariables as CSSProperties}
