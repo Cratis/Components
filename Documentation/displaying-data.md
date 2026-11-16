@@ -39,7 +39,7 @@ While the first result is loading without rows, the table shows `Loading…`. A 
 | Outcome | Default feedback | Next check |
 | --- | --- | --- |
 | First result pending | `Loading…` | Backend connection if it persists |
-| Successful empty result | `No data available.` or your `emptyMessage` | Query arguments and matching data |
+| Successful empty result | The `emptyMessage` you pass (a required prop) | Query arguments and matching data |
 | Failed query | `Could not load data.` | Request and backend exception |
 | Unauthorized query | `You are not authorized to view this data.` | Authentication and backend authorization |
 | Refresh with existing rows | Rows remain; table is busy | Wait for the next result, not a new initial-empty screen |

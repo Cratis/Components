@@ -136,6 +136,28 @@ For a client-generated id, create it once and seed it the same way, for example 
 
 Field display defaults are not command values either. A `CheckboxField` shows an unchecked box and a `NumberField` shows `0` while the bound property is still unset, so a non-optional `boolean` or `number` keeps confirm disabled until the user edits it. Seed those values, for example `initialValues={{ isActive: false }}`, when the default is an acceptable answer.
 
+## Multi-column layout
+
+Wrap fields in `CommandDialog.Column` to lay them out in columns. It is the same as `CommandForm.Column`: the form still binds the fields inside it. The column does not position itself, so supply the grid or flex container yourself:
+
+```tsx
+<CommandDialog<UpdateProfile> command={UpdateProfile} title='Edit profile' okLabel='Save'>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <CommandDialog.Column>
+            <InputTextField<UpdateProfile> value={(c) => c.firstName} title='First name' />
+            <InputTextField<UpdateProfile> value={(c) => c.email} title='Email' type='email' />
+        </CommandDialog.Column>
+        <CommandDialog.Column>
+            <InputTextField<UpdateProfile> value={(c) => c.lastName} title='Last name' />
+            <InputTextField<UpdateProfile> value={(c) => c.phone} title='Phone' />
+        </CommandDialog.Column>
+    </div>
+    <TextAreaField<UpdateProfile> value={(c) => c.bio} title='Bio' rows={3} />
+</CommandDialog>
+```
+
+Here `UpdateProfile` is a command proxy, and `InputTextField` and `TextAreaField` come from `@cratis/components/CommandForm`. A field outside the container, such as `Bio`, renders below the columns.
+
 ## Validation and when confirm enables
 
 The confirm button is enabled when all of the following hold:

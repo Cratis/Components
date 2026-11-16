@@ -154,8 +154,24 @@ This example shows a field-specific open-options label. Keep the `onChange={setR
 | `onChange` / `onBlur`              | Next-value callback with optional metadata, and focus callback. |
 | `pt`                               | Cratis-owned stable part attributes.            |
 
+### Legacy aliases
+
+`Dropdown` still accepts some older prop names so existing wrappers keep working. Prefer the current names in new code. When both a legacy and a current identity or ARIA prop are set, the current one wins; `panelClassName` is added to the popover's classes.
+
+| Legacy prop | Use instead |
+| --- | --- |
+| `inputId` | `id` |
+| `panelClassName` | `pt={{ popover: { className } }}` |
+| `ariaLabel`, `ariaLabelledBy`, `ariaDescribedBy` | `aria-label`, `aria-labelledby`, `aria-describedby` |
+| `ariaInvalid` | `invalid`. There is no top-level `aria-invalid` prop. |
+| `ptOptions`, `unstyled` | Nothing. Both are deprecated and ignored; see the [pass-through guide](../Styling/pass-through.md). |
+
+The [3.x to 4.0 migration guide](../Migration/3-to-4.md) maps the rest of the renderer-era props.
+
 ## Stable parts
 
-`root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, and `multiple`.
+`root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, and `multiple`.
+
+`pt` also accepts `input` and `select`, but only as legacy aliases for migration: `pt.input` is applied to the trigger, filter or multiple-selection control, and `pt.select` to the root and the id and ARIA fallbacks. No element carries `data-cratis-part="input"` or `data-cratis-part="select"`, so CSS selectors on those names match nothing.
 
 The popup is portaled outside modal clipping contexts and carries a z-index above Cratis dialogs. Use the `--cratis-*` tokens and stable parts to style it without renderer selectors. Follow the [pass-through guide](../Styling/pass-through.md) to customize part attributes.

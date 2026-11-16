@@ -78,6 +78,18 @@ Pass the selected qualified identity as `value`, or `null` when nothing is selec
 
 Escape, the close button and pressing outside dismiss the popout without calling `onChange`. Search and filters start fresh each time it opens. Browsing does not change the selection; only an update to `value` does.
 
+### Identity helpers
+
+`@cratis/components/IconPicker` exports the helpers the picker uses, so your application can store and compare icons the same way:
+
+| Helper | Use it to |
+| --- | --- |
+| `isSameIconPickerValue(left, right)` | Compare two values. `library`, `key` and `variant` must all match. |
+| `toIconPickerValue(source)` | Reduce a value or catalog entry to just `{ library, key, variant? }`, which is what you persist. |
+| `iconPickerIdentity(value)` | Build a string that is equal exactly when two values name the same icon, for example as a map key. |
+| `formatIconPickerIdentity(value)` | Show an identity to people, as `library / key / variant`. |
+| `isIconPickerAllowed(entry, allowed)` | Apply the same `allowed` rule as the picker, for example when validating a stored value. |
+
 ## Restrict and validate
 
 Choose whether an icon should be hidden or shown as unavailable. To hide it, leave it out of the catalog. To keep it visible but prevent selection for this field, use `allowed`.
@@ -123,7 +135,7 @@ The keyboard path supports browsing without selecting until the user confirms a 
 
 Unavailable tiles remain focusable and explain why they cannot be chosen. The selected tile has a check mark and a heavier border, focus has an offset outline, and unavailable tiles have a dashed border and text. These states do not depend on color alone. Long or localized names wrap within the tile.
 
-Use `labels` to replace the English defaults, including the title, search, filters, state messages and summary sentence.
+Use `labels` to replace the English defaults, including the title, search, filters, state messages and summary sentence. Pass only the keys you change; the rest keep their defaults. `defaultIconPickerLabels` holds the complete English set.
 
 ## Styling
 

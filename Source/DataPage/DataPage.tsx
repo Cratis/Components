@@ -20,6 +20,8 @@ import type { DataTableServerQuery } from '../DataTables/DataTableServerQuery';
 import { Allotment } from 'allotment';
 import type { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
+import type { DataPageSelection } from './DataPageSelection';
+import { adaptMenuItem } from './adaptMenuItem';
 
 // Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
 // the absolutely positioned, full-height box the split view assumes once that stylesheet is on
@@ -32,16 +34,18 @@ import { DataPageLayout } from './DataPageLayout';
 /**
  * Props for {@link MenuItem} — a single action in a {@link DataPage}'s
  * action bar.
+ *
+ * @typeParam TDataType - The surrounding page's row type. JSX does not infer it from the parent.
  */
-export interface MenuItemProps {
+export interface MenuItemProps<TDataType extends object = object> {
     /** Icon component rendered before the label (e.g. a react-icons icon). */
     icon?: React.ComponentType<{ className?: string }>;
     /** The visible label. */
     label?: string;
-    /** Invoked when the item is activated. */
-    command?: () => void;
-    /** When true, the item is greyed out regardless of selection. */
-    disabled?: boolean;
+    /** Invoked with the immutable, committed selection when the enabled item is activated. */
+    command?: (selection: DataPageSelection<TDataType>) => void;
+    /** A boolean or selection predicate; when true, the item cannot dispatch its command. */
+    disabled?: boolean | ((selection: DataPageSelection<TDataType>) => boolean);
     /**
      * When true, the menu item is disabled while no row is selected in the
      * surrounding {@link DataPage}. Use it for context-sensitive actions like
@@ -53,9 +57,12 @@ export interface MenuItemProps {
 /**
  * Declarative menu item for use inside `<DataPage.MenuItems>`. Renders nothing
  * directly; the surrounding {@link MenuItems} component reads its props and
- * forwards them to the action menubar.
+ * forwards them to the action menubar. Supply the page's row type explicitly
+ * as `<DataPage.MenuItem<Person>>` for typed row access in callbacks.
+ *
+ * @typeParam TDataType - The surrounding page's row type, not inferred from its JSX parent.
  */
-export const MenuItem = (_props: MenuItemProps) => {
+export const MenuItem = <TDataType extends object = object,>(_props: MenuItemProps<TDataType>) => {
     return null;
 };
 
@@ -107,29 +114,23 @@ const pageStyle: CSSProperties = { minHeight: '20rem' };
  */
 export const MenuItems = ({ children }: MenuItemsProps) => {
     const context = useDataPageContext();
-    const isDisabled =
-        context.selectionMode === 'multiple'
-            ? context.selectedItems.length === 0
-            : !context.selectedItem;
+    const selection = useMemo<DataPageSelection>(() => context.selectionMode === 'multiple'
+        ? Object.freeze({ selectionMode: 'multiple', selectedItems: Object.freeze([...context.selectedItems]) })
+        : Object.freeze({ selectionMode: 'single', selectedItem: context.selectedItem }),
+    [context.selectionMode, context.selectedItem, context.selectedItems]);
 
     const items = useMemo(() => {
         const menuItems: ActionMenuItem[] = [];
         React.Children.forEach(children, (child) => {
+            // SAFETY: Marker generics are erased by React children. Consumers explicitly
+            // supply this page's row type on MenuItem; the private context never escapes.
             if (React.isValidElement<MenuItemProps>(child) && child.type === MenuItem) {
-                const Icon = child.props.icon;
-                menuItems.push({
-                    label: child.props.label,
-                    command: child.props.command,
-                    icon: Icon ? <Icon className='cratis:mr-2' /> : undefined,
-                    disabled:
-                        (child.props.disabled ?? false) ||
-                        (isDisabled && (child.props.disableOnUnselected ?? false)),
-                });
+                menuItems.push(adaptMenuItem(child.props, selection));
             }
         });
 
         return menuItems;
-    }, [children, isDisabled]);
+    }, [children, selection]);
 
     return (
         <div
@@ -260,6 +261,9 @@ export interface DataPageProps<
      * The title of the page
      */
     title: string;
+
+    /** Whether the page content is a main landmark. Defaults to true; set false inside an existing main. */
+    landmark?: boolean;
 
     /**
      * Children to render, for this it means menu items and columns. Use <DataPage.MenuItems> and <DataPage.Columns> for this.
@@ -584,7 +588,7 @@ const DataPage = <
 
     return (
         <DataPageContext.Provider value={context}>
-            <Page title={props.title} panel={true} style={pageStyle} data-cratis-component='DataPage'>
+            <Page title={props.title} landmark={props.landmark} panel={true} style={pageStyle} data-cratis-component='DataPage'>
                 {props.detailsComponent ? (
                     <Allotment className='cratis:h-full' proportionalLayout={false}>
                         <Allotment.Pane>

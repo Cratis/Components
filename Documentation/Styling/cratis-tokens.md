@@ -68,6 +68,34 @@ A few tokens tune one component. The first three have defaults in `tokens`; the 
 | `--cratis-filter-option-list-max-height`      | `14rem` (fallback)                   | `CheckboxListFilter` option list (Filter and PivotViewer). |
 | `--cratis-canvas-minimap-grid-color`          | `var(--cratis-surface-border)` (fallback) | Canvas minimap dot grid.                              |
 | `--cratis-canvas-minimap-item-color`          | `var(--cratis-text-color)` at 25% (fallback) | Canvas minimap items without their own `color`.    |
+| `--cratis-font-mono`                          | `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace` (fallback) | MarkdownEditor source textarea and the detail text in its suggestion list. |
+
+### SchemaEditor type colors
+
+SchemaEditor colors its type chips with its own tokens. Unlike the tokens above, the stylesheet declares them on `.cratis-schema-editor` and `.cratis-schema-editor__menu` (the type menu), not on `:root`, so a value set on `:root` is ignored. Override them on both selectors:
+
+```css
+.cratis-schema-editor,
+.cratis-schema-editor__menu {
+    --cratis-schema-editor-type-number: #9f1239;
+}
+```
+
+| Token                                           | Default   | Chip                                   |
+| ----------------------------------------------- | --------- | -------------------------------------- |
+| `--cratis-schema-editor-type-string`            | `#0e7490` | Text.                                  |
+| `--cratis-schema-editor-type-number`            | `#b91c1c` | Number.                                |
+| `--cratis-schema-editor-type-boolean`           | `#15803d` | Boolean.                               |
+| `--cratis-schema-editor-type-date`              | `#c2410c` | Date.                                  |
+| `--cratis-schema-editor-type-time`              | `#7c6d14` | Time.                                  |
+| `--cratis-schema-editor-type-unique-identifier` | `#0f766e` | Unique identifier.                     |
+| `--cratis-schema-editor-type-object`            | `#6d28d9` | Object.                                |
+| `--cratis-schema-editor-type-string-array`      | `#0f766e` | List of text.                          |
+| `--cratis-schema-editor-type-number-array`      | `#991b1b` | List of numbers.                       |
+| `--cratis-schema-editor-type-object-array`      | `#5b21b6` | List of objects.                       |
+| `--cratis-schema-editor-type-text`              | `#fff`    | Glyph text on every type chip.         |
+| `--cratis-schema-editor-concept-background`     | `#b4a5ff` | Concept name background in the badge.  |
+| `--cratis-schema-editor-concept-text`           | `#1c1040` | Concept name text in the badge.        |
 
 ## Overlay stacking
 

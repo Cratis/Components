@@ -19,6 +19,20 @@ Use `ChatBubble` for a compact avatar marker, with `authorId`, `authorName`, and
 
 The marker does not open a panel itself. Handle activation in your own surrounding control and render the corresponding `Chat` panel when selected. Use `suppressPreview` if the hover summary would compete with an open conversation.
 
+| Prop                  | Type                                     | Default  | Behavior                                                        |
+| --------------------- | ---------------------------------------- | -------- | --------------------------------------------------------------- |
+| `authorId`            | `Guid \| string`                         | Required | The person the bubble represents.                               |
+| `authorName`          | `string`                                 | Required | Used for the initials and the preview.                          |
+| `hasAvatar`           | `boolean`                                | Required | Whether an avatar image is stored for the person.               |
+| `size`                | `number`                                 | `56`     | The avatar circle's diameter in pixels.                         |
+| `suppressPreview`     | `boolean`                                | `false`  | Hides the hover preview card.                                   |
+| `previewMessage`      | `string`                                 | —        | The most recent message shown in the preview.                   |
+| `previewTimestamp`    | `Date`                                   | —        | When that message was sent.                                     |
+| `replyCount`          | `number`                                 | —        | The number of replies shown in the preview.                     |
+| `showThinkingBubbles` | `boolean`                                | `false`  | Shows the animated thinking dots.                               |
+| `selected`            | `boolean`                                | `false`  | Shows the selection ring.                                       |
+| `buildAvatarUrl`      | `(params: BuildAvatarUrlParams) => string` | —      | Builds the avatar image URL. Without it, initials are shown.    |
+
 ## `Chat` — the conversation panel
 
 ```tsx
@@ -76,7 +90,22 @@ Render `Conversation` and send a message to append it to the local thread. The `
 
 While `messages` is empty, the panel shows "No comments yet. Be the first!"; override it with `labels.noComments`. Show loading and thread-loading errors around the panel. To represent an individual turn that failed, supply a message with `failureDetail` (see [Failed turns](#failed-turns)).
 
-`messages`, `onSend`, and `onClose` are required. Enable other interactions only when your application can handle them:
+`messages`, `onSend`, and `onClose` are required. `title` sets the panel's heading (default `Comments`), and `autoFocus` focuses the composer when the panel mounts (default `false`). Every visible string can be overridden through `labels`:
+
+| `ChatLabels` key | Default |
+| ---------------- | ------- |
+| `title`          | `Comments` (the `title` prop takes precedence) |
+| `close`          | `Close` (tooltip) |
+| `closePanel`     | `Close panel` (accessible name) |
+| `noComments`     | `No comments yet. Be the first!` |
+| `typing`         | `{name} is typing` |
+| `typingTwo`      | `{first} and {second} are typing` |
+| `typingSeveral`  | `Several people are typing` |
+| `composer`       | `ChatComposerLabels`, the composer's placeholder, send and emoji labels |
+| `messageBubble`  | `ChatMessageBubbleLabels`, the reaction, quick-reply and convert-to-action labels |
+| `failedReply`    | `FailedReplyLabels`, the [failed turn](#failed-turns) labels |
+
+Enable other interactions only when your application can handle them:
 
 | Feature                                                               | Enabled by                                                       |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -119,7 +148,7 @@ Pass `mentionCandidates` for a known list of people and agents, or `resolveMenti
 
 ## Typing indicator
 
-Supply `typingAuthors: ChatTypingAuthor[]` from your application's presence or agent-work state. Chat renders their avatars with animated dots and an "X is typing" / "X and Y are typing" / "Several people are typing" label. The prop controls the display; Chat does not detect another user's activity itself.
+Supply `typingAuthors: ChatTypingAuthor[]` from your application's presence or agent-work state. Each entry has an `id` (used for the avatar and as the list key), the `name` shown in the label, `hasAvatar`, and a `kind` (`ChatAuthorKind`) that decides where the avatar is fetched from. Chat renders their avatars with animated dots and an "X is typing" / "X and Y are typing" / "Several people are typing" label. The prop controls the display; Chat does not detect another user's activity itself.
 
 ## Failed turns
 

@@ -16,7 +16,7 @@ A property descriptor names a command property, its runtime type, and whether it
 
 ## Requirements
 
-Use a generated Arc command proxy and `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later within the supported 22.x range. For provider setup, CSS, and proxy generation, follow [Getting started](../getting-started.mdx).
+Use a generated Arc command proxy and `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later. The package accepts Arc `>=20.3.1 <24`, so Arc 23 is supported. For provider setup, CSS, and proxy generation, follow [Getting started](../getting-started.mdx).
 
 `AutoCommandForm` creates an instance of the command and reads its `propertyDescriptors`. Each generated field names its property through `fieldName` because its accessor reads the property dynamically. Arc versions before 22.16.0 ignore that name and infer it from the accessor's source text, causing the generated fields to resolve to the same property. An edit can then reach the wrong property. The package's peer range admits those older versions, so check the installed Arc version before using this component.
 

@@ -106,10 +106,13 @@ Useful `ToastOptions` beyond `title` and `description`:
 | `duration` | Milliseconds before auto-dismiss, overriding the toaster's `timeout`. `0` keeps the toast until it is dismissed. |
 | `dismissible` | The close control is shown unless this is `false` |
 | `loading` | Marks the toast as in progress; a loading toast does not auto-dismiss. `toast.promise` sets it on the pending toast. |
+| `icon` | A custom icon element that replaces the severity icon. A loading toast shows the loading indicator instead. |
 | `action` | Button attributes for one action button in the toast |
 | `render` | Custom body; see [Custom body](#custom-body) |
 | `id` | Your own id; showing a toast with an existing id replaces that toast |
 | `onDismiss` / `onTimeout` | Called when the toast is dismissed or times out |
+| `data` | Your own metadata. It is carried on the toast options that `onDismiss` and `onTimeout` receive, and that a custom dispatch sees; it is not passed to a `render` element as props. |
+| `group` | A key your application can use to associate related toasts. The built-in toaster does not group or stack them by it. |
 
 The queue is shared across loaded Components copies. `setToastDispatch()` installs an application-owned dispatch and returns a scoped restore callback.
 

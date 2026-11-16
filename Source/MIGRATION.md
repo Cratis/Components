@@ -45,7 +45,7 @@ Keep a Prime package only when your application still imports it directly. Migra
 
 Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public `PIXI.Container` and pointer-event types come from one package instance. Applications using only non-Pixi subpaths do not need it.
 
-The package declares an Arc peer range of `>=20.3.1 <23`. Each published release of Conformance
+The package declares an Arc peer range of `>=20.3.1 <24`. Each published release of Conformance
 and the three renderer adapters requires exactly the `@cratis/components` version it is released
 with, so install and upgrade an adapter and `@cratis/components` together, at the same version.
 

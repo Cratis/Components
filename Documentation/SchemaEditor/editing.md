@@ -63,6 +63,12 @@ Retyping a property can also drop constraints that no longer apply, such as stri
 
 Open an object property or an array of objects to edit its nested fields. In view mode, click the row; in edit mode, use its navigation button. The breadcrumb shows the current path and lets you return to an ancestor.
 
+The first breadcrumb item is the root object, and its text comes from `eventTypeName`. It defaults to an empty string, so the root item is blank unless you supply a name, such as the event type the schema describes:
+
+```tsx
+<SchemaEditor schema={schema} onChange={setSchema} eventTypeName='ProductRegistered' />
+```
+
 Each nested object has its own `properties` and `required` list. Requiring `address.city`, for example, does not make `address` required in the parent object.
 
 ## Required properties

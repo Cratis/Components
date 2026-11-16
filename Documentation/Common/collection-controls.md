@@ -98,6 +98,12 @@ The control trims added values, ignores empty entries, and refuses duplicates un
 is set. Leaving the input also commits a nonempty draft. Your application handles any domain-specific
 validation and persistence in addition to updating the list.
 
+Each occurrence is a separate tag: removing one duplicate leaves the other equal values in order.
+`allowDuplicates` governs additions only; duplicates supplied in `value` still render and can be removed
+individually. When your application replaces or reorders `value`, the first occurrence of each value
+matches its first prior occurrence, the second matches the second, and so on. Identical strings have
+no external identity beyond that deterministic matching.
+
 `editable={false}` hides the entry but still allows removal; it does not make the tags read-only.
 Use `disabled` to prevent both adding and removing values. Give `removeLabel` a localized function
 that names each remove action. Set `removeIcon` to use your icon set's close icon instead of the

@@ -102,6 +102,20 @@ export const CustomRemoveIcon: Story = {
     ),
 };
 
+export const AllowedDuplicates: Story = {
+    args: { value: [], onChange: () => undefined },
+    render: () => <Controlled initial={['alpha']} allowDuplicates />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.type(canvas.getByRole('textbox'), 'alpha{Enter}');
+        await expect(canvas.getAllByText('alpha')).toHaveLength(2);
+        const firstTag = canvas.getAllByRole('row', { name: 'alpha' })[0];
+        // React Aria's remove button name also includes its associated tag text.
+        await userEvent.click(within(firstTag).getByRole('button'));
+        await expect(canvas.getAllByText('alpha')).toHaveLength(1);
+    },
+};
+
 /** Adding with Enter and removing the last with Backspace. */
 export const AddsAndRemoves: Story = {
     args: { value: [], onChange: () => undefined },

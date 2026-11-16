@@ -17,6 +17,7 @@ import { DatePickerPopover } from './DatePickerPopover';
 import { asDate, asDateValue } from './datePickerValues';
 import { rootStateAttributes, triggerStateAttributes } from './datePickerStateAttributes';
 import { useDatePickerState } from './useDatePickerState';
+import { useDatePickerAccessibility } from './useDatePickerAccessibility';
 
 const resolveHourCycle = (hourFormat: DatePickerInputProps['hourFormat']) => {
     if (hourFormat === '12') return 12;
@@ -32,6 +33,7 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const state = useDatePickerState(props);
+    const { calendarId, triggerLabel, triggerAttributes } = useDatePickerAccessibility(props, state.datePickerMessages?.openCalendar);
     const { effectiveDisabled, effectiveReadOnly } = state;
     const fieldState = {
         invalid: state.effectiveInvalid,
@@ -110,19 +112,17 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
                                             <button
                                                 {...triggerProps}
                                                 {...triggerStateAttributes(fieldState, isOpen)}
+                                                {...triggerAttributes(isOpen)}
                                             />
                                         )}
-                                        aria-label={
-                                            pt?.trigger?.['aria-label'] ??
-                                            state.datePickerMessages?.openCalendar ??
-                                            'Open calendar'
-                                        }
+                                        aria-label={triggerLabel}
                                     >
                                         <span aria-hidden='true'>▦</span>
                                     </Button>
                                 )}
                             </DatePickerGroup>
                             <DatePickerPopover
+                                id={calendarId}
                                 pt={pt}
                                 isNonModal={isNonModal}
                                 zIndex={state.resolvedPopoverZIndex}
