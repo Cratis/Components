@@ -2,4 +2,5 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export * from './DataPage';
+export type { DataPageSelection } from './DataPageSelection';
 export { Column, type ColumnProps } from '../DataTables/Column';

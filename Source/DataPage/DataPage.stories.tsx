@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type React from 'react';
+import { useState } from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataPage, MenuItem } from './DataPage';
 import { Column } from '../DataTables/Column';
@@ -476,6 +478,50 @@ export const MultiplePagesWithoutMenuItems: Story = {
             </DataPage>
         </div>
     ),
+};
+
+const SelectionMenuExample = () => {
+    const [lastAction, setLastAction] = useState('No action yet');
+    return (
+        <div style={{ height: '560px' }}>
+            <DataPage<PersonsQuery, Person, object> title='Selection-aware actions'
+                query={PersonsQuery} emptyMessage='No persons found' dataKey='id'>
+                <DataPage.MenuItems>
+                    <DataPage.MenuItem<Person> label='Review selection' disableOnUnselected
+                        disabled={(selection) => selection.selectionMode === 'single' && selection.selectedItem?.role === 'Viewer'}
+                        command={(selection) => {
+                            if (selection.selectionMode === 'single' && selection.selectedItem) {
+                                setLastAction(selection.selectedItem.name);
+                            }
+                        }} />
+                </DataPage.MenuItems>
+                <DataPage.Columns>
+                    <Column<Person> field='name' header='Name' />
+                    <Column<Person> field='role' header='Role' />
+                </DataPage.Columns>
+                <output aria-label='Action result'>{lastAction}</output>
+            </DataPage>
+        </div>
+    );
+};
+
+export const SelectionAwareMenu: Story = {
+    render: () => <SelectionMenuExample />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const action = canvas.getByRole('button', { name: 'Review selection' });
+        await expect(action).toBeDisabled();
+        await userEvent.click(await canvas.findByRole('cell', { name: 'Sample User 01' }));
+        await expect(action).toBeEnabled();
+        await userEvent.click(action);
+        await expect(canvas.getByLabelText('Action result')).toHaveTextContent('Sample User 01');
+        await userEvent.click(canvas.getByRole('cell', { name: 'Sample User 02' }));
+        await userEvent.click(action);
+        await expect(canvas.getByLabelText('Action result')).toHaveTextContent('Sample User 02');
+        await userEvent.click(canvas.getByRole('cell', { name: 'Sample User 03' }));
+        await expect(action).toBeDisabled();
+        await expect(canvas.getByLabelText('Action result')).toHaveTextContent('Sample User 02');
+    },
 };
 
 /**
