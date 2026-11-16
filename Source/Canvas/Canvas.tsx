@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useRef } from 'react';
+import React from 'react';
 import type * as PIXI from 'pixi.js';
 import {
     CanvasControls,
@@ -12,19 +12,9 @@ import type { CanvasCaptureAttributes } from './CanvasCaptureAttributes';
 import type { CanvasContext } from './CanvasContext';
 import type { CanvasHandle } from './CanvasHandle';
 import type { CanvasItemData } from './CanvasItemData';
-import { CanvasItemRegistryContext } from './CanvasItemRegistryContext';
-import type { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
-import type { PointerPosition } from './pinchGesture';
-import { useCanvasCamera } from './useCanvasCamera';
-import { useCanvasItemRegistry } from './useCanvasItemRegistry';
-import { useCanvasNavigation } from './useCanvasNavigation';
-import { useCanvasPointerGestures } from './useCanvasPointerGestures';
-import { useCanvasWheelZoom } from './useCanvasWheelZoom';
-import { useDragSelectionGuard } from './useDragSelectionGuard';
-import { useLatestRef } from './useLatestRef';
-import { usePixiApplication } from './usePixiApplication';
-import { usePixiItems } from './usePixiItems';
-import { isMultiTouchCapableDevice, shouldUseCssZoom } from './zoomMechanism';
+import { CanvasWorldLayers } from './CanvasWorldLayers';
+import type { MinimapItem } from './CanvasMinimap';
+import { useCanvasSurface } from './useCanvasSurface';
 import { CANVAS_SURFACE_CLASS } from './isClaimedByAnotherSurface';
 
 export type { CanvasCaptureAttributes } from './CanvasCaptureAttributes';
@@ -140,121 +130,38 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     readOnly = false,
     backgroundDragPans = true,
 }: CanvasProps<T>): React.ReactElement {
-    const containerRef = useRef<HTMLDivElement>(null);
-    useDragSelectionGuard(containerRef);
-    const minimapRef = useRef<CanvasMinimapHandle | null>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const zoomLayerRef = useRef<HTMLDivElement>(null);
-    // Shared by touch momentum and the animated camera moves, so only one of them ever drives the
-    // transform at once; each cancels whichever was still running.
-    const animationFrameRef = useRef<number | null>(null);
-
-    // Mutable refs so event callbacks always read current values without re-binding
-    const panRef = useRef({ x: initialPan.x, y: initialPan.y });
-    const zoomRef = useRef(initialZoom);
-
-    // The transform styles rendered by JSX are frozen at their first-mount values: after mount the
-    // overlay/zoom-layer styles are owned exclusively by the imperative per-frame writes. If the JSX
-    // re-rendered them from live props (a parent may persist and echo the transform back through
-    // `initialPan`/`initialZoom`), a React commit racing a gesture would rewrite the styles with
-    // stale values — visible as the viewport flicking to an old position and back.
-    const initialTransformRef = useRef({ pan: initialPan, zoom: initialZoom });
-
-    // Touch pointers currently down on the canvas, in the order they landed. Touch is the only input
-    // that can deliver several simultaneous pointers, so mouse/pen never enter this map.
-    const touchPointersRef = useRef<Map<number, PointerPosition>>(new Map());
-
-    // Keep callback refs current to avoid stale closures in PIXI event handlers
-    const onReadyRef = useLatestRef(onReady);
-    const onItemPointerDownRef = useLatestRef(onItemPointerDown);
-    const onTransformChangeRef = useLatestRef(onTransformChange);
-    const onHandleReadyRef = useLatestRef(onHandleReady);
-
-    const { itemRegistryRef, registryContextValue, autoMinimapItems } =
-        useCanvasItemRegistry();
-    const effectiveMinimapItems = minimapItems ?? autoMinimapItems;
-
-    const { appRef, worldRef, spritesRef, pixiReady, render } = usePixiApplication({
-        containerRef,
-        panRef,
-        zoomRef,
-        onReadyRef,
-        captureLayer: captureAttributes?.layer,
-    });
-
     const {
-        applyWorldTransform,
-        refreshMinimap,
-        scheduleTransformApply,
-        noteGestureActivity,
-        zoomTowards,
-    } = useCanvasCamera({
-        appRef,
-        worldRef,
+        containerRef,
         minimapRef,
         overlayRef,
         zoomLayerRef,
-        panRef,
         zoomRef,
-        onTransformChangeRef,
-        render,
-        minZoom,
-        maxZoom,
-    });
-
-    useCanvasWheelZoom({
-        containerRef,
-        animationFrameRef,
-        panRef,
-        touchPointersRef,
-        zoomTowards,
-        noteGestureActivity,
-        scheduleTransformApply,
-    });
-
-    const { handlePointerDown, handlePointerMove, handlePointerUp } =
-        useCanvasPointerGestures({
-            containerRef,
-            animationFrameRef,
-            panRef,
-            zoomRef,
-            touchPointersRef,
-            minZoom,
-            maxZoom,
-            readOnly,
-            backgroundDragPans,
-            applyWorldTransform,
-            refreshMinimap,
-            render,
-            noteGestureActivity,
-            scheduleTransformApply,
-        });
-
-    usePixiItems({
-        pixiReady,
-        appRef,
-        worldRef,
-        spritesRef,
+        initialTransform,
+        registryContextValue,
+        effectiveMinimapItems,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+        handleZoomIn,
+        handleZoomOut,
+        handleZoomReset,
+        handleMinimapPan,
+    } = useCanvasSurface<T>({
         items,
         renderItem,
-        onItemPointerDownRef,
+        onItemPointerDown,
+        onReady,
+        onTransformChange,
+        onHandleReady,
+        initialZoom,
+        initialPan,
+        minZoom,
+        maxZoom,
+        minimapItems,
+        captureAttributes,
+        readOnly,
+        backgroundDragPans,
     });
-
-    const { handleZoomIn, handleZoomOut, handleZoomReset, handleMinimapPan } =
-        useCanvasNavigation({
-            containerRef,
-            animationFrameRef,
-            panRef,
-            zoomRef,
-            itemRegistryRef,
-            minZoom,
-            maxZoom,
-            pixiReady,
-            onHandleReadyRef,
-            applyWorldTransform,
-            refreshMinimap,
-            render,
-        });
 
     return (
         <div
@@ -266,66 +173,16 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
         >
-            {/* HTML overlay — mirrors the PIXI world transform so CanvasItem children
-                are positioned in world-space coordinates. Updated via direct DOM style
-                mutation during pan/zoom to avoid React re-renders.
-                The CanvasItemRegistryContext allows CanvasItem children to report their
-                positions and sizes for automatic minimap item generation. */}
-            <CanvasItemRegistryContext.Provider value={registryContextValue}>
-                {/* Pan (this div's transform) and zoom (the inner div's `zoom`) are
-                    rewritten every interaction frame. Marking both as glass transform
-                    hosts tells the capture pipeline to treat that churn as movement,
-                    not content change: it stops re-rasterizing the page on every frame
-                    and instead refreshes once the gesture settles. */}
-                <div
-                    ref={overlayRef}
-                    {...(captureAttributes?.transformHost
-                        ? { [captureAttributes.transformHost]: 'true' }
-                        : {})}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        transformOrigin: '0 0',
-                        transform: `translate(${initialTransformRef.current.pan.x}px, ${initialTransformRef.current.pan.y}px)`,
-                        pointerEvents: 'none',
-                    }}
-                >
-                    <div
-                        ref={zoomLayerRef}
-                        {...(captureAttributes?.transformHost
-                            ? { [captureAttributes.transformHost]: 'true' }
-                            : {})}
-                        // The read-only overlay below keeps pointers off the board; `inert` keeps the keyboard
-                        // and assistive tech off it too, so nothing on a read-only board can be tabbed to and
-                        // activated (a public viewer must never be able to fire a command).
-                        inert={readOnly}
-                        style={
-                            shouldUseCssZoom(
-                                initialTransformRef.current.zoom,
-                                false,
-                                isMultiTouchCapableDevice,
-                            )
-                                ? { zoom: initialTransformRef.current.zoom }
-                                : {
-                                      transform: `scale(${initialTransformRef.current.zoom})`,
-                                      transformOrigin: '0 0',
-                                  }
-                        }
-                    >
-                        {children}
-                    </div>
-                </div>
-            </CanvasItemRegistryContext.Provider>
-            {readOnly && (
-                // Sits above every board item (default stacking order beats the content layer's implicit
-                // z-index) but below the controls/minimap, which render after it. Nothing underneath can
-                // ever become a pointer event's target, so no CanvasItem consumer needs its own read-only
-                // handling — this is the entire read-only guarantee.
-                <div
-                    style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'grab' }}
-                />
-            )}
+            <CanvasWorldLayers
+                overlayRef={overlayRef}
+                zoomLayerRef={zoomLayerRef}
+                initialTransform={initialTransform}
+                registryContextValue={registryContextValue}
+                captureAttributes={captureAttributes}
+                readOnly={readOnly}
+            >
+                {children}
+            </CanvasWorldLayers>
             {showControls && (
                 <CanvasControls
                     getZoom={() => zoomRef.current}
