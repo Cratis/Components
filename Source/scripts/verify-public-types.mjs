@@ -515,11 +515,57 @@ const sanitize = (subpath) =>
 const consumerSourceFor = (subpath, specifier) => {
     if (subpath === './DataPage') {
         return `import type { IObservableQueryFor } from '@cratis/arc/queries';
-import type { DataPageProps } from '${specifier}';
-interface Row { id: string; }
+import { DataPage, MenuItem, type DataPageProps, type DataPageSelection } from '${specifier}';
+interface Row { id: string; name: string; }
 type ListObservableQueryProps = DataPageProps<IObservableQueryFor<Row[], object>, Row, object>;
 declare const listObservableQueryProps: ListObservableQueryProps;
 void listObservableQueryProps;
+
+MenuItem<Row>({
+    command: (selection) => {
+        const snapshot: DataPageSelection<Row> = selection;
+        void snapshot;
+        // @ts-expect-error selectedItems requires narrowing to multiple selection.
+        void selection.selectedItems;
+        if (selection.selectionMode === 'single') {
+            const name: string | undefined = selection.selectedItem?.name;
+            void name;
+            // @ts-expect-error The selected row has no field named missingField.
+            void selection.selectedItem?.missingField;
+        } else {
+            const rows: readonly Row[] = selection.selectedItems;
+            const names: string[] = rows.map((row) => row.name);
+            void names;
+            // @ts-expect-error The selection array is readonly.
+            selection.selectedItems.push({ id: 'sample-1', name: 'Sample User 01' });
+        }
+    },
+    disabled: (selection) => selection.selectionMode === 'single' && !selection.selectedItem?.id,
+});
+
+DataPage.MenuItem<Row>({
+    command: (selection) => {
+        if (selection.selectionMode === 'multiple') {
+            const ids: string[] = selection.selectedItems.map((row) => row.id);
+            void ids;
+        } else {
+            const row: Row | null | undefined = selection.selectedItem;
+            void row;
+        }
+    },
+    disabled: (selection) => {
+        // @ts-expect-error selectedItem requires narrowing to single selection.
+        void selection.selectedItem;
+        if (selection.selectionMode === 'multiple') {
+            // @ts-expect-error Predicate rows retain the supplied Row type.
+            void selection.selectedItems[0]?.missingField;
+            return selection.selectedItems.some((row) => row.name.length === 0);
+        }
+        return !selection.selectedItem?.name;
+    },
+});
+
+MenuItem<Row>({ command: () => undefined, disabled: false });
 export * from '${specifier}';
 `;
     }
