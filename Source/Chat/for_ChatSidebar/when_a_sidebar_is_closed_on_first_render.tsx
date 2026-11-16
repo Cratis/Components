@@ -36,13 +36,13 @@ describe('when a sidebar is closed on first render', () => {
 
     it('should render no non-modal sidebar DOM', async () => {
         await act(async () => root.render(sidebar(false)));
-        (document.querySelector('.cratis-chat-sidebar__backdrop') === null).should.be.true;
+        (document.querySelector('.cratis-chat-sidebar__backdrop') === null).should.equal(true);
         container.innerHTML.should.equal('');
     });
 
     it('should render no modal sidebar DOM', async () => {
         await act(async () => root.render(sidebar(true)));
-        (document.querySelector('.cratis-chat-sidebar') === null).should.be.true;
+        (document.querySelector('.cratis-chat-sidebar') === null).should.equal(true);
         container.innerHTML.should.equal('');
     });
 });
