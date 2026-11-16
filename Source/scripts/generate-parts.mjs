@@ -36,7 +36,11 @@ export const partDefinitions = {
     },
     ChipsField: {
         parts: ['root', 'item', 'remove', 'input'],
-        sources: ['CommandForm/fields/ChipsField.tsx'],
+        sources: [
+            'CommandForm/fields/ChipsField.tsx',
+            'CommandForm/fields/ChipsItem.tsx',
+            'CommandForm/fields/ChipsInput.tsx',
+        ],
         ptKeys: ['root', 'item', 'remove', 'input'],
     },
     ToggleSwitchField: {
@@ -390,7 +394,12 @@ export const partDefinitions = {
             'panels',
             'panel',
         ],
-        sources: ['CommandDialog/CommandStepperContent.tsx'],
+        sources: [
+            'CommandDialog/CommandStepperContent.tsx',
+            'CommandDialog/CommandStepperList.tsx',
+            'CommandDialog/CommandStepperStepParts.tsx',
+            'CommandDialog/CommandStepperPanels.tsx',
+        ],
         ptFiles: ['CommandDialog/CommandStepper.tsx'],
         ptKeys: [
             'root',
@@ -429,6 +438,8 @@ export const partDefinitions = {
         ],
         sources: [
             'DataTables/DataTableCore.tsx',
+            'DataTables/DataTableTable.tsx',
+            'DataTables/DataTableHead.tsx',
             'DataTables/DataTableSearch.tsx',
             'DataTables/DataTableHeaderCell.tsx',
             'DataTables/DataTableBody.tsx',
