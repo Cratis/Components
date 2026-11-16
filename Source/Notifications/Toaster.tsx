@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
-    useEffect,
     useState,
     useSyncExternalStore,
     type ButtonHTMLAttributes,
@@ -10,14 +9,15 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
-import { useCratisIcon } from '../configuration/useCratisIcon';
 import {
     getToastSnapshot,
     subscribeToToasts,
-    toast,
     type ToastRecord,
     type ToastSeverity,
 } from './toast';
+import { ToastCloseButton } from './ToastCloseButton';
+import { ToastContent } from './ToastContent';
+import { useToastAutoDismiss } from './useToastAutoDismiss';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { classNames } from '../ClassNames/classNames';
@@ -94,61 +94,10 @@ interface ToastFrameProps {
 
 const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) => {
     const [paused, setPaused] = useState(false);
-    const icon = useCratisIcon();
 
-    useEffect(() => {
-        if (paused || item.loading || item.duration === 0) return;
-        const duration = item.duration ?? timeout;
-        const timer = window.setTimeout(
-            () => {
-                item.onTimeout?.(item);
-                toast.dismiss(item.id);
-            },
-            Math.max(duration, 5000),
-        );
-        return () => window.clearTimeout(timer);
-    }, [item, paused, timeout]);
+    useToastAutoDismiss(item, paused, timeout);
 
     const severity = item.severity ?? 'normal';
-    const content = item.render ?? (
-        <>
-            {item.title && (
-                <div
-                    {...pt?.title}
-                    className={classNames('cratis-toast__title', pt?.title?.className)}
-                    data-cratis-part='title'
-                >
-                    {item.title}
-                </div>
-            )}
-            {item.description && (
-                <div
-                    {...pt?.description}
-                    className={classNames(
-                        'cratis-toast__description',
-                        pt?.description?.className,
-                    )}
-                    data-cratis-part='description'
-                >
-                    {item.description}
-                </div>
-            )}
-            {item.action && (
-                <button
-                    {...item.action}
-                    {...pt?.action}
-                    type='button'
-                    className={classNames(
-                        'cratis-toast__action',
-                        item.action.className,
-                        pt?.action?.className,
-                    )}
-                    data-cratis-part='action'
-                />
-            )}
-        </>
-    );
-
     return (
         <article
             {...pt?.toast}
@@ -182,20 +131,9 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
                 data-loading={item.loading || undefined}
                 data-busy={item.loading || undefined}
             >
-                {content}
+                <ToastContent item={item} pt={pt} />
             </div>
-            {item.dismissible !== false && (
-                <button
-                    {...pt?.close}
-                    type='button'
-                    className={classNames('cratis-toast__close', pt?.close?.className)}
-                    data-cratis-part='close'
-                    aria-label={pt?.close?.['aria-label'] ?? dismissAriaLabel}
-                    onClick={() => toast.dismiss(item.id)}
-                >
-                    <span aria-hidden='true'>{icon('close', '×')}</span>
-                </button>
-            )}
+            <ToastCloseButton item={item} dismissAriaLabel={dismissAriaLabel} pt={pt} />
         </article>
     );
 };
