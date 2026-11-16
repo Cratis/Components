@@ -1,15 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useId, useMemo } from 'react';
-import { Button } from '../Common/Button';
+import React, { useId } from 'react';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { CommandFormFieldWrapper } from '@cratis/arc.react/commands';
-import { isCommandFormField } from '../CommandForm/commandFormMarkers';
-import type { StepperPanelProps } from './StepperPanel';
-import { getStepPanels } from './stepChildren';
-import { transitionStep } from './transitionStep';
 import type { StepperCustomizationProps } from './CommandStepper';
+import { CommandStepperList } from './CommandStepperList';
+import { CommandStepperPanels } from './CommandStepperPanels';
+import { CommandStepperNavigation } from './CommandStepperNavigation';
+import { resolveStepperLabels } from './resolveStepperLabels';
+import { useStepperState } from './useStepperState';
+import { joinClassNames } from './joinClassNames';
 
 /**
  * Controlled state and validation props for {@link CommandStepperContent}.
@@ -57,61 +57,6 @@ export interface CommandStepperContentProps extends StepperCustomizationProps {
     onSubmit?: () => void | Promise<void>;
 }
 
-/** Extracts the property name from an accessor function like `c => c.name`. */
-const getPropertyName = (accessor: ((obj: unknown) => unknown) | unknown): string => {
-    if (typeof accessor !== 'function') return '';
-    const fnStr = accessor.toString();
-    const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
-    return match ? match[1] : '';
-};
-
-/** Recursively collects all CommandFormField property names from a React node tree. */
-const extractFieldNamesFromNode = (nodes: React.ReactNode): string[] => {
-    const names: string[] = [];
-    React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const component = child.type as React.ComponentType<unknown>;
-        if (isCommandFormField(component)) {
-            const fieldProps = child.props as { value?: (obj: unknown) => unknown };
-            const name = getPropertyName(fieldProps.value);
-            if (name) names.push(name);
-        }
-
-        const childProps = child.props as Record<string, unknown>;
-        if (childProps.children != null) {
-            names.push(
-                ...extractFieldNamesFromNode(childProps.children as React.ReactNode),
-            );
-        }
-    });
-    return names;
-};
-
-const processChildren = (nodes: React.ReactNode): React.ReactNode => {
-    return React.Children.map(nodes, (child) => {
-        if (!React.isValidElement(child)) return child;
-
-        const component = child.type as React.ComponentType<unknown>;
-        if (isCommandFormField(component)) {
-            type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
-            // SAFETY: displayName identifies the Arc command field shape before it reaches the wrapper.
-            return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
-        }
-
-        const childProps = child.props as Record<string, unknown>;
-        if (childProps.children != null) {
-            return React.cloneElement(
-                child as React.ReactElement<Record<string, unknown>>,
-                {
-                    children: processChildren(childProps.children as React.ReactNode),
-                },
-            );
-        }
-
-        return child;
-    });
-};
-
 /**
  * @internal Renders the visual stepper body — step headers, panels, and the
  * built-in Previous / Next / Submit navigation — without any Arc
@@ -148,212 +93,58 @@ export const CommandStepperContent = ({
 }: CommandStepperContentProps) => {
     const { messages } = useCratisComponentsConfig();
     const stepperId = useId();
-    const resolvedNextLabel = nextLabel ?? messages?.stepper?.next ?? 'Next';
-    const resolvedPreviousLabel =
-        previousLabel ?? messages?.stepper?.previous ?? 'Previous';
-    const resolvedOkLabel = okLabel ?? messages?.stepper?.submit ?? 'Submit';
+    const labels = resolveStepperLabels(messages, { nextLabel, previousLabel, okLabel });
 
-    // The steps that actually render. Conditional steps (`{condition && <StepperPanel/>}`)
-    // leave falsy children behind, so the count, the per-step validation state and what the
-    // Stepper renders are all derived from this one list — they cannot drift apart.
-    const panels = useMemo(
-        () => getStepPanels(children) as React.ReactElement<StepperPanelProps>[],
-        [children],
-    );
-    const stepCount = panels.length;
-
-    // A conditional step can vanish after the user has advanced past it, which leaves the
-    // incoming index pointing at a step that is no longer rendered. Clamp it into the set that
-    // is, so the panel shown, the validation state read and the buttons offered all belong to a
-    // step that exists.
-    const currentStep = Math.min(Math.max(activeStep, 0), Math.max(stepCount - 1, 0));
-    const isLastStep = currentStep >= stepCount - 1;
-    const isFirstStep = currentStep <= 0;
-
-    const stepFieldNames = useMemo(
-        () => panels.map((panel) => extractFieldNamesFromNode(panel.props.children)),
-        [panels],
-    );
-
-    const stepErrors = useMemo(
-        () =>
-            stepFieldNames.map((fields) =>
-                fields.some((fieldName) => !!getFieldError?.(fieldName)),
-            ),
-        [stepFieldNames, getFieldError],
-    );
-
-    useEffect(() => {
-        onStepErrorsChange?.(stepErrors);
-    }, [onStepErrorsChange, stepErrors]);
-
-    const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
-    const hasAnyStepErrors = stepErrors.some((hasError) => hasError);
-
-    const changeStep = (index: number, fromHeader = false) => transitionStep({
-        index,
+    const {
+        panels,
         currentStep,
-        stepCount,
+        isFirstStep,
+        isLastStep,
+        stepErrors,
         isCurrentStepInvalid,
-        linear,
-        fromHeader,
+        hasAnyStepErrors,
+        changeStep,
+    } = useStepperState({
+        children,
+        activeStep,
         visitedSteps,
+        linear,
+        getFieldError,
+        onStepErrorsChange,
         onActiveStepChange,
         onVisitedStepsChange,
         onChangeStep,
     });
-
     const isStepperBusy = isBusy || isSubmitting;
 
+    const view = {
+        panels,
+        currentStep,
+        visitedSteps,
+        stepErrors,
+        stepperId,
+        isBusy: isStepperBusy,
+        hasAnyStepErrors,
+        pt,
+    };
     const stepperList = (
-        <ol
-            {...pt?.list}
-            className={['cratis-command-stepper__list', pt?.list?.className]
-                .filter(Boolean)
-                .join(' ')}
-            data-cratis-part='list'
-            data-part='list'
-            data-busy={isStepperBusy || undefined}
-            data-invalid={hasAnyStepErrors || undefined}
-        >
-            {panels.map((panel, index) => {
-                const selected = index === currentStep;
-                const visited = visitedSteps.has(index);
-                const invalid = stepErrors[index] ?? false;
-                const headerDisabled = linear && !selected;
-
-                return (
-                    <li
-                        key={index}
-                        {...pt?.step}
-                        className={['cratis-command-stepper__step', pt?.step?.className]
-                            .filter(Boolean)
-                            .join(' ')}
-                        data-cratis-part='step'
-                        data-part='step'
-                        data-active={selected || undefined}
-                        data-selected={selected || undefined}
-                        data-visited={visited || undefined}
-                        data-invalid={invalid || undefined}
-                        data-busy={isStepperBusy || undefined}
-                    >
-                        <button
-                            {...pt?.header}
-                            type='button'
-                            id={pt?.header?.id ?? `${stepperId}-step-${index}`}
-                            className={[
-                                'cratis-command-stepper__header',
-                                pt?.header?.className,
-                            ]
-                                .filter(Boolean)
-                                .join(' ')}
-                            data-cratis-part='header'
-                            data-part='header'
-                            data-busy={isStepperBusy || undefined}
-                            data-disabled={headerDisabled || undefined}
-                            data-invalid={invalid || undefined}
-                            data-selected={selected || undefined}
-                            data-visited={visited || undefined}
-                            disabled={headerDisabled}
-                            aria-current={selected ? 'step' : undefined}
-                            onClick={() => changeStep(index, true)}
-                        >
-                            <span
-                                {...pt?.number}
-                                className={[
-                                    'cratis-command-stepper__number',
-                                    pt?.number?.className,
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ')}
-                                style={pt?.number?.style}
-                                data-cratis-part='number'
-                                data-part='number'
-                                data-busy={isStepperBusy || undefined}
-                                data-invalid={invalid || undefined}
-                                data-selected={selected || undefined}
-                                data-visited={visited || undefined}
-                            >
-                                {index + 1}
-                            </span>
-                            <span
-                                {...pt?.title}
-                                className={[
-                                    'cratis-command-stepper__title',
-                                    pt?.title?.className,
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ')}
-                                data-cratis-part='title'
-                                data-part='title'
-                                data-busy={isStepperBusy || undefined}
-                                data-invalid={invalid || undefined}
-                                data-selected={selected || undefined}
-                                data-visited={visited || undefined}
-                            >
-                                {panel.props.header}
-                            </span>
-                        </button>
-                        {index < stepCount - 1 && (
-                            <span
-                                {...pt?.separator}
-                                className={[
-                                    'cratis-command-stepper__separator',
-                                    pt?.separator?.className,
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ')}
-                                data-cratis-part='separator'
-                                data-part='separator'
-                                data-busy={isStepperBusy || undefined}
-                                data-invalid={invalid || undefined}
-                                data-visited={visited || undefined}
-                                aria-hidden='true'
-                            />
-                        )}
-                    </li>
-                );
-            })}
-        </ol>
+        <CommandStepperList
+            {...view}
+            linear={linear}
+            onHeaderClick={(index) => changeStep(index, true)}
+        />
     );
-
     const stepperPanels = (
-        <div
-            {...pt?.panels}
-            className={['cratis-command-stepper__panels', pt?.panels?.className]
-                .filter(Boolean)
-                .join(' ')}
-            data-cratis-part='panels'
-            data-part='panels'
-            data-busy={isStepperBusy || undefined}
-            data-invalid={hasAnyStepErrors || undefined}
-        >
-            {panels.map((panel, index) => (
-                <section
-                    key={index}
-                    {...pt?.panel}
-                    hidden={index !== currentStep}
-                    className={['cratis-command-stepper__panel', pt?.panel?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='panel'
-                    data-part='panel'
-                    data-busy={isStepperBusy || undefined}
-                    data-invalid={stepErrors[index] || undefined}
-                    data-selected={index === currentStep || undefined}
-                    data-visited={visitedSteps.has(index) || undefined}
-                    aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
-                    aria-labelledby={pt?.panel?.['aria-labelledby'] ?? (pt?.header?.id == null ? `${stepperId}-step-${index}` : undefined)}
-                >
-                    {disableFieldsWhileSubmitting ? (
-                        <fieldset disabled={isSubmitting} inert={isSubmitting} style={{ display: 'contents' }}>
-                            {processChildren(panel.props.children)}
-                        </fieldset>
-                    ) : processChildren(panel.props.children)}
-                </section>
-            ))}
-        </div>
+        <CommandStepperPanels
+            {...view}
+            disableFieldsWhileSubmitting={disableFieldsWhileSubmitting}
+            isSubmitting={isSubmitting}
+        />
     );
+
+    const [first, second] = headerPosition === 'bottom'
+        ? [stepperPanels, stepperList]
+        : [stepperList, stepperPanels];
 
     return (
         <div
@@ -363,9 +154,7 @@ export const CommandStepperContent = ({
             {start}
             <div
                 {...pt?.root}
-                className={['cratis-command-stepper__root', pt?.root?.className]
-                    .filter(Boolean)
-                    .join(' ')}
+                className={joinClassNames('cratis-command-stepper__root', pt?.root?.className)}
                 data-cratis-part='root'
                 data-cratis-component='CommandStepper'
                 data-part='root'
@@ -374,71 +163,28 @@ export const CommandStepperContent = ({
                 data-busy={isStepperBusy || undefined}
                 data-invalid={hasAnyStepErrors || undefined}
             >
-                {headerPosition === 'bottom' ? (
-                    <>
-                        {stepperPanels}
-                        {stepperList}
-                    </>
-                ) : (
-                    <>
-                        {stepperList}
-                        {stepperPanels}
-                    </>
-                )}
+                {first}
+                {second}
             </div>
             {end}
 
             {showNavigation && (
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '100%',
-                        gap: '0.75rem',
-                    }}
-                >
-                    {!isFirstStep && (
-                        <Button
-                            variant='outline'
-                            onClick={() => changeStep(currentStep - 1)}
-                            disabled={isBusy}
-                            style={{ width: 'auto' }}
-                        >
-                            <span>{resolvedPreviousLabel}</span>
-                        </Button>
-                    )}
-                    <div style={{ flex: 1 }} />
-                    {!isLastStep && (
-                        <Button
-                            onClick={() => changeStep(currentStep + 1)}
-                            disabled={isBusy || isSubmitting || isCurrentStepInvalid}
-                            style={{ width: 'auto' }}
-                        >
-                            <span>{resolvedNextLabel}</span>
-                        </Button>
-                    )}
-                    {isLastStep && showSubmit && (
-                        <Button
-                            onClick={() => void onSubmit?.()}
-                            disabled={
-                                isBusy ||
-                                isSubmitting ||
-                                isSubmitDisabled ||
-                                hasAnyStepErrors
-                            }
-                            autoFocus
-                            style={{ width: 'auto' }}
-                        >
-                            {isSubmitting && (
-                                <span
-                                    className='cratis-dialog__spinner'
-                                    aria-hidden='true'
-                                />
-                            )}
-                            <span>{resolvedOkLabel}</span>
-                        </Button>
-                    )}
-                </div>
+                <CommandStepperNavigation
+                    isFirstStep={isFirstStep}
+                    isLastStep={isLastStep}
+                    showSubmit={showSubmit}
+                    isBusy={isBusy}
+                    isSubmitting={isSubmitting}
+                    isSubmitDisabled={isSubmitDisabled}
+                    isCurrentStepInvalid={isCurrentStepInvalid}
+                    hasAnyStepErrors={hasAnyStepErrors}
+                    previousLabel={labels.previous}
+                    nextLabel={labels.next}
+                    okLabel={labels.ok}
+                    onPrevious={() => changeStep(currentStep - 1)}
+                    onNext={() => changeStep(currentStep + 1)}
+                    onSubmit={onSubmit}
+                />
             )}
         </div>
     );

@@ -390,7 +390,12 @@ export const partDefinitions = {
             'panels',
             'panel',
         ],
-        sources: ['CommandDialog/CommandStepperContent.tsx'],
+        sources: [
+            'CommandDialog/CommandStepperContent.tsx',
+            'CommandDialog/CommandStepperList.tsx',
+            'CommandDialog/CommandStepperStepParts.tsx',
+            'CommandDialog/CommandStepperPanels.tsx',
+        ],
         ptFiles: ['CommandDialog/CommandStepper.tsx'],
         ptKeys: [
             'root',
