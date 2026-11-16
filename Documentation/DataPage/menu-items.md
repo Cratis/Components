@@ -1,6 +1,6 @@
 ---
 title: DataPage menu items for row actions
-description: Add DataPage toolbar actions that receive the current selection and use selection predicates to control availability.
+description: "Add DataPage toolbar actions that receive the current selection and use selection predicates to control when each action is available to the user."
 ---
 
 ## MenuItems Component
