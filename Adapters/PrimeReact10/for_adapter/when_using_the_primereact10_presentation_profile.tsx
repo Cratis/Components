@@ -324,3 +324,24 @@ describe('when rendering a button that is busy without loading', () => {
         expect(html).to.contain('title="Root title"');
     });
 });
+
+describe('when the root part and props both specify aria-busy', () => {
+    it('should use the root part value when no explicit aria-busy is given', () => {
+        const html = renderSlot('common.button', { label: 'Ok', pt: { root: { 'aria-busy': true } } });
+        expect(html).to.contain('aria-busy="true"');
+    });
+
+    it('should let an explicit false override the root part', () => {
+        const html = renderSlot('common.button', {
+            label: 'Ok',
+            'aria-busy': false,
+            pt: { root: { 'aria-busy': true } },
+        });
+        expect(html).to.contain('aria-busy="false"');
+    });
+
+    it('should let loading override an explicit false', () => {
+        const html = renderSlot('common.button', { label: 'Ok', loading: true, 'aria-busy': false });
+        expect(html).to.contain('aria-busy="true"');
+    });
+});
