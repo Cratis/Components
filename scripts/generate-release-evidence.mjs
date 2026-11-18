@@ -33,6 +33,7 @@ const generatedBuildDirectories = [
     'Adapters/Mui/dist',
     'Adapters/PrimeReact/dist',
     'Adapters/PrimeReact10/dist',
+    'Adapters/Designsystemet/dist',
 ];
 
 const parseArguments = (arguments_) => {

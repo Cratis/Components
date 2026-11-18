@@ -16,6 +16,7 @@ const allVerifiers = Object.freeze([
     'Adapters/Mui/scripts/verify-packed-package.mjs',
     'Adapters/PrimeReact/scripts/verify-packed-package.mjs',
     'Adapters/PrimeReact10/scripts/verify-packed-package.mjs',
+    'Adapters/Designsystemet/scripts/verify-packed-package.mjs',
 ]);
 
 // Accepts at most one `--typescript 6|7` pair and at most one bare `--skip-public-types`, in any order.

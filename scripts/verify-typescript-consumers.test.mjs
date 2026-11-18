@@ -13,6 +13,7 @@ const allVerifiers = [
     'Adapters/Mui/scripts/verify-packed-package.mjs',
     'Adapters/PrimeReact/scripts/verify-packed-package.mjs',
     'Adapters/PrimeReact10/scripts/verify-packed-package.mjs',
+    'Adapters/Designsystemet/scripts/verify-packed-package.mjs',
 ];
 const withoutPublicTypes = allVerifiers.slice(1);
 

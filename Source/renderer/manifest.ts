@@ -4,6 +4,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { unstable_CapabilityId } from './capabilities';
 import type { unstable_AdapterDiagnostic } from './errors';
+import { stableAtomicSlotsOf } from './presentation';
 import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
@@ -92,12 +93,38 @@ export interface unstable_UiLibrary {
     readonly preflight?: () => readonly unstable_AdapterDiagnostic[];
 }
 
+/**
+ * Sets an own enumerable data property. Unlike assignment, an own `__proto__` key cannot change
+ * the target's prototype.
+ *
+ * @internal Slot-map construction helper; not part of the public package surface.
+ */
+export const defineOwnSlot = (target: Record<string, unknown>, slotId: string, value: unknown) => {
+    Object.defineProperty(target, slotId, {
+        value,
+        enumerable: true,
+        writable: true,
+        configurable: true,
+    });
+};
+
 const frozenSlots = (slots: unstable_SlotMap): unstable_SlotMap => {
     const copy: Record<string, object> = {};
     for (const [slotId, declaration] of Object.entries(slots)) {
-        if (declaration) copy[slotId] = Object.freeze({ ...declaration });
+        if (declaration) defineOwnSlot(copy, slotId, Object.freeze({ ...declaration }));
     }
     return Object.freeze(copy) as unstable_SlotMap;
+};
+
+const mergedSlots = (libraries: readonly unstable_UiLibrary[]): unstable_SlotMap => {
+    const slots: Record<string, unknown> = {};
+    for (const library of libraries) {
+        const librarySlots = { ...library.slots, ...stableAtomicSlotsOf(library) };
+        for (const [slotId, declaration] of Object.entries(librarySlots)) {
+            defineOwnSlot(slots, slotId, declaration);
+        }
+    }
+    return slots as unstable_SlotMap;
 };
 
 /**
@@ -142,7 +169,7 @@ export const unstable_composeUiLibraries = (
     const capabilities = [
         ...new Set(libraries.flatMap((library) => library.capabilities)),
     ];
-    const slots = Object.assign({}, ...libraries.map((library) => library.slots));
+    const slots = mergedSlots(libraries);
 
     return unstable_defineUiLibrary({
         ...last,
