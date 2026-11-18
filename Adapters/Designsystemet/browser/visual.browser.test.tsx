@@ -4,6 +4,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { colorSchemes, mountGallery, sizeModes, unmountGallery } from './gallery';
 
+// Injected by Storybook/vitest.designsystemet.config.ts through Vite's `define`.
+declare const __CRATIS_LINUX_BASELINES__: boolean;
+
 afterEach(unmountGallery);
 
 // Baselines are committed for Linux Chromium only (`*-chromium-linux.png`), rendered in the pinned
