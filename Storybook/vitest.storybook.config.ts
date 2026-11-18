@@ -26,6 +26,10 @@ const rendererDependenciesById: Readonly<Record<string, readonly string[]>> = {
     ],
     'cratis-designsystemet': [
         '@digdir/designsystemet-react',
+        '@mui/material/styles',
+        'react-aria-components/Breadcrumbs',
+        'react-aria-components/TagGroup',
+        'react-aria-components/ToggleButtonGroup',
     ],
     'cratis-primereact': [
         '@primereact/core/config',
