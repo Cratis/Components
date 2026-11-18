@@ -96,7 +96,7 @@ if (
     compatibilityManifest.schemaVersion !== 2 ||
     compatibilityManifest.releaseStatus !== 'publication-authorized' ||
     compatibilityManifest.publicationEnabled !== true ||
-    compatibilityManifest.gaScope?.publicPackages?.length !== 7 ||
+    compatibilityManifest.gaScope?.publicPackages?.length !== 8 ||
     coreEntry?.version !== packedPackage.version ||
     !semver.satisfies(packedPackage.version, coreEntry?.releaseMajorRange ?? '')
 ) {

@@ -26,7 +26,7 @@ sidebar:
 
 ## Decision
 
-Each published adapter (`@cratis/components.primereact`, `@cratis/components.primereact10`, `@cratis/components.mui`) and `@cratis/components.conformance` declares a peer on exactly the `@cratis/components` version it is released with. Applications install and upgrade an adapter and `@cratis/components` together, at the same version. The source manifests keep `>=4 <5` as the bound the renderer ABI major allows. This replaces the peer range sentence in the semver policy of [ADR 0004](0004-stable-presentation-renderer-profile.md); the rest of that record is unchanged.
+Each published adapter (`@cratis/components.primereact`, `@cratis/components.primereact10`, `@cratis/components.mui`, `@cratis/components.designsystemet`) and `@cratis/components.conformance` declares a peer on exactly the `@cratis/components` version it is released with. Applications install and upgrade an adapter and `@cratis/components` together, at the same version. The source manifests keep `>=4 <5` as the bound the renderer ABI major allows. This replaces the peer range sentence in the semver policy of [ADR 0004](0004-stable-presentation-renderer-profile.md); the rest of that record is unchanged.
 
 ## Options considered
 

@@ -27,10 +27,11 @@ behavior contracts:
 | `@cratis/components.mui`          | `@mui/material >=9 <10`, `@emotion/react >=11.5 <12`, `@emotion/styled >=11.11 <12`                 | Nine stable presentation slots |
 | `@cratis/components.primereact`   | `primereact`, `@primereact/core`, `@primereact/ui` `>=11 <12`; `@primeuix/themes >=3 <4`            | Nine stable presentation slots |
 | `@cratis/components.primereact10` | `primereact >=10.9.9 <11`                                                                           | Nine stable presentation slots |
+| `@cratis/components.designsystemet` | `@digdir/designsystemet-react >=1.24 <2`, `@digdir/designsystemet-css >=1.24 <2`                  | Nine stable presentation slots |
 
 Every adapter also has React and ReactDOM 19 as peers. Each published adapter release declares a peer on exactly its own version of `@cratis/components` (for example, `@cratis/components.mui@4.14.0` requires `@cratis/components@4.14.0`), so install and upgrade the adapter and `@cratis/components` together at the same version. PrimeReact is a peer of the two PrimeReact adapters only; `@cratis/components` itself depends on no PrimeReact package.
 
-All three adapters declare `CratisPresentationUiLibrary` manifests for renderer ABI version 1, the versioned contract between Components and an adapter. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. For example, selecting MUI can change a button inside DataPage without turning its table into a MUI grid. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile; selecting it never replaces the full Components catalog.
+All four adapters declare `CratisPresentationUiLibrary` manifests for renderer ABI version 1, the versioned contract between Components and an adapter. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. For example, selecting MUI can change a button inside DataPage without turning its table into a MUI grid. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile; selecting it never replaces the full Components catalog.
 
 ```mermaid
 graph TD
@@ -69,6 +70,7 @@ setup for the adapter you select:
 | `@cratis/components.mui`          | `muiUiLibrary`          | Optional outer MUI `ThemeProvider`; the adapter reuses it, or MUI's default theme, as a CSS-variable theme. For server rendering, a request-local Emotion `CacheProvider` outside the Components provider.            |
 | `@cratis/components.primereact`   | `primeReactUiLibrary`   | Required outer `PrimeReactProvider` from `@primereact/core/config` with the application's license key and theme, plus `rendererSetup` with `'cratis-primereact.license-configured'` set to `true` only when the key was supplied; see the [licensing policy](licensing.md#primereact-11-key-ownership). |
 | `@cratis/components.primereact10` | `primeReact10UiLibrary` | One PrimeReact 10 theme stylesheet (for example `primereact/resources/themes/lara-light-cyan/theme.css`). An outer `PrimeReactProvider` from `primereact/api` is optional; the adapter mounts a default one when none exists. |
+| `@cratis/components.designsystemet` | `designsystemetUiLibrary` | Import the Designsystemet stylesheet and a Designsystemet theme before the Cratis stylesheets; no provider is required. See the [Designsystemet adapter](designsystemet.md). |
 
 Mount Cratis Arc's `<Arc>` provider from `@cratis/arc.react` to supply application-specific
 configuration and an application-scoped query cache for generated command and query hooks.
@@ -117,7 +119,9 @@ simultaneously, the application must:
 
 The nine-slot adapters do not include dialog, dropdown, date-picker, tooltip, or paginator atomic
 slots. Those controls use the built-in implementation by default. Replacing their interactions
-requires an adapter that explicitly implements the corresponding atomic slot contract.
+requires an adapter that explicitly implements the corresponding atomic slot contract. A stable
+presentation adapter can implement the paginator through its optional `atomicSlots` map; see
+[stable atomic slots](primitive-adaptation.md#stable-atomic-slots).
 
 ## Focus ownership
 

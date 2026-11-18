@@ -4,10 +4,12 @@
 import type { unstable_AdapterDiagnostic } from './errors';
 import { unstable_adapterErrorCodes } from './errors';
 import {
+    defineOwnSlot,
     unstable_composeUiLibraries,
     unstable_CRATIS_UI_ABI_VERSION,
     type unstable_UiLibrary,
 } from './manifest';
+import { stableAtomicSlotProblemsOf, stableAtomicSlotsOf } from './presentation';
 import type {
     unstable_SlotDeclaration,
     unstable_SlotId,
@@ -71,14 +73,17 @@ export const unstable_resolveLibraryInput = (
     });
 };
 
-/** Creates one immutable slot lookup snapshot for a manifest and optional scope filter. */
+/**
+ * Creates one immutable slot lookup snapshot for a manifest and optional scope filter. A stable
+ * presentation library's optional atomic slots join its nine presentation slots here.
+ */
 export const unstable_createRendererLayer = (
     library: unstable_UiLibrary,
     only?: readonly unstable_SlotId[],
 ): unstable_RendererLayer =>
     Object.freeze({
         library,
-        slots: Object.freeze({ ...library.slots }),
+        slots: Object.freeze({ ...library.slots, ...stableAtomicSlotsOf(library) }),
         only: only ? new Set(only) : undefined,
     });
 
@@ -94,6 +99,39 @@ const missingRequirement = (
     message,
     remedy,
 });
+
+const profileSlotDiagnostic = (
+    library: unstable_UiLibrary,
+    profileSlot: string,
+): unstable_AdapterDiagnostic | undefined => {
+    if (!unstable_isKnownSlot(profileSlot)) {
+        return missingRequirement(
+            library,
+            `Profile '${library.profile}' promises unknown slot '${String(profileSlot)}'.`,
+            'Remove the unknown slot or install a Core version that declares it.',
+        );
+    }
+
+    const declaration = library.slots[profileSlot];
+    if (declaration && declaration.fidelity !== 'unsupported') return undefined;
+    return missingRequirement(
+        library,
+        `Profile '${library.profile}' does not support promised slot '${profileSlot}'.`,
+        `Provide a supported '${profileSlot}' declaration or remove it from profileSlots.`,
+        profileSlot,
+    );
+};
+
+/** Reports stable atomic slots that resolution skipped, so they fail closed but visibly. */
+const atomicSlotDiagnostics = (library: unstable_UiLibrary) =>
+    stableAtomicSlotProblemsOf(library).map(({ slotId, message }) =>
+        missingRequirement(
+            library,
+            `Invalid stable atomic slot declaration: ${message}.`,
+            'Correct or remove the atomic slot declaration; the built-in implementation is used instead.',
+            unstable_isKnownSlot(slotId) ? slotId : undefined,
+        ),
+    );
 
 /** Runs ABI, profile, capability, and adapter preflight validation. */
 export const unstable_validateUiLibrary = (
@@ -122,29 +160,10 @@ export const unstable_validateUiLibrary = (
     }
 
     for (const profileSlot of profileSlots) {
-        if (!unstable_isKnownSlot(profileSlot)) {
-            diagnostics.push(
-                missingRequirement(
-                    library,
-                    `Profile '${library.profile}' promises unknown slot '${String(profileSlot)}'.`,
-                    'Remove the unknown slot or install a Core version that declares it.',
-                ),
-            );
-            continue;
-        }
-
-        const declaration = library.slots[profileSlot];
-        if (!declaration || declaration.fidelity === 'unsupported') {
-            diagnostics.push(
-                missingRequirement(
-                    library,
-                    `Profile '${library.profile}' does not support promised slot '${profileSlot}'.`,
-                    `Provide a supported '${profileSlot}' declaration or remove it from profileSlots.`,
-                    profileSlot,
-                ),
-            );
-        }
+        const diagnostic = profileSlotDiagnostic(library, profileSlot);
+        if (diagnostic) diagnostics.push(diagnostic);
     }
+    diagnostics.push(...atomicSlotDiagnostics(library));
 
     if (library.preflight) {
         try {
@@ -170,6 +189,15 @@ export const unstable_sameLibraryReferences = (
     left.length === right.length &&
     left.every((library, index) => library === right[index]);
 
+const isResolvable = (
+    layer: unstable_RendererLayer,
+    slotId: string,
+    declaration: { readonly fidelity: string } | undefined,
+): declaration is { readonly fidelity: string } => {
+    if (!declaration || declaration.fidelity === 'unsupported') return false;
+    return !layer.only || layer.only.has(slotId as unstable_SlotId);
+};
+
 /** Flattens outer-to-inner layers into one frozen, last-wins lookup table. */
 export const unstable_createResolvedSlotTable = (
     layers: readonly unstable_RendererLayer[],
@@ -177,13 +205,8 @@ export const unstable_createResolvedSlotTable = (
     const resolved: Record<string, object> = {};
     for (const layer of layers) {
         for (const [slotId, declaration] of Object.entries(layer.slots)) {
-            if (
-                !declaration ||
-                declaration.fidelity === 'unsupported' ||
-                (layer.only && !layer.only.has(slotId as unstable_SlotId))
-            )
-                continue;
-            resolved[slotId] = declaration;
+            if (isResolvable(layer, slotId, declaration))
+                defineOwnSlot(resolved, slotId, declaration);
         }
     }
     return Object.freeze(resolved) as unstable_SlotMap;

@@ -8,6 +8,10 @@ import {
     CRATIS_PRESENTATION_PROFILE,
     cratisPresentationSlotIds,
     definePresentationUiLibrary,
+    type CratisAtomicSlotDeclaration,
+    type CratisAtomicSlotId,
+    type CratisAtomicSlotMap,
+    type CratisAtomicSlots,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,
     type CratisPresentationSlotMap,
@@ -134,6 +138,37 @@ const wrongSetup: CratisRendererSetup = {
     'sample.stable-setup': 'secret',
 };
 
+declare const Paginator: ComponentType<CratisAtomicSlots['datatables.paginator']>;
+
+const atomicSlots: CratisAtomicSlotMap = {
+    'datatables.paginator': { mode: 'atomic', fidelity: 'native', render: Paginator },
+};
+const libraryWithAtomicSlots: CratisPresentationUiLibrary = definePresentationUiLibrary({
+    ...library,
+    atomicSlots,
+});
+const noAtomicSlots: CratisAtomicSlotMap = {};
+
+// @ts-expect-error Only listed atomic slots are stable.
+const unstableAtomicSlot: CratisAtomicSlotId = 'dialogs.dialog';
+
+const presentationModeAtomic: CratisAtomicSlotDeclaration<'datatables.paginator'> = {
+    // @ts-expect-error Stable atomic slots always give the adapter interaction ownership.
+    mode: 'presentation',
+    fidelity: 'native',
+    render: Paginator,
+};
+const wrongAtomicProps: CratisAtomicSlotDeclaration<'datatables.paginator'> = {
+    mode: 'atomic',
+    fidelity: 'native',
+    // @ts-expect-error Stable atomic slots preserve the exact public component prop contract.
+    render: Tooltip,
+};
+const unknownAtomicSlot = {
+    // @ts-expect-error Atomic slots outside the stable list cannot enter the map.
+    'dialogs.dialog': { mode: 'atomic', fidelity: 'native', render: Paginator },
+} satisfies CratisAtomicSlotMap;
+
 void atomicMode;
 void atomicSlot;
 void compatibilitySetup;
@@ -144,3 +179,9 @@ void providerProps;
 void unsupportedFidelity;
 void wrongProps;
 void wrongSetup;
+void libraryWithAtomicSlots;
+void noAtomicSlots;
+void unstableAtomicSlot;
+void presentationModeAtomic;
+void wrongAtomicProps;
+void unknownAtomicSlot;

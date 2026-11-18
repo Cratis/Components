@@ -26,7 +26,7 @@ test('release preparation bumps all public workspaces and regenerates every bund
     const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'cratis-release-preparation-'));
     const workspaceDirectories = [
         'Source', 'ESLint', 'Migrator', 'Conformance', 'Adapters/Mui',
-        'Adapters/PrimeReact', 'Adapters/PrimeReact10', 'Storybook',
+        'Adapters/PrimeReact', 'Adapters/PrimeReact10', 'Adapters/Designsystemet', 'Storybook',
     ];
     try {
         copyFileSync(path.join(repositoryDirectory, 'package.json'), path.join(temporaryRoot, 'package.json'));
@@ -44,7 +44,7 @@ test('release preparation bumps all public workspaces and regenerates every bund
             assert.equal(readFileSync(path.join(temporaryRoot, relativePath), 'utf8'), expected);
         }
         const manifest = JSON.parse(expected);
-        assert.equal(manifest.packages.length, 7);
+        assert.equal(manifest.packages.length, 8);
         for (const entry of manifest.packages) {
             assert.equal(entry.version, '4.99.0');
         }

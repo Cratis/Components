@@ -27,6 +27,7 @@ for (const workspace of [
     '@cratis/components.mui',
     '@cratis/components.primereact',
     '@cratis/components.primereact10',
+    '@cratis/components.designsystemet',
 ]) yarn(`Build ${workspace}`, 'workspace', workspace, 'build');
 yarn('Build Storybook indexes', 'workspace', '@cratis/components.storybook', 'build');
 node('Renderer slot inventory', 'Source/scripts/verify-renderer-contracts.mjs');

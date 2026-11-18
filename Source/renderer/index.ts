@@ -91,6 +91,11 @@ export {
     type CratisPresentationSlotMap,
     type CratisPresentationSlots,
     type CratisPresentationUiLibrary,
+    cratisAtomicSlotIds,
+    type CratisAtomicSlotDeclaration,
+    type CratisAtomicSlotId,
+    type CratisAtomicSlotMap,
+    type CratisAtomicSlots,
 } from './presentation';
 export {
     unstable_useCapability,
