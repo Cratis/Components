@@ -445,7 +445,7 @@ jobs:
 
     # Real-browser accessibility, keyboard, forced-colors, reduced-motion and visual evidence for
     # the Designsystemet adapter (Cratis/Components#534). It runs in the Playwright image whose tag
-    # matches the locked Playwright version, so the committed Linux screenshot baselines
+    # matches the locked Playwright version and is pinned by digest, so the committed Linux screenshot baselines
     # (Adapters/Designsystemet/browser/__screenshots__/*-chromium-linux.png) are rendered by the same
     # Chromium and fonts that produced them. Regenerate baselines with
     # `Adapters/Designsystemet/scripts/update-baselines.sh`; never commit other platforms' files.
@@ -456,7 +456,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         container:
-            image: mcr.microsoft.com/playwright:v1.63.0-noble
+            image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
             options: --ipc=host
 
         steps:

@@ -14,7 +14,16 @@ const adapterRoot = path.resolve(storybookRoot, '../Adapters/Designsystemet');
 // Adapters/Designsystemet/scripts/update-baselines.sh); CI runs Chromium in that image directly.
 const remoteChromium = process.env.CRATIS_PLAYWRIGHT_WS;
 
+// Linux baselines may only be compared or written by the controlled Linux Chromium: the pinned
+// Playwright image driven remotely, or CI running inside that image. Anywhere else the names would
+// say `linux` for pixels another OS rendered.
+const controlledLinuxChromium = Boolean(remoteChromium) || (process.env.CI === 'true' && process.platform === 'linux');
+if (!controlledLinuxChromium && process.argv.some((argument) => argument === '--update' || argument === '-u')) {
+    throw new Error('Refusing to update visual baselines outside the pinned Linux Chromium. Run Adapters/Designsystemet/scripts/update-baselines.sh --update.');
+}
+
 export default defineConfig({
+    define: { __CRATIS_LINUX_BASELINES__: JSON.stringify(controlledLinuxChromium) },
     root: adapterRoot,
     plugins: [react()],
     optimizeDeps: {

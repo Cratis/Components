@@ -11,11 +11,16 @@
 set -euo pipefail
 
 version="$(node -p "require('playwright/package.json').version")"
-image="mcr.microsoft.com/playwright:v${version}-noble"
+# Pinned by digest; keep in step with the container image in .github/workflows/javascript-build.yml.
+image="mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27"
+if [ "$version" != "1.63.0" ]; then
+    echo "Locked Playwright is $version but the pinned image is 1.63.0; update the image digest here and in the workflow." >&2
+    exit 1
+fi
 port="${CRATIS_PLAYWRIGHT_PORT:-3917}"
 name="cratis-ds-playwright-$$"
 
-docker run --rm -d --name "$name" --ipc=host -p "${port}:${port}" "$image" \
+docker run --rm -d --name "$name" --ipc=host -p "127.0.0.1:${port}:${port}" "$image" \
     npx -y "playwright@${version}" run-server --port "$port" --host 0.0.0.0 >/dev/null
 trap 'docker rm -f "$name" >/dev/null 2>&1 || true' EXIT
 
