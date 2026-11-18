@@ -24,6 +24,9 @@ const rendererDependenciesById: Readonly<Record<string, readonly string[]>> = {
         '@mui/material/Tooltip',
         '@mui/material/styles',
     ],
+    'cratis-designsystemet': [
+        '@digdir/designsystemet-react',
+    ],
     'cratis-primereact': [
         '@primereact/core/config',
         '@primereact/core/locale',

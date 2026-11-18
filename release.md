@@ -6,7 +6,7 @@ with exactly one `patch`, `minor`, or `major` label triggers `.github/workflows/
 
 ## Published packages
 
-One release publishes these seven public packages at the same version:
+One release publishes these eight public packages at the same version:
 
 1. `@cratis/components`
 2. `@cratis/eslint-plugin-components`
@@ -15,6 +15,7 @@ One release publishes these seven public packages at the same version:
 5. `@cratis/components.mui`
 6. `@cratis/components.primereact`
 7. `@cratis/components.primereact10`
+8. `@cratis/components.designsystemet`
 
 The Plain DOM conformance fixture and composed Storybook are private verification surfaces and are
 never published. Renderer ABI/profile versions are protocol identifiers, not independent package
@@ -29,7 +30,7 @@ whether publication is required. The npm job:
 1. checks out the exact merged commit;
 2. installs the committed lockfile with `yarn install --immutable`;
 3. builds all public workspaces;
-4. updates all seven public workspace versions and local workspace dependencies to the release version;
+4. updates all eight public workspace versions and local workspace dependencies to the release version;
 5. regenerates all three compatibility manifest copies from those bumped versions and verifies they
    match before publishing anything;
 6. publishes each package publicly with npm provenance;
@@ -115,9 +116,9 @@ dispatched commit: `git tag v3.x.y <commit> && git push origin v3.x.y`. If a pub
 ## Release evidence and verification
 
 `.github/workflows/javascript-build.yml` generates retained archives, SHA-256/SHA-512 manifests,
-and archive-bound CycloneDX 1.6 SBOMs for all seven packages. The evidence job is read-only and does
+and archive-bound CycloneDX 1.6 SBOMs for all eight packages. The evidence job is read-only and does
 not publish.
 
-After publication, verify all seven registry versions, public visibility, dist-tags, provenance,
+After publication, verify all eight registry versions, public visibility, dist-tags, provenance,
 package exports, and exact-version installation. Create or verify the Git tag and GitHub release only
 for the version that was actually published.

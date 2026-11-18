@@ -4,6 +4,8 @@
   href: primitive-adaptation.md
 - name: Build a custom vendor-native composition
   href: custom-composition.md
+- name: Designsystemet adapter
+  href: designsystemet.md
 - name: Unsupported renderer claims
   href: unsupported.md
 - name: Renderer licensing policy

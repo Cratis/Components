@@ -25,6 +25,7 @@ const packagePolicies = new Map([
     ['@cratis/components.mui', { role: 'renderer-adapter', range: '>=4 <5' }],
     ['@cratis/components.primereact', { role: 'renderer-adapter', range: '>=4 <5' }],
     ['@cratis/components.primereact10', { role: 'renderer-adapter', range: '>=4 <5' }],
+    ['@cratis/components.designsystemet', { role: 'renderer-adapter', range: '>=4 <5' }],
 ]);
 const packageOrder = [...packagePolicies.keys()];
 const privateEvidence = [
@@ -45,6 +46,7 @@ const adapterKeysByPackage = new Map([
     ['@cratis/components.mui', 'mui'],
     ['@cratis/components.primereact', 'primereact11'],
     ['@cratis/components.primereact10', 'primereact10'],
+    ['@cratis/components.designsystemet', 'designsystemet'],
 ]);
 
 export function createCompatibilityManifest(rootDirectory = repositoryDirectory) {
@@ -131,6 +133,7 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
                     '@cratis/components.mui': '>=4 <5',
                     '@cratis/components.primereact': '>=4 <5',
                     '@cratis/components.primereact10': '>=4 <5',
+                    '@cratis/components.designsystemet': '>=4 <5',
                 },
             },
         },
@@ -158,7 +161,7 @@ export function validateCompatibilityManifest(
     const scopedPackages = manifest.gaScope?.publicPackages ?? [];
     if (JSON.stringify(scopedPackages) !== JSON.stringify(packageOrder)) {
         fail(
-            'gaScope.publicPackages must list the exact seven public packages in release order.',
+            'gaScope.publicPackages must list the exact eight public packages in release order.',
         );
     }
     if ((manifest.packages ?? []).length !== packageOrder.length) {
@@ -411,7 +414,7 @@ export function writeCompatibilityManifest(rootDirectory = repositoryDirectory) 
         fs.writeFileSync(path.join(rootDirectory, relativePath), serialized);
     }
     console.log(
-        `Wrote ${outputPaths.join(', ')} from the seven public workspace manifests.`,
+        `Wrote ${outputPaths.join(', ')} from the eight public workspace manifests.`,
     );
 }
 
