@@ -1,12 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { cloneElement, useState, type FocusEvent } from 'react';
+import { cloneElement, useState, type FocusEvent, type ReactElement } from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import type { TooltipProps } from '@cratis/components/Common';
 import { unstable_useOverlayEnvironment } from '@cratis/components/renderer';
 
-interface FocusHandlers {
+interface TriggerProps {
+    readonly className?: string;
+    readonly 'data-cratis-part'?: string;
+    readonly 'data-cratis-tooltip-trigger'?: string;
     readonly onFocus?: (event: FocusEvent<HTMLElement>) => void;
     readonly onBlur?: (event: FocusEvent<HTMLElement>) => void;
 }
@@ -31,14 +34,14 @@ export const MuiTooltipSlot = ({
 }: TooltipProps) => {
     const overlay = unstable_useOverlayEnvironment();
     const [open, setOpen] = useState(false);
-    const triggerProps = children.props as FocusHandlers;
+    const triggerProps = children.props as TriggerProps;
     if (isEmpty(content) || disabled) return children;
 
-    const trigger = cloneElement(children, {
-        className: ['cratis-tooltip-trigger', children.props.className, className]
+    const trigger = cloneElement(children as ReactElement<TriggerProps>, {
+        className: ['cratis-tooltip-trigger', triggerProps.className, className]
             .filter(Boolean)
             .join(' '),
-        'data-cratis-part': children.props['data-cratis-part'] ?? 'trigger',
+        'data-cratis-part': triggerProps['data-cratis-part'] ?? 'trigger',
         'data-cratis-tooltip-trigger': '',
         // Keyboard focus opens the tooltip as well, whether or not the browser reports focus-visible.
         onFocus: (event: FocusEvent<HTMLElement>) => {
