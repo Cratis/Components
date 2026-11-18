@@ -256,6 +256,21 @@ const withMuiTooltip = (
     );
 };
 
+/**
+ * Root attributes where an explicit value must beat the part: a loading button is always busy,
+ * otherwise an explicit `aria-busy` (a busy but focusable button) wins over `pt.root`, and the
+ * title falls back to `pt.root`.
+ */
+const rootState = (
+    loading: boolean,
+    props: { 'aria-busy'?: ButtonProps['aria-busy']; title?: string },
+    root: NonNullable<ButtonProps['pt']>['root'],
+    fallbackTitle?: string,
+) => ({
+    'aria-busy': loading ? true : (props['aria-busy'] ?? root?.['aria-busy']),
+    title: props.title ?? fallbackTitle ?? root?.title,
+});
+
 const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiButtonSlot(
     {
         label,
@@ -303,7 +318,6 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             {...nativeProps}
             ref={ref}
             type={type}
-            title={title}
             autoFocus={autoFocus}
             disabled={effectiveDisabled}
             onClick={onClick}
@@ -315,7 +329,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             loading={loading}
             loadingIndicator={muiLoadingIndicator(pt)}
             sx={muiButtonStyles(appearance)}
-            aria-busy={loading || undefined}
+            {...rootState(loading, { 'aria-busy': nativeProps['aria-busy'], title }, pt?.root)}
             data-cratis-part='root'
             data-variant={appearance.variant}
             data-tone={appearance.tone}

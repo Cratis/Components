@@ -196,7 +196,8 @@
         "./styles": "./dist/esm/styles.css",
         "./styles/base": "./dist/esm/styles.base.css",
         "./tokens": "./dist/esm/tokens.css",
-        "./theme": "./dist/esm/theme.css"
+        "./theme": "./dist/esm/theme.css",
+        "./themes/designsystemet": "./dist/esm/themes/designsystemet.css"
     },
     "cratis": {
         "kind": "ui-adapter",

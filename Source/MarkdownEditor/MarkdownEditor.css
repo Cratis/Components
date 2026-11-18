@@ -71,7 +71,8 @@
 
 .cratis-markdown-editor__format:focus-visible,
 .cratis-markdown-editor__toggle:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
