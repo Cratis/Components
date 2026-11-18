@@ -1,10 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { cloneElement, useState, type FocusEvent, type ReactElement } from 'react';
+import { cloneElement, useRef, useState, type FocusEvent, type ReactElement } from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import type { TooltipProps } from '@cratis/components/Common';
-import { unstable_useOverlayEnvironment, unstable_useOverlayZIndex } from '@cratis/components/renderer';
+import { unstable_useOverlayEnvironment, unstable_useTooltipZIndex } from '@cratis/components/renderer';
 
 interface TriggerProps {
     readonly className?: string;
@@ -33,13 +33,17 @@ export const MuiTooltipSlot = ({
     children,
 }: TooltipProps) => {
     const overlay = unstable_useOverlayEnvironment();
-    const zIndex = unstable_useOverlayZIndex();
+    const zIndex = unstable_useTooltipZIndex();
     const [open, setOpen] = useState(false);
+    const host = useRef<HTMLElement | null>(null);
     const triggerProps = children.props as TriggerProps;
     if (isEmpty(content) || disabled) return children;
 
-    // The container is read only while open; with no host the popup is deferred, never retargeted.
-    const container = open ? overlay.getContainer() : null;
+    // The host is read while open and remembered for the popup's whole lifetime, including its exit
+    // transition, so the popup is only ever portaled into the configured host. With no host the popup
+    // is deferred, never retargeted to the body.
+    const available = open ? overlay.getContainer() : null;
+    if (available !== null) host.current = available;
 
     const trigger = cloneElement(children as ReactElement<TriggerProps>, {
         className: ['cratis-tooltip-trigger', triggerProps.className, className]
@@ -64,11 +68,11 @@ export const MuiTooltipSlot = ({
             placement={position}
             describeChild
             disableInteractive
-            open={open && container !== null}
+            open={available !== null}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             slotProps={{
-                popper: { container, style: { zIndex } },
+                popper: { container: host.current, style: { zIndex } },
                 tooltip: { 'data-cratis-part': 'popup', 'data-open': '' } as Record<string, unknown>,
             }}
         >

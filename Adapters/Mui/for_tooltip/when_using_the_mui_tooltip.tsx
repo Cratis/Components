@@ -16,17 +16,20 @@ const mount = async (element: ReactElement, getContainer?: () => HTMLElement | n
     document.body.append(host);
     const root = createRoot(host);
     mounted = { root, host };
-    await act(async () =>
-        root.render(
-            getContainer ? (
-                <CratisComponentsProvider overlayEnvironment={{ getContainer }}>
-                    {element}
-                </CratisComponentsProvider>
-            ) : (
-                element
+    const render = async () =>
+        act(async () =>
+            root.render(
+                getContainer ? (
+                    <CratisComponentsProvider overlayEnvironment={{ getContainer }}>
+                        {element}
+                    </CratisComponentsProvider>
+                ) : (
+                    element
+                ),
             ),
-        ),
-    );
+        );
+    await render();
+    return render;
 };
 
 const focusTrigger = async (selector = '[data-cratis-tooltip-trigger]') => {
@@ -64,7 +67,7 @@ describe('when the MUI tooltip opens on a labelled trigger', () => {
         const trigger = await focusTrigger();
         expect(trigger.getAttribute('aria-label')).to.equal('Save');
         expect(trigger.hasAttribute('aria-labelledby')).to.equal(false);
-                expect(trigger.getAttribute('aria-describedby')).to.equal(popper()?.id);
+        expect(trigger.getAttribute('aria-describedby')).to.equal(popper()?.id);
     });
 
     it('should not label the trigger from rich content either', async () => {
@@ -137,5 +140,52 @@ describe('when the overlay container is null', () => {
         );
         await focusTrigger();
         expect(popup()).to.equal(null);
+    });
+});
+
+describe('when the MUI tooltip closes inside a custom overlay host', () => {
+    let overlayHost: HTMLElement | null;
+    let createdHost: HTMLElement;
+    const labelled = (
+        <MuiTooltipSlot content='Hosted'>
+            <button type='button'>Hosted</button>
+        </MuiTooltipSlot>
+    );
+
+    const openInHost = async () => {
+        createdHost = document.createElement('div');
+        overlayHost = createdHost;
+        document.body.append(createdHost);
+        const rerender = await mount(labelled, () => overlayHost);
+        const trigger = await focusTrigger();
+        expect(createdHost.contains(popper())).to.equal(true);
+        return { rerender, trigger };
+    };
+
+    const expectNotRetargeted = () => {
+        const exiting = popper();
+        expect(exiting === null || createdHost.contains(exiting)).to.equal(true);
+    };
+
+    it('should keep the exiting popup in the host when Escape closes it', async () => {
+        await openInHost();
+        await act(async () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        });
+        expectNotRetargeted();
+    });
+
+    it('should keep the exiting popup in the host when blur closes it', async () => {
+        const { trigger } = await openInHost();
+        await act(async () => trigger.blur());
+        expectNotRetargeted();
+    });
+
+    it('should not move the popup to the body when the host becomes unavailable while open', async () => {
+        const { rerender } = await openInHost();
+        overlayHost = null;
+        await rerender();
+        expectNotRetargeted();
+        expect(document.body.querySelector(':scope > [role="tooltip"]')).to.equal(null);
     });
 });

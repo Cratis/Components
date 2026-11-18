@@ -102,7 +102,7 @@ export {
     unstable_useOverlayEnvironment,
     unstable_useRendererId,
 } from './RendererContext';
-export { unstable_useOverlayZIndex } from './useOverlayZIndex';
+export { unstable_useTooltipZIndex } from './useTooltipZIndex';
 export {
     unstable_RendererScope,
     type unstable_RendererScopeProps,

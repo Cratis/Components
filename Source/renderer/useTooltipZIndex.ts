@@ -12,7 +12,7 @@ const TOOLTIP_ZINDEX_TOKEN = 'var(--cratis-z-index-tooltip)';
  * stays above its owning dialog, including nested dialogs. Outside a dialog it is the static
  * `--cratis-z-index-tooltip` token. Both forms stay relative to the application's token overrides.
  */
-const useOverlayZIndex = (): string => {
+const useTooltipZIndex = (): string => {
     const nearestDialogZIndex = useNearestDialogZIndex();
     return nearestDialogZIndex === null
         ? TOOLTIP_ZINDEX_TOKEN
@@ -20,4 +20,4 @@ const useOverlayZIndex = (): string => {
 };
 
 /** @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it. */
-export const unstable_useOverlayZIndex = useOverlayZIndex;
+export const unstable_useTooltipZIndex: () => string = useTooltipZIndex;
