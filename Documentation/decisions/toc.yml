@@ -12,3 +12,5 @@
   href: 0005-generic-primitive-admission.md
 - name: Published adapters pin their Components release
   href: 0006-exact-adapter-peer-pin.md
+- name: Stable atomic slots
+  href: 0007-stable-atomic-slots.md

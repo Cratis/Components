@@ -4,6 +4,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { unstable_CapabilityId } from './capabilities';
 import type { unstable_AdapterDiagnostic } from './errors';
+import { stableAtomicSlotsOf } from './presentation';
 import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
@@ -142,7 +143,13 @@ export const unstable_composeUiLibraries = (
     const capabilities = [
         ...new Set(libraries.flatMap((library) => library.capabilities)),
     ];
-    const slots = Object.assign({}, ...libraries.map((library) => library.slots));
+    const slots = Object.assign(
+        {},
+        ...libraries.map((library) => ({
+            ...library.slots,
+            ...stableAtomicSlotsOf(library),
+        })),
+    );
 
     return unstable_defineUiLibrary({
         ...last,

@@ -117,7 +117,9 @@ simultaneously, the application must:
 
 The nine-slot adapters do not include dialog, dropdown, date-picker, tooltip, or paginator atomic
 slots. Those controls use the built-in implementation by default. Replacing their interactions
-requires an adapter that explicitly implements the corresponding atomic slot contract.
+requires an adapter that explicitly implements the corresponding atomic slot contract. A stable
+presentation adapter can implement the paginator through its optional `atomicSlots` map; see
+[stable atomic slots](primitive-adaptation.md#stable-atomic-slots).
 
 ## Focus ownership
 

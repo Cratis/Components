@@ -26,7 +26,8 @@ never means that an adapter replaces the full Components catalog.
 | `common.surface`    | `SurfaceProps`      | Non-interactive semantic container       |
 
 This profile does not include tooltip, dropdown, dialog, date picker, or table paginator. Those are
-atomic interaction slots with a separate behavior boundary. It also does not include a composite
+atomic interaction slots with a separate behavior boundary; a stable adapter can implement the
+ones listed under [stable atomic slots](#stable-atomic-slots). It also does not include a composite
 such as DataPage or CommandDialog.
 
 ## Stable adapter API
@@ -150,6 +151,48 @@ interaction must produce one semantic value change and have one keyboard/focus o
 
 All three concrete adapters currently declare only the nine presentation slots. Their conformance
 reports cover those declared controls, not the five atomic slots or any composite workflow.
+
+## Stable atomic slots
+
+A stable presentation library can also take over selected atomic slots through its optional
+`atomicSlots` map. `cratisAtomicSlotIds` lists the atomic slots whose contracts are stable;
+`CratisAtomicSlots` maps each id to its exact public props type. Each entry is optional and uses
+`atomic` mode, `native` or `emulated` fidelity, and a component. `definePresentationUiLibrary()`
+rejects any other id, mode, or fidelity. The `profile`, `profileSlots`, and nine `slots` stay as
+they are.
+
+```tsx
+import { definePresentationUiLibrary } from '@cratis/components/renderer';
+import { DesignPaginator } from './DesignPaginator';
+import { designLibraryBase } from './designLibraryBase';
+
+export const designLibrary = definePresentationUiLibrary({
+    ...designLibraryBase,
+    atomicSlots: {
+        'datatables.paginator': { mode: 'atomic', fidelity: 'native', render: DesignPaginator },
+    },
+});
+```
+
+An atomic implementation owns the whole interaction for its control: keyboard, focus, and
+callbacks. An omitted atomic slot, or a library without `atomicSlots`, keeps the built-in
+Components implementation. List each implemented atomic slot in the package `cratis.slots`
+metadata with mode `atomic` in `cratis.modes`; `@cratis/components.conformance` runs the slot's
+profile for it.
+
+### `datatables.paginator`
+
+| Contract | Value |
+| --- | --- |
+| Props | `TablePaginatorProps` |
+| Ref | None; the paginator does not forward a ref |
+| Parts | `TablePaginatorParts`: `root`, `range`, `info`, `pages`, `page`, `ellipsis`, `first`, `previous`, `next`, `last` |
+| Paging | `page` is zero-based; `onPageChange` receives the zero-based target page |
+| Fallback | The built-in `TablePaginator` implementation |
+| Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
+
+A design system whose pagination model is one-based converts at the adapter boundary. The
+dialog, dropdown, date picker, and tooltip atomic slots are not stable yet.
 
 ## Fallback
 
