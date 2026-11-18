@@ -99,7 +99,7 @@
     justify-self: start;
     margin: 0;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: var(--cratis-type-weight-bold);
     outline: none;
 }
 .cratis-dialog__subtitle {
@@ -164,7 +164,7 @@
     border: 1px solid var(--cratis-action-background);
     border-radius: var(--cratis-border-radius);
     font: inherit;
-    font-weight: 600;
+    font-weight: var(--cratis-type-weight-semibold);
     cursor: pointer;
 }
 .cratis-dialog__button--primary {
@@ -192,7 +192,8 @@
 .cratis-dialog__title:focus-visible,
 .cratis-dialog__close:focus-visible,
 .cratis-dialog__button:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-dialog__button:disabled {
