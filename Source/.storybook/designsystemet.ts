@@ -13,16 +13,19 @@ import designsystemetCss from '@digdir/designsystemet-css?inline';
 import designsystemetTheme from '@digdir/designsystemet-css/theme.css?inline';
 import bridgeCss from '../themes/designsystemet.css?inline';
 
-export const DESIGNSYSTEMET_MODES = {
+type DesignsystemetScheme = 'light' | 'dark';
+
+export const DESIGNSYSTEMET_MODES: Record<string, { title: string; scheme: DesignsystemetScheme }> = {
     'designsystemet-light': { title: 'Designsystemet — light', scheme: 'light' },
     'designsystemet-dark': { title: 'Designsystemet — dark', scheme: 'dark' },
 };
 
-export const DESIGNSYSTEMET_SIZES = ['sm', 'md', 'lg'];
+export const DESIGNSYSTEMET_SIZES: string[] = ['sm', 'md', 'lg'];
 
-export const DEFAULT_DESIGNSYSTEMET_SIZE = 'md';
+export const DEFAULT_DESIGNSYSTEMET_SIZE: string = 'md';
 
-export const isDesignsystemetMode = (appearance) => appearance in DESIGNSYSTEMET_MODES;
+export const isDesignsystemetMode = (appearance: string | null | undefined): boolean =>
+    appearance != null && appearance in DESIGNSYSTEMET_MODES;
 
 const STYLE_ID = 'cratis-designsystemet-preview';
 const PREVIEW_ATTRIBUTE = 'data-designsystemet-preview';
@@ -57,7 +60,7 @@ const ensureStyles = () => {
 };
 
 /** Removes everything {@link applyDesignsystemetMode} added. */
-export const removeDesignsystemetMode = (root) => {
+export const removeDesignsystemetMode = (root: HTMLElement): void => {
     document.getElementById(STYLE_ID)?.remove();
     root.removeAttribute(PREVIEW_ATTRIBUTE);
     root.removeAttribute('data-color-scheme');
@@ -70,11 +73,11 @@ export const removeDesignsystemetMode = (root) => {
  * data attributes, so no Cratis dark/light class is involved for these modes.
  */
 export const applyDesignsystemetMode = (
-    root,
-    appearance,
-    size = DEFAULT_DESIGNSYSTEMET_SIZE,
-) => {
-    const mode = DESIGNSYSTEMET_MODES[appearance];
+    root: HTMLElement,
+    appearance: string | null | undefined,
+    size: string = DEFAULT_DESIGNSYSTEMET_SIZE,
+): void => {
+    const mode = appearance == null ? undefined : DESIGNSYSTEMET_MODES[appearance];
     if (!mode) {
         removeDesignsystemetMode(root);
         return;
