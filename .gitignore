@@ -241,6 +241,7 @@ typings/
 *.d.ts
 !*.scss.d.ts
 !Adapters/**/src/upstream-*-shim.d.ts
+!Adapters/Designsystemet/browser/gallery-styles.d.ts
 !Source/schemas/ui-adapter.schema.d.ts
 !Storybook/**/*.d.ts
 
@@ -319,3 +320,10 @@ storybook-static
 !/.pi/agents/
 /.pi/agents/*
 !/.pi/agents/.generated.json
+
+# Designsystemet browser visual baselines are committed for Linux Chromium only (Cratis/Components#534)
+Adapters/Designsystemet/browser/__screenshots__/**/*-darwin.png
+Adapters/Designsystemet/browser/__screenshots__/**/*-win32.png
+# Vitest failure screenshots for the non-visual Designsystemet browser checks
+Adapters/Designsystemet/browser/__screenshots__/*/*-1.png
+Adapters/Designsystemet/.vitest-attachments/

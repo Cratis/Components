@@ -169,7 +169,7 @@ test('Git exit, spawn, signal, timeout, overflow and partial-output failures nev
 
 for (const mode of ['true', 'false']) {
     test(`aggregate accepts only the complete intentional ${mode} truth-table row`, () => {
-        assert.match(aggregate(needsFixture(mode)), /^Verified 10 jobs:/);
+        assert.match(aggregate(needsFixture(mode)), /^Verified 11 jobs:/);
     });
     for (const job of expensiveJobs) {
         test(`aggregate ${mode} rejects every inconsistent or missing result for ${job}`, () => {
@@ -291,8 +291,8 @@ test('workflow has unfiltered ordinary PRs and preserves the original push filte
 `);
 });
 
-test('every one of the 10 expensive job groups is guarded and directly required by Build', () => {
-    assert.equal(expensiveJobs.length, 10);
+test('every one of the 11 expensive job groups is guarded and directly required by Build', () => {
+    assert.equal(expensiveJobs.length, 11);
     assert.deepEqual(Object.keys(jobs).sort(), ['changes', 'build', ...expensiveJobs].sort());
     for (const job of expensiveJobs) {
         assert.match(jobs[job], /^        needs: \[changes\]$/m);

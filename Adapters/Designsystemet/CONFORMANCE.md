@@ -25,5 +25,75 @@ checkbox, radio and switch `box`, `indicator`, `control` and `handle` parts are 
 hooks because Designsystemet paints those controls on the native input. Undocumented descendant
 order and sibling selectors are not portable contracts.
 
-This is automated jsdom and package evidence, not universal browser, visual, RTL, forced-colors,
-reduced-motion, or assistive-technology certification.
+## Browser evidence
+
+A separate CI job, `designsystemet-browser`, runs real Chromium against the nine-slot gallery
+(`browser/SlotGallery.tsx`) rendered through the adapter with the real Designsystemet stylesheet
+and theme:
+
+- axe with the WCAG 2.2 AA profile (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) in the
+  light and dark schemes at `sm`, `md` and `lg` sizes, with zero violations;
+- visual baselines for the same six combinations, committed for Linux Chromium only and rendered in
+  the pinned Playwright image (regenerate with `scripts/update-baselines.sh --update`);
+- keyboard: tab order across enabled controls, disabled controls skipped, focus ring of at least
+  2px, Enter and Space on buttons, Space on checkbox and switch, arrow keys on the radio group;
+- forced colors: enabled controls stay distinguishable and a focused button keeps an opaque ring; and
+- reduced motion: the spinner rotation slows down.
+
+The same job also runs the existing Source stories for the CommandForm (`AutoCommandForm`), the
+CommandDialog and stepper dialog, and the DataPage (single page and paged) through the adapter, with
+the token bridge (`@cratis/components/themes/designsystemet`) applied:
+
+- axe (WCAG 2.2 AA) per surface in light and dark at `sm`, `md` and `lg`, with the open findings
+  below asserted exactly so a fix or regression turns the test red;
+- keyboard: the dialog moves focus in on open, tabs in order (the disabled Save is skipped), keeps
+  focus trapped forwards and backwards, shows a focus ring of at least 2px, and closes on Escape or
+  Close with focus returning to the opener; the stepper dialog keeps focus trapped; the DataPage tab
+  order runs toolbar, search, column sort buttons, rows, paginator; the paginator is a labelled
+  navigation whose first and previous buttons are disabled on page one and which pages with Enter and
+  Space;
+- forced colors: the dialog keeps a visible edge and its buttons an opaque ring; DataPage controls
+  stay distinguishable; and
+- visual baselines (Linux) for the open CommandDialog and the paged DataPage in light and dark. The
+  CommandForm story renders today's date, so it has no baseline.
+
+## Manual
+
+Screen-reader behaviour (VoiceOver and NVDA) is a human pass tracked in
+[ACCESSIBILITY-MANUAL-PASS.md](./ACCESSIBILITY-MANUAL-PASS.md). It has not been performed.
+
+## Known upstream Designsystemet behaviour
+
+These are observed in the browser checks. They are not adapter defects and are not hidden by the
+tests.
+
+- **Spinner stroke under reduced motion:** Designsystemet slows `ds-spinner-rotate-animation` but
+  leaves `ds-spinner-stroke-animation` at its normal 2s. The test asserts the rotation only.
+- **Focus ring on `.ds-field`:** for checkbox, radio and switch, the ring is drawn on the wrapping
+  `.ds-field` through `:has(input:focus-visible)`, not on the input. The test measures the ring owner.
+- **`forced-color-adjust: none` buttons:** Designsystemet buttons paint their own colors in forced
+  colors mode. The test accepts a visible border or an opaque fill, and exempts the text-only
+  tertiary variants (Ghost and Link).
+
+## Open findings from the surface checks
+
+These are in Cratis components or the token bridge rather than the Designsystemet adapter. The tests
+assert them exactly; fix the source, then delete the expectation.
+
+- **Dark validation error contrast:** the stepper dialog's validation message is a hard-coded
+  `#cc0000`, 2.51:1 on the dark surface (needs 4.5:1).
+- **Dark secondary dialog button contrast:** its text bridges to 4.4:1 on the dark dialog surface at
+  `sm` and `md` (needs 4.5:1).
+- **Column sort buttons in forced colors:** the DataPage header sort buttons (ID, Name, Email, Role)
+  have no border, outline or fill, so they are indistinguishable flat text in forced colors.
+- **Paginator focus:** paging to the last page disables the activated Next button, so keyboard focus
+  falls to the page body. The paginator has no page-number buttons, so there is no
+  `aria-current="page"`; the current page is the "1 / 2" text and the range.
+- **Dialog initial focus:** focus moves to the dialog container (`tabindex="-1"`), not the first field.
+  This is accepted by the dialog pattern; it is recorded for the screen-reader pass.
+
+## Not covered
+
+This is automated jsdom, package and Chromium evidence. It is not universal browser, other-engine,
+RTL or assistive-technology certification, and it covers only the stories named above, not every CommandForm field type or DataPage
+configuration.
