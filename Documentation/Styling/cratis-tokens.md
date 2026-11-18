@@ -51,7 +51,7 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 | `--cratis-{info,success,warning,danger}-foreground` | Optional text color of outline, ghost, and link status buttons; unset, they use the matching `-background` token. |
 | `--cratis-maskbg`                               | Modal backdrop.                                                     |
 | `--cratis-border-radius`                        | Default component radius.                                           |
-| `--cratis-radius-sm` / `-lg` / `-xl` / `-full`  | Radius scale (`4px`, `8px`, `12px`, `999px`); not yet read by every component stylesheet. |
+| `--cratis-corner-sm` / `-lg` / `-xl` / `-full`  | Radius scale (`4px`, `8px`, `12px`, `999px`); not yet read by every component stylesheet. |
 | `--cratis-font-size-xs` / `-sm` / `-md`         | Type scale (`0.75rem`, `0.875rem`, `1rem`); not yet read by every component stylesheet. |
 | `--cratis-font-weight-medium` / `-semibold` / `-bold` | Font weights (`500`, `600`, `700`); not yet read by every component stylesheet. |
 | `--cratis-control-height` / `-small` / `-large` | Interactive control size floor.                                     |

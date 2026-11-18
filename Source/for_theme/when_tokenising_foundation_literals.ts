@@ -30,10 +30,10 @@ const NEW_TOKENS: Record<string, string> = {
     '--cratis-font-weight-medium': '500',
     '--cratis-font-weight-semibold': '600',
     '--cratis-font-weight-bold': '700',
-    '--cratis-radius-sm': '4px',
-    '--cratis-radius-lg': '8px',
-    '--cratis-radius-xl': '12px',
-    '--cratis-radius-full': '999px',
+    '--cratis-corner-sm': '4px',
+    '--cratis-corner-lg': '8px',
+    '--cratis-corner-xl': '12px',
+    '--cratis-corner-full': '999px',
 };
 
 const CONTROL_HEIGHTS: Record<string, string> = {

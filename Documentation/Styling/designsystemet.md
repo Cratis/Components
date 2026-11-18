@@ -30,7 +30,7 @@ Set `data-color-scheme="light"`, `"dark"` or `"auto"` and, optionally, `data-siz
 | Primary, action, and highlight colors                                          | `--ds-color-accent-*`                                                            |
 | Success, warning, and danger indicators, and the info/status background pairs  | `--ds-color-{info,success,warning,danger}-*`; status pairs use the tinted surface |
 | `--cratis-{info,success,warning,danger}-foreground`, `--cratis-focus-ring-inset` | `--ds-color-*-text-default` (status text on outline, ghost, and link buttons), and an inward two-tone ring from the outer and inner focus colors |
-| `--cratis-border-radius`, `--cratis-radius-*`                                  | `--ds-border-radius-*`                                                           |
+| `--cratis-border-radius`, `--cratis-corner-*`                                  | `--ds-border-radius-*`                                                           |
 | `--cratis-control-height`, `-small`, `-large`                                  | `--ds-size-12`, `--ds-size-10`, `--ds-size-14`, so they follow `data-size`       |
 | `--cratis-font-size-*`, `--cratis-font-weight-*`                               | `--ds-font-size-1`..`3`, `--ds-font-weight-*`                                    |
 | Shadows, disabled opacity                                                      | `--ds-shadow-*`, `--ds-opacity-disabled`                                         |

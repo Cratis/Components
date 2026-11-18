@@ -60,7 +60,7 @@
 }
 .cratis-button[data-shape='pill'],
 .cratis-button[data-icon-only='true'] {
-    border-radius: var(--cratis-radius-full);
+    border-radius: var(--cratis-corner-full);
 }
 .cratis-button[data-icon-only='true'] {
     width: var(--cratis-control-height);

@@ -102,7 +102,7 @@
     width: 2.5rem;
     height: 1.4rem;
     padding: 0.15rem;
-    border-radius: var(--cratis-radius-full);
+    border-radius: var(--cratis-corner-full);
     background: var(--cratis-surface-100);
     transition: background-color 140ms ease;
 }

@@ -172,7 +172,7 @@ The repository pins `pixi.js@8.22.0` for development and verification, while the
 
 [The Designsystemet bridge](Styling/designsystemet.md) maps the colour, radius, size, focus, shadow, and disabled tokens. Components draw focus with `--cratis-focus-ring` plus an optional outline from `--cratis-focus-outline` and `--cratis-focus-outline-offset`, which default to `none` and `0` so the default look does not change. The control heights follow Designsystemet's `data-size` (`sm`, `md`, `lg`). The Cratis `data-size` values on Button, Avatar, and Badge are a separate vocabulary.
 
-The type and radius scales are tokens (`--cratis-font-size-xs`, `-sm`, `-md`, `--cratis-font-weight-medium`, `-semibold`, `-bold`, `--cratis-radius-sm`, `-lg`, `-xl`, `-full`) whose defaults equal the values they replaced. Only stylesheets for the common controls, the dropdown, filters, the toolbar, notifications, the data table core, and the object navigational bar read them. These stay as fixed values and follow the product, not the bridge:
+The type and radius scales are tokens (`--cratis-font-size-xs`, `-sm`, `-md`, `--cratis-font-weight-medium`, `-semibold`, `-bold`, `--cratis-corner-sm`, `-lg`, `-xl`, `-full`) whose defaults equal the values they replaced. Only stylesheets for the common controls, the dropdown, filters, the toolbar, notifications, the data table core, and the object navigational bar read them. These stay as fixed values and follow the product, not the bridge:
 
 - Paddings, gaps, and line heights.
 - The number input step buttons and the icon picker tiles, which draw a primary-colour outline of their own instead of the shared focus ring.

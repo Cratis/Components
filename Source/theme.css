@@ -74,10 +74,10 @@
     --cratis-font-weight-medium: 500;
     --cratis-font-weight-semibold: 600;
     --cratis-font-weight-bold: 700;
-    --cratis-radius-sm: 4px;
-    --cratis-radius-lg: 8px;
-    --cratis-radius-xl: 12px;
-    --cratis-radius-full: 999px;
+    --cratis-corner-sm: 4px;
+    --cratis-corner-lg: 8px;
+    --cratis-corner-xl: 12px;
+    --cratis-corner-full: 999px;
     --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
     --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);
     --cratis-shadow-dialog: 0 1rem 3rem rgb(0 0 0 / 22%);

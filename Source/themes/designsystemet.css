@@ -71,10 +71,10 @@
     --cratis-danger-text: var(--ds-color-danger-text-default);
 
     --cratis-border-radius: var(--ds-border-radius-md);
-    --cratis-radius-sm: var(--ds-border-radius-sm);
-    --cratis-radius-lg: var(--ds-border-radius-lg);
-    --cratis-radius-xl: var(--ds-border-radius-xl);
-    --cratis-radius-full: var(--ds-border-radius-full);
+    --cratis-corner-sm: var(--ds-border-radius-sm);
+    --cratis-corner-lg: var(--ds-border-radius-lg);
+    --cratis-corner-xl: var(--ds-border-radius-xl);
+    --cratis-corner-full: var(--ds-border-radius-full);
 
     --cratis-control-height: var(--ds-size-12);
     --cratis-control-height-small: var(--ds-size-10);

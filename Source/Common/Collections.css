@@ -128,7 +128,7 @@
     gap: 0.25rem;
     padding: 0.1rem 0.5rem;
     border: 1px solid var(--cratis-surface-border);
-    border-radius: var(--cratis-radius-full);
+    border-radius: var(--cratis-corner-full);
     background: var(--cratis-surface-ground);
     font-size: 0.9em;
 }

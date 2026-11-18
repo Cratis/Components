@@ -249,7 +249,7 @@
     justify-content: center;
     min-width: 1.5rem;
     padding: 0.15rem 0.45rem;
-    border-radius: var(--cratis-radius-full);
+    border-radius: var(--cratis-corner-full);
     background: var(--cratis-highlight-bg);
     color: var(--cratis-text-color);
     font-size: 0.7rem;
