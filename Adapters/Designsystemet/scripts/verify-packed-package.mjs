@@ -215,7 +215,7 @@ try {
             path.join(nodeModules, '@cratis', dependency),
         );
     }
-    for (const dependency of ['reflect-metadata', 'tsyringe']) {
+    for (const dependency of ['reflect-metadata', 'tsyringe', '@internationalized/date', 'allotment', 'framer-motion', 'react-aria', 'react-aria-components', 'react-icons', 'ts-deepmerge']) {
         link(
             path.join(repositoryDirectory, 'node_modules', dependency),
             path.join(nodeModules, dependency),

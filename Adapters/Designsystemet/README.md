@@ -51,7 +51,7 @@ it lands, Cratis-owned components keep their built-in token values. Set `data-co
 
 | Slot | Designsystemet | Fidelity | Notes |
 | --- | --- | --- | --- |
-| `common.button` | `Button` (+ `Spinner`); tooltip text goes to the native `title` (no styled tooltip, no `tooltipOptions`) | native; `link` variant approximated as `tertiary` | `solid`→`primary`, `outline`→`secondary`, `ghost`/`link`→`tertiary`; tone→`data-color`; size `small`/`large`→`data-size` `sm`/`lg`, `normal` leaves the size unset |
+| `common.button` | `Button` (+ `Spinner`); tooltip rendered by Cratis' own `Tooltip` (hover + keyboard focus, `aria-describedby`, `tooltipOptions` honoured), not the upstream `data-tooltip` script | native; `link` variant approximated as `tertiary` | `solid`→`primary`, `outline`→`secondary`, `ghost`/`link`→`tertiary`; tone→`data-color`; size `small`/`large`→`data-size` `sm`/`lg`, `normal` leaves the size unset |
 | `common.iconButton` | `Button icon` | native | same mapping; defaults to the pill shape |
 | `common.textInput` | `Input` | native | the input is the `root` part |
 | `common.textArea` | `Textarea` | native | the textarea is the `root` part |

@@ -81,9 +81,9 @@ export const DesignsystemetSurfaceSlot = forwardRef<HTMLElement, SurfaceProps>(
     ) {
         return (
             <Element
-                ref={ref as Ref<never>}
                 {...pt?.root}
                 {...nativeProps}
+                ref={ref as Ref<never>}
                 className={classNames('ds-card', 'cratis-designsystemet-surface', pt?.root?.className, className)}
                 style={{ ...pt?.root?.style, ...style }}
                 data-cratis-part='root'

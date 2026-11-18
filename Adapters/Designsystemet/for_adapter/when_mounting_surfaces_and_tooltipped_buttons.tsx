@@ -82,8 +82,46 @@ describe('when mounting surfaces and tooltipped buttons', () => {
             const container = await mount(slotId, { ...props });
             const button = container.querySelector('button') as HTMLButtonElement;
             expect(button.getAttribute('aria-label')).to.equal('Delete selected row');
-            expect(button.getAttribute('title')).to.equal('More details');
+            expect(button.hasAttribute('title')).to.equal(false);
             expect(button.hasAttribute('data-tooltip')).to.equal(false);
         });
     }
+
+    it('should show the tooltip on focus, link it with aria-describedby and hide it on blur', async () => {
+        const container = await mount('common.button', { label: 'Delete', 'aria-label': 'Delete row', tooltip: 'More details' });
+        const button = container.querySelector('button') as HTMLButtonElement;
+        await act(async () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+            button.focus();
+        });
+        const tip = document.querySelector('[role="tooltip"]') as HTMLElement;
+        expect(tip?.textContent).to.equal('More details');
+        expect(button.getAttribute('aria-describedby')).to.equal(tip.id);
+        expect(button.getAttribute('aria-label')).to.equal('Delete row');
+        await act(async () => {
+            button.blur();
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        });
+        expect(document.querySelector('[role="tooltip"]')).to.equal(null);
+    });
+
+    it('should show the tooltip on hover and hide it on mouse leave', async () => {
+        const container = await mount('common.iconButton', { icon: '+', 'aria-label': 'Add', tooltip: 'Add item', tooltipOptions: { className: 'extra' } });
+        const button = container.querySelector('button') as HTMLButtonElement;
+        expect(button.className).to.contain('extra');
+        expect(button.hasAttribute('tooltipoptions')).to.equal(false);
+        await act(async () => {
+            document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', width: 1, height: 1 }));
+            button.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse', width: 1, height: 1 }));
+            button.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        });
+        expect(document.querySelector('[role="tooltip"]')?.textContent).to.equal('Add item');
+        await act(async () => {
+            button.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, pointerType: 'mouse' }));
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        });
+        expect(document.querySelector('[role="tooltip"]')).to.equal(null);
+        expect(button.getAttribute('aria-label')).to.equal('Add');
+    });
 });

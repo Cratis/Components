@@ -3,7 +3,7 @@
 
 import { forwardRef, type ReactNode, type SVGAttributes } from 'react';
 import { Button as DsButton, Spinner as DsSpinner } from '@digdir/designsystemet-react';
-import type { ButtonProps, IconButtonProps } from '@cratis/components/Common';
+import { Tooltip, type ButtonProps, type IconButtonProps } from '@cratis/components/Common';
 import {
     colorForCratisTone,
     designsystemetVariant,
@@ -81,6 +81,7 @@ const MappedButton = forwardRef<
         icon,
         loading = false,
         tooltip,
+        tooltipOptions,
         pt,
         variant,
         tone,
@@ -104,12 +105,12 @@ const MappedButton = forwardRef<
     const appearance = resolveButtonAppearance({ variant, tone, shape, text, link, outlined, rounded, severity });
     const effectiveDisabled = Boolean(disabled || loading);
     return (
+        <Tooltip content={tooltip} position={tooltipOptions?.position} className={tooltipOptions?.className}>
         <DsButton
             {...pt?.root}
             {...nativeProps}
             ref={ref}
             type={type}
-            title={tooltip ?? pt?.root?.title ?? nativeProps.title}
             disabled={effectiveDisabled}
             className={classNames(rootClassName, pt?.root?.className, className)}
             style={{
@@ -134,6 +135,7 @@ const MappedButton = forwardRef<
             {icon && !loading ? iconFor(icon, pt) : null}
             {labelFor(label, children, pt)}
         </DsButton>
+        </Tooltip>
     );
 });
 
