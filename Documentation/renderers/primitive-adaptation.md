@@ -165,8 +165,9 @@ Do not render a second interactive semantic root inside the first, forward one u
 independent state machines, or stack a vendor focus owner around a built-in focus owner. One user
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
-All three concrete adapters currently declare only the nine presentation slots. Their conformance
-reports cover those declared controls, not the five atomic slots or any composite workflow.
+The concrete adapters declare the nine presentation slots. Only the MUI adapter also declares an
+atomic slot, `common.tooltip`. Their conformance reports cover the declared controls, not the other
+atomic slots or any composite workflow.
 
 ## Stable atomic slots
 
@@ -207,8 +208,24 @@ profile for it.
 | Fallback | The built-in `TablePaginator` implementation |
 | Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
 
-A design system whose pagination model is one-based converts at the adapter boundary. The
-dialog, dropdown, date picker, and tooltip atomic slots are not stable yet.
+A design system whose pagination model is one-based converts at the adapter boundary.
+
+### `common.tooltip`
+
+| Contract | Value |
+| --- | --- |
+| Props | `TooltipProps`: non-interactive `content`, `position`, `disabled`, `className`, and exactly one focusable trigger child |
+| Ref | None; the trigger child keeps its own ref |
+| Parts | The trigger child keeps its `data-cratis-part` (default `trigger`); the popup is the `popup` part and carries `data-open` while open |
+| Behavior | Hover and keyboard focus open the tooltip, blur and Escape close it; empty `content` or `disabled` renders the child unchanged; `content` is a React node, rendered as-is |
+| Fallback | The built-in `Tooltip` implementation |
+| Conformance | The `common.tooltip` profile: parts, state coverage, server rendering (a closed tooltip omits its popup), hydration, and the opened popup |
+
+Mount the popup in the overlay container from `unstable_useOverlayEnvironment()` so it stays above
+dialogs. Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
+attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
+selector and cannot own the trigger or popup parts, so those three adapters keep the built-in
+tooltip. The dialog, dropdown, and date picker atomic slots are not stable yet.
 
 ## Fallback
 

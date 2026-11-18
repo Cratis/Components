@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ComponentType } from 'react';
+import type { TooltipProps } from '../../../Common/Tooltip';
 import type { TablePaginatorProps } from '../../../DataTables/TablePaginator';
 import {
     CRATIS_PRESENTATION_ABI_VERSION,
@@ -34,6 +35,18 @@ export const paginatorAtomicSlots = (
     render: ComponentType<TablePaginatorProps> = AdapterPaginator,
 ): CratisAtomicSlotMap => ({
     'datatables.paginator': { mode: 'atomic', fidelity: 'native', render },
+});
+
+/** Adapter-owned tooltip that echoes its content and renders the trigger unchanged. */
+export const AdapterTooltip: ComponentType<TooltipProps> = ({ content, children }) => (
+    <span data-adapter-tooltip={typeof content === 'string' ? content : ''}>{children}</span>
+);
+
+/** Atomic map implementing the stable tooltip with the adapter's component. */
+export const tooltipAtomicSlots = (
+    render: ComponentType<TooltipProps> = AdapterTooltip,
+): CratisAtomicSlotMap => ({
+    'common.tooltip': { mode: 'atomic', fidelity: 'native', render },
 });
 
 /** Builds a stable presentation library, optionally with atomic slots. */

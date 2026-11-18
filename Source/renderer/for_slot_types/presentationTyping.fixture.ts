@@ -139,9 +139,11 @@ const wrongSetup: CratisRendererSetup = {
 };
 
 declare const Paginator: ComponentType<CratisAtomicSlots['datatables.paginator']>;
+declare const AtomicTooltip: ComponentType<CratisAtomicSlots['common.tooltip']>;
 
 const atomicSlots: CratisAtomicSlotMap = {
     'datatables.paginator': { mode: 'atomic', fidelity: 'native', render: Paginator },
+    'common.tooltip': { mode: 'atomic', fidelity: 'native', render: AtomicTooltip },
 };
 const libraryWithAtomicSlots: CratisPresentationUiLibrary = definePresentationUiLibrary({
     ...library,

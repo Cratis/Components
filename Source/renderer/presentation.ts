@@ -10,6 +10,7 @@ import type { SurfaceProps } from '../Common/Surface';
 import type { SwitchProps } from '../Common/Switch';
 import type { TextAreaProps } from '../Common/TextArea';
 import type { TextInputProps } from '../Common/TextInput';
+import type { TooltipProps } from '../Common/Tooltip';
 import type { TablePaginatorProps } from '../DataTables/TablePaginator';
 import type { ProgressBarProps } from '../Display/ProgressBar';
 import type { CratisPresentationUiLibraryProviderProps } from './manifest';
@@ -83,7 +84,10 @@ export type CratisPresentationSlotMap = {
  * implement any of them through {@link CratisPresentationUiLibrary.atomicSlots}; new ids are only
  * ever appended.
  */
-export const cratisAtomicSlotIds = Object.freeze(['datatables.paginator'] as const);
+export const cratisAtomicSlotIds = Object.freeze([
+    'datatables.paginator',
+    'common.tooltip',
+] as const);
 
 /** Identifier of one stable atomic slot. */
 export type CratisAtomicSlotId = (typeof cratisAtomicSlotIds)[number];
@@ -95,6 +99,12 @@ export interface CratisAtomicSlots {
      * `TablePaginatorParts` parts and no ref.
      */
     readonly 'datatables.paginator': TablePaginatorProps;
+    /**
+     * Tooltip contract: non-interactive `content`, `position`, `disabled`, `className` and exactly
+     * one focusable trigger child. The adapter keeps the trigger's `data-cratis-part` and renders
+     * the popup as the `popup` part; there is no ref.
+     */
+    readonly 'common.tooltip': TooltipProps;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */

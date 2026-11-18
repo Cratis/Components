@@ -4,7 +4,7 @@
 # MUI adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. Repository evidence runs
-`@cratis/components.conformance` against all nine declared slots and requires every applicable check
+`@cratis/components.conformance` against the nine declared slots and the atomic `common.tooltip` slot, and requires every applicable check
 to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:
@@ -15,13 +15,14 @@ The bounded checks cover:
 - native names, values, submit/reset, disabled/read-only, validation, and autofill-shaped props;
 - one value-first `ChangeHandler` callback with `source: 'user'` and the originating native `Event`;
 - current and deprecated Button appearance mapping and canonical data attributes;
-- real MUI DOM identities for all nine slots;
+- real MUI DOM identities for all nine slots and the MUI tooltip popup for `common.tooltip`;
 - deterministic SSR and mismatch-free hydration; and
 - package peers, archive boundaries, runtime loading, declaration hygiene, and strict Bundler and
   NodeNext consumers with `skipLibCheck: false`.
 
-The generic overlay absent/present check has no applicable slot in this nine-slot profile; it is
-reported as a bounded pass but supplies no MUI overlay evidence. Portable part names and typed `pt`
+The generic overlay absent/present check covers the tooltip only: the closed tooltip omits its
+popup. The dropdown, date picker, and dialog atomic slots are not implemented and use the built-in
+implementations. Portable part names and typed `pt`
 destinations are preserved, while MUI may add wrappers or nest parts differently from the built-in
 renderer; undocumented descendant order and sibling selectors are not portable contracts.
 

@@ -15,8 +15,8 @@ component. The current MUI, PrimeReact 11, and PrimeReact 10 adapters implement 
 `stable-presentation/v1` slots.
 
 A stable presentation adapter may also implement the stable atomic slots listed in
-`cratisAtomicSlotIds`; today that is only `datatables.paginator`. The dialog, dropdown, date
-picker, and tooltip atomic slots are not stable yet.
+`cratisAtomicSlotIds`; today those are `datatables.paginator` and `common.tooltip`. The dialog, dropdown, and date
+picker atomic slots are not stable yet.
 
 Components does not promise one-to-one vendor coverage for its full catalog, and it does not infer
 adapter support from matching component names. A package must declare and prove each renderer slot
