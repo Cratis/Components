@@ -49,8 +49,8 @@
 }
 
 .toolbar-button__text {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--cratis-font-size-sm);
+    font-weight: var(--cratis-font-weight-semibold);
     line-height: 1;
     white-space: nowrap;
 }
@@ -58,8 +58,8 @@
 /* ── Toolbar project name label ──────────────────────────────────────────── */
 .toolbar-project-name {
     padding: 0 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: var(--cratis-font-size-sm);
+    font-weight: var(--cratis-font-weight-medium);
     color: var(--cratis-text-color);
     white-space: nowrap;
 }
@@ -329,8 +329,8 @@
 }
 
 .toolbar-drawer-title {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--cratis-font-size-sm);
+    font-weight: var(--cratis-font-weight-semibold);
     color: var(--cratis-text-color);
     overflow-wrap: anywhere;
 }
@@ -375,7 +375,8 @@
 
 .toolbar-drawer-tile:focus-visible,
 .toolbar-drawer-close:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -396,7 +397,7 @@
     overflow: hidden;
     overflow-wrap: anywhere;
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: var(--cratis-font-weight-medium);
     line-height: 1.2;
 }
 
@@ -435,8 +436,8 @@
 }
 
 .toolbar-button__label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: var(--cratis-font-size-sm);
+    font-weight: var(--cratis-font-weight-medium);
     color: inherit;
     white-space: nowrap;
 }

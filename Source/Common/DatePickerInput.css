@@ -24,6 +24,8 @@
 .cratis-date-picker__group[data-focus-within] {
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
 }
 .cratis-date-picker[data-invalid='true'] .cratis-date-picker__group {
     border-color: var(--cratis-red-500);
@@ -85,7 +87,8 @@
     color: var(--cratis-text-color);
 }
 .cratis-date-picker__trigger:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: inset var(--cratis-focus-ring);
 }
 .cratis-date-picker__popover {
@@ -131,7 +134,8 @@
 }
 .cratis-date-picker__nav:focus-visible,
 .cratis-date-picker__action:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-date-picker__grid {
@@ -141,8 +145,8 @@
     width: 2.25rem;
     height: 2rem;
     color: var(--cratis-text-color-secondary);
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: var(--cratis-font-size-xs);
+    font-weight: var(--cratis-font-weight-medium);
 }
 .cratis-date-picker__cell {
     display: flex;
@@ -163,6 +167,8 @@
 }
 .cratis-date-picker__cell[data-focused] {
     box-shadow: var(--cratis-focus-ring);
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
 }
 .cratis-date-picker__cell[data-disabled],
 .cratis-date-picker__cell[data-outside-month] {

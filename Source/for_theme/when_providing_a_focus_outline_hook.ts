@@ -22,20 +22,35 @@ const valueOf = (css: string, selectorPattern: RegExp, property: string): string
     return value;
 };
 
-// Stage 2 of Cratis/Components#529 adds the outline hook to every component rule that draws the focus
-// ring. Until that lands (the component stylesheets are shared with other lanes), the cross-file check
-// below stays pending; the token and bridge checks run now.
-const componentRulesAreConverted = false;
-const itForComponentRules = componentRulesAreConverted ? it : it.skip;
+// Stylesheets still owned by another lane in this release train. They take the outline hook when that
+// work is rebased onto this change; until then they are skipped here, so remove each entry as it lands.
+const PENDING_REBASE = new Set([
+    'CommandForm/fields/Fields.css',
+    'Dialogs/Dialog.css',
+    'DataTables/TablePaginator.css',
+]);
 
-// Rules that intentionally do not take the outline hook. Each needs a reason.
+// Rules that intentionally do not take the outline hook, keyed by "file|selector start". Each needs a reason.
 const ALLOWED_WITHOUT_OUTLINE_HOOK: Record<string, string> = {
-    'Dropdown/Dropdown.css|.cratis-dropdown__option:focus-visible':
+    'Dropdown/Dropdown.css|.cratis-dropdown__option[data-focus-visible]':
         'inset option ring inside a scrolling list: an outline would be clipped by the panel',
+    'SchemaEditor/SchemaEditor.css|.cratis-schema-editor__menu-item[data-focus-visible]':
+        'inset menu item ring inside a popover: an outline would be clipped by the panel',
+    'PivotViewer/PivotViewer.css|.pv-filter-button.active':
+        'the ring marks an active filter, not keyboard focus',
+    'PivotViewer/PivotViewer.css|.pv-groups-wrapper > div:has(> .pv-viewport:focus-visible)::after':
+        'inset ring drawn on a pseudo-element over the viewport',
+    'PivotViewer/PivotViewer.css|.pv-card.selected': 'the ring marks the selection, not keyboard focus',
 };
 
+const isAllowed = (file: string, selector: string): boolean =>
+    Object.keys(ALLOWED_WITHOUT_OUTLINE_HOOK).some((key) => {
+        const [allowedFile, allowedSelector] = key.split('|');
+        return allowedFile === file && selector.startsWith(allowedSelector);
+    });
+
 const importedStylesheets = (): string[] =>
-    [...read('styles.css').matchAll(/@import\s+(?:url\()?['"]([^'"]+\.css)['"]/g)].map(
+    [...read('styles.css').matchAll(/@import\s+(?:url\()?['"]\.\/([^'"]+\.css)['"]/g)].map(
         (match) => match[1],
     );
 
@@ -48,6 +63,43 @@ const insideForcedColors = (rule: Rule): boolean => {
         parent = parent.parent;
     }
     return false;
+};
+
+const declarationsOf = (rule: Rule): Declaration[] => {
+    const declarations: Declaration[] = [];
+    rule.each((node) => {
+        if (node.type === 'decl') declarations.push(node);
+    });
+    return declarations;
+};
+
+const drawsFocusRing = (declarations: Declaration[]): boolean =>
+    declarations.some(
+        (decl) => decl.prop === 'box-shadow' && decl.value.includes('var(--cratis-focus-ring)'),
+    );
+
+const usesOutlineHook = (declarations: Declaration[]): boolean =>
+    declarations.some(
+        (decl) => decl.prop === 'outline' && decl.value.includes('--cratis-focus-outline'),
+    ) &&
+    declarations.some(
+        (decl) =>
+            decl.prop === 'outline-offset' && decl.value.includes('--cratis-focus-outline-offset'),
+    );
+
+const offendingRules = (file: string): string[] => {
+    const offenders: string[] = [];
+    postcss.parse(read(file)).walkRules((rule) => {
+        const declarations = declarationsOf(rule);
+        const selector = rule.selector.replace(/\s+/g, ' ');
+        const offends =
+            !insideForcedColors(rule) &&
+            drawsFocusRing(declarations) &&
+            !usesOutlineHook(declarations) &&
+            !isAllowed(file, selector);
+        if (offends) offenders.push(`${file}|${selector}`);
+    });
+    return offenders;
 };
 
 describe('when providing a focus outline hook', () => {
@@ -76,34 +128,12 @@ describe('when providing a focus outline hook', () => {
         );
     });
 
-    itForComponentRules('should_let_every_focus_ring_rule_declare_the_outline_hook', () => {
-        const offenders: string[] = [];
-        for (const file of importedStylesheets()) {
-            postcss.parse(read(file)).walkRules((rule) => {
-                if (insideForcedColors(rule)) return;
-                const declarations: Declaration[] = [];
-                rule.each((node) => {
-                    if (node.type === 'decl') declarations.push(node);
-                });
-                const drawsRing = declarations.some(
-                    (decl) =>
-                        decl.prop === 'box-shadow' && decl.value.includes('var(--cratis-focus-ring)'),
-                );
-                if (!drawsRing) return;
-                const hasOutline = declarations.some(
-                    (decl) => decl.prop === 'outline' && decl.value.includes('--cratis-focus-outline'),
-                );
-                const hasOffset = declarations.some(
-                    (decl) =>
-                        decl.prop === 'outline-offset' &&
-                        decl.value.includes('--cratis-focus-outline-offset'),
-                );
-                const key = `${file}|${rule.selector}`;
-                if (!(hasOutline && hasOffset) && !(key in ALLOWED_WITHOUT_OUTLINE_HOOK)) {
-                    offenders.push(key);
-                }
-            });
-        }
+    it('should_let_every_focus_ring_rule_declare_the_outline_hook', () => {
+        expect(importedStylesheets().length).to.be.greaterThan(20);
+
+        const offenders = importedStylesheets()
+            .filter((file) => !PENDING_REBASE.has(file))
+            .flatMap(offendingRules);
 
         expect(offenders).to.deep.equal([]);
     });

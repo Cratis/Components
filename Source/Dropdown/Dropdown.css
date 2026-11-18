@@ -51,7 +51,8 @@
 .cratis-dropdown__trigger:focus-visible,
 .cratis-dropdown__filter:focus-visible,
 .cratis-dropdown__multiple:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
     border-color: var(--cratis-primary-color);
 }
@@ -106,7 +107,8 @@
     color: var(--cratis-text-color);
 }
 .cratis-dropdown__clear:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-dropdown__popover {

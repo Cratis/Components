@@ -31,7 +31,8 @@
 }
 
 .cratis-filter-trigger:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -63,7 +64,8 @@
 }
 
 .cratis-filter-menu__input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }

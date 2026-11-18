@@ -17,6 +17,8 @@
 .cratis-combobox__control:focus-within {
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
 }
 .cratis-combobox[data-invalid='true'] .cratis-combobox__control {
     border-color: var(--cratis-red-500);

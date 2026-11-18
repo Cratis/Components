@@ -14,7 +14,7 @@
     background: var(--cratis-action-background);
     color: var(--cratis-action-text);
     font: inherit;
-    font-weight: 600;
+    font-weight: var(--cratis-font-weight-semibold);
     line-height: 1;
     cursor: pointer;
     transition:
@@ -40,7 +40,8 @@
     background: color-mix(in srgb, currentColor 16%, transparent);
 }
 .cratis-button:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-button:disabled {
@@ -55,11 +56,11 @@
 .cratis-button[data-size='large'] {
     min-height: var(--cratis-control-height-large);
     padding: 0.875rem 1.5rem;
-    font-size: 1rem;
+    font-size: var(--cratis-font-size-md);
 }
 .cratis-button[data-shape='pill'],
 .cratis-button[data-icon-only='true'] {
-    border-radius: 999px;
+    border-radius: var(--cratis-radius-full);
 }
 .cratis-button[data-icon-only='true'] {
     width: var(--cratis-control-height);

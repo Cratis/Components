@@ -22,7 +22,8 @@
 }
 .cratis-text-input:focus-visible,
 .cratis-text-area:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
@@ -101,7 +102,7 @@
     width: 2.5rem;
     height: 1.4rem;
     padding: 0.15rem;
-    border-radius: 999px;
+    border-radius: var(--cratis-radius-full);
     background: var(--cratis-surface-100);
     transition: background-color 140ms ease;
 }
@@ -116,6 +117,8 @@
 .cratis-choice__input:focus-visible
     + :is(.cratis-checkbox__box, .cratis-radio__box, .cratis-switch__control) {
     box-shadow: var(--cratis-focus-ring);
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
 }
 .cratis-choice__input:checked + .cratis-checkbox__box,
 .cratis-choice__input:checked + .cratis-switch__control {

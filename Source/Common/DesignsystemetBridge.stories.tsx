@@ -3,7 +3,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { useLayoutEffect, useState, type ReactNode } from 'react';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 import { applyDesignsystemetMode } from '../.storybook/designsystemet';
 import { Badge } from '../Display/Badge';
 import { Dropdown } from '../Dropdown/Dropdown';
@@ -111,5 +111,45 @@ export const Primitives: Story = {
         await expect(largeInput.getBoundingClientRect().height).toBeGreaterThan(
             smallInput.getBoundingClientRect().height,
         );
+    },
+};
+
+const resolve = (element: HTMLElement, property: string, value: string): string => {
+    const probe = document.createElement('span');
+    probe.style.setProperty(property, value);
+    element.appendChild(probe);
+    const resolved = getComputedStyle(probe).getPropertyValue(property);
+    probe.remove();
+    return resolved;
+};
+
+/** Keyboard focus draws the Designsystemet double ring: an outer outline and an inner box-shadow. */
+export const FocusMatchesDesignsystemet: Story = {
+    render: () => (
+        <div style={{ display: 'grid' }}>
+            {SCHEMES.map((scheme) => (
+                <Cell key={scheme} scheme={scheme} size='md'>
+                    <Controls id={`focus-${scheme}`} />
+                </Cell>
+            ))}
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        for (const scheme of SCHEMES) {
+            const cell = canvas.getByTestId(`ds-${scheme}-md`);
+            const button = within(cell).getByRole('button', { name: 'Save' });
+            button.focus();
+            await userEvent.tab({ shift: true });
+            await userEvent.tab();
+            await expect(button).toHaveFocus();
+
+            const style = getComputedStyle(button);
+            const outer = resolve(button, 'color', 'var(--ds-color-focus-outer)');
+            const inner = resolve(button, 'color', 'var(--ds-color-focus-inner)');
+            await expect(style.outlineStyle).not.toBe('none');
+            await expect(style.outlineColor).toBe(outer);
+            await expect(style.boxShadow).toContain(inner);
+        }
     },
 };
