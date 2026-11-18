@@ -72,3 +72,9 @@ README, `CONFORMANCE.md`, notices, and upstream terms for the version under eval
 
 Use the [renderer overview](index.md) to choose explicit ownership, the [primitive profile](primitive-adaptation.md)
 for the exact adaptable surface, and the [licensing policy](licensing.md) for package/key boundaries.
+
+## Dialog footer buttons
+
+Adapters are not guaranteed to keep `data-cratis-part="confirm|cancel"` or the
+`cratis-dialog__button*` classes on the predefined dialog footer buttons, and a conformance case for
+the footer is deferred.

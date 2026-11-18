@@ -351,6 +351,7 @@ export const partDefinitions = {
             'Dialogs/DialogImplementation.tsx',
             'Dialogs/DialogDocument.tsx',
             'Dialogs/DialogFooter.tsx',
+            'Dialogs/DialogFooterButton.tsx',
             'Dialogs/DialogHeader.tsx',
             'Dialogs/DialogShells.tsx',
         ],
