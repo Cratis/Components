@@ -27,7 +27,10 @@
         "vitest.viewport.config.ts",
         "vitest.designsystemet.config.ts",
         "vitest.scrollbars.config.ts",
-        "../Adapters/*/.storybook/**/*.tsx"
+        "../Adapters/*/.storybook/**/*.tsx",
+        "../Adapters/Designsystemet/browser/surfaces*.tsx",
+        "../Source/global.d.ts",
+        "../Source/renderer/index.ts"
     ],
     "exclude": ["../Source/storybook-static", "node_modules"]
 }

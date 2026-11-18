@@ -86,6 +86,8 @@ assert them exactly; fix the source, then delete the expectation.
   `sm` and `md` (needs 4.5:1).
 - **Dialog text fields in forced colors:** Name, Email and Age draw their focus ring as a
   `box-shadow`, which forced colors removes, so they show no ring.
+- **Column sort buttons in forced colors:** the DataPage header sort buttons (ID, Name, Email, Role)
+  have no border, outline or fill, so they are indistinguishable flat text in forced colors.
 - **Paginator focus:** paging to the last page disables the activated Next button, so keyboard focus
   falls to the page body. The paginator has no page-number buttons, so there is no
   `aria-current="page"`; the current page is the "1 / 2" text and the range.

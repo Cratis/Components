@@ -40,8 +40,14 @@ describe('keyboard operation of the Designsystemet CommandDialog', () => {
 
     it('keeps focus trapped in the dialog going backwards', async () => {
         await openDialogWithKeyboard();
-        const names = await tab(8, true);
-        expect(names.every(() => dialog()?.contains(document.activeElement))).toBe(true);
+        const names: string[] = [];
+        const outside: string[] = [];
+        for (let index = 0; index < 8; index++) {
+            await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+            names.push(nameOf(document.activeElement as Element));
+            if (!dialog()?.contains(document.activeElement)) outside.push(names[index]);
+        }
+        expect(outside).toEqual([]);
         expect(names).toContain('Cancel');
     });
 
@@ -122,12 +128,14 @@ describe('keyboard operation of the Designsystemet DataPage', () => {
     });
 
     // Known finding: the paginator disables the button that was just activated when it reaches the
-    // end, so focus falls to the page body. `it.fails` records it and turns red when it is fixed.
-    it.fails('keeps keyboard focus on the paginator after paging to the last page', async () => {
+    // end, so focus falls to the page body. Paging is asserted to succeed first so setup failures
+    // are red; flip the final assertion when the finding is fixed.
+    it('loses keyboard focus from the paginator after paging to the last page (known finding)', async () => {
         await mountPaged();
         pager()?.querySelector<HTMLElement>('[aria-label="Next page"]')?.focus();
         await userEvent.keyboard('{Enter}');
         await expect.poll(range).toBe('21–24 of 24');
-        expect(pager()?.contains(document.activeElement)).toBe(true);
+        expect(pager()?.querySelector<HTMLButtonElement>('[aria-label="Next page"]')?.disabled).toBe(true);
+        expect(pager()?.contains(document.activeElement)).toBe(false);
     });
 });

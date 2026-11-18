@@ -42,9 +42,11 @@ describe('the Designsystemet surfaces in forced-colors mode', () => {
         await commands.emulateMedia({ forcedColors: 'active' });
         const host = await mountSurface('dataPagePaged', 'light', 'md');
         await expect.poll(() => document.querySelectorAll('tbody tr').length).toBe(20);
-        const flat = [...host.querySelectorAll<HTMLElement>('input, [role=navigation] button:enabled')]
+        const flat = [...host.querySelectorAll<HTMLElement>('input, thead button, [role=navigation] button:enabled')]
             .filter((element) => !hasEdge(element) && transparent.test(getComputedStyle(element).backgroundColor))
             .map((element) => nameOf(element));
-        expect(flat).toEqual([]);
+        // Known finding: the column-sort header buttons have no border, outline or fill, so they are
+        // flat text in forced colors. Remove them from this list once they are fixed.
+        expect(flat).toEqual(['ID', 'Name', 'Email', 'Role']);
     });
 });
