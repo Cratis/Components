@@ -1,8 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ReactElement, type ReactNode, type SVGAttributes } from 'react';
-import { Button as DsButton, Spinner as DsSpinner, Tooltip as DsTooltip } from '@digdir/designsystemet-react';
+import { forwardRef, type ReactNode, type SVGAttributes } from 'react';
+import { Button as DsButton, Spinner as DsSpinner } from '@digdir/designsystemet-react';
 import type { ButtonProps, IconButtonProps } from '@cratis/components/Common';
 import {
     colorForCratisTone,
@@ -30,19 +30,6 @@ const warnForDeprecatedProps = (props: Readonly<Record<string, unknown>>) => {
         );
     }
 };
-
-const withTooltip = (
-    element: ReactElement,
-    tooltip: string | undefined,
-    options: ButtonProps['tooltipOptions'],
-) =>
-    tooltip ? (
-        <DsTooltip content={tooltip} placement={options?.position}>
-            {element}
-        </DsTooltip>
-    ) : (
-        element
-    );
 
 const spinnerFor = (pt: ButtonProps['pt']) => (
     <DsSpinner
@@ -77,6 +64,10 @@ const labelFor = (label: ReactNode, children: ReactNode, pt: ButtonProps['pt']) 
     ) : null;
 
 /**
+ * Tooltip text is exposed through the native `title` attribute, never through the upstream
+ * `data-tooltip` script, which rewrites `aria-label` after mount and would replace the caller's
+ * accessible name. `tooltipOptions` has no counterpart (no tooltip element is rendered).
+ *
  * Designsystemet owns `data-size` as an inherited size mode and `data-variant`/`data-color` as its
  * own appearance vocabulary. The Cratis values for those attributes (`normal`, `solid`, ...) are
  * therefore never forwarded; they are translated by {@link sizeMode} and friends.
@@ -90,7 +81,6 @@ const MappedButton = forwardRef<
         icon,
         loading = false,
         tooltip,
-        tooltipOptions,
         pt,
         variant,
         tone,
@@ -113,12 +103,13 @@ const MappedButton = forwardRef<
     warnForDeprecatedProps({ text, link, outlined, rounded, severity });
     const appearance = resolveButtonAppearance({ variant, tone, shape, text, link, outlined, rounded, severity });
     const effectiveDisabled = Boolean(disabled || loading);
-    const button = (
+    return (
         <DsButton
             {...pt?.root}
             {...nativeProps}
             ref={ref}
             type={type}
+            title={tooltip ?? pt?.root?.title ?? nativeProps.title}
             disabled={effectiveDisabled}
             className={classNames(rootClassName, pt?.root?.className, className)}
             style={{
@@ -144,7 +135,6 @@ const MappedButton = forwardRef<
             {labelFor(label, children, pt)}
         </DsButton>
     );
-    return withTooltip(button, tooltip, tooltipOptions);
 });
 
 /** Designsystemet implementation of `common.button`. */

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { forwardRef, type CSSProperties, type Ref } from 'react';
-import { Card as DsCard, Spinner as DsSpinner } from '@digdir/designsystemet-react';
+import { Spinner as DsSpinner } from '@digdir/designsystemet-react';
 import type { SurfaceProps } from '@cratis/components/Common';
 import type { ProgressBarProps } from '@cratis/components/Display';
 import { classNames } from './classNames.js';
@@ -69,22 +69,25 @@ export const DesignsystemetProgressSlot = ({
     );
 };
 
-/** Designsystemet implementation of `common.surface`. */
+/**
+ * Designsystemet implementation of `common.surface`. The `ds-card` class is applied directly instead
+ * of mounting the upstream `Card`, whose effect delegates body clicks to a heading link and would
+ * make this non-interactive surface activate it.
+ */
 export const DesignsystemetSurfaceSlot = forwardRef<HTMLElement, SurfaceProps>(
     function DesignsystemetSurfaceSlot(
         { as: Element = 'div', pt, className, style, ...nativeProps },
         ref,
     ) {
         return (
-            <DsCard asChild ref={ref as Ref<HTMLDivElement>}>
-                <Element
-                    {...pt?.root}
-                    {...nativeProps}
-                    className={classNames('cratis-designsystemet-surface', pt?.root?.className, className)}
-                    style={{ ...pt?.root?.style, ...style }}
-                    data-cratis-part='root'
-                />
-            </DsCard>
+            <Element
+                ref={ref as Ref<never>}
+                {...pt?.root}
+                {...nativeProps}
+                className={classNames('ds-card', 'cratis-designsystemet-surface', pt?.root?.className, className)}
+                style={{ ...pt?.root?.style, ...style }}
+                data-cratis-part='root'
+            />
         );
     },
 );

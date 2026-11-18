@@ -55,7 +55,7 @@ it lands, Cratis-owned components keep their built-in token values. Set `data-co
 
 | Slot | Designsystemet | Fidelity | Notes |
 | --- | --- | --- | --- |
-| `common.button` | `Button` (+ `Spinner`, `Tooltip`) | native; `link` variant approximated as `tertiary` | `solid`→`primary`, `outline`→`secondary`, `ghost`/`link`→`tertiary`; tone→`data-color`; size `small`/`large`→`data-size` `sm`/`lg`, `normal` leaves the size unset |
+| `common.button` | `Button` (+ `Spinner`); tooltip text goes to the native `title` (no styled tooltip, no `tooltipOptions`) | native; `link` variant approximated as `tertiary` | `solid`→`primary`, `outline`→`secondary`, `ghost`/`link`→`tertiary`; tone→`data-color`; size `small`/`large`→`data-size` `sm`/`lg`, `normal` leaves the size unset |
 | `common.iconButton` | `Button icon` | native | same mapping; defaults to the pill shape |
 | `common.textInput` | `Input` | native | the input is the `root` part |
 | `common.textArea` | `Textarea` | native | the textarea is the `root` part |
@@ -63,7 +63,7 @@ it lands, Cratis-owned components keep their built-in token values. Set `data-co
 | `common.radio` | `Field` + `Input` + `Label` | native | `box` and `indicator` are hidden structural hooks |
 | `common.switch` | `Field` + `Input role=switch` + `Label` | native | `control` and `handle` are hidden structural hooks |
 | `common.progress` | token-styled track / `Spinner` | native | Designsystemet has no progress bar; indeterminate uses `Spinner` |
-| `common.surface` | `Card` | native | rendered on the requested `article`/`div`/`section` |
+| `common.surface` | `ds-card` class on the element (upstream `Card` is not mounted: it delegates body clicks to a heading link) | native | rendered on the requested `article`/`div`/`section` |
 
 Designsystemet paints the checkbox, radio and switch on the native input, so the Cratis `box`,
 `indicator`, `control` and `handle` parts exist for the part contract but carry no visuals. The `link`
