@@ -57,6 +57,7 @@
         "./styles",
         "./styles/base",
         "./theme",
+        "./themes/designsystemet",
         "./tokens",
         "./types"
     ]

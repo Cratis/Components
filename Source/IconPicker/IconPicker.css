@@ -31,7 +31,8 @@
 
 .cratis-icon-picker__trigger[data-focus-visible],
 .cratis-icon-picker__trigger[data-pressed] {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -199,7 +200,8 @@
 .cratis-icon-picker__category:focus-visible,
 .cratis-icon-picker__link:focus-visible,
 .cratis-icon-picker__library:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -217,6 +219,8 @@
 .cratis-icon-picker__search:focus-within {
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
 }
 
 .cratis-icon-picker__search-icon {

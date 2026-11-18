@@ -32,7 +32,7 @@ If your product already has a design system, omit `theme` and map its values ont
 | Existing app migrating gradually from PrimeReact    | `tokens`, `styles`, optional `theme`, plus the product's existing Prime CSS | Mount Components and Prime providers independently. Keep Prime styling and licensing only for direct Prime surfaces until they are removed.   |
 | Independently themed embedded surface               | `tokens`, `styles`, `theme`                                                 | Put `cratis-theme` on the subtree and add `cratis-dark` or `cratis-light` there.                                                              |
 
-For a first setup, follow [Set up styling](getting-started.md). Then use [the baseline theme](baseline-theme.md) for Cratis appearance or [build a product theme](themed.md) from your existing design tokens. [Own all styling](unstyled.md) explains the responsibilities you take on without the baseline, and [Stable component parts](pass-through.md) covers individual controls. Any row may substitute [per-area stylesheets](per-area-stylesheets.md) for `styles`.
+For a first setup, follow [Set up styling](getting-started.md). Then use [the baseline theme](baseline-theme.md) for Cratis appearance or [build a product theme](themed.md) from your existing design tokens. [Use a Designsystemet theme](designsystemet.md) with one bridge stylesheet if your product uses Digdir Designsystemet. [Own all styling](unstyled.md) explains the responsibilities you take on without the baseline, and [Stable component parts](pass-through.md) covers individual controls. Any row may substitute [per-area stylesheets](per-area-stylesheets.md) for `styles`.
 
 ## Cascade contract
 

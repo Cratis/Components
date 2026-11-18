@@ -618,7 +618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@digdir/designsystemet-css@npm:1.24.0":
+"@digdir/designsystemet-css@npm:1.24.0, @digdir/designsystemet-css@npm:^1.24.0":
   version: 1.24.0
   resolution: "@digdir/designsystemet-css@npm:1.24.0"
   dependencies:
@@ -7354,6 +7354,7 @@ __metadata:
     "@cratis/arc.react": "npm:23.0.0"
     "@cratis/arc.vite": "npm:23.0.0"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
+    "@digdir/designsystemet-css": "npm:^1.24.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"
     "@eslint/js": "npm:^10.0.1"
     "@jridgewell/sourcemap-codec": "npm:1.6.0"

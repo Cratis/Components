@@ -484,7 +484,8 @@
 }
 
 .timeline-entry:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-radius: var(--cratis-border-radius);
     box-shadow: var(--cratis-focus-ring);
 }

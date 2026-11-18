@@ -23,6 +23,7 @@ const STANDALONE_STYLESHEETS = new Set([
     'tailwind-utilities.css',
     'tokens.css',
     'theme.css',
+    'designsystemet.css',
     'styles.css',
 ]);
 
@@ -194,7 +195,8 @@ function bundleStyles(sourceDir, esmPath, pkg) {
                         (subpath) =>
                             !expected.has(subpath) &&
                             subpath !== './tokens' &&
-                            subpath !== './theme',
+                            subpath !== './theme' &&
+                            subpath !== './themes/designsystemet',
                     )
                     .map((subpath) => `undeclared stylesheet export '${subpath}'`),
             ];
