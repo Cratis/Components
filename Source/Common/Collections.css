@@ -194,4 +194,18 @@
         background: Highlight;
         color: HighlightText;
     }
+    .cratis-toggle-group__option:focus-visible,
+    .cratis-tabs__tab:focus-visible,
+    .cratis-tag-group__tag:focus-visible,
+    .cratis-tag-group__remove:focus-visible,
+    .cratis-tag-group__input:focus-visible,
+    .cratis-breadcrumbs__link:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+    .cratis-toggle-group__option[data-selected]:focus-visible,
+    .cratis-tabs__tab[data-selected]:focus-visible {
+        outline-color: CanvasText;
+    }
 }
