@@ -17,6 +17,8 @@ Import the Designsystemet packages first, then the Cratis tokens, the bridge, an
 @import '@cratis/components/styles';
 ```
 
+The bridge targets the built-in renderer; renderer adapters (such as the MUI or PrimeReact adapters) bring their own styling and do not read these tokens.
+
 The order matters. The bridge is not in a cascade layer, so it must follow `tokens` to replace its defaults, and it keeps the tokens it deliberately does not map. Do not import `@cratis/components/theme` with the bridge: its dark-mode selectors are more specific than the bridge and would override it.
 
 Set `data-color-scheme="light"`, `"dark"` or `"auto"` and, optionally, `data-size="sm"`, `"md"` or `"lg"` on `<html>` or any element, as Designsystemet documents. No `cratis-dark` or `cratis-light` class is involved.
