@@ -90,20 +90,28 @@ describe('when deriving renderer matrix scope', () => {
         expect(matrixStoryIds.size).to.equal(0);
     });
 
-    it('should ignore type-only imports of slot owners but follow runtime imports', () => {
+    it('should ignore type-only imports of slot owners but follow every runtime edge', () => {
         const root = mkdtempSync(path.join(os.tmpdir(), 'cratis-type-edge-'));
         try {
             const fixtureSourceRoot = path.join(root, 'Source');
             mkdirSync(fixtureSourceRoot, { recursive: true });
-            writeFileSync(path.join(fixtureSourceRoot, 'Slot.tsx'), "unstable_useSlot('common.slot');\n");
-            writeFileSync(path.join(fixtureSourceRoot, 'TypeOnly.tsx'), "import type { SlotProps } from './Slot';\nexport type { Other } from './Slot';\n");
-            writeFileSync(path.join(fixtureSourceRoot, 'Runtime.tsx'), "import { type SlotProps, Slot } from './Slot';\n");
-            const storyEntries = [
-                storyEntry('type-only--default', 'TypeOnly.tsx'),
-                storyEntry('runtime--default', 'Runtime.tsx'),
-            ];
+            const fixtures: Record<string, string> = {
+                'Slot.tsx': "unstable_useSlot('common.slot');\n",
+                'TypeOnly.tsx': "import type { SlotProps } from './Slot';\nexport type { Other } from './Slot';\n",
+                'InText.tsx': "// import { Slot } from './Slot';\nconst text = \"import { Slot } from './Slot'\";\n/* import './Slot'; */\n",
+                'Runtime.tsx': "import { type SlotProps, Slot } from './Slot';\n",
+                'DefaultNamedType.tsx': "import type from './Slot';\n",
+                'AfterComment.tsx': "// import type\nimport { Slot } from './Slot';\n",
+                'SideEffect.tsx': "import './Slot';\n",
+                'ReExport.tsx': "export { Slot } from './Slot';\n",
+            };
+            for (const [name, contents] of Object.entries(fixtures)) writeFileSync(path.join(fixtureSourceRoot, name), contents);
+            const storyEntries = Object.keys(fixtures)
+                .filter(name => name !== 'Slot.tsx')
+                .map(name => storyEntry(name, name));
             const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot: root, sourceRoot: fixtureSourceRoot });
-            expect([...matrixStoryIds]).to.deep.equal(['runtime--default']);
+            expect([...matrixStoryIds].sort()).to.deep.equal(
+                ['AfterComment.tsx', 'DefaultNamedType.tsx', 'ReExport.tsx', 'Runtime.tsx', 'SideEffect.tsx']);
         } finally {
             rmSync(root, { recursive: true, force: true });
         }

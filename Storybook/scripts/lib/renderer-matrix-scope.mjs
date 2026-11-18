@@ -3,25 +3,11 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 
 const IGNORED_DIRECTORY_NAMES = new Set(['dist', 'node_modules', 'storybook-static']);
 const SOURCE_FILE_PATTERN = /\.tsx?$/u;
 const SLOT_HOOK_PATTERN = /\bunstable_useSlot\s*\(/u;
-
-/**
- * Matches every `from '<specifier>'` (import or export) plus bare `import '<specifier>'` side
- * effect statements.
- */
-const IMPORT_SPECIFIER_PATTERN = /\bfrom\s*(['"])((?:(?!\1).)+)\1|(?:^|[\n;])\s*import\s*(['"])((?:(?!\3).)+)\3/gsu;
-
-/**
- * Whole-statement `import type ... from '<specifier>'` / `export type ... from '<specifier>'`
- * declarations. They are erased at compile time, so a component cannot render a slot owner through
- * one; following them would credit a module with every slot owner its type signatures mention
- * (for example the presentation ABI types) and pull built-in-only components into the matrix.
- * Inline `import { type X, Y }` specifiers still count because `Y` is a runtime edge.
- */
-const TYPE_ONLY_STATEMENT_PATTERN = /\b(?:import|export)\s+type\b[^;'"]*?\bfrom\s*(['"])(?:(?!\1).)+\1/gsu;
 
 const collectFiles = (directory, predicate, results = []) => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -61,17 +47,23 @@ export const findSlotOwningModules = sourceRoot => {
     return owning;
 };
 
-const extractSpecifiers = source => {
-    const specifiers = [];
-    const runtimeSource = source.replace(TYPE_ONLY_STATEMENT_PATTERN, '');
-    IMPORT_SPECIFIER_PATTERN.lastIndex = 0;
-    let match = IMPORT_SPECIFIER_PATTERN.exec(runtimeSource);
-    while (match) {
-        const specifier = match[2] ?? match[4];
-        if (specifier) specifiers.push(specifier);
-        match = IMPORT_SPECIFIER_PATTERN.exec(runtimeSource);
-    }
-    return specifiers;
+const isTypeOnlyDeclaration = statement =>
+    ts.isImportDeclaration(statement) ? statement.importClause?.isTypeOnly === true : statement.isTypeOnly;
+
+/**
+ * Module specifiers of every runtime import/export-from declaration, read from the TypeScript
+ * syntax tree so comments and strings that merely contain import text are never mistaken for
+ * edges. Whole-declaration `import type` / `export type` statements are erased at compile time, so
+ * a component cannot render a slot owner through them; following them would credit a module with
+ * every slot owner its type signatures mention. Side-effect imports, inline `type` specifiers
+ * mixed with values and a default import named `type` are runtime edges and are kept.
+ */
+const extractSpecifiers = (source, fileName) => {
+    const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
+    return sourceFile.statements
+        .filter(statement => ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))
+        .filter(statement => !isTypeOnlyDeclaration(statement) && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier))
+        .map(statement => statement.moduleSpecifier.text);
 };
 
 const resolveRelativeModule = (fromFile, specifier) => {
@@ -100,7 +92,7 @@ const moduleReachesSlot = (file, slotOwningModules, memo, pending = new Set()) =
     pending.add(file);
     let reaches = false;
     const source = readFileSync(file, 'utf8');
-    for (const specifier of extractSpecifiers(source)) {
+    for (const specifier of extractSpecifiers(source, file)) {
         const resolved = resolveRelativeModule(file, specifier);
         if (resolved && moduleReachesSlot(resolved, slotOwningModules, memo, pending)) {
             reaches = true;
