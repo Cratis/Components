@@ -145,6 +145,7 @@
         "commandform-fields--radio-group-field-example",
         "commandform-fields--slider-field-example",
         "commandform-fields--text-area-field-example",
+        "commandform-newfields--overview",
         "common-actionmenubar--arrows-with-widgets",
         "common-actionmenubar--closed-details-action",
         "common-actionmenubar--custom-parts",
@@ -304,6 +305,12 @@
         "toolbar-drawer--long-localized-titles"
     ],
     "slotOwningModules": [
+        "Source/CommandForm/fields/CheckboxField.tsx",
+        "Source/CommandForm/fields/InputTextField.tsx",
+        "Source/CommandForm/fields/RadioButtonField.tsx",
+        "Source/CommandForm/fields/RadioGroupField.tsx",
+        "Source/CommandForm/fields/TextAreaField.tsx",
+        "Source/CommandForm/fields/ToggleSwitchField.tsx",
         "Source/Common/Button.tsx",
         "Source/Common/Checkbox.tsx",
         "Source/Common/DatePickerInput.tsx",
@@ -316,6 +323,7 @@
         "Source/Common/Tooltip.tsx",
         "Source/DataTables/TablePaginator.tsx",
         "Source/Dialogs/Dialog.tsx",
+        "Source/Dialogs/DialogFooterButton.tsx",
         "Source/Display/ProgressBar.tsx",
         "Source/Dropdown/Dropdown.tsx"
     ],
