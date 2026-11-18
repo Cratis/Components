@@ -52,18 +52,21 @@ describe('when showing collection focus in forced colors', () => {
     });
 
     it('should_keep_the_selected_focus_outline_visible_against_the_highlight_background', () => {
-        let selectedOutline: string | undefined;
-        postcss.parse(collections).walkRules((rule) => {
-            if (
-                inForcedColors(rule) &&
-                rule.selectors.includes('.cratis-tabs__tab[data-selected]:focus-visible')
-            ) {
-                rule.walkDecls('outline-color', (decl) => {
-                    selectedOutline = decl.value;
-                });
-            }
-        });
+        const selectedSelectors = [
+            '.cratis-tabs__tab[data-selected]:focus-visible',
+            '.cratis-toggle-group__option[data-selected]:focus-visible',
+        ];
+        for (const selector of selectedSelectors) {
+            let selectedOutline: string | undefined;
+            postcss.parse(collections).walkRules((rule) => {
+                if (inForcedColors(rule) && rule.selectors.includes(selector)) {
+                    rule.walkDecls('outline-color', (decl) => {
+                        selectedOutline = decl.value;
+                    });
+                }
+            });
 
-        expect(selectedOutline).to.equal('CanvasText');
+            expect(selectedOutline, selector).to.equal('CanvasText');
+        }
     });
 });
