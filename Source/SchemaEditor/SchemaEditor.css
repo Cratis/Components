@@ -366,7 +366,7 @@ button.cratis-schema-editor__toggle:focus-visible,
 }
 
 .cratis-schema-editor__menu-item[data-focus-visible] {
-    box-shadow: inset var(--cratis-focus-ring);
+    box-shadow: var(--cratis-focus-ring-inset, inset var(--cratis-focus-ring));
 }
 
 .cratis-schema-editor__menu-heading {

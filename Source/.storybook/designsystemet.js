@@ -50,7 +50,10 @@ const ensureStyles = () => {
         scopedBridge(),
         `${SCOPE} body { font-family: var(--ds-font-family); color: var(--ds-color-neutral-text-default); background: var(--ds-color-neutral-background-default); }`,
     ].join('\n');
-    document.head.appendChild(style);
+    // First in the head so the layer order statement inside the Designsystemet CSS (ds.theme .. ds.utils)
+    // is the first layer declaration: Designsystemet then ranks below the Cratis layers, as in a consumer
+    // that imports it first.
+    document.head.prepend(style);
 };
 
 /** Removes everything {@link applyDesignsystemetMode} added. */
@@ -66,7 +69,11 @@ export const removeDesignsystemetMode = (root) => {
  * Applies a Designsystemet appearance (or removes it for any other appearance). The bridge follows the
  * data attributes, so no Cratis dark/light class is involved for these modes.
  */
-export const applyDesignsystemetMode = (root, appearance, size = DEFAULT_DESIGNSYSTEMET_SIZE) => {
+export const applyDesignsystemetMode = (
+    root,
+    appearance,
+    size = DEFAULT_DESIGNSYSTEMET_SIZE,
+) => {
     const mode = DESIGNSYSTEMET_MODES[appearance];
     if (!mode) {
         removeDesignsystemetMode(root);

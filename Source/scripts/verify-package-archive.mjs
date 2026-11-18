@@ -306,9 +306,10 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // Measured when the New topic button gained its paired hover foreground: raw 248694 (43 bytes over). Raw moves by the overage; blocks and gzip hold.
 // Measured when components took the focus outline hook and the type/radius tokens (Designsystemet bridge): raw 252530 (3836 bytes over).
 // Raw moves by the overage; blocks and gzip hold.
+// Measured when the status button text and the inset menu ring gained their bridge-mappable tokens: raw 252726 (196 bytes over). Raw moves by the overage.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 252530,
+    rawBytes: 252726,
     gzipBytes: 38 * 1024,
     declarationBlocks: 1388,
 };

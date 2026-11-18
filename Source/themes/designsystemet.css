@@ -56,6 +56,11 @@
     --cratis-green-500: var(--ds-color-success-base-default);
     --cratis-orange-500: var(--ds-color-warning-base-default);
     --cratis-red-500: var(--ds-color-danger-base-default);
+    /* The Cratis default buttons use the solid status colours as text; the tinted surfaces would fail contrast. */
+    --cratis-info-foreground: var(--ds-color-info-text-default);
+    --cratis-success-foreground: var(--ds-color-success-text-default);
+    --cratis-warning-foreground: var(--ds-color-warning-text-default);
+    --cratis-danger-foreground: var(--ds-color-danger-text-default);
     --cratis-info-background: var(--ds-color-info-surface-tinted);
     --cratis-info-text: var(--ds-color-info-text-default);
     --cratis-success-background: var(--ds-color-success-surface-tinted);
@@ -89,6 +94,10 @@
     --cratis-shadow-dialog: var(--ds-shadow-xl);
 
     --cratis-focus-ring: 0 0 0 var(--ds-border-width-focus) var(--ds-color-focus-inner);
+    /* Inward two-tone ring for items that sit inside a clipping list or menu panel. */
+    --cratis-focus-ring-inset:
+        inset 0 0 0 var(--ds-border-width-focus) var(--ds-color-focus-outer),
+        inset 0 0 0 calc(var(--ds-border-width-focus) * 2) var(--ds-color-focus-inner);
     --cratis-focus-outline: var(--ds-color-focus-outer) solid var(--ds-border-width-focus);
     --cratis-focus-outline-offset: var(--ds-border-width-focus);
 }

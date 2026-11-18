@@ -42,6 +42,25 @@ const CONTROL_HEIGHTS: Record<string, string> = {
     '--cratis-control-height-large': '3.25rem',
 };
 
+// Stylesheets whose exact-equal literals were replaced by the tokens (see ui-foundation.md for the rest).
+const CONVERTED_STYLESHEETS = [
+    'Common/Button.css',
+    'Common/Primitives.css',
+    'Common/FormElement.css',
+    'Common/ComboBox.css',
+    'Common/Collections.css',
+    'Common/NumberInput.css',
+    'Common/DatePickerInput.css',
+    'CommandDialog/CommandStepper.css',
+    'Dropdown/Dropdown.css',
+    'DataTables/DataTableCore.css',
+    'DataTables/ColumnFilterMenu.css',
+    'Filter/FilterPanel.css',
+    'Toolbar/Toolbar.css',
+    'Notifications/Toaster.css',
+    'ObjectNavigationalBar/ObjectNavigationalBar.css',
+];
+
 describe('when tokenising foundation literals', () => {
     const tokens = declared(read('tokens.css'), /^:root$/);
     const lightBlock = declared(read('theme.css'), /^\.cratis-theme$/);
@@ -62,6 +81,26 @@ describe('when tokenising foundation literals', () => {
         });
     }
 
-    // Stage 2 replaces the exact-equal literals in the component stylesheets (shared with other lanes);
-    // the remaining-literal scan is added there with its allowlist.
+    // The converted stylesheets must not reintroduce an exact-equal literal for a token.
+    const FONT_SIZES = new Set(['0.75rem', '0.875rem', '1rem']);
+    const FONT_WEIGHTS = new Set(['500', '600', '700']);
+    const RADII = new Set(['4px', '8px', '12px', '999px']);
+
+    for (const file of CONVERTED_STYLESHEETS) {
+        it(`should_not_reintroduce_exact_equal_literals_in_${file.replace(/\W/g, '_')}`, () => {
+            const offenders: string[] = [];
+            postcss.parse(read(file)).walkDecls((decl) => {
+                const literal =
+                    (decl.prop === 'font-size' && FONT_SIZES.has(decl.value)) ||
+                    (decl.prop === 'font-weight' && FONT_WEIGHTS.has(decl.value)) ||
+                    (decl.prop === 'border-radius' && RADII.has(decl.value));
+                if (literal)
+                    offenders.push(
+                        `${decl.parent && 'selector' in decl.parent ? decl.parent.selector : ''} { ${decl.prop}: ${decl.value} }`,
+                    );
+            });
+
+            expect(offenders).to.deep.equal([]);
+        });
+    }
 });

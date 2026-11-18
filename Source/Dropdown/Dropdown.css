@@ -143,7 +143,7 @@
     color: var(--cratis-highlight-text-color);
 }
 .cratis-dropdown__option[data-focus-visible] {
-    box-shadow: inset var(--cratis-focus-ring);
+    box-shadow: var(--cratis-focus-ring-inset, inset var(--cratis-focus-ring));
 }
 .cratis-dropdown__option[data-disabled] {
     opacity: 0.5;

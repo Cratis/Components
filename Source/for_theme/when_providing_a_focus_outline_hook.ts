@@ -11,7 +11,11 @@ import { describe, it } from 'vitest';
 const sourceDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path: string) => readFileSync(resolve(sourceDirectory, path), 'utf8');
 
-const valueOf = (css: string, selectorPattern: RegExp, property: string): string | undefined => {
+const valueOf = (
+    css: string,
+    selectorPattern: RegExp,
+    property: string,
+): string | undefined => {
     let value: string | undefined;
     postcss.parse(css).walkRules((rule) => {
         if (!rule.selectors.some((selector) => selectorPattern.test(selector))) return;
@@ -33,14 +37,15 @@ const PENDING_REBASE = new Set([
 // Rules that intentionally do not take the outline hook, keyed by "file|selector start". Each needs a reason.
 const ALLOWED_WITHOUT_OUTLINE_HOOK: Record<string, string> = {
     'Dropdown/Dropdown.css|.cratis-dropdown__option[data-focus-visible]':
-        'inset option ring inside a scrolling list: an outline would be clipped by the panel',
+        'inset option ring inside a scrolling list: an outline would be clipped by the panel; --cratis-focus-ring-inset gives it an inward two-tone ring',
     'SchemaEditor/SchemaEditor.css|.cratis-schema-editor__menu-item[data-focus-visible]':
-        'inset menu item ring inside a popover: an outline would be clipped by the panel',
+        'inset menu item ring inside a popover: an outline would be clipped by the panel; --cratis-focus-ring-inset gives it an inward two-tone ring',
     'PivotViewer/PivotViewer.css|.pv-filter-button.active':
         'the ring marks an active filter, not keyboard focus',
     'PivotViewer/PivotViewer.css|.pv-groups-wrapper > div:has(> .pv-viewport:focus-visible)::after':
         'inset ring drawn on a pseudo-element over the viewport',
-    'PivotViewer/PivotViewer.css|.pv-card.selected': 'the ring marks the selection, not keyboard focus',
+    'PivotViewer/PivotViewer.css|.pv-card.selected':
+        'the ring marks the selection, not keyboard focus',
 };
 
 const isAllowed = (file: string, selector: string): boolean =>
@@ -50,14 +55,17 @@ const isAllowed = (file: string, selector: string): boolean =>
     });
 
 const importedStylesheets = (): string[] =>
-    [...read('styles.css').matchAll(/@import\s+(?:url\()?['"]\.\/([^'"]+\.css)['"]/g)].map(
-        (match) => match[1],
-    );
+    [
+        ...read('styles.css').matchAll(/@import\s+(?:url\()?['"]\.\/([^'"]+\.css)['"]/g),
+    ].map((match) => match[1]);
 
 const insideForcedColors = (rule: Rule): boolean => {
     let parent = rule.parent;
     while (parent) {
-        if (parent.type === 'atrule' && (parent as AtRule).params.includes('forced-colors')) {
+        if (
+            parent.type === 'atrule' &&
+            (parent as AtRule).params.includes('forced-colors')
+        ) {
             return true;
         }
         parent = parent.parent;
@@ -75,16 +83,19 @@ const declarationsOf = (rule: Rule): Declaration[] => {
 
 const drawsFocusRing = (declarations: Declaration[]): boolean =>
     declarations.some(
-        (decl) => decl.prop === 'box-shadow' && decl.value.includes('var(--cratis-focus-ring)'),
+        (decl) =>
+            decl.prop === 'box-shadow' && decl.value.includes('var(--cratis-focus-ring)'),
     );
 
 const usesOutlineHook = (declarations: Declaration[]): boolean =>
     declarations.some(
-        (decl) => decl.prop === 'outline' && decl.value.includes('--cratis-focus-outline'),
+        (decl) =>
+            decl.prop === 'outline' && decl.value.includes('--cratis-focus-outline'),
     ) &&
     declarations.some(
         (decl) =>
-            decl.prop === 'outline-offset' && decl.value.includes('--cratis-focus-outline-offset'),
+            decl.prop === 'outline-offset' &&
+            decl.value.includes('--cratis-focus-outline-offset'),
     );
 
 const offendingRules = (file: string): string[] => {
@@ -113,8 +124,12 @@ describe('when providing a focus outline hook', () => {
     it('should_keep_the_outline_hook_in_the_scoped_light_block_of_the_theme', () => {
         const theme = read('theme.css');
 
-        expect(valueOf(theme, /^\.cratis-theme$/, '--cratis-focus-outline')).to.equal('none');
-        expect(valueOf(theme, /^\.cratis-theme$/, '--cratis-focus-outline-offset')).to.equal('0');
+        expect(valueOf(theme, /^\.cratis-theme$/, '--cratis-focus-outline')).to.equal(
+            'none',
+        );
+        expect(
+            valueOf(theme, /^\.cratis-theme$/, '--cratis-focus-outline-offset'),
+        ).to.equal('0');
     });
 
     it('should_map_the_hook_to_the_designsystemet_outer_focus_colour_in_the_bridge', () => {
@@ -125,6 +140,20 @@ describe('when providing a focus outline hook', () => {
         );
         expect(valueOf(bridge, /^:root$/, '--cratis-focus-outline-offset')).to.equal(
             'var(--ds-border-width-focus)',
+        );
+    });
+
+    it('should_map_the_inset_ring_for_list_items_with_the_default_ring_as_fallback', () => {
+        const bridge = read('themes/designsystemet.css');
+        const inset = valueOf(bridge, /^:root$/, '--cratis-focus-ring-inset') ?? '';
+
+        expect(inset).to.include('var(--ds-color-focus-outer)');
+        expect(inset).to.include('var(--ds-color-focus-inner)');
+        expect(read('Dropdown/Dropdown.css')).to.include(
+            'box-shadow: var(--cratis-focus-ring-inset, inset var(--cratis-focus-ring));',
+        );
+        expect(read('SchemaEditor/SchemaEditor.css')).to.include(
+            'box-shadow: var(--cratis-focus-ring-inset, inset var(--cratis-focus-ring));',
         );
     });
 
