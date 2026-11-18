@@ -10,11 +10,18 @@ const SLOT_HOOK_PATTERN = /\bunstable_useSlot\s*\(/u;
 
 /**
  * Matches every `from '<specifier>'` (import or export) plus bare `import '<specifier>'` side
- * effect statements. Deliberately does not distinguish `import type` from value imports: a
- * type-only edge is followed too, so the scope derivation can only over-include, never silently
- * drop a component that genuinely composes a renderer slot.
+ * effect statements.
  */
 const IMPORT_SPECIFIER_PATTERN = /\bfrom\s*(['"])((?:(?!\1).)+)\1|(?:^|[\n;])\s*import\s*(['"])((?:(?!\3).)+)\3/gsu;
+
+/**
+ * Whole-statement `import type ... from '<specifier>'` / `export type ... from '<specifier>'`
+ * declarations. They are erased at compile time, so a component cannot render a slot owner through
+ * one; following them would credit a module with every slot owner its type signatures mention
+ * (for example the presentation ABI types) and pull built-in-only components into the matrix.
+ * Inline `import { type X, Y }` specifiers still count because `Y` is a runtime edge.
+ */
+const TYPE_ONLY_STATEMENT_PATTERN = /\b(?:import|export)\s+type\b[^;'"]*?\bfrom\s*(['"])(?:(?!\1).)+\1/gsu;
 
 const collectFiles = (directory, predicate, results = []) => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -56,12 +63,13 @@ export const findSlotOwningModules = sourceRoot => {
 
 const extractSpecifiers = source => {
     const specifiers = [];
+    const runtimeSource = source.replace(TYPE_ONLY_STATEMENT_PATTERN, '');
     IMPORT_SPECIFIER_PATTERN.lastIndex = 0;
-    let match = IMPORT_SPECIFIER_PATTERN.exec(source);
+    let match = IMPORT_SPECIFIER_PATTERN.exec(runtimeSource);
     while (match) {
         const specifier = match[2] ?? match[4];
         if (specifier) specifiers.push(specifier);
-        match = IMPORT_SPECIFIER_PATTERN.exec(source);
+        match = IMPORT_SPECIFIER_PATTERN.exec(runtimeSource);
     }
     return specifiers;
 };

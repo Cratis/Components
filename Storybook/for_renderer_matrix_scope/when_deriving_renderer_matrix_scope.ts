@@ -90,6 +90,25 @@ describe('when deriving renderer matrix scope', () => {
         expect(matrixStoryIds.size).to.equal(0);
     });
 
+    it('should ignore type-only imports of slot owners but follow runtime imports', () => {
+        const root = mkdtempSync(path.join(os.tmpdir(), 'cratis-type-edge-'));
+        try {
+            const fixtureSourceRoot = path.join(root, 'Source');
+            mkdirSync(fixtureSourceRoot, { recursive: true });
+            writeFileSync(path.join(fixtureSourceRoot, 'Slot.tsx'), "unstable_useSlot('common.slot');\n");
+            writeFileSync(path.join(fixtureSourceRoot, 'TypeOnly.tsx'), "import type { SlotProps } from './Slot';\nexport type { Other } from './Slot';\n");
+            writeFileSync(path.join(fixtureSourceRoot, 'Runtime.tsx'), "import { type SlotProps, Slot } from './Slot';\n");
+            const storyEntries = [
+                storyEntry('type-only--default', 'TypeOnly.tsx'),
+                storyEntry('runtime--default', 'Runtime.tsx'),
+            ];
+            const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot: root, sourceRoot: fixtureSourceRoot });
+            expect([...matrixStoryIds]).to.deep.equal(['runtime--default']);
+        } finally {
+            rmSync(root, { recursive: true, force: true });
+        }
+    });
+
     it('should include composites that render a slotted primitive inside them', () => {
         const storyEntries = [
             storyEntry('commanddialog-commanddialog--default', 'CommandDialog/CommandDialog.tsx'),
