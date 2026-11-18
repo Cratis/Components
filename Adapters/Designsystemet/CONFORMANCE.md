@@ -84,8 +84,6 @@ assert them exactly; fix the source, then delete the expectation.
   `#cc0000`, 2.51:1 on the dark surface (needs 4.5:1).
 - **Dark secondary dialog button contrast:** its text bridges to 4.4:1 on the dark dialog surface at
   `sm` and `md` (needs 4.5:1).
-- **Dialog text fields in forced colors:** Name, Email and Age draw their focus ring as a
-  `box-shadow`, which forced colors removes, so they show no ring.
 - **Column sort buttons in forced colors:** the DataPage header sort buttons (ID, Name, Email, Role)
   have no border, outline or fill, so they are indistinguishable flat text in forced colors.
 - **Paginator focus:** paging to the last page disables the activated Next button, so keyboard focus

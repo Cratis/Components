@@ -29,6 +29,7 @@
         "vitest.scrollbars.config.ts",
         "../Adapters/*/.storybook/**/*.tsx",
         "../Adapters/Designsystemet/browser/surfaces*.tsx",
+        "../Adapters/Designsystemet/browser/gallery-styles.d.ts",
         "../Source/global.d.ts",
         "../Source/renderer/index.ts"
     ],

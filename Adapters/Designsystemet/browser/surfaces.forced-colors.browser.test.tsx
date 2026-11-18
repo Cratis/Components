@@ -33,9 +33,7 @@ describe('the Designsystemet surfaces in forced-colors mode', () => {
                 weak.push(nameOf(document.activeElement as Element));
             }
         }
-        // Known finding: the dialog's text fields draw their focus ring as a box-shadow, which forced
-        // colors removes, so they show no ring. Remove the fields from this list once they are fixed.
-        expect(weak).toEqual(['Name', 'Email', 'Age']);
+        expect(weak).toEqual([]);
     });
 
     it('keeps DataPage search, sort and paginator controls distinguishable', async () => {
