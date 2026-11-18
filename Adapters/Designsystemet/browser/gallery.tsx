@@ -4,6 +4,7 @@
 import '@digdir/designsystemet-css';
 import '@digdir/designsystemet-css/theme.css';
 import '@cratis/components/tokens';
+import '@cratis/components/themes/designsystemet';
 import '@cratis/components/styles';
 import { commands, page } from 'vitest/browser';
 import { expect } from 'vitest';

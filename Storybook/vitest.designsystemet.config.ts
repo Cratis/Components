@@ -27,12 +27,14 @@ export default defineConfig({
     root: adapterRoot,
     plugins: [react()],
     optimizeDeps: {
-        include: ['axe-core', '@digdir/designsystemet-react', 'react-aria-components/Breadcrumbs', 'react-aria-components/TagGroup', 'react-aria-components/ToggleButtonGroup'],
+        include: ['axe-core', '@cratis/arc.react/commands', '@cratis/arc.react/dialogs', '@cratis/arc.react/queries', '@cratis/arc.react/stories', '@cratis/arc/commands', '@cratis/arc/queries', '@cratis/arc/reflection', '@cratis/arc/validation', '@cratis/fundamentals', '@storybook/react', 'allotment', 'react-aria-components/Modal', 'react-aria-components/Popover', 'react-aria-components/Select', 'storybook/test', '@digdir/designsystemet-react', 'react-aria-components/Breadcrumbs', 'react-aria-components/TagGroup', 'react-aria-components/ToggleButtonGroup'],
     },
     test: {
         name: 'designsystemet-browser',
         include: ['browser/**/*.browser.test.tsx'],
         testTimeout: 60_000,
+        // Focus, :focus-visible and keyboard behaviour need a foreground page, so run one file at a time.
+        fileParallelism: false,
         browser: {
             enabled: true,
             headless: true,

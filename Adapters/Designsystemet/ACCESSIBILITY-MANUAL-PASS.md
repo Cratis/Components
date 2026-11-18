@@ -36,7 +36,10 @@ say what a screen reader announces. This checklist is for the person who does.
 | Browse to the indeterminate progress bar | Name and busy/indeterminate, no invented value | | | |
 | Browse to the Surface (article) | Its `aria-label` landmark/region name | | | |
 
-## CommandDialog (authored now, stays unchecked until increment B)
+## CommandDialog
+
+The browser keyboard checks now cover focus trap, order, Escape and focus return; this table is the
+screen-reader half and is still unchecked.
 
 | Step | Expected announcement | VoiceOver | NVDA | Issue |
 | --- | --- | --- | --- | --- |
@@ -46,14 +49,17 @@ say what a screen reader announces. This checklist is for the person who does.
 | Step navigation | Current step and step count announced | | | |
 | Esc or Close | Dialog closes, focus returns to the opener | | | |
 
-## DataPage (authored now, stays unchecked until increment B)
+## DataPage
+
+There are no page-number buttons or `aria-current`; check that the "1 / 2" and range text are
+announced and that focus is not lost after paging to the last page (a known finding).
 
 | Step | Expected announcement | VoiceOver | NVDA | Issue |
 | --- | --- | --- | --- | --- |
 | Landmarks and headings | Page heading and landmarks reachable by rotor or element list | | | |
 | Table or list | Table or list semantics with row and column counts | | | |
 | Sort and filter controls | Name and current sort or filter state | | | |
-| Paginator | Control labels and "current page" state | | | |
+| Paginator | Control labels (First, Previous, Next, Last page), range and page text announced | | | |
 | Row actions | Action name includes the row it applies to | | | |
 
 ## Recording findings
