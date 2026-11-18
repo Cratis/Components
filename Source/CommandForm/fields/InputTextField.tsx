@@ -94,6 +94,10 @@ const coreTextInputDeclaration = Object.freeze({
 }) satisfies unstable_SlotDeclaration<'common.textInput'>;
 
 
+/** Resolves `common.textInput` and renders it; only mounted for types the slot covers. */
+const SlotTextInput = (props: TextInputProps) =>
+    renderSlot(unstable_useSlot('common.textInput', coreTextInputDeclaration), props);
+
 /** A single-line text field bound to a string property on an Arc command. */
 export const InputTextField = asCommandFormField<InputTextComponentProps>(
     (props) => {
@@ -102,7 +106,6 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             ariaLabel: props.pt?.root?.['aria-label'],
             ariaDescribedBy: props.pt?.root?.['aria-describedby'],
         });
-        const declaration = unstable_useSlot('common.textInput', coreTextInputDeclaration);
         const slotProps = {
             id: accessibility.controlId,
             'aria-label': accessibility.ariaLabel,
@@ -116,9 +119,10 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             className: props.className,
             pt: props.pt,
         };
-        // Types the slot contract does not cover (color, date, ...) keep the built-in markup.
+        // Types the slot contract does not cover (color, date, ...) keep the built-in markup and
+        // never resolve the slot, so a strict renderer without textInput cannot reject them.
         const control = isSlotTextInputType(props.type)
-            ? renderSlot(declaration, { ...slotProps, type: props.type })
+            ? <SlotTextInput {...slotProps} type={props.type} />
             : <InputTextFieldCore {...slotProps} type={props.type} />;
         return (
             <>
