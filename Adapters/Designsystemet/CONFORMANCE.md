@@ -25,5 +25,41 @@ checkbox, radio and switch `box`, `indicator`, `control` and `handle` parts are 
 hooks because Designsystemet paints those controls on the native input. Undocumented descendant
 order and sibling selectors are not portable contracts.
 
-This is automated jsdom and package evidence, not universal browser, visual, RTL, forced-colors,
-reduced-motion, or assistive-technology certification.
+## Browser evidence
+
+A separate CI job, `designsystemet-browser`, runs real Chromium against the nine-slot gallery
+(`browser/SlotGallery.tsx`) rendered through the adapter with the real Designsystemet stylesheet
+and theme:
+
+- axe with the WCAG 2.2 AA profile (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) in the
+  light and dark schemes at `sm`, `md` and `lg` sizes, with zero violations;
+- visual baselines for the same six combinations, committed for Linux Chromium only and rendered in
+  the pinned Playwright image (regenerate with `scripts/update-baselines.sh --update`);
+- keyboard: tab order across enabled controls, disabled controls skipped, focus ring of at least
+  2px, Enter and Space on buttons, Space on checkbox and switch, arrow keys on the radio group;
+- forced colors: enabled controls stay distinguishable and a focused button keeps an opaque ring; and
+- reduced motion: the spinner rotation slows down.
+
+## Manual
+
+Screen-reader behaviour (VoiceOver and NVDA) is a human pass tracked in
+[ACCESSIBILITY-MANUAL-PASS.md](./ACCESSIBILITY-MANUAL-PASS.md). It has not been performed.
+
+## Known upstream Designsystemet behaviour
+
+These are observed in the browser checks. They are not adapter defects and are not hidden by the
+tests.
+
+- **Spinner stroke under reduced motion:** Designsystemet slows `ds-spinner-rotate-animation` but
+  leaves `ds-spinner-stroke-animation` at its normal 2s. The test asserts the rotation only.
+- **Focus ring on `.ds-field`:** for checkbox, radio and switch, the ring is drawn on the wrapping
+  `.ds-field` through `:has(input:focus-visible)`, not on the input. The test measures the ring owner.
+- **`forced-color-adjust: none` buttons:** Designsystemet buttons paint their own colors in forced
+  colors mode. The test accepts a visible border or an opaque fill, and exempts the text-only
+  tertiary variants (Ghost and Link).
+
+## Not covered
+
+This is automated jsdom, package and Chromium evidence. It is not universal browser, other-engine,
+RTL or assistive-technology certification, and it does not cover CommandForm, CommandDialog or
+DataPage surfaces yet.
