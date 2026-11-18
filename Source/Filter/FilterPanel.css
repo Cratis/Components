@@ -72,7 +72,7 @@
     background: var(--cratis-highlight-bg);
     color: var(--cratis-text-color);
     font-size: var(--cratis-font-size-md);
-    font-weight: var(--cratis-font-weight-medium);
+    font-weight: var(--cratis-type-weight-medium);
     cursor: pointer;
     transition: background 120ms ease;
 }
@@ -226,7 +226,7 @@
     padding: 0;
     cursor: pointer;
     font-size: 0.82rem;
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }

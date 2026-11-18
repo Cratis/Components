@@ -62,7 +62,7 @@
 .cratis-toggle-group__option[data-selected] {
     background: var(--cratis-surface-card);
     box-shadow: var(--cratis-shadow-card, none);
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
 }
 .cratis-toggle-group__icon {
     display: inline-flex;
@@ -92,7 +92,7 @@
 .cratis-tabs__tab[data-selected] {
     border-bottom-color: var(--cratis-primary-color);
     color: var(--cratis-text-color);
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
 }
 .cratis-tabs__panel {
     padding: 0.75rem 0;
@@ -181,7 +181,7 @@
 }
 .cratis-breadcrumbs__item[data-selected] {
     color: var(--cratis-text-color);
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
 }
 .cratis-breadcrumbs__separator {
     color: var(--cratis-text-color-secondary);

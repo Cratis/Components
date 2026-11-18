@@ -81,7 +81,7 @@
     color: var(--cratis-text-color);
     text-align: start;
     font-size: var(--cratis-font-size-sm);
-    font-weight: var(--cratis-font-weight-bold);
+    font-weight: var(--cratis-type-weight-bold);
 }
 .cratis-datatable__sort {
     display: inline-flex;

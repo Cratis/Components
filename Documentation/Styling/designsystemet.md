@@ -32,11 +32,11 @@ Set `data-color-scheme="light"`, `"dark"` or `"auto"` and, optionally, `data-siz
 | `--cratis-{info,success,warning,danger}-foreground`, `--cratis-focus-ring-inset` | `--ds-color-*-text-default` (status text on outline, ghost, and link buttons), and an inward two-tone ring from the outer and inner focus colors |
 | `--cratis-border-radius`, `--cratis-corner-*`                                  | `--ds-border-radius-*`                                                           |
 | `--cratis-control-height`, `-small`, `-large`                                  | `--ds-size-12`, `--ds-size-10`, `--ds-size-14`, so they follow `data-size`       |
-| `--cratis-font-size-*`, `--cratis-font-weight-*`                               | `--ds-font-size-1`..`3`, `--ds-font-weight-*`                                    |
+| `--cratis-font-size-*`, `--cratis-type-weight-*`                               | `--ds-font-size-1`..`3`, `--ds-font-weight-*`                                    |
 | Shadows, disabled opacity                                                      | `--ds-shadow-*`, `--ds-opacity-disabled`                                         |
 | `--cratis-focus-ring`, `--cratis-focus-outline`, `--cratis-focus-outline-offset` | `--ds-color-focus-inner`, `--ds-color-focus-outer`, `--ds-border-width-focus`    |
 
-Designsystemet has no bold weight, so `--cratis-font-weight-bold` maps to its semibold. The backdrop (`--cratis-maskbg`) and the `--cratis-z-index-*` tokens have no Designsystemet equivalent and keep their `tokens` values. The font family is not a token: components inherit it, so apply `--ds-font-family` to your document as Designsystemet's base styles do.
+Designsystemet has no bold weight, so `--cratis-type-weight-bold` maps to its semibold. The backdrop (`--cratis-maskbg`) and the `--cratis-z-index-*` tokens have no Designsystemet equivalent and keep their `tokens` values. The font family is not a token: components inherit it, so apply `--ds-font-family` to your document as Designsystemet's base styles do.
 
 The bridge redeclares the tokens on `:root`, `[data-color-scheme]` and `[data-size='sm' | 'md' | 'lg']`, the elements where Designsystemet redeclares its own variables. That is what makes a nested scheme or size work. It does not use a bare `[data-size]` selector because the Cratis `Button`, `Avatar`, and `Badge` set `data-size` to their own values (`normal`, `small`, `large`).
 

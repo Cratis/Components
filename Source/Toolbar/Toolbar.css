@@ -50,7 +50,7 @@
 
 .toolbar-button__text {
     font-size: var(--cratis-font-size-sm);
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
     line-height: 1;
     white-space: nowrap;
 }
@@ -59,7 +59,7 @@
 .toolbar-project-name {
     padding: 0 8px;
     font-size: var(--cratis-font-size-sm);
-    font-weight: var(--cratis-font-weight-medium);
+    font-weight: var(--cratis-type-weight-medium);
     color: var(--cratis-text-color);
     white-space: nowrap;
 }
@@ -330,7 +330,7 @@
 
 .toolbar-drawer-title {
     font-size: var(--cratis-font-size-sm);
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
     color: var(--cratis-text-color);
     overflow-wrap: anywhere;
 }
@@ -397,7 +397,7 @@
     overflow: hidden;
     overflow-wrap: anywhere;
     font-size: 0.8125rem;
-    font-weight: var(--cratis-font-weight-medium);
+    font-weight: var(--cratis-type-weight-medium);
     line-height: 1.2;
 }
 
@@ -437,7 +437,7 @@
 
 .toolbar-button__label {
     font-size: var(--cratis-font-size-sm);
-    font-weight: var(--cratis-font-weight-medium);
+    font-weight: var(--cratis-type-weight-medium);
     color: inherit;
     white-space: nowrap;
 }

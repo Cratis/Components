@@ -50,7 +50,7 @@
     gap: 0.125rem;
 }
 .cratis-toast__title {
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
 }
 .cratis-toast__description {
     color: var(--cratis-text-color-secondary);

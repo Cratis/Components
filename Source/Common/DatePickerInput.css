@@ -146,7 +146,7 @@
     height: 2rem;
     color: var(--cratis-text-color-secondary);
     font-size: var(--cratis-font-size-xs);
-    font-weight: var(--cratis-font-weight-medium);
+    font-weight: var(--cratis-type-weight-medium);
 }
 .cratis-date-picker__cell {
     display: flex;

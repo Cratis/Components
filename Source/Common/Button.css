@@ -14,7 +14,7 @@
     background: var(--cratis-action-background);
     color: var(--cratis-action-text);
     font: inherit;
-    font-weight: var(--cratis-font-weight-semibold);
+    font-weight: var(--cratis-type-weight-semibold);
     line-height: 1;
     cursor: pointer;
     transition:
