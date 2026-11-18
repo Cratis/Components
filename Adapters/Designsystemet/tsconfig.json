@@ -13,7 +13,9 @@
         "src/**/*.tsx",
         "for_*/**/*.ts",
         "for_*/**/*.tsx",
+        "browser/**/*.ts",
+        "browser/**/*.tsx",
         "vitest.setup.ts"
     ],
-    "exclude": ["dist", "node_modules"]
+    "exclude": ["dist", "node_modules", "browser/surfaces*.tsx"]
 }

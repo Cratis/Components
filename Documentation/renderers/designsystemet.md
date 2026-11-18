@@ -89,3 +89,10 @@ ReactDOM to React 19. Vendor packages are peers; exact current versions remain d
 The source manifest declares `@cratis/components >=4 <5`. The release step replaces that range with
 the exact release version, so a published adapter requires the `@cratis/components` release it
 shipped with.
+
+## Accessibility evidence
+
+A dedicated CI job runs axe, keyboard, forced-colors, reduced-motion and visual checks for the nine
+slots in Chromium. A manual VoiceOver and NVDA pass is documented as a checklist but has not been
+performed, so the adapter makes no assistive-technology claim. See the adapter's
+`CONFORMANCE.md` and `ACCESSIBILITY-MANUAL-PASS.md` in `Adapters/Designsystemet`.

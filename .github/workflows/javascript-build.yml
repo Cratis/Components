@@ -443,6 +443,59 @@ jobs:
               working-directory: Storybook
               run: node scripts/run-story-matrix.mjs --shard ${{ matrix.shard }}/3
 
+    # Real-browser accessibility, keyboard, forced-colors, reduced-motion and visual evidence for
+    # the Designsystemet adapter (Cratis/Components#534). It runs in the Playwright image whose tag
+    # matches the locked Playwright version and is pinned by digest, so the committed Linux screenshot baselines
+    # (Adapters/Designsystemet/browser/__screenshots__/*-chromium-linux.png) are rendered by the same
+    # Chromium and fonts that produced them. Regenerate baselines with
+    # `Adapters/Designsystemet/scripts/update-baselines.sh`; never commit other platforms' files.
+    designsystemet-browser:
+        needs: [changes]
+        if: needs.changes.outputs.relevant == 'true'
+        name: Designsystemet browser checks
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        container:
+            image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+            options: --ipc=host
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup node
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 24.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Restore Yarn package cache
+              id: yarn-cache
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .yarn/cache
+                  key: ${{ runner.os }}-yarn-cache-v3-${{ hashFiles('yarn.lock', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
+                  restore-keys: |
+                      ${{ runner.os }}-yarn-cache-v3-
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Verify the Playwright image matches the locked Playwright version
+              run: test "$(yarn playwright --version)" = "Version 1.63.0"
+
+            - name: Build packages the browser checks import
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn workspace @cratis/components run prepare
+                  yarn workspace @cratis/components.conformance run build
+                  yarn workspace @cratis/components.designsystemet run build
+
+            - name: Run Designsystemet browser checks
+              run: yarn workspace @cratis/components.storybook test-designsystemet
+
     # Aggregates every other job in this workflow, including every Source, TypeScript, public-types,
     # Storybook, published-artifact, package-manager, Arc-consumer and renderer-adapter matrix leg,
     # into the single `Build` check. Every leg must succeed for relevant changes; only a verified
@@ -465,6 +518,7 @@ jobs:
             - verify-arc-consumers
             - verify-package-managers
             - verify-renderer-adapters
+            - designsystemet-browser
         if: always()
         steps:
             - name: Checkout code
