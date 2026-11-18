@@ -1,8 +1,13 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import type { FocusEventHandler, HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import { unstable_useSlot } from '../../renderer/RendererContext';
+import { renderSlot } from '../../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../../renderer/slots';
+import type { SwitchProps } from '../../Common/Switch';
+import { joinClassNames, userChange } from './fieldSlotHelpers';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
@@ -35,6 +40,77 @@ interface ToggleSwitchFieldComponentProps
     unstyled?: boolean;
 }
 
+/** Core `ToggleSwitchField` markup, used when no adapter supplies `common.switch`. */
+const ToggleSwitchFieldCore = ({
+    id,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    label,
+    checked,
+    onChange,
+    onBlur,
+    invalid,
+    className,
+    pt,
+}: SwitchProps) => {
+    return (
+        <label
+            {...pt?.root}
+            className={joinClassNames('cratis-choice-field', pt?.root?.className, className)}
+            onBlur={onBlur as FocusEventHandler<Element> | undefined}
+            data-cratis-part='root'
+            data-cratis-component='ToggleSwitchField'
+            data-disabled={pt?.input?.disabled || undefined}
+            data-invalid={invalid || undefined}
+            data-selected={checked || undefined}
+        >
+            <input
+                {...pt?.input}
+                id={id}
+                aria-label={ariaLabel}
+                aria-describedby={ariaDescribedBy}
+                type='checkbox'
+                role='switch'
+                checked={checked}
+                onChange={(event) => onChange?.(event.currentTarget.checked, userChange(event))}
+                aria-invalid={invalid || undefined}
+                className={joinClassNames('cratis-choice-field__native', pt?.input?.className)}
+                data-cratis-part='input'
+                data-disabled={pt?.input?.disabled || undefined}
+                data-invalid={invalid || undefined}
+                data-selected={checked || undefined}
+            />
+            <span
+                {...pt?.control}
+                className={joinClassNames('cratis-switch__control', pt?.control?.className)}
+                data-cratis-part='control'
+                data-disabled={pt?.input?.disabled || undefined}
+                data-invalid={invalid || undefined}
+                data-selected={checked || undefined}
+                aria-hidden='true'
+            >
+                <span
+                    {...pt?.handle}
+                    className={joinClassNames('cratis-switch__handle', pt?.handle?.className)}
+                    data-cratis-part='handle'
+                    data-disabled={pt?.input?.disabled || undefined}
+                    data-invalid={invalid || undefined}
+                    data-selected={checked || undefined}
+                ></span>
+            </span>
+            {label && <span className='cratis-choice-field__label'>{label}</span>}
+        </label>
+    );
+};
+
+/** Frozen Core declaration resolved when no active renderer supplies `common.switch`. */
+const coreSwitchDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: ToggleSwitchFieldCore,
+}) satisfies unstable_SlotDeclaration<'common.switch'>;
+
+
 /** An on/off switch bound to a boolean property on an Arc command. */
 export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentProps>(
     (props) => {
@@ -43,64 +119,22 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
             ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
             ariaDescribedBy: props.pt?.input?.['aria-describedby'],
         });
+        const declaration = unstable_useSlot('common.switch', coreSwitchDeclaration);
         return (
             <>
-        <label
-            {...props.pt?.root}
-            className={['cratis-choice-field', props.pt?.root?.className, props.className]
-                .filter(Boolean)
-                .join(' ')}
-            onBlur={props.onBlur}
-            data-cratis-part='root'
-            data-cratis-component='ToggleSwitchField'
-            data-disabled={props.pt?.input?.disabled || undefined}
-            data-invalid={props.invalid || undefined}
-            data-selected={props.value || undefined}
-        >
-            <input
-                {...props.pt?.input}
-                id={accessibility.controlId}
-                aria-label={accessibility.ariaLabel}
-                aria-describedby={accessibility.ariaDescribedBy}
-                type='checkbox'
-                role='switch'
-                checked={props.value}
-                onChange={(event) => props.onChange(event.currentTarget.checked)}
-                aria-invalid={props.invalid || undefined}
-                className={['cratis-choice-field__native', props.pt?.input?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='input'
-                data-disabled={props.pt?.input?.disabled || undefined}
-                data-invalid={props.invalid || undefined}
-                data-selected={props.value || undefined}
-            />
-            <span
-                {...props.pt?.control}
-                className={['cratis-switch__control', props.pt?.control?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='control'
-                data-disabled={props.pt?.input?.disabled || undefined}
-                data-invalid={props.invalid || undefined}
-                data-selected={props.value || undefined}
-                aria-hidden='true'
-            >
-                <span
-                    {...props.pt?.handle}
-                    className={['cratis-switch__handle', props.pt?.handle?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='handle'
-                    data-disabled={props.pt?.input?.disabled || undefined}
-                    data-invalid={props.invalid || undefined}
-                    data-selected={props.value || undefined}
-                />
-            </span>
-            {props.label && (
-                <span className='cratis-choice-field__label'>{props.label}</span>
-            )}
-        </label>
+                {renderSlot(declaration, {
+                    id: accessibility.controlId,
+                    'aria-label': accessibility.ariaLabel,
+                    'aria-describedby': accessibility.ariaDescribedBy,
+                    label: props.label,
+                    checked: props.value,
+                    onChange: (checked) => props.onChange(checked),
+                    onBlur: props.onBlur,
+                    invalid: props.invalid,
+                    'aria-invalid': props.invalid || undefined,
+                    className: props.className,
+                    pt: props.pt,
+                })}
                 {accessibility.hiddenError}
             </>
         );
