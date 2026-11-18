@@ -8,7 +8,7 @@ import StorybookEmbed from '@components/StorybookEmbed.astro';
 
 Use the Cratis Components Storybook to inspect a control's props and states before adding it to your screen. Choose a story in the sidebar; its autodocs page is generated from public component types and TSDoc.
 
-The **Renderer** control switches between the built-in renderer, Material UI, PrimeReact 11, and PrimeReact 10. Switching remounts the preview iframe and loses the story's local state, so repeat any interaction you want to compare. The adapters replace only their declared presentation slots, not every component in the catalog; [Choose a renderer](renderers/index.md) explains that boundary.
+The **Renderer** control switches between the built-in renderer, Material UI, PrimeReact 11, PrimeReact 10, and Designsystemet. Switching remounts the preview iframe and loses the story's local state, so repeat any interaction you want to compare. The adapters replace only their declared presentation slots, not every component in the catalog; [Choose a renderer](renderers/index.md) explains that boundary.
 
 Use the **Appearance** toolbar to compare light and dark baseline modes. To use a component in your application, follow [Getting started](getting-started.mdx) for providers and styles, or [Building a form](building-a-form.md) for a command-bound input.
 
@@ -19,6 +19,7 @@ Append one of these paths to the composed Storybook URL. Include the renderer re
 - Built-in renderer: `/?path=/story/cratis-built-in_common-button--ghost`
 - Material UI renderer: `/?path=/story/cratis-mui_common-button--ghost`
 - PrimeReact 10 renderer: `/?path=/story/cratis-primereact10_common-button--ghost`
+- Designsystemet renderer: `/?path=/story/cratis-designsystemet_common-button--ghost`
 - PrimeReact 11 renderer: `/?path=/story/cratis-primereact_common-button--ghost`
 
 For an embedded manager with the Renderer control, use the same path in an iframe URL, for example `/?path=/story/cratis-mui_common-button--ghost&embed=1`. For a story-only iframe without the manager, use the renderer's preview URL instead: `/renderers/cratis-mui/iframe.html?id=common-button--ghost`.

@@ -354,6 +354,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@cratis/components.designsystemet@workspace:Adapters/Designsystemet":
+  version: 0.0.0-use.local
+  resolution: "@cratis/components.designsystemet@workspace:Adapters/Designsystemet"
+  dependencies:
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
+    "@cratis/components": "workspace:^"
+    "@cratis/components.conformance": "workspace:^"
+    "@cratis/fundamentals": "npm:7.25.1"
+    "@digdir/designsystemet-css": "npm:1.24.0"
+    "@digdir/designsystemet-react": "npm:1.24.0"
+    "@types/react": "npm:^19.3.0"
+    react: "npm:^19.3.0"
+    react-dom: "npm:^19.3.0"
+    reflect-metadata: "npm:0.2.2"
+    tsyringe: "npm:4.10.0"
+  peerDependencies:
+    "@cratis/components": ">=4 <5"
+    "@digdir/designsystemet-css": ">=1.24 <2"
+    "@digdir/designsystemet-react": ">=1.24 <2"
+    react: ^19.0.0
+    react-dom: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
 "@cratis/components.migrator@workspace:Migrator":
   version: 0.0.0-use.local
   resolution: "@cratis/components.migrator@workspace:Migrator"
@@ -590,6 +615,53 @@ __metadata:
   bin:
     cyclonedx-yarn: bin/cyclonedx-yarn-cli.js
   checksum: 10/0684f6cf2be11439a8557d76a830166c08ef879f7f3e5643985f4393b710a8a9a4485310fbf0230ce0484c27257e86260480353caeb4f808f6705c5b2246b560
+  languageName: node
+  linkType: hard
+
+"@digdir/designsystemet-css@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-css@npm:1.24.0"
+  dependencies:
+    "@digdir/designsystemet-types": "npm:1.24.0"
+  checksum: 10/6b1a1dfc385c40877410dff7f99aeca0a70e50fba7131b60561b68fa36eb474759d96dc5bee00a5b75bdb7eadccacda26709a02aa496823f6ff4e85ab0d288bf
+  languageName: node
+  linkType: hard
+
+"@digdir/designsystemet-react@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-react@npm:1.24.0"
+  dependencies:
+    "@digdir/designsystemet-types": "npm:1.24.0"
+    "@digdir/designsystemet-web": "npm:1.24.0"
+    "@floating-ui/dom": "npm:^1.8.0"
+    "@floating-ui/react": "npm:0.26.23"
+    "@radix-ui/react-slot": "npm:^1.5.0"
+    "@tanstack/react-virtual": "npm:^3.14.25"
+    clsx: "npm:^2.1.1"
+  peerDependencies:
+    react: ">=18.3.1 || ^19.0.0"
+    react-dom: ">=18.3.1 || ^19.0.0"
+  checksum: 10/bd88dff205f968283277529e89413984daa1799dac9a9e3f1e911acdfb63a80c799911ee326c28e59f508b2fadc877663166e331873be771b90846fb89f310d7
+  languageName: node
+  linkType: hard
+
+"@digdir/designsystemet-types@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-types@npm:1.24.0"
+  checksum: 10/028d299a70983cbe66a80ea0fa966864a36463d93d41731354011a2ba8a0348bf6e127213d51f1c303e3967fbc9fc0989fc83fcc4b9b12f3ce3a3618f1faedb6
+  languageName: node
+  linkType: hard
+
+"@digdir/designsystemet-web@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-web@npm:1.24.0"
+  dependencies:
+    "@floating-ui/dom": "npm:^1.8.0"
+    "@u-elements/u-combobox": "npm:^2.1.5"
+    "@u-elements/u-datalist": "npm:^2.0.3"
+    "@u-elements/u-details": "npm:^1.0.0"
+    "@u-elements/u-tabs": "npm:^1.0.4"
+  checksum: 10/9492fe4ce9243c687b70652435f9ac037835cfc7ea393d352d2601a4db8ed2f713d263f948df84ac9ca5ea93c8fe621468e37d070422f7cd15b5358189ce581d
   languageName: node
   linkType: hard
 
@@ -1204,6 +1276,58 @@ __metadata:
     "@noble/hashes":
       optional: true
   checksum: 10/7dde00ae8040ec032ba3c287d210d7d555986caaf81a1215311c180422697d739a1952eb9d91e841132b18a19a910cdd02e4914136db3cc87baaa0fdd84b1e87
+  languageName: node
+  linkType: hard
+
+"@floating-ui/core@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@floating-ui/core@npm:1.8.0"
+  dependencies:
+    "@floating-ui/utils": "npm:^0.2.12"
+  checksum: 10/762cd5677fd4e82597db2efdd8f1e81d248eac5615d8be755e1bbb5f12a14c56a6bccd735676374d4914db7ccb3f09ec405ec7433e8c48a5521f5d66dc8dd5d6
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@floating-ui/dom@npm:1.8.0"
+  dependencies:
+    "@floating-ui/core": "npm:^1.8.0"
+    "@floating-ui/utils": "npm:^0.2.12"
+  checksum: 10/2e7d75fb702875a62795dd8529569f27eff53167768d75476056d6bf824a1ba608177a8877ed9d728eadb5787b4bd07b043fb2c3125b7ad2505a398680b323c0
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react-dom@npm:^2.1.1":
+  version: 2.1.9
+  resolution: "@floating-ui/react-dom@npm:2.1.9"
+  dependencies:
+    "@floating-ui/dom": "npm:^1.8.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10/d775609760291d0f1477a9e23fc3508a35bcda1f36601d74bd3e94b817841b266914fa9964697963cb1ac09b451e51283a2ce25f0c3719d0aca761e327bdee43
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react@npm:0.26.23":
+  version: 0.26.23
+  resolution: "@floating-ui/react@npm:0.26.23"
+  dependencies:
+    "@floating-ui/react-dom": "npm:^2.1.1"
+    "@floating-ui/utils": "npm:^0.2.7"
+    tabbable: "npm:^6.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10/a2ffeb0bae72cac9e6583d9651e75e94c261a9e78ca4a5e862b7d33f2c19ae014cbe272627a0a0a5a2b526280efab17ec687d32ba02f6ce4e924bec562ae06ab
+  languageName: node
+  linkType: hard
+
+"@floating-ui/utils@npm:^0.2.12, @floating-ui/utils@npm:^0.2.7":
+  version: 0.2.12
+  resolution: "@floating-ui/utils@npm:0.2.12"
+  checksum: 10/ec4e176fb22d33d75df752c5acf82dcaacae40ed2d09c1a5015cb4081318fff20260db216678e952344b95f90c6b43214762b69eba7c51556ecd82c35a795cff
   languageName: node
   linkType: hard
 
@@ -2174,6 +2298,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-compose-refs@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-compose-refs@npm:1.1.5"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/ffc1a289d944ba9db818bc645e44efb6ce122a1585b61fcd97737ba4d18b60ca585b3d46ff1836b6ad6c4a21c795c5082d540af58cb32daa1b692dffed3d2a15
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-slot@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@radix-ui/react-slot@npm:1.5.0"
+  dependencies:
+    "@radix-ui/react-compose-refs": "npm:1.1.5"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/1798212d0852181c49ca5a2c614d9624f0ca116f058c291b7b4b7d4c8551ed3241500fa5c9cd094e769e5d473c2b13617ff002135d7840f06798769d1bf21d4d
+  languageName: node
+  linkType: hard
+
 "@react-types/shared@npm:^3.36.1":
   version: 3.36.1
   resolution: "@react-types/shared@npm:3.36.1"
@@ -3052,6 +3204,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/react-virtual@npm:^3.14.25":
+  version: 3.14.26
+  resolution: "@tanstack/react-virtual@npm:3.14.26"
+  dependencies:
+    "@tanstack/virtual-core": "npm:3.19.11"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/2e849986e4e06e2ac0aa43ed2343077ce956ddae3caf82f936d87846e8e6499fb421137c7dcce433072a3c3d9b33e138d4fdaac29cef5a946927c3a4dd244ac8
+  languageName: node
+  linkType: hard
+
+"@tanstack/virtual-core@npm:3.19.11":
+  version: 3.19.11
+  resolution: "@tanstack/virtual-core@npm:3.19.11"
+  checksum: 10/10047d9bca6e97c5562e96dcca92eaeb80ee895a50641ce88c6ce596faf532901f48d5ee03806e452ee9e5e068f94d99f50531f7637a533c32585a7cc23db10c
+  languageName: node
+  linkType: hard
+
 "@testing-library/dom@npm:^10.4.1":
   version: 10.4.2
   resolution: "@testing-library/dom@npm:10.4.2"
@@ -3693,6 +3864,34 @@ __metadata:
   version: 7.0.2
   resolution: "@typescript/typescript-win32-x64@npm:7.0.2"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@u-elements/u-combobox@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@u-elements/u-combobox@npm:2.1.5"
+  checksum: 10/ee4fec2498dd05f3aedcbe0cb42c1de89154ea760a9b38871afe2cd15af5567666d813ed6f9e422d05b0cc9e69d9ac60bd950d3ceba76843297a4c70f0b085f3
+  languageName: node
+  linkType: hard
+
+"@u-elements/u-datalist@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@u-elements/u-datalist@npm:2.0.3"
+  checksum: 10/d14255d9b899cb60b5b2d0ddbd7b43d71f3c8856672695d9c19c5b78edb807ec7058f3acdb4a429b7f82e9a0de2e5e53535e8c8f222e1abf3fe9577ea03cd679
+  languageName: node
+  linkType: hard
+
+"@u-elements/u-details@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@u-elements/u-details@npm:1.0.0"
+  checksum: 10/09387fef9614b470761646e46ebb927190d6f5edb456a41b2be7d852fd02130a8f3a582375bb19c829444bc1013caf901755d3c7206956eaf434e9ecbf79f7f3
+  languageName: node
+  linkType: hard
+
+"@u-elements/u-tabs@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@u-elements/u-tabs@npm:1.0.4"
+  checksum: 10/70393d1515c889d4889aab37a0e40c3be464161be34622c720be2b1717779d1f622352c91194e7382b4aca51ccd3b5cab0fbc83f1b41f8815a760974b60feb7a
   languageName: node
   linkType: hard
 
@@ -7510,6 +7709,13 @@ __metadata:
   dependencies:
     "@pkgr/core": "npm:^0.3.6"
   checksum: 10/188544a829dbd38abd144281960835c1f8027aaa495b7c40d39ebf0c1c63a4a41c0edc42818b7ada9b5c0c15fba2f625b472220d128798fe98f9181fed84e6a2
+  languageName: node
+  linkType: hard
+
+"tabbable@npm:^6.0.0":
+  version: 6.5.2
+  resolution: "tabbable@npm:6.5.2"
+  checksum: 10/262b307589c4d9ab0f64d777ddcf1012e8d731ce16ac659329735b53deb6b441ceaf3ed9351bbcb04bb300ba424d0256248fae404497839d9541e8972cbbeafe
   languageName: node
   linkType: hard
 
