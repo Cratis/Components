@@ -30,6 +30,22 @@ atomic interaction slots with a separate behavior boundary; a stable adapter can
 ones listed under [stable atomic slots](#stable-atomic-slots). It also does not include a composite
 such as DataPage or CommandDialog.
 
+### CommandForm fields that reach these slots
+
+CommandForm fields render through the slots above, so a primitive adapter restyles them without
+replacing the field. Without an adapter, the field renders the same markup, classes, `data-cratis-*`
+markers, and accessibility attributes as before. Field-level validation, ids, accessible names, and
+error text stay owned by the field; the slot only presents the control.
+
+| CommandForm field  | Slot                | Notes                                                              |
+| ------------------ | ------------------- | ------------------------------------------------------------------ |
+| `InputTextField`   | `common.textInput`  | `text`, `email`, `password`, `search`, `tel`, and `url` types only          |
+| `TextAreaField`    | `common.textArea`   | Default of five rows is passed to the slot                         |
+| `CheckboxField`    | `common.checkbox`   | Boolean value                                                      |
+| `ToggleSwitchField`| `common.switch`     | Boolean value                                                      |
+| `RadioGroupField`  | `common.radio`      | One slot per option; the group container stays built in            |
+| `RadioButtonField` | `common.radio`      | Selects its `buttonValue`                                          |
+
 ## Stable adapter API
 
 Adapter packages import the bounded contract from `@cratis/components/renderer`:

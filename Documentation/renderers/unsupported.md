@@ -72,6 +72,16 @@ visual fidelity, browser support, accessibility, assistive-technology behavior, 
 security, licensing compliance, or production suitability. Read the exact adapter package manifest,
 README, `CONFORMANCE.md`, notices, and upstream terms for the version under evaluation.
 
+## No adaptation of the remaining CommandForm fields
+
+Only the fields listed in the [primitive profile](primitive-adaptation.md#commandform-fields-that-reach-these-slots)
+reach a presentation slot. `NumberField`, `NumberInputField`, `GuidField`, `PasswordField`,
+`SliderField`, `RatingField`, `ColorPickerField`, `ChipsField`, `CalendarField`, `DropdownField`, and
+`MultiSelectField` keep their built-in markup, as do `InputTextField` types `color`, `date`,
+`datetime-local`, and `time`. The nine stable slots have no contract for numeric, slider, rating,
+color, chip, calendar, or select controls, and `TextInputProps` does not cover those input types, so
+an adapter cannot restyle them without a new slot or profile version.
+
 ## Supported decisions
 
 Use the [renderer overview](index.md) to choose explicit ownership, the [primitive profile](primitive-adaptation.md)
