@@ -12,6 +12,7 @@ import type { TextAreaProps } from '../Common/TextArea';
 import type { TextInputProps } from '../Common/TextInput';
 import type { TooltipProps } from '../Common/Tooltip';
 import type { TablePaginatorProps } from '../DataTables/TablePaginator';
+import type { DropdownProps } from '../Dropdown/Dropdown';
 import type { ProgressBarProps } from '../Display/ProgressBar';
 import type { CratisPresentationUiLibraryProviderProps } from './manifest';
 import type { unstable_SlotMap } from './slots';
@@ -87,6 +88,7 @@ export type CratisPresentationSlotMap = {
 export const cratisAtomicSlotIds = Object.freeze([
     'datatables.paginator',
     'common.tooltip',
+    'dropdown.select',
 ] as const);
 
 /** Identifier of one stable atomic slot. */
@@ -105,6 +107,11 @@ export interface CratisAtomicSlots {
      * the popup as the `popup` part; there is no ref.
      */
     readonly 'common.tooltip': TooltipProps;
+    /**
+     * Select contract: the public `DropdownProps` with an untyped value, the `DropdownParts` parts
+     * and no ref. The adapter owns the trigger, filter, listbox, keyboard and selection callbacks.
+     */
+    readonly 'dropdown.select': DropdownProps<unknown>;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */

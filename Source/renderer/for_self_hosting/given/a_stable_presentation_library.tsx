@@ -3,6 +3,7 @@
 
 import type { ComponentType } from 'react';
 import type { TooltipProps } from '../../../Common/Tooltip';
+import type { DropdownProps } from '../../../Dropdown/Dropdown';
 import type { TablePaginatorProps } from '../../../DataTables/TablePaginator';
 import {
     CRATIS_PRESENTATION_ABI_VERSION,
@@ -47,6 +48,18 @@ export const tooltipAtomicSlots = (
     render: ComponentType<TooltipProps> = AdapterTooltip,
 ): CratisAtomicSlotMap => ({
     'common.tooltip': { mode: 'atomic', fidelity: 'native', render },
+});
+
+/** Adapter-owned select that echoes the value it received. */
+export const AdapterDropdown: ComponentType<DropdownProps<unknown>> = ({ value }) => (
+    <div data-adapter-dropdown={String(value)} />
+);
+
+/** Atomic map implementing the stable select with the adapter's component. */
+export const dropdownAtomicSlots = (
+    render: ComponentType<DropdownProps<unknown>> = AdapterDropdown,
+): CratisAtomicSlotMap => ({
+    'dropdown.select': { mode: 'atomic', fidelity: 'native', render },
 });
 
 /** Builds a stable presentation library, optionally with atomic slots. */

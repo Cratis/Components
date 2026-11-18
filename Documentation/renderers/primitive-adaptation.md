@@ -225,7 +225,24 @@ Mount the popup in the overlay container from `unstable_useOverlayEnvironment()`
 dialogs. Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
 attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
 selector and cannot own the trigger or popup parts, so those three adapters keep the built-in
-tooltip. The dialog, dropdown, and date picker atomic slots are not stable yet.
+tooltip.
+
+### `dropdown.select`
+
+| Contract | Value |
+| --- | --- |
+| Props | `DropdownProps<unknown>`, the public `Dropdown` props; `value` and `onChange` carry the selected value, or the array in `multiple` mode |
+| Ref | None; the select does not forward a ref |
+| Parts | `DropdownParts`: `root`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`, plus the legacy `input` and `select` aliases |
+| Behavior | One keyboard and focus owner: the trigger or the filter input opens the listbox, arrows and Enter select, Escape closes, and `onChange` is called once per user selection with `source: 'user'` and the native event |
+| Fallback | The built-in `Dropdown` implementation |
+| Conformance | The `dropdown.select` profile: parts, pass-through, state coverage, server rendering, hydration, and one `onChange` call for the **Viewer** option |
+
+Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
+adapter implements this slot yet: a faithful implementation has to reproduce every part above, the
+filter and multiple-select paths, and the legacy aliases, which none of the Designsystemet, MUI, or
+PrimeReact select controls provide without re-implementing the built-in `Dropdown`. All four
+adapters keep the built-in select. The dialog and date picker atomic slots are not stable yet.
 
 ## Fallback
 

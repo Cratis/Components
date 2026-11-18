@@ -35,6 +35,7 @@ describe('when defining a presentation library with atomic slots', () => {
         expect(cratisAtomicSlotIds).to.deep.equal([
             'datatables.paginator',
             'common.tooltip',
+            'dropdown.select',
         ]);
         expect(Object.isFrozen(cratisAtomicSlotIds)).to.equal(true);
     });
