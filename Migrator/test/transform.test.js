@@ -210,6 +210,9 @@ describe('root namespace maps', () => {
             './TimeMachine/styles',
             './Toolbar/styles',
             './styles/base',
+            // New stylesheet-only Designsystemet token bridge; never a Components 3 namespace and
+            // not a symbol import, so the codemod has nothing to rewrite.
+            './themes/designsystemet',
         ]);
         const unaccounted = Object.keys(pkg.exports ?? {}).filter(
             (subpath) =>

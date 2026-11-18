@@ -5,6 +5,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 import { applyDesignsystemetMode } from '../.storybook/designsystemet';
+import { unstable_RendererScope as RendererScope } from '../renderer';
+import { unstable_cratisBuiltIn } from '../renderer/builtin';
 import { Badge } from '../Display/Badge';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { Button } from './Button';
@@ -37,7 +39,13 @@ const meta = {
             useLayoutEffect(() => {
                 applyDesignsystemetMode(document.documentElement, 'designsystemet-light', 'md');
             });
-            return <Story />;
+            // The bridge maps Designsystemet tokens onto the built-in renderer's CSS custom properties, so
+            // the story pins the built-in renderer locally; adapter renderers bring their own styling.
+            return (
+                <RendererScope use={unstable_cratisBuiltIn}>
+                    <Story />
+                </RendererScope>
+            );
         },
     ],
 } satisfies Meta;
@@ -105,12 +113,14 @@ export const Primitives: Story = {
     ),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        // Control heights follow data-size, so compare the rendered boxes.
-        const smallInput = canvas.getAllByRole('combobox', { name: 'Customer' })[0];
-        const largeInput = canvas.getAllByRole('combobox', { name: 'Customer' })[2];
-        await expect(largeInput.getBoundingClientRect().height).toBeGreaterThan(
-            smallInput.getBoundingClientRect().height,
-        );
+        // The bridge's contract is the control min-height token following data-size. The rendered box
+        // also depends on content and global preview CSS, so compare the computed min-height.
+        const [small, medium, large] = canvas
+            .getAllByRole('combobox', { name: 'Customer' })
+            .slice(0, 3)
+            .map((input) => parseFloat(getComputedStyle(input.parentElement!).minHeight));
+        await expect(small).toBeLessThan(medium);
+        await expect(medium).toBeLessThan(large);
     },
 };
 
