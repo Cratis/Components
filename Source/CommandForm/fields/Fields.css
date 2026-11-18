@@ -28,7 +28,8 @@
     color: var(--cratis-text-color-secondary);
 }
 .cratis-field-input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
@@ -78,7 +79,8 @@
 .cratis-password-field__toggle:focus-visible,
 .cratis-slider-field__input:focus-visible,
 .cratis-color-field__input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -120,6 +122,8 @@
 }
 .cratis-choice-field__native:focus-visible
     + :is(.cratis-checkbox__box, .cratis-switch__control) {
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-choice-field[data-invalid='true']
@@ -134,7 +138,7 @@
     padding: 0.15rem;
     align-items: center;
     border: 1px solid var(--cratis-control-border);
-    border-radius: 999px;
+    border-radius: var(--cratis-corner-full);
     background: var(--cratis-surface-100);
     transition: background-color 140ms ease;
 }
@@ -203,7 +207,7 @@
 .cratis-slider-field__value {
     min-width: 2.5rem;
     text-align: end;
-    font-weight: 600;
+    font-weight: var(--cratis-type-weight-semibold);
     font-variant-numeric: tabular-nums;
 }
 
@@ -220,6 +224,8 @@
     background: var(--cratis-control-background);
 }
 .cratis-chips-field:focus-within {
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
@@ -231,7 +237,7 @@
     padding: 0.3rem 0.45rem;
     align-items: center;
     gap: 0.3rem;
-    border-radius: 999px;
+    border-radius: var(--cratis-corner-full);
     background: var(--cratis-surface-100);
 }
 .cratis-chips-field__remove {
@@ -241,7 +247,8 @@
     cursor: pointer;
 }
 .cratis-chips-field__remove:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-radius: 50%;
     box-shadow: var(--cratis-focus-ring);
 }
@@ -290,6 +297,8 @@
     color: var(--cratis-orange-500);
 }
 .cratis-rating-field__option:focus-within .cratis-rating-field__star {
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-radius: 0.2rem;
     box-shadow: var(--cratis-focus-ring);
 }

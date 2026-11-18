@@ -59,6 +59,9 @@ const CONVERTED_STYLESHEETS = [
     'Toolbar/Toolbar.css',
     'Notifications/Toaster.css',
     'ObjectNavigationalBar/ObjectNavigationalBar.css',
+    'CommandForm/fields/Fields.css',
+    'Dialogs/Dialog.css',
+    'DataTables/TablePaginator.css',
 ];
 
 describe('when tokenising foundation literals', () => {

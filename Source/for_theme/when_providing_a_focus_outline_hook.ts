@@ -26,14 +26,6 @@ const valueOf = (
     return value;
 };
 
-// Stylesheets still owned by another lane in this release train. They take the outline hook when that
-// work is rebased onto this change; until then they are skipped here, so remove each entry as it lands.
-const PENDING_REBASE = new Set([
-    'CommandForm/fields/Fields.css',
-    'Dialogs/Dialog.css',
-    'DataTables/TablePaginator.css',
-]);
-
 // Rules that intentionally do not take the outline hook, keyed by "file|selector start". Each needs a reason.
 const ALLOWED_WITHOUT_OUTLINE_HOOK: Record<string, string> = {
     'Dropdown/Dropdown.css|.cratis-dropdown__option[data-focus-visible]':
@@ -160,9 +152,7 @@ describe('when providing a focus outline hook', () => {
     it('should_let_every_focus_ring_rule_declare_the_outline_hook', () => {
         expect(importedStylesheets().length).to.be.greaterThan(20);
 
-        const offenders = importedStylesheets()
-            .filter((file) => !PENDING_REBASE.has(file))
-            .flatMap(offendingRules);
+        const offenders = importedStylesheets().flatMap(offendingRules);
 
         expect(offenders).to.deep.equal([]);
     });

@@ -307,9 +307,10 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // Measured when components took the focus outline hook and the type/radius tokens (Designsystemet bridge): raw 252530 (3836 bytes over).
 // Raw moves by the overage; blocks and gzip hold.
 // Measured when the status button text and the inset menu ring gained their bridge-mappable tokens: raw 252726 (196 bytes over). Raw moves by the overage.
+// Measured when fields, dialogs and the table paginator took the focus outline hook and the type and corner tokens: raw 253522 (796 bytes over). Raw moves by the overage; blocks and gzip hold.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 252726,
+    rawBytes: 253522,
     gzipBytes: 38 * 1024,
     declarationBlocks: 1388,
 };

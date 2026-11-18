@@ -21,7 +21,7 @@
 }
 
 .cratis-table-paginator-info {
-    font-size: 0.875rem;
+    font-size: var(--cratis-font-size-sm);
 }
 
 .cratis-table-paginator-page {
@@ -33,7 +33,7 @@
     background: transparent;
     color: var(--cratis-text-color);
     font: inherit;
-    font-weight: 600;
+    font-weight: var(--cratis-type-weight-semibold);
     cursor: pointer;
 }
 
@@ -48,7 +48,8 @@
 }
 
 .cratis-table-paginator-page:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
