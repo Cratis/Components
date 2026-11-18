@@ -5,6 +5,7 @@ import { DialogResult, DialogButtons } from '@cratis/arc.react/dialogs';
 import type React from 'react';
 import { classNames } from '../ClassNames/classNames';
 import type { DialogParts, DialogProps } from './Dialog';
+import { renderFooterButton, useFooterButton } from './DialogFooterButton';
 import type { DialogLabels } from './resolveDialogLabels';
 
 interface FooterButton {
@@ -76,12 +77,6 @@ const suppressRepeatedActivation = (event: React.KeyboardEvent) => {
     if (event.repeat && isActivationKey(event.key)) event.preventDefault();
 };
 
-const buttonAttributes = (kind: 'primary' | 'secondary', part: DialogParts['confirm']) => ({
-    ...part,
-    type: 'button' as const,
-    className: classNames('cratis-dialog__button', `cratis-dialog__button--${kind}`, part?.className),
-});
-
 const primaryAria = (isBusy: boolean) => ({
     'aria-disabled': isBusy || undefined,
     'aria-busy': isBusy || undefined,
@@ -92,40 +87,41 @@ const activate = (isBusy: boolean, onResult: (result: DialogResult) => void, res
 };
 
 const PrimaryButton = ({ button, isBusy, isValid, pt, confirmRef, onResult }: PrimaryButtonProps) => {
-    const isDisabled = !isValid || isBusy;
-    return (
-        <button
-            {...buttonAttributes('primary', pt?.confirm)}
-            {...primaryAria(isBusy)}
-            data-cratis-part='confirm'
-            data-disabled={isDisabled || undefined}
-            data-busy={isBusy || undefined}
-            ref={confirmRef}
-            onClick={activate(isBusy, onResult, button.result)}
-            onKeyDown={suppressRepeatedActivation}
-            disabled={!isValid}
-            autoFocus={button.focused}
-        >
-            {isBusy && <span className='cratis-dialog__spinner' aria-hidden='true' />}
-            <span>{button.label}</span>
-        </button>
+    const declaration = useFooterButton();
+    return renderFooterButton(
+        declaration,
+        {
+            label: button.label,
+            type: 'button',
+            variant: 'solid',
+            autoFocus: button.focused,
+            onClick: activate(isBusy, onResult, button.result),
+            onKeyDown: suppressRepeatedActivation,
+            disabled: !isValid,
+            ...primaryAria(isBusy),
+            icon: isBusy ? <span className='cratis-dialog__spinner' aria-hidden='true' /> : undefined,
+            pt: { root: pt?.confirm },
+        },
+        confirmRef,
     );
 };
 
-const SecondaryButton = ({ button, isBusy, pt, cancelRef, onResult }: SecondaryButtonProps) => (
-    <button
-        {...buttonAttributes('secondary', pt?.cancel)}
-        data-cratis-part='cancel'
-        data-disabled={isBusy || undefined}
-        data-busy={isBusy || undefined}
-        ref={button.focused ? cancelRef : undefined}
-        onClick={activate(isBusy, onResult, button.result)}
-        disabled={isBusy}
-        autoFocus={button.focused}
-    >
-        <span>{button.label}</span>
-    </button>
-);
+const SecondaryButton = ({ button, isBusy, pt, cancelRef, onResult }: SecondaryButtonProps) => {
+    const declaration = useFooterButton();
+    return renderFooterButton(
+        declaration,
+        {
+            label: button.label,
+            type: 'button',
+            variant: 'outline',
+            autoFocus: button.focused,
+            onClick: activate(isBusy, onResult, button.result),
+            disabled: isBusy,
+            pt: { root: pt?.cancel },
+        },
+        button.focused ? cancelRef : null,
+    );
+};
 
 /** Props of the dialog footer. */
 export interface DialogFooterProps {

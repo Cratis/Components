@@ -57,7 +57,8 @@
     font: inherit;
 }
 .cratis-datatable-search__input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
@@ -79,8 +80,8 @@
     background: var(--cratis-surface-section);
     color: var(--cratis-text-color);
     text-align: start;
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: var(--cratis-font-size-sm);
+    font-weight: var(--cratis-type-weight-bold);
 }
 .cratis-datatable__sort {
     display: inline-flex;
@@ -95,7 +96,8 @@
     cursor: pointer;
 }
 .cratis-datatable__sort:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-radius: 0.2rem;
     box-shadow: var(--cratis-focus-ring);
 }
@@ -112,7 +114,8 @@
     background: var(--cratis-surface-hover);
 }
 .cratis-datatable__row:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: inset var(--cratis-focus-ring);
 }
 .cratis-datatable__row[data-selected='true'] {

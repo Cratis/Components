@@ -10,6 +10,8 @@
   href: themed.md
 - name: Customize the palette
   href: custom-palette.md
+- name: Use a Designsystemet theme
+  href: designsystemet.md
 - name: Own all styling
   href: unstyled.md
 - name: Cratis token reference

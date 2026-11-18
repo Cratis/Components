@@ -56,7 +56,8 @@
 }
 
 .cratis-ordered-item:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -122,7 +123,8 @@
 
 .cratis-ordered-item__input:focus-visible,
 .cratis-property__input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -152,7 +154,8 @@
 }
 
 .cratis-ordered-item__button:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 

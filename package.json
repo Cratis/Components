@@ -57,6 +57,7 @@
         "@cratis/arc.react": "23.0.0",
         "@cratis/arc.vite": "23.0.0",
         "@cyclonedx/yarn-plugin-cyclonedx": "3.4.0",
+        "@digdir/designsystemet-css": "^1.24.0",
         "@eslint-react/eslint-plugin": "5.19.0",
         "@eslint/js": "^10.0.1",
         "@jridgewell/sourcemap-codec": "1.6.0",

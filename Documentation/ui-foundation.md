@@ -168,6 +168,24 @@ Check your application's declarations with its TypeScript compiler and module-re
 
 The repository pins `pixi.js@8.22.0` for development and verification, while the `^8.20.0` peer range also admits 8.20.x and 8.21.x. Strict consumers (`skipLibCheck: false`) on those earlier releases can encounter a WebGPU declaration conflict; use 8.22.0 or later. Keep one shared compatible resolution, as described under [Optional Pixi, clean no-Pixi core](#optional-pixi-clean-no-pixi-core). PivotViewer does not expose Pixi types publicly.
 
+## Values the Designsystemet bridge does not reach
+
+[The Designsystemet bridge](Styling/designsystemet.md) maps the colour, radius, size, focus, shadow, and disabled tokens. Components draw focus with `--cratis-focus-ring` plus an optional outline from `--cratis-focus-outline` and `--cratis-focus-outline-offset`, which default to `none` and `0` so the default look does not change. The control heights follow Designsystemet's `data-size` (`sm`, `md`, `lg`). The Cratis `data-size` values on Button, Avatar, and Badge are a separate vocabulary.
+
+The type and radius scales are tokens (`--cratis-font-size-xs`, `-sm`, `-md`, `--cratis-type-weight-medium`, `-semibold`, `-bold`, `--cratis-corner-sm`, `-lg`, `-xl`, `-full`) whose defaults equal the values they replaced. Only stylesheets for the common controls, the dropdown, filters, the toolbar, notifications, the data table core, and the object navigational bar read them. These stay as fixed values and follow the product, not the bridge:
+
+- Paddings, gaps, and line heights.
+- The number input step buttons and the icon picker tiles, which draw a primary-colour outline of their own instead of the shared focus ring.
+- Canvas and Chat, which do not read the new tokens or the focus outline hook.
+- Font sizes with no token, such as `0.8125rem`, `0.85rem`, `13px`, `12px`, and `11px`.
+- Radii other than `4px`, `8px`, `12px`, and `999px`, and `50%` circles.
+- Literal shadows in menus and popovers.
+- The forced-colors `Highlight` outlines.
+- TimeMachine, SchemaEditor, MarkdownEditor, IconPicker, ConfigurationEditor, PivotViewer, and Display take the focus outline hook only where they draw a keyboard focus ring. Their literal sizes and radii are not tokenised.
+- The command form fields, the dialog, and the table paginator take the focus outline hook and the new tokens when the work that owns them lands.
+- The backdrop (`--cratis-maskbg`) and the `--cratis-z-index-*` tokens, which Designsystemet has no equivalent for.
+- The status colours: the bridge uses Designsystemet's tinted surface pairs where the Cratis default uses solid pairs.
+
 <a id="current-limitations-and-work-records"></a>
 <a id="post-v4-issue-index"></a>
 <a id="release-gates"></a>

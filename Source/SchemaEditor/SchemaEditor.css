@@ -121,7 +121,8 @@
 }
 
 .cratis-schema-editor__name:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -146,7 +147,8 @@
 }
 
 .cratis-schema-editor__name-input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -257,7 +259,8 @@ button.cratis-schema-editor__toggle:hover,
 button.cratis-schema-editor__toggle:focus-visible,
 .cratis-schema-editor__remove:focus-visible,
 .cratis-schema-editor__add:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -298,7 +301,8 @@ button.cratis-schema-editor__toggle:focus-visible,
 }
 
 .cratis-schema-editor__required input:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 
@@ -362,7 +366,7 @@ button.cratis-schema-editor__toggle:focus-visible,
 }
 
 .cratis-schema-editor__menu-item[data-focus-visible] {
-    box-shadow: inset var(--cratis-focus-ring);
+    box-shadow: var(--cratis-focus-ring-inset, inset var(--cratis-focus-ring));
 }
 
 .cratis-schema-editor__menu-heading {

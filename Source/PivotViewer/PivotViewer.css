@@ -366,7 +366,8 @@
 }
 
 .pv-viewport:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     /* Both strokes stay inside the clipped viewport; the surface stroke separates the ring from the gradient. */
     box-shadow: inset var(--cratis-focus-ring), inset 0 0 0 5px var(--cratis-surface-ground);
 }
@@ -553,7 +554,8 @@
 
 .pv-axis-label:focus-visible,
 .pv-card:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }

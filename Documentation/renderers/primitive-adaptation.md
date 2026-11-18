@@ -30,6 +30,22 @@ atomic interaction slots with a separate behavior boundary; a stable adapter can
 ones listed under [stable atomic slots](#stable-atomic-slots). It also does not include a composite
 such as DataPage or CommandDialog.
 
+### CommandForm fields that reach these slots
+
+CommandForm fields render through the slots above, so a primitive adapter restyles them without
+replacing the field. Without an adapter, the field renders the same markup, classes, `data-cratis-*`
+markers, and accessibility attributes as before. Field-level validation, ids, accessible names, and
+error text stay owned by the field; the slot only presents the control.
+
+| CommandForm field  | Slot                | Notes                                                              |
+| ------------------ | ------------------- | ------------------------------------------------------------------ |
+| `InputTextField`   | `common.textInput`  | `text`, `email`, `password`, `search`, `tel`, and `url` types only          |
+| `TextAreaField`    | `common.textArea`   | Default of five rows is passed to the slot                         |
+| `CheckboxField`    | `common.checkbox`   | Boolean value                                                      |
+| `ToggleSwitchField`| `common.switch`     | Boolean value                                                      |
+| `RadioGroupField`  | `common.radio`      | One slot per option; the group container stays built in            |
+| `RadioButtonField` | `common.radio`      | Selects its `buttonValue`                                          |
+
 ## Stable adapter API
 
 Adapter packages import the bounded contract from `@cratis/components/renderer`:
@@ -233,3 +249,15 @@ adapter's packaged `CONFORMANCE.md` and peer metadata for its exact evidence.
 
 Read [custom composition](custom-composition.md) before adapting a workflow that exceeds these nine
 slots, and keep the [unsupported claims](unsupported.md) visible in product decisions.
+
+## Dialog footer buttons
+
+The predefined footer buttons of `Dialog`, `ConfirmationDialog`, `CommandDialog` and
+`StepperCommandDialog` (OK, Cancel, Yes, No) render through `common.button`. An adapter receives the
+confirming button as `variant='solid'` and every dismissing button as `variant='outline'`, the
+footer's `pt.confirm` / `pt.cancel` as `pt.root`, and `onClick`, `autoFocus` and the forwarded `ref`
+that drive initial focus. While the dialog is busy the confirming button is **not** `disabled`: it
+stays focusable and arrives with `aria-disabled` and `aria-busy`, and the busy spinner arrives as
+`icon`; the dismissing buttons arrive `disabled`. `data-cratis-part="confirm|cancel"` and the
+`cratis-dialog__button*` classes are written only by the core button used without an adapter.
+A custom (ReactNode) footer does not use the slot. A conformance case for the footer is deferred.

@@ -50,11 +50,11 @@
     gap: 0.125rem;
 }
 .cratis-toast__title {
-    font-weight: 600;
+    font-weight: var(--cratis-type-weight-semibold);
 }
 .cratis-toast__description {
     color: var(--cratis-text-color-secondary);
-    font-size: 0.875rem;
+    font-size: var(--cratis-font-size-sm);
     white-space: pre-line;
 }
 .cratis-toast__icon {
@@ -78,7 +78,8 @@
     color: var(--cratis-text-color);
 }
 .cratis-toast__close:focus-visible {
-    outline: none;
+    outline: var(--cratis-focus-outline);
+    outline-offset: var(--cratis-focus-outline-offset);
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-toast__action {

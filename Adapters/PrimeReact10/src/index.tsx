@@ -167,6 +167,21 @@ const primeSeverity = (severity: ButtonSeverity | undefined) =>
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
+/**
+ * Root attributes where an explicit value must beat the part: a loading button is always busy,
+ * otherwise an explicit `aria-busy` (a busy but focusable button) wins over `pt.root`, and the
+ * title falls back to `pt.root`.
+ */
+const rootState = (
+    loading: boolean,
+    props: { 'aria-busy'?: ButtonProps['aria-busy']; title?: string },
+    root: NonNullable<ButtonProps['pt']>['root'],
+    fallbackTitle?: string,
+) => ({
+    'aria-busy': loading ? true : (props['aria-busy'] ?? root?.['aria-busy']),
+    title: props.title ?? fallbackTitle ?? root?.title,
+});
+
 const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
     function PrimeButtonSlot(
         {
@@ -240,7 +255,6 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 {...nativeProps}
                 ref={nativeButtonRef}
                 type={type}
-                title={title ?? tooltip}
                 disabled={effectiveDisabled}
                 loading={loading}
                 text={appearance.variant === 'ghost'}
@@ -255,7 +269,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                     className,
                 )}
                 style={{ ...pt?.root?.style, ...style }}
-                aria-busy={loading || undefined}
+                {...rootState(loading, { 'aria-busy': nativeProps['aria-busy'], title }, pt?.root, tooltip)}
                 data-cratis-part='root'
                 data-variant={appearance.variant}
                 data-tone={appearance.tone}

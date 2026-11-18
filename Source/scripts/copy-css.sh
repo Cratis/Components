@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-mkdir -p dist/esm dist/esm/schemas
+mkdir -p dist/esm dist/esm/schemas dist/esm/themes
 
 cp schemas/ui-adapter.schema.json dist/esm/schemas/ui-adapter.schema.json
 cp schemas/ui-adapter.schema.d.ts dist/esm/schemas/ui-adapter.schema.d.ts
@@ -21,6 +21,9 @@ for stylesheet in tokens.css theme.css; do
     cp "$stylesheet" "dist/esm/$stylesheet"
     echo "Copied $stylesheet"
 done
+
+cp themes/designsystemet.css dist/esm/themes/designsystemet.css
+echo "Copied themes/designsystemet.css"
 
 # Font files a component's own CSS reaches via a relative `url(...)` (e.g. Canvas's Note face) - the
 # `bundle-styles` plugin concatenates component stylesheets into dist/esm/styles.css verbatim, with no
