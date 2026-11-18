@@ -242,7 +242,24 @@ Render the popover in the overlay container from `unstable_useOverlayEnvironment
 adapter implements this slot yet: a faithful implementation has to reproduce every part above, the
 filter and multiple-select paths, and the legacy aliases, which none of the Designsystemet, MUI, or
 PrimeReact select controls provide without re-implementing the built-in `Dropdown`. All four
-adapters keep the built-in select. The dialog and date picker atomic slots are not stable yet.
+adapters keep the built-in select.
+
+### `display.datePicker`
+
+| Contract | Value |
+| --- | --- |
+| Props | `DatePickerInputProps`; the public value is a JavaScript `Date` or `null`, so any calendar library's value type stays inside the adapter |
+| Ref | None; the picker does not forward a ref |
+| Parts | `DatePickerInputPassThrough`: `root`, `group`, `input`, `segment`, `placeholder`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `previous`, `heading`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` |
+| Behavior | One keyboard and focus owner for the segmented input and the calendar popover; `onChange` is called once per user selection with `source: 'user'` and the native event; `minDate`, `maxDate`, `disabled`, `readOnly` and `invalid` are honored |
+| Fallback | The built-in `DatePickerInput` implementation |
+| Conformance | The `display.datePicker` profile: parts, pass-through, state coverage, server rendering, hydration, and the popover opened from the trigger |
+
+Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
+adapter implements this slot yet: a faithful implementation has to reproduce the segmented input
+and the calendar part model, which the Designsystemet, MUI (without MUI X), and PrimeReact date
+controls do not provide without re-implementing the built-in picker. All four adapters keep the built-in date picker. The dialog atomic
+slot is not stable yet.
 
 ## Fallback
 

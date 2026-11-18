@@ -4,6 +4,7 @@
 import type { ComponentType } from 'react';
 import type { ButtonProps } from '../Common/Button';
 import type { CheckboxProps } from '../Common/Checkbox';
+import type { DatePickerInputProps } from '../Common/DatePickerInput';
 import type { IconButtonProps } from '../Common/IconButton';
 import type { RadioProps } from '../Common/Radio';
 import type { SurfaceProps } from '../Common/Surface';
@@ -89,6 +90,7 @@ export const cratisAtomicSlotIds = Object.freeze([
     'datatables.paginator',
     'common.tooltip',
     'dropdown.select',
+    'display.datePicker',
 ] as const);
 
 /** Identifier of one stable atomic slot. */
@@ -112,6 +114,11 @@ export interface CratisAtomicSlots {
      * and no ref. The adapter owns the trigger, filter, listbox, keyboard and selection callbacks.
      */
     readonly 'dropdown.select': DropdownProps<unknown>;
+    /**
+     * Date picker contract: the public `DatePickerInputProps` with `Date | null` values, the
+     * `DatePickerInputPassThrough` parts and no ref. Calendar library values stay inside the adapter.
+     */
+    readonly 'display.datePicker': DatePickerInputProps;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */

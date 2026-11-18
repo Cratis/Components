@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ComponentType } from 'react';
+import type { DatePickerInputProps } from '../../../Common/DatePickerInput';
 import type { TooltipProps } from '../../../Common/Tooltip';
 import type { DropdownProps } from '../../../Dropdown/Dropdown';
 import type { TablePaginatorProps } from '../../../DataTables/TablePaginator';
@@ -60,6 +61,18 @@ export const dropdownAtomicSlots = (
     render: ComponentType<DropdownProps<unknown>> = AdapterDropdown,
 ): CratisAtomicSlotMap => ({
     'dropdown.select': { mode: 'atomic', fidelity: 'native', render },
+});
+
+/** Adapter-owned date picker that echoes the ISO date it received. */
+export const AdapterDatePicker: ComponentType<DatePickerInputProps> = ({ value }) => (
+    <div data-adapter-date-picker={value?.toISOString() ?? ''} />
+);
+
+/** Atomic map implementing the stable date picker with the adapter's component. */
+export const datePickerAtomicSlots = (
+    render: ComponentType<DatePickerInputProps> = AdapterDatePicker,
+): CratisAtomicSlotMap => ({
+    'display.datePicker': { mode: 'atomic', fidelity: 'native', render },
 });
 
 /** Builds a stable presentation library, optionally with atomic slots. */

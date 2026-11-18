@@ -36,6 +36,7 @@ describe('when defining a presentation library with atomic slots', () => {
             'datatables.paginator',
             'common.tooltip',
             'dropdown.select',
+            'display.datePicker',
         ]);
         expect(Object.isFrozen(cratisAtomicSlotIds)).to.equal(true);
     });
