@@ -224,3 +224,31 @@ describe('when using the MUI stable presentation profile', () => {
         expect(serialized).not.to.contain('@mui/x-');
     });
 });
+
+describe('when rendering a button that is busy without loading', () => {
+    let html: string;
+
+    beforeAll(() => {
+        html = renderSlot('common.button', {
+            label: 'Ok',
+            'aria-busy': true,
+            pt: { root: { title: 'Root title' } },
+        });
+    });
+
+    it('should keep the explicit aria-busy', () => {
+        expect(html).to.contain('aria-busy="true"');
+    });
+
+    it('should not mark the button as loading', () => {
+        expect(html).to.not.contain('data-loading');
+    });
+
+    it('should not disable the button', () => {
+        expect(html).to.not.contain('disabled');
+    });
+
+    it('should fall back to the root part title', () => {
+        expect(html).to.contain('title="Root title"');
+    });
+});

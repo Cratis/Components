@@ -167,6 +167,10 @@ const primeSeverity = (severity: ButtonSeverity | undefined) =>
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
+/** A loading button is always busy; otherwise an explicit `aria-busy` (a busy but focusable button) is kept. */
+const busyState = <T,>(loading: boolean, native: T | undefined, root: T | undefined) =>
+    loading ? true : (native ?? root);
+
 const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
     function PrimeButtonSlot(
         {
@@ -240,7 +244,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 {...nativeProps}
                 ref={nativeButtonRef}
                 type={type}
-                title={title ?? tooltip}
+                title={title ?? tooltip ?? pt?.root?.title}
                 disabled={effectiveDisabled}
                 loading={loading}
                 text={appearance.variant === 'ghost'}
@@ -255,7 +259,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                     className,
                 )}
                 style={{ ...pt?.root?.style, ...style }}
-                aria-busy={loading || undefined}
+                aria-busy={busyState(loading, nativeProps['aria-busy'], pt?.root?.['aria-busy'])}
                 data-cratis-part='root'
                 data-variant={appearance.variant}
                 data-tone={appearance.tone}

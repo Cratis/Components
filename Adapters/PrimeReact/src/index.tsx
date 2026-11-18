@@ -187,6 +187,10 @@ const primeVariant = (variant: ResolvedButtonAppearance['variant']) => {
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
+/** A loading button is always busy; otherwise an explicit `aria-busy` (a busy but focusable button) is kept. */
+const busyState = <T,>(loading: boolean, native: T | undefined, root: T | undefined) =>
+    loading ? true : (native ?? root);
+
 const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
     function PrimeButtonSlot(
         {
@@ -234,7 +238,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 as='button'
                 ref={ref}
                 type={type}
-                title={title ?? tooltip}
+                title={title ?? tooltip ?? pt?.root?.title}
                 disabled={effectiveDisabled}
                 className={classNames(
                     'cratis-primereact-button',
@@ -247,7 +251,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 rounded={appearance.shape === 'pill'}
                 size={size}
                 iconOnly={iconOnly}
-                aria-busy={loading || undefined}
+                aria-busy={busyState(loading, nativeProps['aria-busy'], pt?.root?.['aria-busy'])}
                 data-cratis-part='root'
                 data-variant={appearance.variant}
                 data-tone={appearance.tone}

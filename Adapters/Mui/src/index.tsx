@@ -256,6 +256,10 @@ const withMuiTooltip = (
     );
 };
 
+/** A loading button is always busy; otherwise an explicit `aria-busy` (a busy but focusable button) is kept. */
+const busyState = <T,>(loading: boolean, native: T | undefined, root: T | undefined) =>
+    loading ? true : (native ?? root);
+
 const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiButtonSlot(
     {
         label,
@@ -303,7 +307,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             {...nativeProps}
             ref={ref}
             type={type}
-            title={title}
+            title={title ?? pt?.root?.title}
             autoFocus={autoFocus}
             disabled={effectiveDisabled}
             onClick={onClick}
@@ -315,7 +319,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             loading={loading}
             loadingIndicator={muiLoadingIndicator(pt)}
             sx={muiButtonStyles(appearance)}
-            aria-busy={loading || undefined}
+            aria-busy={busyState(loading, nativeProps['aria-busy'], pt?.root?.['aria-busy'])}
             data-cratis-part='root'
             data-variant={appearance.variant}
             data-tone={appearance.tone}
