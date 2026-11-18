@@ -104,6 +104,7 @@ describe('when deriving renderer matrix scope', () => {
                 'AfterComment.tsx': "// import type\nimport { Slot } from './Slot';\n",
                 'SideEffect.tsx': "import './Slot';\n",
                 'ReExport.tsx': "export { Slot } from './Slot';\n",
+                'GenericArrow.ts': "const id = <T>(x: T) => x;\nimport { Slot } from './Slot';\n",
             };
             for (const [name, contents] of Object.entries(fixtures)) writeFileSync(path.join(fixtureSourceRoot, name), contents);
             const storyEntries = Object.keys(fixtures)
@@ -111,7 +112,7 @@ describe('when deriving renderer matrix scope', () => {
                 .map(name => storyEntry(name, name));
             const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot: root, sourceRoot: fixtureSourceRoot });
             expect([...matrixStoryIds].sort()).to.deep.equal(
-                ['AfterComment.tsx', 'DefaultNamedType.tsx', 'ReExport.tsx', 'Runtime.tsx', 'SideEffect.tsx']);
+                ['AfterComment.tsx', 'DefaultNamedType.tsx', 'GenericArrow.ts', 'ReExport.tsx', 'Runtime.tsx', 'SideEffect.tsx']);
         } finally {
             rmSync(root, { recursive: true, force: true });
         }

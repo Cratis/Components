@@ -59,7 +59,7 @@ const isTypeOnlyDeclaration = statement =>
  * mixed with values and a default import named `type` are runtime edges and are kept.
  */
 const extractSpecifiers = (source, fileName) => {
-    const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
+    const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, false);
     return sourceFile.statements
         .filter(statement => ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))
         .filter(statement => !isTypeOnlyDeclaration(statement) && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier))
