@@ -1,13 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { FocusEventHandler, HTMLAttributes, InputHTMLAttributes } from 'react';
+import type {
+    FocusEventHandler,
+    HTMLAttributes,
+    InputHTMLAttributes,
+    ReactNode,
+} from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import { unstable_useSlot } from '../../renderer/RendererContext';
 import { renderSlot } from '../../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../../renderer/slots';
 import type { RadioProps } from '../../Common/Radio';
-import { joinClassNames, userChange } from './fieldSlotHelpers';
+import { joinClassNames, userChange, type ChoiceState } from './fieldSlotHelpers';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
@@ -43,6 +48,79 @@ interface RadioButtonFieldComponentProps
     unstyled?: boolean;
 }
 
+/** Props shared by the `RadioButtonField` part components. */
+interface RadioButtonPartProps<T> {
+    parts?: T;
+    state: ChoiceState;
+}
+
+/** Native input of the `RadioButtonField`. */
+const RadioButtonInput = ({
+    parts,
+    id,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    name,
+    checked,
+    onChange,
+    state,
+}: RadioButtonPartProps<InputHTMLAttributes<HTMLInputElement>> &
+    Pick<RadioProps, 'checked' | 'onChange' | 'id' | 'aria-label' | 'aria-describedby' | 'name'>) => (
+    <input
+        {...parts}
+        id={id}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        type='radio'
+        name={name}
+        checked={checked}
+        onChange={(event) => event.currentTarget.checked && onChange?.(true, userChange(event))}
+        aria-invalid={state.invalid || undefined}
+        className={joinClassNames('cratis-choice-field__native', parts?.className)}
+        data-cratis-part='input'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    />
+);
+
+/** Outer decorative box of the `RadioButtonField`. */
+const RadioButtonBox = ({
+    parts,
+    state,
+    children,
+}: RadioButtonPartProps<HTMLAttributes<HTMLSpanElement>> & { children: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-radio__box', parts?.className)}
+        data-cratis-part='box'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+        aria-hidden='true'
+    >
+        {children}
+    </span>
+);
+
+/** Inner decorative indicator of the `RadioButtonField`. */
+const RadioButtonIndicator = ({
+    parts,
+    state,
+    children,
+}: RadioButtonPartProps<HTMLAttributes<HTMLSpanElement>> & { children?: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-radio__indicator', parts?.className)}
+        data-cratis-part='indicator'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    >
+        {children}
+    </span>
+);
+
 /** Core `RadioButtonField` markup, used when no adapter supplies `common.radio`. */
 const RadioButtonFieldCore = ({
     id,
@@ -57,6 +135,7 @@ const RadioButtonFieldCore = ({
     className,
     pt,
 }: RadioProps) => {
+    const state: ChoiceState = { disabled: pt?.input?.disabled, invalid, selected: checked };
     return (
         <label
             {...pt?.root}
@@ -64,44 +143,23 @@ const RadioButtonFieldCore = ({
             onBlur={onBlur as FocusEventHandler<Element> | undefined}
             data-cratis-part='root'
             data-cratis-component='RadioButtonField'
-            data-disabled={pt?.input?.disabled || undefined}
-            data-invalid={invalid || undefined}
-            data-selected={checked || undefined}
+            data-disabled={state.disabled || undefined}
+            data-invalid={state.invalid || undefined}
+            data-selected={state.selected || undefined}
         >
-            <input
-                {...pt?.input}
+            <RadioButtonInput
+                parts={pt?.input}
                 id={id}
                 aria-label={ariaLabel}
                 aria-describedby={ariaDescribedBy}
-                type='radio'
                 name={name}
                 checked={checked}
-                onChange={(event) => event.currentTarget.checked && onChange?.(true, userChange(event))}
-                aria-invalid={invalid || undefined}
-                className={joinClassNames('cratis-choice-field__native', pt?.input?.className)}
-                data-cratis-part='input'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
+                onChange={onChange}
+                state={state}
             />
-            <span
-                {...pt?.box}
-                className={joinClassNames('cratis-radio__box', pt?.box?.className)}
-                data-cratis-part='box'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
-                aria-hidden='true'
-            >
-                <span
-                    {...pt?.indicator}
-                    className={joinClassNames('cratis-radio__indicator', pt?.indicator?.className)}
-                    data-cratis-part='indicator'
-                    data-disabled={pt?.input?.disabled || undefined}
-                    data-invalid={invalid || undefined}
-                    data-selected={checked || undefined}
-                ></span>
-            </span>
+            <RadioButtonBox parts={pt?.box} state={state}>
+                <RadioButtonIndicator parts={pt?.indicator} state={state}></RadioButtonIndicator>
+            </RadioButtonBox>
             {label && <span className='cratis-choice-field__label'>{label}</span>}
         </label>
     );

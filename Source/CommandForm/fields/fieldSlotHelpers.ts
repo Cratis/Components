@@ -16,3 +16,10 @@ export const userChange = (event: ChangeEvent): ChangeMeta => ({
     source: 'user',
     nativeEvent: event.nativeEvent,
 });
+
+/** Choice-control state handed from a Core component to its part components. */
+export interface ChoiceState {
+    disabled?: boolean;
+    invalid?: boolean;
+    selected?: boolean;
+}

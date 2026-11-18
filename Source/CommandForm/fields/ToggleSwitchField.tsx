@@ -1,13 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { FocusEventHandler, HTMLAttributes, InputHTMLAttributes } from 'react';
+import type {
+    FocusEventHandler,
+    HTMLAttributes,
+    InputHTMLAttributes,
+    ReactNode,
+} from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import { unstable_useSlot } from '../../renderer/RendererContext';
 import { renderSlot } from '../../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../../renderer/slots';
 import type { SwitchProps } from '../../Common/Switch';
-import { joinClassNames, userChange } from './fieldSlotHelpers';
+import { joinClassNames, userChange, type ChoiceState } from './fieldSlotHelpers';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
@@ -40,6 +45,78 @@ interface ToggleSwitchFieldComponentProps
     unstyled?: boolean;
 }
 
+/** Props shared by the `ToggleSwitchField` part components. */
+interface SwitchPartProps<T> {
+    parts?: T;
+    state: ChoiceState;
+}
+
+/** Native input of the `ToggleSwitchField`. */
+const SwitchInput = ({
+    parts,
+    id,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    checked,
+    onChange,
+    state,
+}: SwitchPartProps<InputHTMLAttributes<HTMLInputElement>> &
+    Pick<SwitchProps, 'checked' | 'onChange' | 'id' | 'aria-label' | 'aria-describedby'>) => (
+    <input
+        {...parts}
+        id={id}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        type='checkbox'
+        role='switch'
+        checked={checked}
+        onChange={(event) => onChange?.(event.currentTarget.checked, userChange(event))}
+        aria-invalid={state.invalid || undefined}
+        className={joinClassNames('cratis-choice-field__native', parts?.className)}
+        data-cratis-part='input'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    />
+);
+
+/** Outer decorative control of the `ToggleSwitchField`. */
+const SwitchControl = ({
+    parts,
+    state,
+    children,
+}: SwitchPartProps<HTMLAttributes<HTMLSpanElement>> & { children: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-switch__control', parts?.className)}
+        data-cratis-part='control'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+        aria-hidden='true'
+    >
+        {children}
+    </span>
+);
+
+/** Inner decorative handle of the `ToggleSwitchField`. */
+const SwitchHandle = ({
+    parts,
+    state,
+    children,
+}: SwitchPartProps<HTMLAttributes<HTMLSpanElement>> & { children?: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-switch__handle', parts?.className)}
+        data-cratis-part='handle'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    >
+        {children}
+    </span>
+);
+
 /** Core `ToggleSwitchField` markup, used when no adapter supplies `common.switch`. */
 const ToggleSwitchFieldCore = ({
     id,
@@ -53,6 +130,7 @@ const ToggleSwitchFieldCore = ({
     className,
     pt,
 }: SwitchProps) => {
+    const state: ChoiceState = { disabled: pt?.input?.disabled, invalid, selected: checked };
     return (
         <label
             {...pt?.root}
@@ -60,44 +138,22 @@ const ToggleSwitchFieldCore = ({
             onBlur={onBlur as FocusEventHandler<Element> | undefined}
             data-cratis-part='root'
             data-cratis-component='ToggleSwitchField'
-            data-disabled={pt?.input?.disabled || undefined}
-            data-invalid={invalid || undefined}
-            data-selected={checked || undefined}
+            data-disabled={state.disabled || undefined}
+            data-invalid={state.invalid || undefined}
+            data-selected={state.selected || undefined}
         >
-            <input
-                {...pt?.input}
+            <SwitchInput
+                parts={pt?.input}
                 id={id}
                 aria-label={ariaLabel}
                 aria-describedby={ariaDescribedBy}
-                type='checkbox'
-                role='switch'
                 checked={checked}
-                onChange={(event) => onChange?.(event.currentTarget.checked, userChange(event))}
-                aria-invalid={invalid || undefined}
-                className={joinClassNames('cratis-choice-field__native', pt?.input?.className)}
-                data-cratis-part='input'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
+                onChange={onChange}
+                state={state}
             />
-            <span
-                {...pt?.control}
-                className={joinClassNames('cratis-switch__control', pt?.control?.className)}
-                data-cratis-part='control'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
-                aria-hidden='true'
-            >
-                <span
-                    {...pt?.handle}
-                    className={joinClassNames('cratis-switch__handle', pt?.handle?.className)}
-                    data-cratis-part='handle'
-                    data-disabled={pt?.input?.disabled || undefined}
-                    data-invalid={invalid || undefined}
-                    data-selected={checked || undefined}
-                ></span>
-            </span>
+            <SwitchControl parts={pt?.control} state={state}>
+                <SwitchHandle parts={pt?.handle} state={state}></SwitchHandle>
+            </SwitchControl>
             {label && <span className='cratis-choice-field__label'>{label}</span>}
         </label>
     );

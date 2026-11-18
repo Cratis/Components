@@ -1,13 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { FocusEventHandler, HTMLAttributes, InputHTMLAttributes } from 'react';
+import type {
+    FocusEventHandler,
+    HTMLAttributes,
+    InputHTMLAttributes,
+    ReactNode,
+} from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import { unstable_useSlot } from '../../renderer/RendererContext';
 import { renderSlot } from '../../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../../renderer/slots';
 import type { CheckboxProps } from '../../Common/Checkbox';
-import { joinClassNames, userChange } from './fieldSlotHelpers';
+import { joinClassNames, userChange, type ChoiceState } from './fieldSlotHelpers';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
@@ -40,6 +45,77 @@ interface CheckboxFieldComponentProps
     unstyled?: boolean;
 }
 
+/** Props shared by the `CheckboxField` part components. */
+interface CheckboxPartProps<T> {
+    parts?: T;
+    state: ChoiceState;
+}
+
+/** Native input of the `CheckboxField`. */
+const CheckboxInput = ({
+    parts,
+    id,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    checked,
+    onChange,
+    state,
+}: CheckboxPartProps<InputHTMLAttributes<HTMLInputElement>> &
+    Pick<CheckboxProps, 'checked' | 'onChange' | 'id' | 'aria-label' | 'aria-describedby'>) => (
+    <input
+        {...parts}
+        id={id}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        type='checkbox'
+        checked={checked}
+        onChange={(event) => onChange?.(event.currentTarget.checked, userChange(event))}
+        aria-invalid={state.invalid || undefined}
+        className={joinClassNames('cratis-choice-field__native', parts?.className)}
+        data-cratis-part='input'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    />
+);
+
+/** Outer decorative box of the `CheckboxField`. */
+const CheckboxBox = ({
+    parts,
+    state,
+    children,
+}: CheckboxPartProps<HTMLAttributes<HTMLSpanElement>> & { children: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-checkbox__box', parts?.className)}
+        data-cratis-part='box'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+        aria-hidden='true'
+    >
+        {children}
+    </span>
+);
+
+/** Inner decorative indicator of the `CheckboxField`. */
+const CheckboxIndicator = ({
+    parts,
+    state,
+    children,
+}: CheckboxPartProps<HTMLAttributes<HTMLSpanElement>> & { children?: ReactNode }) => (
+    <span
+        {...parts}
+        className={joinClassNames('cratis-checkbox__indicator', parts?.className)}
+        data-cratis-part='indicator'
+        data-disabled={state.disabled || undefined}
+        data-invalid={state.invalid || undefined}
+        data-selected={state.selected || undefined}
+    >
+        {children}
+    </span>
+);
+
 /** Core `CheckboxField` markup, used when no adapter supplies `common.checkbox`. */
 const CheckboxFieldCore = ({
     id,
@@ -53,6 +129,7 @@ const CheckboxFieldCore = ({
     className,
     pt,
 }: CheckboxProps) => {
+    const state: ChoiceState = { disabled: pt?.input?.disabled, invalid, selected: checked };
     return (
         <label
             {...pt?.root}
@@ -60,45 +137,24 @@ const CheckboxFieldCore = ({
             onBlur={onBlur as FocusEventHandler<Element> | undefined}
             data-cratis-part='root'
             data-cratis-component='CheckboxField'
-            data-disabled={pt?.input?.disabled || undefined}
-            data-invalid={invalid || undefined}
-            data-selected={checked || undefined}
+            data-disabled={state.disabled || undefined}
+            data-invalid={state.invalid || undefined}
+            data-selected={state.selected || undefined}
         >
-            <input
-                {...pt?.input}
+            <CheckboxInput
+                parts={pt?.input}
                 id={id}
                 aria-label={ariaLabel}
                 aria-describedby={ariaDescribedBy}
-                type='checkbox'
                 checked={checked}
-                onChange={(event) => onChange?.(event.currentTarget.checked, userChange(event))}
-                aria-invalid={invalid || undefined}
-                className={joinClassNames('cratis-choice-field__native', pt?.input?.className)}
-                data-cratis-part='input'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
+                onChange={onChange}
+                state={state}
             />
-            <span
-                {...pt?.box}
-                className={joinClassNames('cratis-checkbox__box', pt?.box?.className)}
-                data-cratis-part='box'
-                data-disabled={pt?.input?.disabled || undefined}
-                data-invalid={invalid || undefined}
-                data-selected={checked || undefined}
-                aria-hidden='true'
-            >
-                <span
-                    {...pt?.indicator}
-                    className={joinClassNames('cratis-checkbox__indicator', pt?.indicator?.className)}
-                    data-cratis-part='indicator'
-                    data-disabled={pt?.input?.disabled || undefined}
-                    data-invalid={invalid || undefined}
-                    data-selected={checked || undefined}
-                >
+            <CheckboxBox parts={pt?.box} state={state}>
+                <CheckboxIndicator parts={pt?.indicator} state={state}>
                     ✓
-                </span>
-            </span>
+                </CheckboxIndicator>
+            </CheckboxBox>
             {label && <span className='cratis-choice-field__label'>{label}</span>}
         </label>
     );
