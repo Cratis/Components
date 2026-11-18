@@ -40,6 +40,7 @@ import {
     normalizeReactProps,
     normalizeStyle,
 } from './internal/reactNormalization.js';
+import { exercisedLibrary } from './internal/atomicSlots.js';
 import { createSlotProfiles } from './internal/slotProfiles.js';
 import type { SlotProfile } from './internal/SlotProfile.js';
 
@@ -258,7 +259,10 @@ const checkManifest = (
             undefined,
             { problems: schemaProblems },
         );
-        const consistencyProblems = compareMetadata(options.metadata, library);
+        const consistencyProblems = compareMetadata(
+            options.metadata,
+            exercisedLibrary(library).library,
+        );
         addCheck(
             checks,
             ConformanceFamily.Manifest,
@@ -930,17 +934,16 @@ export const runConformance = async (
     if (document) {
         checkNormalization(checks, document);
         const evidence = new Map<string, Readonly<Record<string, unknown>>>();
+        const exercised = exercisedLibrary(rendererLibrary);
         const profiles = createSlotProfiles(evidence).filter((profile) =>
-            (rendererLibrary.profileSlots ?? Object.keys(rendererLibrary.slots)).includes(
-                profile.slotId,
-            ),
+            exercised.slotIds.includes(profile.slotId),
         );
         for (const profile of profiles)
-            await checkSlot(checks, rendererLibrary, options, document, profile);
-        checkServerRendering(checks, rendererLibrary, profiles, options.wrapper);
+            await checkSlot(checks, exercised.library, options, document, profile);
+        checkServerRendering(checks, exercised.library, profiles, options.wrapper);
         await checkHydration(
             checks,
-            rendererLibrary,
+            exercised.library,
             profiles,
             document,
             options.wrapper,
@@ -948,7 +951,7 @@ export const runConformance = async (
         await checkEnvironmentalEvidence(
             checks,
             document,
-            rendererLibrary,
+            exercised.library,
             profiles,
             options.wrapper,
         );

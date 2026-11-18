@@ -16,6 +16,8 @@ export interface ConformanceLibrary {
     readonly profileSlots?: readonly string[];
     readonly capabilities: readonly string[];
     readonly slots: object;
+    /** Optional stable atomic slots of a stable presentation library; each one is exercised too. */
+    readonly atomicSlots?: object;
     readonly Provider?: unknown;
     readonly preflight?: unknown;
 }
