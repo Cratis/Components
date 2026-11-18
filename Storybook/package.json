@@ -16,6 +16,7 @@
         "verify-indexes": "node scripts/verify-storybook-indexes.mjs",
         "verify-manager": "node scripts/verify-composed-manager.mjs",
         "test-storybook": "node scripts/run-story-matrix.mjs",
+        "test-designsystemet": "node ../node_modules/vitest/vitest.mjs run --config vitest.designsystemet.config.ts",
         "test-storybook:light": "node scripts/run-story-matrix.mjs baseline-light",
         "test-storybook:dark": "node scripts/run-story-matrix.mjs baseline-dark",
         "ci:preflight": "yarn verify-inventory && yarn typecheck && yarn test && yarn verify-isolation",
