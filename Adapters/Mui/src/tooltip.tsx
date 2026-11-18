@@ -4,7 +4,7 @@
 import { cloneElement, useState, type FocusEvent, type ReactElement } from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import type { TooltipProps } from '@cratis/components/Common';
-import { unstable_useOverlayEnvironment } from '@cratis/components/renderer';
+import { unstable_useOverlayEnvironment, unstable_useOverlayZIndex } from '@cratis/components/renderer';
 
 interface TriggerProps {
     readonly className?: string;
@@ -33,9 +33,13 @@ export const MuiTooltipSlot = ({
     children,
 }: TooltipProps) => {
     const overlay = unstable_useOverlayEnvironment();
+    const zIndex = unstable_useOverlayZIndex();
     const [open, setOpen] = useState(false);
     const triggerProps = children.props as TriggerProps;
     if (isEmpty(content) || disabled) return children;
+
+    // The container is read only while open; with no host the popup is deferred, never retargeted.
+    const container = open ? overlay.getContainer() : null;
 
     const trigger = cloneElement(children as ReactElement<TriggerProps>, {
         className: ['cratis-tooltip-trigger', triggerProps.className, className]
@@ -58,11 +62,13 @@ export const MuiTooltipSlot = ({
         <MuiTooltip
             title={content}
             placement={position}
-            open={open}
+            describeChild
+            disableInteractive
+            open={open && container !== null}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             slotProps={{
-                popper: { container: () => overlay.getContainer() ?? document.body },
+                popper: { container, style: { zIndex } },
                 tooltip: { 'data-cratis-part': 'popup', 'data-open': '' } as Record<string, unknown>,
             }}
         >

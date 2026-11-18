@@ -221,8 +221,10 @@ A design system whose pagination model is one-based converts at the adapter boun
 | Fallback | The built-in `Tooltip` implementation |
 | Conformance | The `common.tooltip` profile: parts, state coverage, server rendering (a closed tooltip omits its popup), hydration, and the opened popup |
 
-Mount the popup in the overlay container from `unstable_useOverlayEnvironment()` so it stays above
-dialogs. Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
+Mount the popup in the overlay container from `unstable_useOverlayEnvironment()` (defer mounting while
+it is null) and set its `z-index` from `unstable_useOverlayZIndex()`, which returns the tooltip layer
+for the nearest dialog, including nested dialogs, or the static token outside dialogs. Describe the
+trigger with `aria-describedby` only, so its accessible name is unchanged. Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
 attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
 selector and cannot own the trigger or popup parts, so those three adapters keep the built-in
 tooltip.

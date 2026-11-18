@@ -802,6 +802,7 @@
     "unstable_defineUiLibrary": "unstable_defineUiLibrary: <const T extends unstable_UiLibrary>(library: T) => T",
     "unstable_useCapability": "unstable_useCapability: (capability: unstable_CapabilityId) => boolean",
     "unstable_useOverlayEnvironment": "unstable_useOverlayEnvironment: () => unstable_CratisOverlayEnvironment",
+    "unstable_useOverlayZIndex": "unstable_useOverlayZIndex: typeof useOverlayZIndex",
     "unstable_useRendererId": "unstable_useRendererId: () => string"
   },
   "./renderer/builtin": {
