@@ -4,11 +4,12 @@
 import type { unstable_AdapterDiagnostic } from './errors';
 import { unstable_adapterErrorCodes } from './errors';
 import {
+    defineOwnSlot,
     unstable_composeUiLibraries,
     unstable_CRATIS_UI_ABI_VERSION,
     type unstable_UiLibrary,
 } from './manifest';
-import { stableAtomicSlotsOf } from './presentation';
+import { stableAtomicSlotProblemsOf, stableAtomicSlotsOf } from './presentation';
 import type {
     unstable_SlotDeclaration,
     unstable_SlotId,
@@ -121,6 +122,17 @@ const profileSlotDiagnostic = (
     );
 };
 
+/** Reports stable atomic slots that resolution skipped, so they fail closed but visibly. */
+const atomicSlotDiagnostics = (library: unstable_UiLibrary) =>
+    stableAtomicSlotProblemsOf(library).map(({ slotId, message }) =>
+        missingRequirement(
+            library,
+            `Invalid stable atomic slot declaration: ${message}.`,
+            'Correct or remove the atomic slot declaration; the built-in implementation is used instead.',
+            unstable_isKnownSlot(slotId) ? slotId : undefined,
+        ),
+    );
+
 /** Runs ABI, profile, capability, and adapter preflight validation. */
 export const unstable_validateUiLibrary = (
     library: unstable_UiLibrary,
@@ -151,6 +163,7 @@ export const unstable_validateUiLibrary = (
         const diagnostic = profileSlotDiagnostic(library, profileSlot);
         if (diagnostic) diagnostics.push(diagnostic);
     }
+    diagnostics.push(...atomicSlotDiagnostics(library));
 
     if (library.preflight) {
         try {
@@ -192,7 +205,8 @@ export const unstable_createResolvedSlotTable = (
     const resolved: Record<string, object> = {};
     for (const layer of layers) {
         for (const [slotId, declaration] of Object.entries(layer.slots)) {
-            if (isResolvable(layer, slotId, declaration)) resolved[slotId] = declaration;
+            if (isResolvable(layer, slotId, declaration))
+                defineOwnSlot(resolved, slotId, declaration);
         }
     }
     return Object.freeze(resolved) as unstable_SlotMap;

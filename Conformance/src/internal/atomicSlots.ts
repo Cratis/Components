@@ -21,7 +21,9 @@ const declaredAtomicSlots = (
     if (library.profile !== CRATIS_PRESENTATION_PROFILE) return [];
     const { atomicSlots } = library as { readonly atomicSlots?: unknown };
     if (!isRecord(atomicSlots)) return [];
+    // Only own enumerable declarations take part, matching Core resolution.
     return cratisAtomicSlotIds
+        .filter((slotId) => Object.prototype.propertyIsEnumerable.call(atomicSlots, slotId))
         .map((slotId) => [slotId, atomicSlots[slotId]] as const)
         .filter(([, declaration]) => declaration !== undefined);
 };

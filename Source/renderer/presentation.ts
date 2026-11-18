@@ -238,20 +238,26 @@ const validateProfile = (library: CratisPresentationUiLibrary) => {
     }
 };
 
+const declarationProblem = (
+    declaration: Record<string, unknown>,
+    label: string,
+    mode: 'presentation' | 'atomic',
+): string | undefined => {
+    if (declaration.mode !== mode) return `${label} must use ${mode} mode`;
+    if (!isStableFidelity(declaration.fidelity)) {
+        return `${label} must use native or emulated fidelity`;
+    }
+    if (!isComponent(declaration.render)) return `${label} must provide a component`;
+    return undefined;
+};
+
 const validateDeclaration = (
     declaration: Record<string, unknown>,
     label: string,
     mode: 'presentation' | 'atomic',
 ) => {
-    if (declaration.mode !== mode) {
-        invalidPresentationLibrary(`${label} must use ${mode} mode`);
-    }
-    if (!isStableFidelity(declaration.fidelity)) {
-        invalidPresentationLibrary(`${label} must use native or emulated fidelity`);
-    }
-    if (!isComponent(declaration.render)) {
-        invalidPresentationLibrary(`${label} must provide a component`);
-    }
+    const problem = declarationProblem(declaration, label, mode);
+    if (problem) invalidPresentationLibrary(problem);
 };
 
 const validateSlots = (library: CratisPresentationUiLibrary) => {
@@ -307,21 +313,86 @@ const validateCapabilities = (library: CratisPresentationUiLibrary) => {
 const isStableAtomicSlotId = (slotId: string): slotId is CratisAtomicSlotId =>
     (cratisAtomicSlotIds as readonly string[]).includes(slotId);
 
-const validateAtomicSlots = (atomicSlots: unknown) => {
-    if (atomicSlots === undefined) return;
+/** One atomic slot entry inspected from a single own-enumerable snapshot of `atomicSlots`. */
+interface AtomicSlotEntry {
+    readonly slotId: string;
+    /** Declaration read exactly once, or undefined for an explicitly omitted slot. */
+    readonly declaration?: Readonly<Record<string, unknown>>;
+    /** Why the entry cannot be used; undefined when it is valid. */
+    readonly problem?: string;
+}
+
+/** Inspection of a library's `atomicSlots`: one problem for the map, or one result per own key. */
+interface AtomicSlotInspection {
+    readonly problem?: string;
+    readonly entries: readonly AtomicSlotEntry[];
+}
+
+const snapshotDeclaration = (declaration: Record<string, unknown>) => ({
+    mode: declaration.mode,
+    fidelity: declaration.fidelity,
+    render: declaration.render,
+});
+
+const inspectAtomicSlot = (slotId: string, value: unknown): AtomicSlotEntry => {
+    const label = `atomic slot '${slotId}'`;
+    if (!isStableAtomicSlotId(slotId)) {
+        return { slotId, problem: `${label} is not a stable atomic slot` };
+    }
+    if (value === undefined) return { slotId };
+    if (!isRecord(value)) return { slotId, problem: `${label} must provide a declaration` };
+
+    const declaration = snapshotDeclaration(value);
+    return { slotId, declaration, problem: declarationProblem(declaration, label, 'atomic') };
+};
+
+const isPlainPrototype = (prototype: unknown): boolean =>
+    prototype === null || prototype === Object.prototype;
+
+/**
+ * Inspects `atomicSlots` through ONE snapshot of its own enumerable keys, reading each value
+ * once. Inherited and non-enumerable declarations never take part in validation or resolution.
+ */
+const inspectAtomicSlots = (atomicSlots: unknown): AtomicSlotInspection => {
+    if (atomicSlots === undefined) return { entries: [] };
     if (!isRecord(atomicSlots)) {
-        invalidPresentationLibrary('atomicSlots must be an object when supplied');
+        return { problem: 'atomicSlots must be an object when supplied', entries: [] };
     }
-    for (const [slotId, declaration] of Object.entries(atomicSlots)) {
-        if (!isStableAtomicSlotId(slotId)) {
-            invalidPresentationLibrary(`atomic slot '${slotId}' is not a stable atomic slot`);
-        }
-        if (declaration === undefined) continue;
-        if (!isRecord(declaration)) {
-            invalidPresentationLibrary(`atomic slot '${slotId}' must provide a declaration`);
-        }
-        validateDeclaration(declaration, `atomic slot '${slotId}'`, 'atomic');
+    if (!isPlainPrototype(Object.getPrototypeOf(atomicSlots))) {
+        return {
+            problem: 'atomicSlots must be a plain object; inherited declarations are not allowed',
+            entries: [],
+        };
     }
+    return {
+        entries: Object.keys(atomicSlots).map((slotId) =>
+            inspectAtomicSlot(slotId, atomicSlots[slotId]),
+        ),
+    };
+};
+
+const isUsableAtomicSlot = (
+    entry: AtomicSlotEntry,
+): entry is AtomicSlotEntry & { readonly declaration: Readonly<Record<string, unknown>> } =>
+    entry.problem === undefined && entry.declaration !== undefined;
+
+/** Builds a frozen slot-id keyed map of the usable entries; keys are own data properties. */
+const usableAtomicSlots = (entries: readonly AtomicSlotEntry[]): Readonly<Record<string, object>> =>
+    Object.freeze(
+        Object.fromEntries(
+            entries
+                .filter(isUsableAtomicSlot)
+                .map(({ slotId, declaration }) => [slotId, Object.freeze(declaration)]),
+        ),
+    );
+
+const frozenValidAtomicSlots = (atomicSlots: unknown): CratisAtomicSlotMap | undefined => {
+    if (atomicSlots === undefined) return undefined;
+    const inspection = inspectAtomicSlots(atomicSlots);
+    const problem =
+        inspection.problem ?? inspection.entries.find((entry) => entry.problem)?.problem;
+    if (problem) invalidPresentationLibrary(problem);
+    return usableAtomicSlots(inspection.entries) as CratisAtomicSlotMap;
 };
 
 const freezeDeclaration = <
@@ -351,16 +422,6 @@ const freezePresentationSlots = (
         ),
     ) as CratisPresentationSlotMap;
 
-const freezeAtomicSlots = (atomicSlots: CratisAtomicSlotMap): CratisAtomicSlotMap =>
-    Object.freeze(
-        Object.fromEntries(
-            cratisAtomicSlotIds.flatMap((slotId) => {
-                const declaration = atomicSlots[slotId];
-                return declaration ? [[slotId, freezeDeclaration(declaration)]] : [];
-            }),
-        ),
-    ) as CratisAtomicSlotMap;
-
 /**
  * Defines and freezes a complete implementation of the stable nine-slot presentation profile,
  * plus any optional stable atomic slots. Runtime validation protects JavaScript callers from
@@ -376,7 +437,7 @@ export const definePresentationUiLibrary = (
     validateProfile(library);
     validateSlots(library);
     validateCapabilities(library);
-    validateAtomicSlots(library.atomicSlots);
+    const atomicSlots = frozenValidAtomicSlots(library.atomicSlots);
 
     return Object.freeze({
         id: library.id,
@@ -390,19 +451,48 @@ export const definePresentationUiLibrary = (
         ]) as CratisPresentationCapabilities,
         slots: freezePresentationSlots(library.slots),
         Provider: library.Provider,
-        ...(library.atomicSlots === undefined
-            ? {}
-            : { atomicSlots: freezeAtomicSlots(library.atomicSlots) }),
+        ...(atomicSlots === undefined ? {} : { atomicSlots }),
     });
 };
 
-const isStableAtomicDeclaration = (declaration: unknown): boolean =>
-    isRecord(declaration) && declaration.mode === 'atomic';
+const atomicSlotsInspectionOf = (library: { readonly profile: string }) =>
+    library.profile === CRATIS_PRESENTATION_PROFILE
+        ? inspectAtomicSlots((library as { readonly atomicSlots?: unknown }).atomicSlots)
+        : { entries: [] };
+
+/** One reason a stable presentation library's atomic slot cannot be resolved. */
+export interface StableAtomicSlotProblem {
+    /** Offending slot id, when the problem concerns a single entry. */
+    readonly slotId?: string;
+    /** Human-readable reason. */
+    readonly message: string;
+}
+
+/**
+ * Lists why a stable presentation library's atomic slots cannot all be resolved. Libraries built
+ * with the generic definer or as raw manifests can claim the stable profile without passing
+ * {@link definePresentationUiLibrary}; resolution skips their invalid entries and this reports them.
+ *
+ * @param library Renderer library being validated.
+ * @returns Problems in key order; empty for valid or absent atomic slots and for other profiles.
+ * @internal Resolution helper; not part of the public package surface.
+ */
+export const stableAtomicSlotProblemsOf = (library: {
+    readonly profile: string;
+}): readonly StableAtomicSlotProblem[] => {
+    const inspection: AtomicSlotInspection = atomicSlotsInspectionOf(library);
+    if (inspection.problem) return [{ message: inspection.problem }];
+    return inspection.entries.flatMap(({ slotId, problem }) =>
+        problem ? [{ slotId, message: problem }] : [],
+    );
+};
 
 /**
  * Returns the stable atomic slot declarations a stable presentation library adds to resolution.
- * Libraries of any other profile, and libraries without `atomicSlots`, contribute nothing, so
- * their slot tables resolve exactly as before.
+ * Only own enumerable, fully valid declarations take part; invalid ones fail closed to the
+ * built-in implementation and are reported by {@link stableAtomicSlotProblemsOf}. Libraries of any
+ * other profile, and libraries without `atomicSlots`, contribute nothing, so their slot tables
+ * resolve exactly as before.
  *
  * @param library Renderer library being resolved.
  * @returns The library's stable atomic declarations keyed by slot id; empty when it has none.
@@ -410,14 +500,5 @@ const isStableAtomicDeclaration = (declaration: unknown): boolean =>
  */
 export const stableAtomicSlotsOf = (library: {
     readonly profile: string;
-}): unstable_SlotMap => {
-    if (library.profile !== CRATIS_PRESENTATION_PROFILE) return {};
-    const { atomicSlots } = library as { readonly atomicSlots?: unknown };
-    if (!isRecord(atomicSlots)) return {};
-
-    return Object.fromEntries(
-        cratisAtomicSlotIds
-            .map((slotId) => [slotId, atomicSlots[slotId]] as const)
-            .filter(([, declaration]) => isStableAtomicDeclaration(declaration)),
-    ) as unstable_SlotMap;
-};
+}): unstable_SlotMap =>
+    usableAtomicSlots(atomicSlotsInspectionOf(library).entries) as unstable_SlotMap;

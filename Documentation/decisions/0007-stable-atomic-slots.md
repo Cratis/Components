@@ -2,19 +2,23 @@
 id: '0007'
 title: Stable atomic slots
 description: A stable presentation adapter can implement selected atomic slots through an optional atomicSlots map, without changing the nine-slot profile or the renderer ABI.
-status: proposed
+status: accepted
 stage: implemented
 class: contract
 reversibility: costly
+decided: 2026-11-18
+decider: L163
 applies-to:
     - 'Source/renderer/**/*'
     - 'Adapters/**/*'
     - 'Conformance/**/*'
 sidebar:
-    badge: { text: Proposed, variant: caution }
+    badge: { text: Accepted, variant: tip }
 ---
 
-**Status:** Proposed
+**Status:** Accepted
+
+**Provenance:** L163 made this decision on 2026-11-18 for [#530](https://github.com/Cratis/Components/issues/530), filed by woksin.
 
 ## Context
 
@@ -38,7 +42,11 @@ Stable atomic slots are a separate, optional extension of `CratisPresentationUiL
 - `CratisPresentationUiLibrary.atomicSlots` is optional. `profileSlots` and `slots` keep meaning
   the nine presentation slots, so no existing manifest, validator, or adapter changes.
 - `definePresentationUiLibrary()` validates and freezes `atomicSlots` when it is present and leaves
-  the field out of the result when it is absent.
+  the field out of the result when it is absent. It reads one snapshot of the map's own
+  enumerable keys, rejects unknown ids and inherited declarations, and ignores non-enumerable ones.
+- Resolution applies the same checks to libraries that claim the stable profile through the
+  generic definer or a raw manifest. An invalid atomic declaration is not resolved, so the control
+  keeps its built-in implementation, and library validation reports it as a diagnostic.
 - Resolution merges the stable atomic declarations of a `stable-presentation/v1` library into the
   slot table that the renderer layer and manifest composition already build. A library without
   `atomicSlots`, or of any other profile, contributes nothing, so its table is unchanged. An

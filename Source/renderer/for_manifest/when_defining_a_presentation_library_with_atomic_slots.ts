@@ -93,4 +93,38 @@ describe('when defining a presentation library with atomic slots', () => {
     it('should reject a non-object atomic slot map', () => {
         expectRejected([], 'atomicSlots must be an object when supplied');
     });
+
+    it('should reject an inherited atomic declaration', () => {
+        expectRejected(
+            Object.create({ 'datatables.paginator': paginator({ fidelity: 'garbage' }) }),
+            'atomicSlots must be a plain object; inherited declarations are not allowed',
+        );
+    });
+
+    it('should ignore a non-enumerable atomic declaration', () => {
+        const atomicSlots = Object.defineProperty({}, 'datatables.paginator', {
+            value: paginator({ fidelity: 'garbage', render: undefined }),
+            enumerable: false,
+        });
+
+        const result = defineRuntime({ ...aStablePresentationLibrary(), atomicSlots });
+
+        expect(result.atomicSlots).to.deep.equal({});
+        expect(Object.getOwnPropertyNames(result.atomicSlots)).to.deep.equal([]);
+    });
+
+    it('should read each atomic declaration exactly once', () => {
+        let reads = 0;
+        const atomicSlots = {
+            get 'datatables.paginator'() {
+                reads += 1;
+                return reads === 1 ? paginator() : paginator({ fidelity: 'garbage' });
+            },
+        };
+
+        const result = defineRuntime({ ...aStablePresentationLibrary(), atomicSlots });
+
+        expect(reads).to.equal(1);
+        expect(result.atomicSlots?.['datatables.paginator']?.fidelity).to.equal('native');
+    });
 });
