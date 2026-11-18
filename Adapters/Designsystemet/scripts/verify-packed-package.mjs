@@ -138,7 +138,11 @@ try {
         );
     }
 
-    const runtime = readFileSync(path.join(unpackedPackage, 'dist/index.js'), 'utf8');
+    // The runtime is split into internal modules; only `index` is reachable through `exports`.
+    const runtime = [...fileNames]
+        .filter((file) => file.startsWith('dist/') && file.endsWith('.js'))
+        .map((file) => readFileSync(path.join(unpackedPackage, file), 'utf8'))
+        .join('\n');
     for (const requiredImport of [
         '@digdir/designsystemet-react',
         '@cratis/components/',
@@ -161,11 +165,10 @@ try {
         }
     }
 
-    const declarationFiles = [...fileNames].filter((file) => file.endsWith('.d.ts'));
-    if (declarationFiles.length !== 1) {
-        throw new Error(
-            `Expected one public declaration file, found ${declarationFiles.length}.`,
-        );
+    // Internal module declarations ship alongside `dist/index.d.ts` but are unreachable through
+    // the package `exports` map, which exposes only the root entry.
+    if (JSON.stringify(Object.keys(packageJson.exports)) !== JSON.stringify(['./package.json', '.'])) {
+        throw new Error('Only the root entry may be exported; internal modules must stay private.');
     }
     const declarations = readFileSync(
         path.join(unpackedPackage, 'dist/index.d.ts'),
