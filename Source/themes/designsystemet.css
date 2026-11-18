@@ -1,0 +1,94 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/*
+ * Maps live Digdir Designsystemet (--ds-*) variables onto the Cratis semantic seam (--cratis-*).
+ * No value is resolved here, so a theme or data-color-scheme / data-size change is followed.
+ *
+ * Import order (this file is unlayered and must come after tokens.css; never import theme.css with it):
+ *   @digdir/designsystemet-css, generated theme, @cratis/components/tokens,
+ *   @cratis/components/themes/designsystemet, @cratis/components/styles
+ *
+ * Custom properties resolve var() on the element that declares them, so the tokens are redeclared on
+ * every element where Designsystemet redeclares its own (colour scheme and explicit size modes). Bare
+ * [data-size] is deliberately not used: Cratis Button, Avatar and Badge emit data-size="normal|small|..."
+ * with a different vocabulary.
+ *
+ * Not mapped (no Designsystemet equivalent, keep their tokens.css defaults): --cratis-maskbg and
+ * --cratis-z-index-*.
+ */
+:root,
+[data-color-scheme],
+[data-size='sm'],
+[data-size='md'],
+[data-size='lg'] {
+    --cratis-surface-0: var(--ds-color-neutral-background-default);
+    --cratis-surface-section: var(--ds-color-neutral-background-default);
+    --cratis-control-background: var(--ds-color-neutral-background-default);
+    --cratis-surface-ground: var(--ds-color-neutral-background-tinted);
+    --cratis-surface-100: var(--ds-color-neutral-surface-tinted);
+    --cratis-surface-card: var(--ds-color-neutral-surface-default);
+    --cratis-surface-overlay: var(--ds-color-neutral-surface-default);
+    --cratis-surface-hover: var(--ds-color-neutral-surface-hover);
+    --cratis-surface-border: var(--ds-color-neutral-border-subtle);
+    --cratis-control-border: var(--ds-color-neutral-border-default);
+
+    --cratis-text-color: var(--ds-color-neutral-text-default);
+    --cratis-text-color-secondary: var(--ds-color-neutral-text-subtle);
+    --cratis-number-input-adornment-color: var(--ds-color-neutral-text-subtle);
+    --cratis-number-input-step-background: var(--ds-color-neutral-surface-tinted);
+    --cratis-number-input-step-background-hover: var(--ds-color-neutral-surface-hover);
+
+    --cratis-primary-color: var(--ds-color-accent-base-default);
+    --cratis-primary-500: var(--ds-color-accent-base-default);
+    --cratis-action-background: var(--ds-color-accent-base-default);
+    --cratis-primary-color-text: var(--ds-color-accent-base-contrast-default);
+    --cratis-primary-600-text: var(--ds-color-accent-base-contrast-default);
+    --cratis-action-text: var(--ds-color-accent-base-contrast-default);
+    --cratis-primary-300: var(--ds-color-accent-border-subtle);
+    --cratis-primary-400: var(--ds-color-accent-border-default);
+    --cratis-primary-600: var(--ds-color-accent-base-hover);
+    --cratis-action-background-hover: var(--ds-color-accent-base-hover);
+    --cratis-action-background-active: var(--ds-color-accent-base-active);
+    --cratis-highlight-bg: var(--ds-color-accent-surface-tinted);
+    --cratis-highlight-text-color: var(--ds-color-accent-text-default);
+
+    --cratis-green-500: var(--ds-color-success-base-default);
+    --cratis-orange-500: var(--ds-color-warning-base-default);
+    --cratis-red-500: var(--ds-color-danger-base-default);
+    --cratis-info-background: var(--ds-color-info-surface-tinted);
+    --cratis-info-text: var(--ds-color-info-text-default);
+    --cratis-success-background: var(--ds-color-success-surface-tinted);
+    --cratis-success-text: var(--ds-color-success-text-default);
+    --cratis-warning-background: var(--ds-color-warning-surface-tinted);
+    --cratis-warning-text: var(--ds-color-warning-text-default);
+    --cratis-danger-background: var(--ds-color-danger-surface-tinted);
+    --cratis-danger-text: var(--ds-color-danger-text-default);
+
+    --cratis-border-radius: var(--ds-border-radius-md);
+    --cratis-radius-sm: var(--ds-border-radius-sm);
+    --cratis-radius-lg: var(--ds-border-radius-lg);
+    --cratis-radius-xl: var(--ds-border-radius-xl);
+    --cratis-radius-full: var(--ds-border-radius-full);
+
+    --cratis-control-height: var(--ds-size-12);
+    --cratis-control-height-small: var(--ds-size-10);
+    --cratis-control-height-large: var(--ds-size-14);
+
+    --cratis-font-size-xs: var(--ds-font-size-1);
+    --cratis-font-size-sm: var(--ds-font-size-2);
+    --cratis-font-size-md: var(--ds-font-size-3);
+    --cratis-font-weight-medium: var(--ds-font-weight-medium);
+    --cratis-font-weight-semibold: var(--ds-font-weight-semibold);
+    --cratis-font-weight-bold: var(--ds-font-weight-semibold);
+
+    --cratis-disabled-opacity: var(--ds-opacity-disabled);
+    --cratis-shadow-subtle: var(--ds-shadow-xs);
+    --cratis-shadow-overlay: var(--ds-shadow-md);
+    --cratis-shadow-toast: var(--ds-shadow-md);
+    --cratis-shadow-dialog: var(--ds-shadow-xl);
+
+    --cratis-focus-ring: 0 0 0 var(--ds-border-width-focus) var(--ds-color-focus-inner);
+    --cratis-focus-outline: var(--ds-color-focus-outer) solid var(--ds-border-width-focus);
+    --cratis-focus-outline-offset: var(--ds-border-width-focus);
+}

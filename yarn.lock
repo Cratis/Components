@@ -593,6 +593,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digdir/designsystemet-css@npm:^1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-css@npm:1.24.0"
+  dependencies:
+    "@digdir/designsystemet-types": "npm:1.24.0"
+  checksum: 10/6b1a1dfc385c40877410dff7f99aeca0a70e50fba7131b60561b68fa36eb474759d96dc5bee00a5b75bdb7eadccacda26709a02aa496823f6ff4e85ab0d288bf
+  languageName: node
+  linkType: hard
+
+"@digdir/designsystemet-types@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@digdir/designsystemet-types@npm:1.24.0"
+  checksum: 10/028d299a70983cbe66a80ea0fa966864a36463d93d41731354011a2ba8a0348bf6e127213d51f1c303e3967fbc9fc0989fc83fcc4b9b12f3ce3a3618f1faedb6
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:1.11.0":
   version: 1.11.0
   resolution: "@emnapi/core@npm:1.11.0"
@@ -7155,6 +7171,7 @@ __metadata:
     "@cratis/arc.react": "npm:23.0.0"
     "@cratis/arc.vite": "npm:23.0.0"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
+    "@digdir/designsystemet-css": "npm:^1.24.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"
     "@eslint/js": "npm:^10.0.1"
     "@jridgewell/sourcemap-codec": "npm:1.6.0"

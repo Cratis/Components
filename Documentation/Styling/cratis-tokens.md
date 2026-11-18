@@ -46,8 +46,12 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 | `--cratis-highlight-bg`                         | Selected/highlighted background.                                    |
 | `--cratis-highlight-text-color`                 | Text on a highlighted background.                                   |
 | `--cratis-focus-ring`                           | Keyboard-visible focus treatment.                                   |
+| `--cratis-focus-outline` / `-offset`            | Optional outline hook for focus; defaults to `none` and `0`.        |
 | `--cratis-maskbg`                               | Modal backdrop.                                                     |
 | `--cratis-border-radius`                        | Default component radius.                                           |
+| `--cratis-radius-sm` / `-lg` / `-xl` / `-full`  | Radius scale (`4px`, `8px`, `12px`, `999px`); not yet read by every component stylesheet. |
+| `--cratis-font-size-xs` / `-sm` / `-md`         | Type scale (`0.75rem`, `0.875rem`, `1rem`); not yet read by every component stylesheet. |
+| `--cratis-font-weight-medium` / `-semibold` / `-bold` | Font weights (`500`, `600`, `700`); not yet read by every component stylesheet. |
 | `--cratis-control-height` / `-small` / `-large` | Interactive control size floor.                                     |
 | `--cratis-disabled-opacity`                     | Shared disabled-state opacity.                                      |
 | `--cratis-shadow-subtle`                        | Small control elevation.                                            |

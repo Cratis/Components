@@ -35,6 +35,7 @@ const requiredEntries = [
     'package/MIGRATION.md',
     'package/THIRD_PARTY_NOTICES.md',
     'package/dist/esm/styles.css',
+    'package/dist/esm/themes/designsystemet.css',
     'package/dist/esm/schemas/ui-adapter.schema.json',
     'package/dist/esm/schemas/ui-adapter.schema.d.ts',
     'package/dist/esm/renderer/index.js',

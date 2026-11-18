@@ -57,6 +57,18 @@
     --cratis-control-height-large: 3.25rem;
     --cratis-disabled-opacity: 0.55;
     --cratis-focus-ring: 0 0 0 3px #2563eb;
+    --cratis-focus-outline: none;
+    --cratis-focus-outline-offset: 0;
+    --cratis-font-size-xs: 0.75rem;
+    --cratis-font-size-sm: 0.875rem;
+    --cratis-font-size-md: 1rem;
+    --cratis-font-weight-medium: 500;
+    --cratis-font-weight-semibold: 600;
+    --cratis-font-weight-bold: 700;
+    --cratis-radius-sm: 4px;
+    --cratis-radius-lg: 8px;
+    --cratis-radius-xl: 12px;
+    --cratis-radius-full: 999px;
     --cratis-maskbg: rgb(0 0 0 / 40%);
     --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
     --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);

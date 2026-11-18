@@ -6,6 +6,13 @@ import React from 'react';
 import './foundation.css';
 import './preview.css';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
+import {
+    DEFAULT_DESIGNSYSTEMET_SIZE,
+    DESIGNSYSTEMET_MODES,
+    DESIGNSYSTEMET_SIZES,
+    applyDesignsystemetMode,
+    isDesignsystemetMode,
+} from './designsystemet';
 
 const DARK_SELECTOR = 'cratis-dark';
 const LIGHT_SELECTOR = 'cratis-light';
@@ -26,6 +33,14 @@ const APPEARANCE_MODES = {
         dark: true,
         bodyClass: 'storybook-product-theme',
     },
+    // Designsystemet modes drive data-color-scheme / data-size instead of the Cratis classes; the
+    // dark flag only keeps the baseline classes consistent until applyDesignsystemetMode takes over.
+    ...Object.fromEntries(
+        Object.entries(DESIGNSYSTEMET_MODES).map(([key, mode]) => [
+            key,
+            { title: mode.title, dark: mode.scheme === 'dark', bodyClass: null },
+        ]),
+    ),
 };
 
 const ALL_BODY_CLASSES = Object.values(APPEARANCE_MODES)
@@ -37,7 +52,7 @@ let docsSiteAppearance = null;
 addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }) => {
     docsSiteAppearance = theme === 'light' ? 'baseline-light' : 'baseline-dark';
     const mode = APPEARANCE_MODES[docsSiteAppearance];
-    if (mode) applyAppearance(mode);
+    if (mode) applyAppearance(mode, docsSiteAppearance);
 });
 
 export const tags = ['autodocs'];
@@ -56,13 +71,28 @@ export const globalTypes = {
             showName: true,
         },
     },
+    designsystemetSize: {
+        name: 'Designsystemet size',
+        description: 'Designsystemet size mode (only used by the Designsystemet appearances)',
+        defaultValue: DEFAULT_DESIGNSYSTEMET_SIZE,
+        toolbar: {
+            icon: 'ruler',
+            items: DESIGNSYSTEMET_SIZES,
+            showName: true,
+        },
+    },
 };
 
-function applyAppearance(mode) {
+function applyAppearance(mode, appearanceKey, designsystemetSize) {
     document.documentElement.classList.toggle(DARK_SELECTOR, mode.dark);
     document.documentElement.classList.toggle(LIGHT_SELECTOR, !mode.dark);
     document.body.classList.remove(...ALL_BODY_CLASSES);
     if (mode.bodyClass) document.body.classList.add(mode.bodyClass);
+    applyDesignsystemetMode(
+        document.documentElement,
+        isDesignsystemetMode(appearanceKey) ? appearanceKey : null,
+        designsystemetSize,
+    );
 }
 
 export const decorators = [
@@ -70,7 +100,7 @@ export const decorators = [
         const appearanceKey =
             docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
         const mode = APPEARANCE_MODES[appearanceKey] ?? APPEARANCE_MODES['baseline-dark'];
-        applyAppearance(mode);
+        applyAppearance(mode, appearanceKey, context.globals.designsystemetSize);
 
         return React.createElement(
             CratisComponentsProvider,
