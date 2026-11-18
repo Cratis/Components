@@ -64,9 +64,9 @@ const labelFor = (label: ReactNode, children: ReactNode, pt: ButtonProps['pt']) 
     ) : null;
 
 /**
- * Tooltip text is exposed through the native `title` attribute, never through the upstream
- * `data-tooltip` script, which rewrites `aria-label` after mount and would replace the caller's
- * accessible name. `tooltipOptions` has no counterpart (no tooltip element is rendered).
+ * Tooltip text is rendered by the Cratis `Tooltip` (hover and keyboard focus, `aria-describedby`),
+ * never through the upstream `data-tooltip` script, which rewrites `aria-label` after mount and would
+ * replace the caller's accessible name. `tooltipOptions` position and className go to that `Tooltip`.
  *
  * Designsystemet owns `data-size` as an inherited size mode and `data-variant`/`data-color` as its
  * own appearance vocabulary. The Cratis values for those attributes (`normal`, `solid`, ...) are
