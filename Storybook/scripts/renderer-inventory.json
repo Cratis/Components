@@ -2,12 +2,14 @@
     "privateRenderers": [],
     "publicRendererOptions": [
         "cratis-built-in: Cratis built-in renderer",
+        "cratis-designsystemet: Cratis Designsystemet renderer",
         "cratis-mui: Cratis Material UI renderer",
         "cratis-primereact10: Cratis PrimeReact 10 renderer",
         "cratis-primereact: Cratis PrimeReact renderer"
     ],
     "publicRenderers": [
         "cratis-built-in",
+        "cratis-designsystemet",
         "cratis-mui",
         "cratis-primereact",
         "cratis-primereact10"

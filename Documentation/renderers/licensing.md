@@ -19,6 +19,7 @@ license and commercial terms shipped or published by each upstream vendor.
 | `@cratis/components`                      | MIT package metadata            | Built-in React Aria dependencies retain their own permissive terms |
 | `@cratis/components.mui`                  | MIT adapter; peer-hosted MUI    | Application installs and configures MUI and Emotion peers          |
 | `@cratis/components.primereact10`         | MIT adapter; PrimeReact 10 peer | Application owns the theme and any direct PrimeReact 10 provider   |
+| `@cratis/components.designsystemet`       | MIT adapter; Designsystemet peers | Application owns the Designsystemet theme and CSS imports       |
 | `@cratis/components.primereact`           | MIT adapter; PrimeUI peers      | Application owns PrimeReact 11 provider, terms, key, and theme     |
 | Commercial vendor suites outside adapters | Vendor-specific                 | Interop only; application owns procurement, terms, and integration |
 
@@ -28,7 +29,8 @@ manifests, `LICENSE`, `THIRD_PARTY_NOTICES.md`, and upstream terms before adopti
 ## Permissive peers
 
 The MUI adapter declares MUI 9 and Emotion 11 as peers. The PrimeReact 10 adapter declares
-PrimeReact `>=10.9.9 <11` as a peer. Those packages are not bundled into their adapter archives.
+PrimeReact `>=10.9.9 <11` as a peer. The Designsystemet adapter declares `@digdir/designsystemet-react`
+and `@digdir/designsystemet-css` `>=1.24 <2` as peers (MIT). Those packages are not bundled into their adapter archives.
 The application selects compatible versions and remains responsible for their providers, themes,
 server-rendering setup, security updates, and license obligations.
 

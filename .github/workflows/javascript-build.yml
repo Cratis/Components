@@ -171,7 +171,7 @@ jobs:
               run: yarn workspace @cratis/components run generate-parts && cd Source && yarn run -T vitest run --shard=${{ matrix.shard }}/3
 
     # Matrix over the renderer-adapter workspaces that today run one after another inside
-    # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
+    # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10, Designsystemet. In that
     # serial pipeline `@cratis/components` (Source) always ran first, so every adapter's `ci`
     # resolved the package's `exports` map (which points at `Source/dist`, not `src`) against
     # an already-built package. Only Conformance's own `ci` rebuilds Source itself
@@ -202,6 +202,8 @@ jobs:
                       workspace: '@cratis/components.primereact'
                     - name: primereact10
                       workspace: '@cratis/components.primereact10'
+                    - name: designsystemet
+                      workspace: '@cratis/components.designsystemet'
 
         steps:
             - name: Checkout code
@@ -354,6 +356,7 @@ jobs:
                   yarn workspace @cratis/components.mui run build
                   yarn workspace @cratis/components.primereact run build
                   yarn workspace @cratis/components.primereact10 run build
+                  yarn workspace @cratis/components.designsystemet run build
                   yarn verify-typescript-consumers --typescript ${{ matrix.typescript }} --skip-public-types
 
     # The Storybook workspace is `private`, so `run-task-on-workspaces.js ci` always skipped
@@ -404,6 +407,7 @@ jobs:
                   yarn workspace @cratis/components.mui run build
                   yarn workspace @cratis/components.primereact run build
                   yarn workspace @cratis/components.primereact10 run build
+                  yarn workspace @cratis/components.designsystemet run build
 
             - name: Verify renderer Storybook type, inventory, specs, and peer isolation
               working-directory: Storybook
@@ -827,7 +831,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                adapter: [mui, primereact11, primereact10]
+                adapter: [mui, primereact11, primereact10, designsystemet]
                 boundary: [minimum, current]
                 manager: [all]
                 node: [24.x]
@@ -844,6 +848,10 @@ jobs:
                       manager: npm
                       node: 22.x
                     - adapter: primereact10
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+                    - adapter: designsystemet
                       boundary: current
                       manager: npm
                       node: 22.x

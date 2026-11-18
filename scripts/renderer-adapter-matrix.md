@@ -4,7 +4,7 @@
 # Packed renderer adapter boundary matrix
 
 [`renderer-adapter-matrix.json`](./renderer-adapter-matrix.json) is the single checked-in source for
-the supported lower and current-highest packed-consumer fixtures. It keeps Material UI,
+the supported lower and current-highest packed-consumer fixtures. It keeps Material UI, Designsystemet,
 PrimeReact 11, and PrimeReact 10 separate and records exact versions for every fixture peer.
 Adapter package versions are deliberately absent: the verifier reads package names and versions
 from the archives it builds.
@@ -21,7 +21,7 @@ Run one package-manager case locally with:
 yarn verify-renderer-adapters --adapter mui --boundary minimum --manager npm
 ```
 
-Valid adapters are `mui`, `primereact11`, and `primereact10`; boundaries are `minimum` and
+Valid adapters are `mui`, `primereact11`, `primereact10`, and `designsystemet`; boundaries are `minimum` and
 `current`; managers are `npm`, `pnpm`, and `yarn-pnp`. Use `all` for any dimension only when the
 longer local run is intentional.
 

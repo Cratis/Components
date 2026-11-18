@@ -70,6 +70,22 @@
                 }
             }
         },
+        "designsystemet": {
+            "workspace": "@cratis/components.designsystemet",
+            "directory": "Adapters/Designsystemet",
+            "manifestExport": "designsystemetUiLibrary",
+            "rendererId": "cratis-designsystemet",
+            "boundaries": {
+                "minimum": {
+                    "@digdir/designsystemet-css": "1.24.0",
+                    "@digdir/designsystemet-react": "1.24.0"
+                },
+                "current": {
+                    "@digdir/designsystemet-css": "1.24.0",
+                    "@digdir/designsystemet-react": "1.24.0"
+                }
+            }
+        },
         "primereact11": {
             "workspace": "@cratis/components.primereact",
             "directory": "Adapters/PrimeReact",
