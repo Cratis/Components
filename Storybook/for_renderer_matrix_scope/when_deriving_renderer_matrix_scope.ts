@@ -90,6 +90,34 @@ describe('when deriving renderer matrix scope', () => {
         expect(matrixStoryIds.size).to.equal(0);
     });
 
+    it('should ignore type-only imports of slot owners but follow every runtime edge', () => {
+        const root = mkdtempSync(path.join(os.tmpdir(), 'cratis-type-edge-'));
+        try {
+            const fixtureSourceRoot = path.join(root, 'Source');
+            mkdirSync(fixtureSourceRoot, { recursive: true });
+            const fixtures: Record<string, string> = {
+                'Slot.tsx': "unstable_useSlot('common.slot');\n",
+                'TypeOnly.tsx': "import type { SlotProps } from './Slot';\nexport type { Other } from './Slot';\n",
+                'InText.tsx': "// import { Slot } from './Slot';\nconst text = \"import { Slot } from './Slot'\";\n/* import './Slot'; */\n",
+                'Runtime.tsx': "import { type SlotProps, Slot } from './Slot';\n",
+                'DefaultNamedType.tsx': "import type from './Slot';\n",
+                'AfterComment.tsx': "// import type\nimport { Slot } from './Slot';\n",
+                'SideEffect.tsx': "import './Slot';\n",
+                'ReExport.tsx': "export { Slot } from './Slot';\n",
+                'GenericArrow.ts': "const id = <T>(x: T) => x;\nimport { Slot } from './Slot';\n",
+            };
+            for (const [name, contents] of Object.entries(fixtures)) writeFileSync(path.join(fixtureSourceRoot, name), contents);
+            const storyEntries = Object.keys(fixtures)
+                .filter(name => name !== 'Slot.tsx')
+                .map(name => storyEntry(name, name));
+            const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot: root, sourceRoot: fixtureSourceRoot });
+            expect([...matrixStoryIds].sort()).to.deep.equal(
+                ['AfterComment.tsx', 'DefaultNamedType.tsx', 'GenericArrow.ts', 'ReExport.tsx', 'Runtime.tsx', 'SideEffect.tsx']);
+        } finally {
+            rmSync(root, { recursive: true, force: true });
+        }
+    });
+
     it('should include composites that render a slotted primitive inside them', () => {
         const storyEntries = [
             storyEntry('commanddialog-commanddialog--default', 'CommandDialog/CommandDialog.tsx'),
