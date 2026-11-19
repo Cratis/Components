@@ -10,9 +10,12 @@ const pause = (milliseconds: number) =>
 
 const find = (root: ParentNode, selector: string) => root.querySelector<HTMLElement>(selector);
 
-/** Elements a browser activates with Enter (on keydown) or Space (on keyup) as a click. */
-const keyActivated = (element: Element | null): element is HTMLElement =>
-    element instanceof HTMLElement && element.matches('button, [role="button"], a[href], summary');
+/** Native click defaults: buttons and summaries use Enter/Space; links use Enter only. ARIA roles add no defaults. */
+const keyActivated = (element: Element | null, key: string): element is HTMLElement =>
+    element instanceof HTMLElement && (
+        element.matches('button, details > summary:first-of-type') ||
+        (key === 'Enter' && element.matches('a[href]'))
+    );
 
 /**
  * Presses a key the way a browser delivers it: keydown and keyup events, then the default activation of
@@ -25,7 +28,7 @@ const press = (target: Element | null, key: string) => {
         target.dispatchEvent(event);
         return event.defaultPrevented;
     };
-    const activates = keyActivated(target);
+    const activates = keyActivated(target, key);
     const down = send('keydown');
     const canActivate = activates && !down;
     if (canActivate) activateKey(target, key, 'Enter');
@@ -87,6 +90,8 @@ interface OverlayProfile {
     readonly overlaySelector: string;
     readonly openKeys: readonly string[];
     readonly targetSelectors: readonly string[];
+    /** Optional popup control to focus before Escape, rather than dismissing from the trigger. */
+    readonly dismissTargetSelector?: string;
     /** Slot whose change callback must fire once when an option is chosen with the arrow keys and Enter. */
     readonly choosesSlot?: string;
 }
@@ -126,12 +131,16 @@ const optionalChoice = (
     overlay: { openKeys: readonly string[]; isOpen: () => boolean },
 ) => slotId === undefined ? true : chooseWithKeys(evidence, slotId, trigger, overlay);
 
+const focusDismissTarget = (document: Document, selector?: string) => {
+    if (selector) find(document, selector)?.focus();
+};
+
 /**
  * Opens an overlay slot from its focused trigger, or from its filter field when it has one, with the keys a keyboard user has, then dismisses
  * it with Escape. The trigger must open the overlay, Escape must close it and focus must return.
  */
 const overlayInteraction =
-    (evidence: Evidence, { overlaySelector, openKeys, targetSelectors, choosesSlot }: OverlayProfile): SlotInteraction =>
+    (evidence: Evidence, { overlaySelector, openKeys, targetSelectors, dismissTargetSelector, choosesSlot }: OverlayProfile): SlotInteraction =>
     async (document, container): Promise<SlotInteractionResult> => {
         const trigger = targetSelectors
             .map((selector) => find(container, `[data-cratis-part="${selector}"]`))
@@ -142,6 +151,7 @@ const overlayInteraction =
         const openBefore = isOpen();
         const openedWith = await openWithKeys(trigger, openKeys, isOpen);
         const opened = openedWith !== undefined;
+        focusDismissTarget(document, dismissTargetSelector);
         const activeWhenOpen = document.activeElement?.outerHTML.slice(0, 120);
         press(document.activeElement ?? trigger, 'Escape');
         const closed = opened && (await settle(() => !isOpen()));
@@ -213,6 +223,7 @@ const interactions: Readonly<Record<string, (evidence: Evidence) => SlotInteract
             overlaySelector: '[data-cratis-part="calendar"]',
             openKeys: ['Enter', ' ', 'ArrowDown'],
             targetSelectors: ['trigger'],
+            dismissTargetSelector: '[data-cratis-part="today"]',
         }),
     'common.tooltip': tooltipInteraction,
     'datatables.paginator': paginatorInteraction,
