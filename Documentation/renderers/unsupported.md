@@ -16,7 +16,8 @@ component. The current MUI, PrimeReact 11, and PrimeReact 10 adapters implement 
 
 A stable presentation adapter may also implement the stable atomic slots listed in
 `cratisAtomicSlotIds`; today those are `datatables.paginator`, `common.tooltip`, `dropdown.select`,
-`display.datePicker`, and `dialogs.dialog`. Only the MUI adapter implements `common.tooltip`; no
+`display.datePicker`, `dialogs.dialog`, and `common.numberInput`. MUI and Designsystemet implement
+`common.numberInput`. Only the MUI adapter implements `common.tooltip`; no
 adapter implements `dropdown.select` or `display.datePicker` yet, and those use the built-in
 implementations. Designsystemet implements `dialogs.dialog` as a native modal `<dialog>`; MUI,
 PrimeReact 11, and PrimeReact 10 use the built-in dialog.

@@ -103,7 +103,7 @@ Optional evidence flags remain bounded claims; they are not universal browser or
 certification.
 
 Removing or changing a v1 slot is a breaking change. Adding a required slot needs a new profile and
-version; `stable-presentation/v1` will not silently grow. The open fourteen-slot manifest,
+version; `stable-presentation/v1` will not silently grow. The open fifteen-slot manifest,
 composition, atomic behavior, renderer scopes, internal hooks, diagnostics, and built-in full
 manifest remain `unstable_` APIs.
 
@@ -166,7 +166,8 @@ independent state machines, or stack a vendor focus owner around a built-in focu
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
 All four concrete adapters declare the nine presentation slots. The MUI adapter also declares the
-`common.tooltip` atomic slot, and Designsystemet also declares the `dialogs.dialog` atomic slot.
+`common.tooltip` and `common.numberInput` atomic slots, and Designsystemet also declares the
+`dialogs.dialog` and `common.numberInput` atomic slots.
 Their conformance reports cover the declared controls, not the other atomic slots or any composite
 workflow.
 
@@ -210,6 +211,19 @@ profile for it.
 | Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
 
 A design system whose pagination model is one-based converts at the adapter boundary.
+
+### `common.numberInput`
+
+| Contract | Value |
+| --- | --- |
+| Props | `NumericInputProps`: an optional numeric `value`, `invalid`, native input attributes, and `onChange(value, details)` where an empty or unparsable entry reports `undefined` |
+| Ref | Forwards to the native `<input type="number">` |
+| Parts | `NumericInputParts`: `root` |
+| Fallback | The built-in `NumericInput` implementation |
+| Conformance | The `common.numberInput` profile: parts, state coverage, pass-through, server rendering, hydration, and one `onChange` call with a numeric value |
+
+`NumberField` renders through this slot. MUI and Designsystemet implement it by styling the native
+number input like their text inputs; PrimeReact 11 and PrimeReact 10 use the built-in implementation.
 
 ### `common.tooltip`
 
