@@ -25,6 +25,8 @@ const rowStyle: CSSProperties = {
     gap: 4,
 };
 
+// The secondary severity keeps every control's text on the neutral surface palette: the default primary
+// text and its white-on-primary fill fall below the 4.5:1 contrast minimum on the light theme.
 const classNames = (...names: readonly (string | undefined)[]) =>
     names.filter(Boolean).join(' ');
 
@@ -84,6 +86,7 @@ const Control = ({ name, labels, pt, disabled, target, onPageChange, children }:
             {...part}
             as='button'
             variant='text'
+            severity='secondary'
             size='small'
             type='button'
             aria-label={labels[name]}
@@ -123,6 +126,7 @@ const PageItem = ({ number, current, label, pt, onSelect }: PageItemProps) => {
             {...part}
             as='button'
             variant={current ? undefined : 'text'}
+            severity='secondary'
             size='small'
             type='button'
             aria-label={label}
