@@ -188,7 +188,7 @@ try {
         .sort();
     if (
         JSON.stringify(declarationNames) !==
-        JSON.stringify(['dialog.d.ts', 'index.d.ts', 'paginator.d.ts', 'paginatorLabels.d.ts'])
+        JSON.stringify(['dialog.d.ts', 'dialogEscape.d.ts', 'index.d.ts', 'paginator.d.ts', 'paginatorLabels.d.ts'])
     ) {
         throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Fragment, useSyncExternalStore, type CSSProperties, type HTMLAttributes, type PointerEvent } from 'react';
+import { useEscapeFromAnywhere } from './dialogEscape.js';
 import { Button as PrimeButton } from '@primereact/ui/button';
 import {
     DialogBackdrop,
@@ -44,7 +45,12 @@ const headerStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', 
 
 const positions: Record<DialogPlacement, Position> = { center: 'center', start: 'left', end: 'right' };
 
+// PrimeReact leaves an idle `transform: scale(1)` and `will-change: transform` on the popup, which would make it the
+// containing block of position:fixed descendants (nested popovers and side sheets). An animation still overrides
+// these inline values while it runs, so enter and exit motion is kept.
 const popupStyle = (placement: DialogPlacement, width: string | undefined): CSSProperties => ({
+    transform: 'none',
+    willChange: 'auto',
     width: width ?? '450px',
     maxWidth: 'calc(100% - 2rem)',
     ...(placement === 'center' ? {} : { height: '100%', maxHeight: 'none', borderRadius: 0 }),
@@ -119,8 +125,8 @@ const Header = ({ title, subtitle, titleId, isBusy, pt, host }: HeaderProps) => 
 /**
  * PrimeReact 11 implementation of the atomic `dialogs.dialog` slot. PrimeReact owns the modal shell:
  * the focus trap, Escape, scroll lock and focus restoration. Components keeps the result flow, footer
- * and header actions, busy and validity, and initial focus through the host. Escape is the only
- * dismissal PrimeReact reports, because the pointer and close-button paths are reported by this slot.
+ * and header actions, busy and validity, and initial focus through the host. Every dismissal is reported
+ * by this slot; Escape is handled in the bubbling phase so nested overlays can consume it first.
  */
 export const PrimeDialogSlot = ({
     title,
@@ -136,6 +142,7 @@ export const PrimeDialogSlot = ({
 }: CratisDialogSlotProps) => {
     const titleId = `${host.id}-title`;
     const Shell = useCanPortal() ? DialogPortal : Fragment;
+    useEscapeFromAnywhere(visible, () => host.dismiss('escape'));
     const backdropPress = outsidePress(host);
     const positionerPress = outsidePress(host);
     return (
@@ -143,10 +150,8 @@ export const PrimeDialogSlot = ({
             open={visible}
             position={positions[placement]}
             dismissable={false}
+            closeOnEscape={false}
             autoZIndex={false}
-            onOpenChange={(event: { readonly value?: boolean }) => {
-                if (!event.value) host.dismiss('escape');
-            }}
         >
             <Shell>
                 <DialogBackdrop

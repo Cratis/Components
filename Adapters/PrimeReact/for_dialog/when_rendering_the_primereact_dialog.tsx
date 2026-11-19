@@ -145,3 +145,47 @@ describe('when rendering the PrimeReact dialog', () => {
         expect(close?.hasAttribute('data-disabled')).to.equal(true);
     });
 });
+
+describe('when Escape is consumed by an overlay nested in the PrimeReact dialog', () => {
+    it('should keep the dialog open when a nested overlay prevents the default Escape handling', async () => {
+        const results: DialogResult[] = [];
+        await render({ onClose: recordInto(results) });
+        const nested = document.createElement('div');
+        nested.addEventListener('keydown', (event) => event.preventDefault());
+        dialog()?.appendChild(nested);
+
+        await pressEscape(nested);
+
+        expect(results).to.deep.equal([]);
+        expect(dialog()).not.to.equal(null);
+    });
+
+    it('should close only the topmost dialog when two dialogs are open', async () => {
+        const first: DialogResult[] = [];
+        const second: DialogResult[] = [];
+        await render({ title: 'Parent', onClose: recordInto(first) });
+        const secondContainer = document.createElement('div');
+        document.body.appendChild(secondContainer);
+        const secondRoot = createRoot(secondContainer);
+        await act(async () => {
+            secondRoot.render(application(createElement(Dialog, { title: 'Child', children: 'Child body', onClose: recordInto(second) })));
+        });
+
+        await pressEscape(document.body);
+        await act(async () => secondRoot.unmount());
+        secondContainer.remove();
+
+        expect(second).to.deep.equal([DialogResult.Cancelled]);
+        expect(first).to.deep.equal([]);
+    });
+});
+
+describe('when the PrimeReact dialog is idle', () => {
+    it('should not keep a transform or will-change that would contain fixed descendants', async () => {
+        await render({});
+
+        const style = dialog()?.style;
+        expect(style?.transform).to.equal('none');
+        expect(style?.willChange).to.equal('auto');
+    });
+});
