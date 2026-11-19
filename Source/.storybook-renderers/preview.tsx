@@ -40,8 +40,11 @@ const legacyAppearanceFallbacks: Readonly<Record<string, Appearance>> = {
 };
 
 export const resolveAppearance = (appearance: string | undefined): Appearance => {
-    if (appearance !== undefined && appearance in appearanceModes) return appearance as Appearance;
-    return (appearance && legacyAppearanceFallbacks[appearance]) || 'baseline-dark';
+    if (appearance === undefined) return 'baseline-dark';
+    if (Object.hasOwn(appearanceModes, appearance)) return appearance as Appearance;
+    return Object.hasOwn(legacyAppearanceFallbacks, appearance)
+        ? legacyAppearanceFallbacks[appearance]
+        : 'baseline-dark';
 };
 
 const applyAppearance = (appearance: Appearance) => {

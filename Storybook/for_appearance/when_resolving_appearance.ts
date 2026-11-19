@@ -54,7 +54,17 @@ describe('when resolving appearance', () => {
         expect(render('unknown-appearance')).to.equal('dark');
     });
 
+    it('should fall back to the dark baseline for inherited object property names', () => {
+        expect(() => render('toString')).not.to.throw();
+        expect(render('toString')).to.equal('dark');
+        expect(() => render('__proto__')).not.to.throw();
+        expect(render('__proto__')).to.equal('dark');
+    });
+
     it('should keep known appearances unchanged', () => {
         expect(render('baseline-light')).to.equal('light');
+        expect(render('baseline-dark')).to.equal('dark');
+        expect(render('product-theme')).to.equal('dark');
+        expect(body.names.has('storybook-product-theme')).to.equal(true);
     });
 });
