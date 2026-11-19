@@ -88,6 +88,7 @@ describe('when rendering the Designsystemet paginator', () => {
         await render({ page: 5, pageCount: 12, pageLinks: true, onPageChange: (page) => requested.push(page) });
 
         expect(part('info')).to.equal(null);
+        expect(part('pages')?.getAttribute('role')).to.equal('group');
         expect(part('pages')?.getAttribute('aria-label')).to.equal('Pages');
         expect(navigation()?.querySelectorAll('[data-cratis-part="ellipsis"]').length).to.equal(2);
         const current = navigation()?.querySelector('[aria-current="page"]');
@@ -144,5 +145,55 @@ describe('when rendering the Designsystemet paginator', () => {
 
         expect(control('Next page')?.disabled).to.equal(true);
         expect(navigation()?.contains(document.activeElement)).to.equal(true);
+    });
+});
+
+describe('when rendering the Designsystemet paginator with localized page links', () => {
+    const labels = { navigation: 'Paginación', pages: 'Páginas', page: (number: number) => `Página ${number}` };
+    const ellipses = () => navigation()?.querySelectorAll('[data-cratis-part="ellipsis"]').length;
+
+    it('should expose the numbered pages as a group named by the localized pages label', async () => {
+        await render({ page: 2, pageCount: 20, pageLinks: true, ariaLabels: labels });
+
+        const group = navigation()?.querySelector('[role="group"]');
+        expect(group?.getAttribute('aria-label')).to.equal('Páginas');
+        expect(group?.querySelectorAll('button').length).to.be.greaterThan(2);
+        expect(group?.contains(control('Primera') ?? null)).to.equal(false);
+    });
+
+    it('should mark the clicked page as current once the page is applied', async () => {
+        let current = 5;
+        const draw = () =>
+            root?.render(
+                createElement(CratisComponentsProvider, {
+                    library: designsystemetUiLibrary,
+                    children: createElement(TablePaginator, {
+                        page: current,
+                        pageCount: 12,
+                        pageLinks: true,
+                        ariaLabels: labels,
+                        onPageChange: (page) => {
+                            current = page;
+                            draw();
+                        },
+                    }),
+                }),
+            );
+        await render({ page: 5, pageCount: 12, pageLinks: true, ariaLabels: labels });
+        await act(async () => draw());
+
+        await act(async () => control('Página 7')?.click());
+
+        expect(control('Página 7')?.getAttribute('aria-current')).to.equal('page');
+    });
+
+    it('should show gaps only in a long range', async () => {
+        await render({ page: 5, pageCount: 12, pageLinks: true });
+        expect(ellipses()).to.equal(2);
+        await act(async () => root?.unmount());
+        container?.remove();
+
+        await render({ page: 1, pageCount: 5, pageLinks: true });
+        expect(ellipses()).to.equal(0);
     });
 });
