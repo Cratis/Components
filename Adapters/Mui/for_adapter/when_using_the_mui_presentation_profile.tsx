@@ -64,8 +64,8 @@ describe('when using the MUI stable presentation profile', () => {
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
         expect(report.summary).to.deep.equal({
-            total: 121,
-            passed: 121,
+            total: 145,
+            passed: 145,
             failed: 0,
             skipped: 0,
         });
@@ -84,6 +84,8 @@ describe('when using the MUI stable presentation profile', () => {
             ...stablePresentationSlots,
             'common.tooltip',
             'common.numberInput',
+            'datatables.paginator',
+            'dialogs.dialog',
         ]);
     });
 
