@@ -141,6 +141,9 @@ const wrongSetup: CratisRendererSetup = {
 declare const Paginator: ComponentType<CratisAtomicSlots['datatables.paginator']>;
 declare const AtomicDropdown: ComponentType<CratisAtomicSlots['dropdown.select']>;
 declare const AtomicDatePicker: ComponentType<CratisAtomicSlots['display.datePicker']>;
+declare const AtomicDialog: ComponentType<CratisAtomicSlots['dialogs.dialog']>;
+// An adapter dialog reads the Components-owned host next to the public dialog props.
+const dialogHostZIndex = (props: CratisAtomicSlots['dialogs.dialog']): string => props.host.zIndex;
 declare const AtomicTooltip: ComponentType<CratisAtomicSlots['common.tooltip']>;
 
 const atomicSlots: CratisAtomicSlotMap = {
@@ -148,6 +151,7 @@ const atomicSlots: CratisAtomicSlotMap = {
     'common.tooltip': { mode: 'atomic', fidelity: 'native', render: AtomicTooltip },
     'dropdown.select': { mode: 'atomic', fidelity: 'native', render: AtomicDropdown },
     'display.datePicker': { mode: 'atomic', fidelity: 'native', render: AtomicDatePicker },
+    'dialogs.dialog': { mode: 'atomic', fidelity: 'native', render: AtomicDialog },
 };
 const libraryWithAtomicSlots: CratisPresentationUiLibrary = definePresentationUiLibrary({
     ...library,
@@ -156,7 +160,7 @@ const libraryWithAtomicSlots: CratisPresentationUiLibrary = definePresentationUi
 const noAtomicSlots: CratisAtomicSlotMap = {};
 
 // @ts-expect-error Only listed atomic slots are stable.
-const unstableAtomicSlot: CratisAtomicSlotId = 'dialogs.dialog';
+const unstableAtomicSlot: CratisAtomicSlotId = 'common.button';
 
 const presentationModeAtomic: CratisAtomicSlotDeclaration<'datatables.paginator'> = {
     // @ts-expect-error Stable atomic slots always give the adapter interaction ownership.
@@ -188,6 +192,7 @@ void wrongSetup;
 void libraryWithAtomicSlots;
 void noAtomicSlots;
 void unstableAtomicSlot;
+void dialogHostZIndex;
 void presentationModeAtomic;
 void wrongAtomicProps;
 void unknownAtomicSlot;

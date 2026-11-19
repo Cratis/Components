@@ -13,6 +13,7 @@ import type { TextAreaProps } from '../Common/TextArea';
 import type { TextInputProps } from '../Common/TextInput';
 import type { TooltipProps } from '../Common/Tooltip';
 import type { TablePaginatorProps } from '../DataTables/TablePaginator';
+import type { CratisDialogSlotProps } from '../Dialogs/DialogHost';
 import type { DropdownProps } from '../Dropdown/Dropdown';
 import type { ProgressBarProps } from '../Display/ProgressBar';
 import type { CratisPresentationUiLibraryProviderProps } from './manifest';
@@ -91,6 +92,7 @@ export const cratisAtomicSlotIds = Object.freeze([
     'common.tooltip',
     'dropdown.select',
     'display.datePicker',
+    'dialogs.dialog',
 ] as const);
 
 /** Identifier of one stable atomic slot. */
@@ -119,6 +121,13 @@ export interface CratisAtomicSlots {
      * `DatePickerInputPassThrough` parts and no ref. Calendar library values stay inside the adapter.
      */
     readonly 'display.datePicker': DatePickerInputProps;
+    /**
+     * Dialog contract: the public `DialogProps` plus a `host` prop (`CratisDialogHost`). Components
+     * keeps the dialog stack, the result flow, the footer and header actions, busy and validity,
+     * initial focus and the descendants' overlay environment. The adapter owns the modal shell:
+     * focus trap, Escape, outside press, scroll lock and focus restoration. There is no ref.
+     */
+    readonly 'dialogs.dialog': CratisDialogSlotProps;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */

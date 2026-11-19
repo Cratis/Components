@@ -37,6 +37,7 @@ describe('when defining a presentation library with atomic slots', () => {
             'common.tooltip',
             'dropdown.select',
             'display.datePicker',
+            'dialogs.dialog',
         ]);
         expect(Object.isFrozen(cratisAtomicSlotIds)).to.equal(true);
     });
@@ -69,8 +70,8 @@ describe('when defining a presentation library with atomic slots', () => {
 
     it('should reject an unknown atomic slot id', () => {
         expectRejected(
-            { 'dialogs.dialog': paginator() },
-            "atomic slot 'dialogs.dialog' is not a stable atomic slot",
+            { 'common.button': paginator() },
+            "atomic slot 'common.button' is not a stable atomic slot",
         );
     });
 

@@ -14,6 +14,7 @@ import { TextInputImplementation } from '../Common/TextInputImplementation';
 import { TooltipImplementation } from '../Common/TooltipImplementation';
 import { TablePaginatorImplementation } from '../DataTables/TablePaginatorImplementation';
 import { ProgressBarImplementation } from '../Display/ProgressBarImplementation';
+import type { CratisDialogSlotProps } from '../Dialogs/DialogHost';
 import { DialogImplementation } from '../Dialogs/DialogImplementation';
 import { DropdownImplementation } from '../Dropdown/DropdownImplementation';
 import type {
@@ -47,7 +48,7 @@ export const unstable_coreSlots = Object.freeze({
     'common.surface': nativeDeclaration('presentation', SurfaceImplementation),
     'common.tooltip': nativeDeclaration('atomic', TooltipImplementation),
     'dropdown.select': nativeDeclaration('atomic', DropdownImplementation),
-    'dialogs.dialog': nativeDeclaration('atomic', DialogImplementation),
+    'dialogs.dialog': nativeDeclaration<CratisDialogSlotProps>('atomic', DialogImplementation),
     'display.datePicker': nativeDeclaration('atomic', DatePickerInputImplementation),
     'datatables.paginator': nativeDeclaration('atomic', TablePaginatorImplementation),
 }) satisfies unstable_SlotMap;

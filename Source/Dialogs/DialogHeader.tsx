@@ -22,7 +22,8 @@ const headerActionsStyle = (hasCloseButton: boolean, style: React.CSSProperties 
 });
 
 
-interface HeaderActionsProps {
+/** Props of the header actions region. */
+export interface HeaderActionsProps {
     dialogId: string;
     title: DialogProps['title'];
     headerActions: DialogProps['headerActions'];
@@ -34,7 +35,8 @@ interface HeaderActionsProps {
     pt: DialogParts | undefined;
 }
 
-const HeaderActions = ({
+/** The `header-actions` part: per-dialog actions followed by the app-wide ones. */
+export const HeaderActions = ({
     dialogId,
     title,
     headerActions,

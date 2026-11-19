@@ -4,8 +4,8 @@
 # Designsystemet adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. Repository evidence runs
-`@cratis/components.conformance` against all nine declared slots and requires every applicable check
-to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
+`@cratis/components.conformance` against all nine declared slots and the `dialogs.dialog` atomic slot,
+and requires every applicable check to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:
 
@@ -17,6 +17,9 @@ The bounded checks cover:
 - current and deprecated Button appearance mapping, and that no Cratis `data-size` or `data-variant`
   value reaches a Designsystemet element;
 - real Designsystemet DOM identities for all nine slots;
+- the dialog as a native `<dialog>` root whose `backdrop` and `positioner` belong to the browser top
+  layer, with the close button and Escape closing through Components and an overlay container inside the
+  dialog for descendant popovers;
 - deterministic SSR and mismatch-free hydration; and
 - package peers, archive boundaries, runtime loading, and declaration hygiene.
 

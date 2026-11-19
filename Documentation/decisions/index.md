@@ -18,5 +18,6 @@ boundaries.
 | [0005 — Generic primitive admission](0005-generic-primitive-admission.md) | Accepted | None | 2026-09-28 | woksin (delegated) |
 | [0006 — Published adapters pin their Components release](0006-exact-adapter-peer-pin.md) | Accepted | Implemented | 2026-09-25 | woksin |
 | [0007 — Stable atomic slots](0007-stable-atomic-slots.md) | Accepted | Implemented | 2026-11-18 | L163 |
+| [0008 — Adapter-owned dialog shell](0008-adapter-owned-dialog-shell.md) | Accepted | Implemented | 2026-11-19 | L163 |
 
 Read [UI foundation](../ui-foundation.md) for the current architecture and capability matrix.

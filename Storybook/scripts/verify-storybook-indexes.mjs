@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { checkInventory, inventoryDifferences } from '../../scripts/lib/evidence-inventory.mjs';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 import { computeRendererMatrixScope } from './lib/renderer-matrix-scope.mjs';
+import { describeStoryExclusions } from './lib/renderer-story-exclusions.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -109,5 +110,5 @@ const matrixCount =
     nonBuiltInAdapterCount * matrixStoryIds.size * appearances;
 console.log(`Renderer matrix scope: ${matrixStoryIds.size} of ${canonicalStoryIds.length} stories own or compose a renderer slot (${slotOwningModules.size} slot-owning modules); ${builtInOnlyStoryCount} run once, on the built-in renderer only.`);
 console.log(`Storybook indexes verified: 1 built-in preview × ${canonicalStoryIds.length} stable stories + ${nonBuiltInAdapterCount} renderer-distinguishing preview(s) × ${matrixStoryIds.size} matrix stories, × ${appearances} appearances = ${matrixCount} story/appearance cases.`);
-console.log('Story exclusions: none. Every indexed story is included in light, dark, and axe execution on at least the built-in renderer.');
+console.log(`Story exclusions: ${describeStoryExclusions(inventory.adapters)}. Every indexed story is included in light, dark, and axe execution on at least the built-in renderer.`);
 console.log(`Renderer exclusions: ${inventory.exclusions.map(item => `${item.id} (${item.reason})`).join(', ') || 'none'}; private adapters such as Plain are never composed.`);

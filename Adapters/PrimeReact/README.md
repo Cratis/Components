@@ -26,7 +26,7 @@ Node-based build, test, and server-rendering environments require Node.js 22 or 
 
 The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
 TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are
-not part of this profile.
+not part of this profile; the dialog, among them, falls back to the built-in Components dialog.
 
 ## Application-owned provider and license
 

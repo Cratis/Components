@@ -532,8 +532,11 @@ export const createSlotProfiles = (
         ],
         nativeSelector: '[role="dialog"]',
         nativeTag: 'SECTION',
+        // An adapter dialog may be a native modal `<dialog>`: the browser top layer then owns the
+        // backdrop and positioning, so those two parts have no element.
+        platformRoot: { selector: 'dialog', tag: 'DIALOG', ownedParts: ['backdrop', 'positioner'] },
         refCapable: false,
-        ownershipSelectors: ['[role="dialog"]'],
+        ownershipSelectors: ['[role="dialog"], dialog'],
         createProps: () => {
             let callbacks = 0;
             const props = {

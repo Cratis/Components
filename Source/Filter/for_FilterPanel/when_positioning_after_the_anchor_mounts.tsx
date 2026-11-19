@@ -27,7 +27,7 @@ const renderPanel = (isOpen: boolean, anchorKey: string, inModal = false) => {
     </>;
     return inModal
         ? <div className='cratis-dialog__positioner' data-cratis-part='positioner'>
-            <section className='cratis-dialog' data-cratis-part='root' data-placement='end'>{content}</section>
+            <section className='cratis-dialog' data-cratis-part='root' data-cratis-dialog-id='side' data-placement='end'>{content}</section>
         </div>
         : content;
 };

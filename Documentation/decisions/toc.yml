@@ -14,3 +14,5 @@
   href: 0006-exact-adapter-peer-pin.md
 - name: Stable atomic slots
   href: 0007-stable-atomic-slots.md
+- name: Adapter-owned dialog shell
+  href: 0008-adapter-owned-dialog-shell.md

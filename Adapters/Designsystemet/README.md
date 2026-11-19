@@ -5,8 +5,9 @@
 
 [Digdir Designsystemet](https://designsystemet.no) adapter for the nine stable presentation slots in
 the Cratis Components renderer ABI v1. It exports one stable `CratisPresentationUiLibrary` manifest,
-`designsystemetUiLibrary`. This certifies nine-slot primitive adaptation, never full-catalog
-replacement.
+`designsystemetUiLibrary`. It also implements the stable `dialogs.dialog` atomic slot as a native
+modal `<dialog>`. This certifies nine-slot primitive adaptation and the dialog shell, never
+full-catalog replacement.
 
 > **Versions:** each release of `@cratis/components.designsystemet` is published at the same version
 > as `@cratis/components` and declares a peer on exactly that version. Install and upgrade the two
@@ -74,7 +75,12 @@ appearance vocabulary. The adapter therefore never forwards the Cratis values (`
 
 ## Not covered
 
-- Atomic slots (the five interaction slots; follow-up after #530) use the built-in implementation.
+- The dialog (`dialogs.dialog`) renders the Designsystemet `Dialog` as a native modal `<dialog>` in
+  the browser top layer. The browser owns the focus trap, Escape, outside press and focus restoration;
+  Components keeps the result flow, the footer and header actions, busy state, initial focus and the
+  dialog stack. Dropdowns, date pickers and tooltips inside the dialog portal into it, so they stay
+  on top. See [ADR 0008](https://github.com/Cratis/Components/blob/main/Documentation/decisions/0008-adapter-owned-dialog-shell.md).
+- The other atomic slots (paginator, tooltip, select and date picker) use the built-in implementation.
 - CommandForm fields (#527), the dialog footer (#528) and the theme bridge (#529) are separate work.
 
 ## Peer policy
