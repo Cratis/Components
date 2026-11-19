@@ -67,7 +67,8 @@
             "common.surface",
             "common.tooltip",
             "common.numberInput",
-            "datatables.paginator"
+            "datatables.paginator",
+            "dialogs.dialog"
         ],
         "modes": {
             "common.button": "presentation",
@@ -81,7 +82,8 @@
             "common.surface": "presentation",
             "common.tooltip": "atomic",
             "common.numberInput": "atomic",
-            "datatables.paginator": "atomic"
+            "datatables.paginator": "atomic",
+            "dialogs.dialog": "atomic"
         },
         "capabilities": [
             "slot.render",

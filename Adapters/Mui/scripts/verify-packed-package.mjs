@@ -176,7 +176,7 @@ try {
         .filter((file) => file.endsWith('.d.ts'))
         .map((file) => path.basename(file))
         .sort();
-    if (JSON.stringify(declarationNames) !== JSON.stringify(['index.d.ts', 'numberInput.d.ts', 'paginator.d.ts', 'tooltip.d.ts'])) {
+    if (JSON.stringify(declarationNames) !== JSON.stringify(['dialog.d.ts', 'dialogEscape.d.ts', 'index.d.ts', 'numberInput.d.ts', 'paginator.d.ts', 'tooltip.d.ts'])) {
         throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }
     const declarations = readFileSync(
