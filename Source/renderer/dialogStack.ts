@@ -6,8 +6,8 @@
  * multiple simultaneously open dialogs - opened from anywhere in the tree, not necessarily nested
  * as React children of one another - stack in the order they opened instead of colliding on one
  * static z-index. Mirrors the incrementing registry PrimeReact's own ZIndexUtils used to provide,
- * which a PrimeReact-era overlay z-index hook depended on before Components 4 moved Dialog off
- * PrimeReact and onto React Aria. That hook is gone; adapters use `unstable_useTooltipZIndex`.
+ * which the removed `useOverlayZIndex` hook depended on before Components 4 moved Dialog off
+ * PrimeReact and onto React Aria.
  */
 let nextDialogTier = 0;
 const openDialogTiers = new Set<number>();

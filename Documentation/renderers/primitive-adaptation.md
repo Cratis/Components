@@ -165,9 +165,8 @@ Do not render a second interactive semantic root inside the first, forward one u
 independent state machines, or stack a vendor focus owner around a built-in focus owner. One user
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
-The concrete adapters declare the nine presentation slots. Only the MUI adapter also declares an
-atomic slot, `common.tooltip`. Their conformance reports cover the declared controls, not the other
-atomic slots or any composite workflow.
+All four concrete adapters declare only the nine presentation slots. Their conformance reports
+cover those declared controls, not the atomic slots or any composite workflow.
 
 ## Stable atomic slots
 
@@ -221,13 +220,10 @@ A design system whose pagination model is one-based converts at the adapter boun
 | Fallback | The built-in `Tooltip` implementation |
 | Conformance | The `common.tooltip` profile: parts, state coverage, server rendering (a closed tooltip omits its popup), hydration, and the opened popup |
 
-Mount the popup in the overlay container from `unstable_useOverlayEnvironment()` (defer mounting while
-it is null) and set its `z-index` from `unstable_useTooltipZIndex()`, which returns the tooltip layer
-for the nearest dialog, including nested dialogs, or the static token outside dialogs. Describe the
-trigger with `aria-describedby` only, so its accessible name is unchanged. Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
+No concrete adapter implements this slot yet; all four keep the built-in tooltip. The MUI
+implementation is deferred to a follow-up. Designsystemet's own tooltip is a `data-tooltip`
 attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
-selector and cannot own the trigger or popup parts, so those three adapters keep the built-in
-tooltip.
+selector and cannot own the trigger or popup parts, so those adapters would not be faithful.
 
 ### `dropdown.select`
 

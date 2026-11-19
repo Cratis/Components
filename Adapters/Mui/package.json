@@ -64,8 +64,7 @@
             "common.radio",
             "common.switch",
             "common.progress",
-            "common.surface",
-            "common.tooltip"
+            "common.surface"
         ],
         "modes": {
             "common.button": "presentation",
@@ -76,8 +75,7 @@
             "common.radio": "presentation",
             "common.switch": "presentation",
             "common.progress": "presentation",
-            "common.surface": "presentation",
-            "common.tooltip": "atomic"
+            "common.surface": "presentation"
         },
         "capabilities": [
             "slot.render",
