@@ -48,7 +48,7 @@ const resolveZIndex = (element: HTMLElement): number => {
     return (substituted.match(/-?\d+/gu) ?? []).reduce((total, term) => total + Number.parseInt(term, 10), 0);
 };
 
-const popper = () => popup()?.closest<HTMLElement>('[role="tooltip"]') ?? null;
+const popper = () => popup()?.closest<HTMLElement>('.MuiTooltip-popper') ?? null;
 
 const tooltipTrigger = (label: string) => (
     <MuiTooltipSlot content={label}>
@@ -74,7 +74,7 @@ describe('when the MUI tooltip opens on a labelled trigger', () => {
         const trigger = await focusTrigger();
         expect(trigger.getAttribute('aria-label')).to.equal('Save');
         expect(trigger.hasAttribute('aria-labelledby')).to.equal(false);
-        expect(trigger.getAttribute('aria-describedby')).to.equal(popper()?.id);
+        expect(trigger.getAttribute('aria-describedby')).to.equal(popup()?.id);
     });
 
     it('should not label the trigger from rich content either', async () => {
@@ -85,7 +85,7 @@ describe('when the MUI tooltip opens on a labelled trigger', () => {
         );
         const trigger = await focusTrigger();
         expect(trigger.hasAttribute('aria-label')).to.equal(false);
-        expect(trigger.getAttribute('aria-describedby')).to.equal(popper()?.id);
+        expect(trigger.getAttribute('aria-describedby')).to.equal(popup()?.id);
     });
 });
 
@@ -98,13 +98,26 @@ describe('when the MUI tooltip is outside a dialog', () => {
 });
 
 describe('when the MUI tooltip opens', () => {
-    it('should expose the popup part on the single role=tooltip element', async () => {
+    it('should expose role, part, open state and id on the element that holds the content text', async () => {
         await mount(tooltipTrigger('Roled'));
-        await focusTrigger();
-        const element = popup() as HTMLElement;
+        const trigger = await focusTrigger();
+        // Like the story's findByText: the innermost element whose own text is the content.
+        const element = [...document.body.querySelectorAll<HTMLElement>('*')].find(
+            (candidate) => candidate.childElementCount === 0 && candidate.textContent === 'Roled' && candidate !== trigger,
+        ) as HTMLElement;
         expect(element.getAttribute('role')).to.equal('tooltip');
         expect(element.hasAttribute('data-open')).to.equal(true);
+        expect(element.id).to.not.equal('');
+        expect(trigger.getAttribute('aria-describedby')).to.equal(element.id);
         expect(document.querySelectorAll('[role="tooltip"]').length).to.equal(1);
+    });
+
+    it('should leave the popper root without a role or id', async () => {
+        await mount(tooltipTrigger('Plain root'));
+        await focusTrigger();
+        const root = popper() as HTMLElement;
+        expect(root.hasAttribute('role')).to.equal(false);
+        expect(root.hasAttribute('id')).to.equal(false);
     });
 });
 
@@ -233,7 +246,7 @@ describe('when the overlay environment changes during the exit transition', () =
         overlayHost = second;
         await rerender();
         expect(popper()).to.equal(null);
-        expect(document.body.querySelector(':scope > [role="tooltip"]')).to.equal(null);
+        expect(document.body.querySelector(':scope > .MuiTooltip-popper')).to.equal(null);
     });
 
     it('should drop the exiting popup when the theme changes', async () => {
@@ -253,7 +266,7 @@ describe('when the overlay environment changes during the exit transition', () =
         overlayHost = null;
         await rerender();
         expect(popper()).to.equal(null);
-        expect(document.body.querySelector(':scope > [role="tooltip"]')).to.equal(null);
+        expect(document.body.querySelector(':scope > .MuiTooltip-popper')).to.equal(null);
     });
 });
 
