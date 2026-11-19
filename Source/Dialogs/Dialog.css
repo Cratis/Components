@@ -173,7 +173,7 @@
 }
 .cratis-dialog__button--secondary {
     background: transparent;
-    color: var(--cratis-action-background);
+    color: var(--cratis-action-foreground, var(--cratis-action-background));
 }
 .cratis-dialog__button--primary:hover:not(:disabled) {
     border-color: var(--cratis-action-background-hover);
