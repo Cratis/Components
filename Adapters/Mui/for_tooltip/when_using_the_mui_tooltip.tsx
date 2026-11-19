@@ -97,6 +97,17 @@ describe('when the MUI tooltip is outside a dialog', () => {
     });
 });
 
+describe('when the MUI tooltip opens', () => {
+    it('should expose the popup part on the single role=tooltip element', async () => {
+        await mount(tooltipTrigger('Roled'));
+        await focusTrigger();
+        const element = popup() as HTMLElement;
+        expect(element.getAttribute('role')).to.equal('tooltip');
+        expect(element.hasAttribute('data-open')).to.equal(true);
+        expect(document.querySelectorAll('[role="tooltip"]').length).to.equal(1);
+    });
+});
+
 describe('when the MUI tooltip popper is styled by MUI', () => {
     it('should not intercept pointer events and keep the MUI popper class', async () => {
         await mount(tooltipTrigger('Styled'));

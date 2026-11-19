@@ -97,8 +97,14 @@ export const MuiTooltipSlot = ({
                 // Keying the popper by the generation remounts only the popup, so a popper still in its exit
                 // transition is dropped while the trigger stays mounted. MUI's own styled popper stays in
                 // place, keeping its pointer-events, theme overrides and classes.
-                popper: { key: generation, container, style: { zIndex: host.tooltipZIndex } } as Record<string, unknown>,
-                tooltip: { 'data-cratis-part': 'popup', 'data-open': '' } as Record<string, unknown>,
+                popper: {
+                    key: generation,
+                    container,
+                    style: { zIndex: host.tooltipZIndex },
+                    // The popper root carries role="tooltip", so it is the popup part.
+                    'data-cratis-part': 'popup',
+                    'data-open': '',
+                } as Record<string, unknown>,
             }}
         >
             {trigger}
