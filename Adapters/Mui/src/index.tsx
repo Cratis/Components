@@ -51,6 +51,7 @@ import {
     type CratisPresentationSlotId,
     type CratisPresentationUiLibrary,
 } from '@cratis/components/renderer';
+import { MuiTooltipSlot } from './tooltip.js';
 
 const capabilities = Object.freeze([
     'slot.render',
@@ -1007,6 +1008,14 @@ const slots = Object.freeze({
     'common.surface': declaration<'common.surface'>(MuiSurfaceSlot),
 });
 
+const atomicSlots = Object.freeze({
+    'common.tooltip': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: MuiTooltipSlot,
+    }),
+});
+
 /** Material UI implementation of the stable Cratis presentation profile. */
 export const muiUiLibrary: CratisPresentationUiLibrary = definePresentationUiLibrary({
     id: 'cratis-mui',
@@ -1017,5 +1026,6 @@ export const muiUiLibrary: CratisPresentationUiLibrary = definePresentationUiLib
     profileSlots: cratisPresentationSlotIds,
     capabilities,
     slots,
+    atomicSlots,
     Provider: MuiAdapterProvider,
 });
