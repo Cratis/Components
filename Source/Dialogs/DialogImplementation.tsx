@@ -6,7 +6,7 @@ import { useId, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
-import { resolveDialogDismissal } from './resolveDialogDismissal';
+import { dismissalFor, resolveInitialFocus } from './dialogBehavior';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import { DIALOG_ZINDEX_TOKEN } from '../renderer/dialogStack';
@@ -26,23 +26,6 @@ const useIsBrowser = () =>
         () => true,
         () => false,
     );
-
-// A cancel-focused dialog without a dismissing button falls back to focusing the content.
-const resolveInitialFocus = (initialFocus: DialogInitialFocus, buttons: DialogProps['buttons']) => {
-    const hasDismissingButton = typeof buttons === 'number' && buttons !== DialogButtons.Ok;
-    return initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton ? DialogInitialFocus.Content : initialFocus;
-};
-
-const dismissalFor = (props: DialogProps, isBusy: boolean) =>
-    resolveDialogDismissal({
-        // An explicit null (no footer) must stay null; only an omitted set defaults.
-        buttons: props.buttons === undefined ? DialogButtons.OkCancel : props.buttons,
-        dismissable: props.dismissable,
-        dismissOnOutsideClick: props.dismissOnOutsideClick,
-        closeOnEscape: props.closeOnEscape,
-        showCloseButton: props.showCloseButton,
-        isBusy,
-    });
 
 /**
  * A modal dialog with Arc host integration, typed footer actions, busy/validity

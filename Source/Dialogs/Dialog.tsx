@@ -4,6 +4,7 @@
 import type { DialogResult, DialogButtons } from '@cratis/arc.react/dialogs';
 import type {
     ButtonHTMLAttributes,
+    ComponentType,
     CSSProperties,
     HTMLAttributes,
     ReactNode,
@@ -14,6 +15,8 @@ import type { unstable_SlotDeclaration } from '../renderer/slots';
 import type { DialogSliceLocation } from '../configuration/DialogSliceLocation';
 import type { DialogInitialFocus } from './DialogInitialFocus';
 import { DialogImplementation } from './DialogImplementation';
+import type { CratisDialogSlotProps } from './DialogHost';
+import { DialogSlotHost } from './DialogSlotHost';
 
 /** Callback handling a typed dialog result; return `false` to keep the dialog open. */
 export type CloseDialog = (
@@ -172,11 +175,17 @@ const coreDialogDeclaration = Object.freeze({
     render: DialogImplementation,
 }) satisfies unstable_SlotDeclaration<'dialogs.dialog'>;
 
+const slotHostDeclaration = Object.freeze({ render: DialogSlotHost });
+
 /**
  * A modal dialog with Arc host integration, typed footer actions, busy/validity
  * state, controlled dismissal, and stable Cratis-owned styling parts.
  */
 export const Dialog = (props: DialogProps) => {
     const declaration = unstable_useSlot('dialogs.dialog', coreDialogDeclaration);
-    return renderSlot(declaration, props);
+    if (declaration.render === DialogImplementation) return renderSlot(declaration, props);
+    // SAFETY: an adapter dialog receives the public props plus its Components-owned host; the
+    // generic slot table types the render with the public props only.
+    const render = declaration.render as ComponentType<CratisDialogSlotProps>;
+    return renderSlot(slotHostDeclaration, { render, props });
 };
