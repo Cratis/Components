@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 import { computeRendererMatrixScope } from './lib/renderer-matrix-scope.mjs';
+import { describeStoryExclusions } from './lib/renderer-story-exclusions.mjs';
 import { buildUnits, partition } from './lib/story-matrix-shards.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -165,7 +166,7 @@ console.log(
 console.log(
     `Renderer matrix scope: ${matrixStoryCount} of ${storyCount} stories own or compose a renderer slot and run on every renderer; ${builtInOnlyStoryCount} render identical DOM on every renderer and run once, on the built-in renderer only, in both appearances with axe.`,
 );
-console.log('Story exclusions: none. Across all shards, every indexed story is exercised with axe in the requested appearances on at least the built-in renderer.');
+console.log(`Story exclusions: ${describeStoryExclusions(inventory.adapters)}. Across all shards, every indexed story is exercised with axe in the requested appearances on at least the built-in renderer.`);
 console.log(
     `Renderer exclusions: ${inventory.exclusions.map((item) => `${item.id} (${item.reason})`).join(', ') || 'none'}.`,
 );

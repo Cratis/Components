@@ -9,8 +9,15 @@ import { Dialog } from '../Dialogs/Dialog';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import type { FilterDefinition } from './types';
 
-// These stories use a slotted Dialog, so exercise every Dialog renderer adapter.
-const meta: Meta<typeof Dialog> = { title: 'Filter/FilterPanel/In Dialog', component: Dialog };
+// These stories use a slotted Dialog, so exercise every Dialog renderer adapter that keeps the
+// built-in dialog. They assert how FilterPanel joins the built-in shell (a .cratis-dialog root, its
+// positioner and slide entrance), so a renderer that implements dialogs.dialog itself skips them;
+// see Storybook/scripts/lib/renderer-story-exclusions.mjs.
+const meta: Meta<typeof Dialog> = {
+    title: 'Filter/FilterPanel/In Dialog',
+    component: Dialog,
+    tags: ['built-in-dialog-shell'],
+};
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 

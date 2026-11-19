@@ -163,7 +163,10 @@ async function expectAnchoredPicker(target: HTMLElement, trigger: HTMLElement) {
     return { picker, choice };
 }
 
+// Asserts the built-in dialog stacking in a consumer overlay root (the backdrop part and z-index), so a
+// renderer that implements dialogs.dialog skips it; see Storybook/scripts/lib/renderer-story-exclusions.mjs.
 export const PickersAboveStackedDialogs: Story = {
+    tags: ['built-in-dialog-shell'],
     render: () => <ScopedDialogPickers />,
     play: async ({ canvasElement }) => {
         const target = canvasElement.querySelector<HTMLElement>('[data-chat-overlay-target]')!;

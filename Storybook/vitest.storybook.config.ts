@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { discoverAdapterPackages, requireAdapter } from './scripts/lib/adapter-inventory.mjs';
+import { storyExclusionsFor } from './scripts/lib/renderer-story-exclusions.mjs';
 
 const storybookRoot = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -67,9 +69,15 @@ const primeReactRoot =
           ? path.join(repositoryRoot, 'node_modules/primereact')
           : undefined;
 
+// Stories that assert a built-in slot this renderer replaces; see renderer-story-exclusions.mjs.
+const excludedTags = storyExclusionsFor(requireAdapter(discoverAdapterPackages(repositoryRoot), rendererId)).map(
+    exclusion => exclusion.tag,
+);
+
 const plugins = await storybookTest({
     configDir: path.resolve(storybookRoot, '../Source/.storybook-renderers'),
     initialGlobals: { appearance },
+    tags: { exclude: excludedTags },
 });
 
 export default defineConfig({
