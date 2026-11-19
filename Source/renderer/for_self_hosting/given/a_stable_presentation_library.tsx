@@ -4,6 +4,7 @@
 import type { ComponentType } from 'react';
 import type { DatePickerInputProps } from '../../../Common/DatePickerInput';
 import type { TooltipProps } from '../../../Common/Tooltip';
+import type { CratisDialogSlotProps } from '../../../Dialogs/DialogHost';
 import type { DropdownProps } from '../../../Dropdown/Dropdown';
 import type { TablePaginatorProps } from '../../../DataTables/TablePaginator';
 import {
@@ -73,6 +74,25 @@ export const datePickerAtomicSlots = (
     render: ComponentType<DatePickerInputProps> = AdapterDatePicker,
 ): CratisAtomicSlotMap => ({
     'display.datePicker': { mode: 'atomic', fidelity: 'native', render },
+});
+
+/** Adapter-owned dialog that renders the public title and the host-owned parts. */
+export const AdapterDialog: ComponentType<CratisDialogSlotProps> = ({ title, host }) => (
+    <section data-adapter-dialog={host.id} data-z-index={host.zIndex}>
+        <h2 ref={host.titleRef}>{title}</h2>
+        {host.headerActions}
+        {host.content}
+        {host.footer}
+        {host.liveRegion}
+        <div data-overlay-container ref={host.registerOverlayContainer} />
+    </section>
+);
+
+/** Atomic map implementing the stable dialog with the adapter's component. */
+export const dialogAtomicSlots = (
+    render: ComponentType<CratisDialogSlotProps> = AdapterDialog,
+): CratisAtomicSlotMap => ({
+    'dialogs.dialog': { mode: 'atomic', fidelity: 'native', render },
 });
 
 /** Builds a stable presentation library, optionally with atomic slots. */

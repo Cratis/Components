@@ -6,6 +6,7 @@ import {
     CRATIS_PRESENTATION_PROFILE,
     cratisPresentationSlotIds,
     definePresentationUiLibrary,
+    type CratisAtomicSlotMap,
     type CratisPresentationCapabilities,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,
@@ -17,6 +18,7 @@ import {
     DesignsystemetRadioSlot,
     DesignsystemetSwitchSlot,
 } from './choice.js';
+import { DesignsystemetDialogSlot } from './dialog.js';
 import { DesignsystemetProgressSlot, DesignsystemetSurfaceSlot } from './display.js';
 import { DesignsystemetTextAreaSlot, DesignsystemetTextInputSlot } from './fields.js';
 
@@ -47,6 +49,12 @@ const slots = Object.freeze({
     'common.surface': declaration<'common.surface'>(DesignsystemetSurfaceSlot),
 });
 
+// The native top-layer <dialog> is the one interaction Designsystemet owns; every other atomic
+// slot keeps the built-in Components implementation.
+const atomicSlots = Object.freeze({
+    'dialogs.dialog': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetDialogSlot }),
+}) satisfies CratisAtomicSlotMap;
+
 /** Digdir Designsystemet implementation of the stable Cratis presentation profile. */
 export const designsystemetUiLibrary: CratisPresentationUiLibrary = definePresentationUiLibrary({
     id: 'cratis-designsystemet',
@@ -57,4 +65,5 @@ export const designsystemetUiLibrary: CratisPresentationUiLibrary = definePresen
     profileSlots: cratisPresentationSlotIds,
     capabilities,
     slots,
+    atomicSlots,
 });

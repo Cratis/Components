@@ -67,9 +67,10 @@ describe('when using the Designsystemet stable presentation profile', () => {
             report.checks.find((check) => check.id === 'manifest.runtimeConsistency')
                 ?.status,
         ).to.equal('passed');
-        expect(Object.keys(packageJson.cratis.modes)).to.deep.equal(
-            stablePresentationSlots,
-        );
+        expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
+            ...stablePresentationSlots,
+            'dialogs.dialog',
+        ]);
     });
 
     it('should preserve native refs, forms, reset behavior, and value-first native events', () => {

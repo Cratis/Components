@@ -13,7 +13,7 @@ import type { TextInputProps } from '../Common/TextInput';
 import type { TooltipProps } from '../Common/Tooltip';
 import type { TablePaginatorProps } from '../DataTables/TablePaginator';
 import type { ProgressBarProps } from '../Display/ProgressBar';
-import type { DialogProps } from '../Dialogs/Dialog';
+import type { CratisDialogSlotProps } from '../Dialogs/DialogHost';
 import type { DropdownProps } from '../Dropdown/Dropdown';
 
 /** Core-owned slot contracts loaded only by the renderer subpath. */
@@ -41,8 +41,8 @@ declare module './slots.js' {
         'common.tooltip': TooltipProps;
         /** Interaction-heavy select/dropdown contract. */
         'dropdown.select': DropdownProps<unknown>;
-        /** Interaction-heavy modal dialog contract. */
-        'dialogs.dialog': DialogProps;
+        /** Interaction-heavy modal dialog contract: the public props plus the Components-owned host. */
+        'dialogs.dialog': CratisDialogSlotProps;
         /** Interaction-heavy date-picker contract. */
         'display.datePicker': DatePickerInputProps;
         /** Interaction-heavy, composite-adjacent table paginator contract. */

@@ -23,12 +23,14 @@ const visuallyHidden: React.CSSProperties = {
     border: 0,
 };
 
-interface Announcement {
+/** One refused-confirmation announcement. */
+export interface Announcement {
     key: number;
     text: string;
 }
 
-interface DialogContentProps {
+/** Props of the content region. */
+export interface DialogContentProps {
     visible: boolean;
     isBusy: boolean;
     contentStyle: React.CSSProperties | undefined;
@@ -36,7 +38,8 @@ interface DialogContentProps {
     children: React.ReactNode;
 }
 
-const DialogContent = ({ visible, isBusy, contentStyle, pt, children }: DialogContentProps) => (
+/** The `content` part: the dialog body inside a busy scope that is disabled and inert while busy. */
+export const DialogContent = ({ visible, isBusy, contentStyle, pt, children }: DialogContentProps) => (
     <div
         {...pt?.content}
         className={classNames('cratis-dialog__content', pt?.content?.className)}
@@ -58,7 +61,8 @@ const DialogContent = ({ visible, isBusy, contentStyle, pt, children }: DialogCo
     </div>
 );
 
-const LiveRegion = ({ announcement }: { announcement: Announcement | null }) => (
+/** The polite live region announcing refused confirmations. */
+export const LiveRegion = ({ announcement }: { announcement: Announcement | null }) => (
     <div
         className='cratis-dialog__live-region'
         style={visuallyHidden}

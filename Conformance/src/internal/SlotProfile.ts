@@ -5,6 +5,13 @@ import type { RefObject } from 'react';
 import type { unstable_SlotId } from '@cratis/components/renderer';
 import type { CratisPartsManifest } from '@cratis/components/types';
 
+/** A platform element that may stand in for a slot's native root. */
+export interface PlatformRoot {
+    readonly selector: string;
+    readonly tag: string;
+    readonly ownedParts: readonly string[];
+}
+
 /** Internal fixture for one public renderer slot. */
 export interface SlotProfile {
     readonly slotId: unstable_SlotId;
@@ -16,6 +23,11 @@ export interface SlotProfile {
     readonly ptKeys: readonly string[];
     readonly nativeSelector: string;
     readonly nativeTag: string;
+    /**
+     * A platform element that may stand in for the native root, such as a modal `<dialog>` in the
+     * browser top layer, and the parts the platform then owns (for example its `::backdrop`).
+     */
+    readonly platformRoot?: PlatformRoot;
     readonly refCapable: boolean;
     readonly ownershipSelectors: readonly string[];
     readonly activate?: (document: Document, container: HTMLElement) => Promise<void>;
