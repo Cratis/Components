@@ -14,6 +14,9 @@ export interface CratisDialogHostDismissal {
     readonly closeButton: boolean;
 }
 
+/** The user gesture an adapter reports when it asks Components to dismiss the dialog. */
+export type CratisDialogDismissSource = keyof CratisDialogHostDismissal;
+
 /**
  * What Components keeps owning for an adapter-rendered dialog. Each mounted dialog gets its own
  * host; nothing in it is shared with, or outlives, that dialog.
@@ -51,8 +54,11 @@ export interface CratisDialogHost {
     readonly footer: ReactNode;
     /** The polite live region announcing refused confirmations. Render it inside the dialog. */
     readonly liveRegion: ReactNode;
-    /** Closes through the dialog's cancel path. Call it on an allowed dismissal. */
-    dismiss(): void;
+    /**
+     * Closes through the dialog's cancel path for a user dismissal from `source`. Components ignores
+     * the request while the dialog is hidden or busy, or when `host.dismissal` blocks that source.
+     */
+    dismiss(source: CratisDialogDismissSource): void;
     /**
      * Registers the element the dialog's descendant overlays portal into, or clears it with `null`.
      * A top-layer `<dialog>` registers an element inside itself so popovers, tooltips and nested

@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useLayoutEffect, useRef, useState, type ComponentType, type SyntheticEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -9,7 +9,7 @@ import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { Tooltip } from '../Common/Tooltip';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { unstable_defineUiLibrary } from '../renderer/manifest';
-import { Dialog, type DialogProps } from './Dialog';
+import { Dialog } from './Dialog';
 import type { CratisDialogSlotProps } from './DialogHost';
 import '../tokens.css';
 import '../theme.css';
@@ -33,7 +33,7 @@ const NativeDialog = ({ title, visible = true, host }: CratisDialogSlotProps) =>
         // React walks a nested dialog's cancel up the component tree; only the target handles it.
         if (event.target !== event.currentTarget) return;
         event.preventDefault();
-        if (host.dismissal.escape) host.dismiss();
+        host.dismiss('escape');
     };
     return (
         <dialog ref={dialogRef} aria-labelledby={`${host.id}-title`} onCancel={onCancel} style={{ zIndex: host.zIndex }}>
@@ -60,8 +60,7 @@ const library = unstable_defineUiLibrary({
         'dialogs.dialog': {
             mode: 'atomic',
             fidelity: 'native',
-            // SAFETY: the routed adapter dialog receives its host next to the public props.
-            render: NativeDialog as ComponentType<DialogProps>,
+            render: NativeDialog,
         },
     },
 });

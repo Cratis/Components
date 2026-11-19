@@ -5,7 +5,12 @@ export * from './BusyIndicatorDialog';
 export * from './ConfirmationDialog';
 export * from './Dialog';
 export * from './DialogInitialFocus';
-export type { CratisDialogHost, CratisDialogHostDismissal, CratisDialogSlotProps } from './DialogHost';
+export type {
+    CratisDialogDismissSource,
+    CratisDialogHost,
+    CratisDialogHostDismissal,
+    CratisDialogSlotProps,
+} from './DialogHost';
 export type { DialogHeaderContext } from '../configuration/DialogHeaderContext';
 export type { DialogHeaderActionsRenderer } from '../configuration/DialogHeaderActionsRenderer';
 export type { DialogSliceLocation } from '../configuration/DialogSliceLocation';

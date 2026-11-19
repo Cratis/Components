@@ -41,7 +41,7 @@ const NativeDialog = ({ title, subtitle, isBusy = false, pt, host }: CratisDialo
                 data-cratis-part='close'
                 data-disabled={isBusy || undefined}
                 data-busy={isBusy || undefined}
-                onClick={() => host.dismiss()}
+                onClick={() => host.dismiss('closeButton')}
             >
                 {host.closeIcon}
             </button>

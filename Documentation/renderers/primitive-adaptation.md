@@ -267,7 +267,7 @@ built-in date picker.
 | Props | `CratisDialogSlotProps`: the public `DialogProps` plus a Components-owned `host` prop of type `CratisDialogHost` |
 | Ref | None; the dialog does not forward a ref |
 | Parts | `DialogParts`: the adapter renders `root`, `header`, `title`, `subtitle` and `close`; `host.content`, `host.headerActions` and `host.footer` already carry `content`, `busy-scope`, `header-actions`, `footer`, `confirm` and `cancel`; a native `<dialog>` root leaves `backdrop` and `positioner` to the browser top layer |
-| Behavior | The adapter owns the modal shell: focus trap, Escape, outside press, scroll lock and focus restoration. It calls `host.dismiss()` for every user dismissal allowed by `host.dismissal` |
+| Behavior | The adapter owns the modal shell: focus trap, Escape, outside press, scroll lock and focus restoration. It calls `host.dismiss(source)` for every user dismissal, where `source` is `escape`, `outside` or `closeButton`; Components ignores it while the dialog is hidden or busy or when `host.dismissal` blocks that source. An outside press counts only when it both starts and ends outside the dialog |
 | Components keeps | The dialog stack and z-index, the `DialogResult` flow, the typed footer, the header actions, busy and validity state, initial focus and the live region |
 | Overlays | Pass an element inside the modal shell to `host.registerOverlayContainer`; while the dialog is open, descendant dropdowns, date pickers and tooltips portal into it |
 | Fallback | The built-in `Dialog` implementation |

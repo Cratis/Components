@@ -55,8 +55,9 @@ The host carries what the adapter needs from Components:
 - `closeAriaLabel` and `closeIcon` for the close button;
 - `content`, `headerActions`, `footer` and `liveRegion`, rendered by Components with their Cratis
   parts and the consumer's `pt` attributes;
-- `dismiss()`, which an adapter calls for every user dismissal and Components turns into the
-  dialog's cancel result;
+- `dismiss(source)`, which an adapter calls for every user dismissal, naming the gesture
+  (`escape`, `outside` or `closeButton`). Components turns it into the dialog's cancel result, and
+  ignores it while the dialog is hidden or busy or when `dismissal` blocks that gesture;
 - `registerOverlayContainer(element)`, a ref callback for an element inside the modal shell.
 
 While the dialog is open, Components gives its descendants an overlay environment whose container
@@ -64,6 +65,10 @@ is the registered element, so a descendant dropdown or tooltip portals inside th
 usable in the top layer. The registration belongs to one open session of one dialog: a ref from a
 previous session or a closed dialog is ignored, and a closed dialog provides no container. Until the
 adapter registers an element, descendants keep the surrounding environment.
+
+A dialog nested in another adapter dialog receives `visible` as false until its parent has opened,
+and again as soon as its parent hides. Native modals therefore open parent-first and close
+child-first, so Escape reaches the topmost dialog and no hidden modal keeps the page inert.
 
 `Dialog` routes to the adapter declaration when one is resolved and keeps the built-in dialog
 otherwise; an adapter without `atomicSlots['dialogs.dialog']` gets the built-in dialog with no

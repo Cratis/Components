@@ -6,6 +6,7 @@ import {
     useRef,
     type CSSProperties,
     type MouseEvent,
+    type PointerEvent,
     type RefObject,
     type SyntheticEvent,
 } from 'react';
@@ -88,7 +89,7 @@ const CloseButton = ({ isBusy, pt, host }: Pick<HeaderProps, 'isBusy' | 'pt' | '
         data-disabled={isBusy || undefined}
         data-busy={isBusy || undefined}
         disabled={isBusy}
-        onClick={() => host.dismiss()}
+        onClick={() => host.dismiss('closeButton')}
     >
         {host.closeIcon}
     </DsButton>
@@ -127,11 +128,25 @@ const isOwnEvent = (event: SyntheticEvent<HTMLDialogElement>) => event.target ==
 const cancelHandler = (host: CratisDialogHost) => (event: SyntheticEvent<HTMLDialogElement>) => {
     if (!isOwnEvent(event)) return;
     event.preventDefault();
-    if (host.dismissal.escape) host.dismiss();
+    host.dismiss('escape');
 };
 
-const backdropClickHandler = (host: CratisDialogHost) => (event: MouseEvent<HTMLDialogElement>) => {
-    if (isOwnEvent(event) && host.dismissal.outside && isOutside(event)) host.dismiss();
+const isOwnOutsidePress = (event: MouseEvent<HTMLDialogElement>) => isOwnEvent(event) && isOutside(event);
+
+// An outside press dismisses only when it both starts and ends on the backdrop: a press that starts
+// inside, such as selecting text in a field, and is released outside keeps the dialog open.
+const useOutsidePress = (host: CratisDialogHost) => {
+    const startedOutside = useRef(false);
+    return {
+        onPointerDown: (event: PointerEvent<HTMLDialogElement>) => {
+            startedOutside.current = isOwnOutsidePress(event);
+        },
+        onClick: (event: MouseEvent<HTMLDialogElement>) => {
+            const pressedOutside = startedOutside.current && isOwnOutsidePress(event);
+            startedOutside.current = false;
+            if (pressedOutside) host.dismiss('outside');
+        },
+    };
 };
 
 // A close the platform forced while the dialog should be visible (an Escape it would not let us
@@ -139,7 +154,7 @@ const backdropClickHandler = (host: CratisDialogHost) => (event: MouseEvent<HTML
 const closeHandler = (host: CratisDialogHost, visible: boolean, dialogRef: RefObject<HTMLDialogElement | null>) => () => {
     const dialog = dialogRef.current;
     if (!visible || !dialog?.isConnected || dialog.open) return;
-    if (host.dismissal.escape) host.dismiss();
+    host.dismiss('escape');
     dialog.showModal();
 };
 
@@ -164,6 +179,7 @@ export const DesignsystemetDialogSlot = ({
 }: CratisDialogSlotProps) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     useCloseOnUnmount(dialogRef);
+    const outsidePress = useOutsidePress(host);
     const titleId = `${host.id}-title`;
 
     return (
@@ -182,7 +198,8 @@ export const DesignsystemetDialogSlot = ({
             data-open={visible || undefined}
             data-busy={isBusy || undefined}
             onCancel={cancelHandler(host)}
-            onClick={backdropClickHandler(host)}
+            onPointerDown={outsidePress.onPointerDown}
+            onClick={outsidePress.onClick}
             onClose={closeHandler(host, visible, dialogRef)}
         >
             <Header title={title} subtitle={subtitle} titleId={titleId} isBusy={isBusy} pt={pt} host={host} />

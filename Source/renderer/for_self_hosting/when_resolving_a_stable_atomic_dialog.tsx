@@ -129,7 +129,7 @@ describe('when resolving a stable atomic dialog', () => {
         const onClose = vi.fn();
         await render(dialog({ onClose }));
 
-        await act(() => lastHost().dismiss());
+        await act(() => lastHost().dismiss('escape'));
 
         expect(onClose).toHaveBeenCalledWith(DialogResult.Cancelled);
     });

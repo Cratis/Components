@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
-import { createElement, useId, type ComponentType } from 'react';
+import { createContext, createElement, use, useEffect, useId, useState, type ComponentType } from 'react';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import { DIALOG_ZINDEX_TOKEN } from '../renderer/dialogStack';
@@ -13,7 +13,7 @@ import { dismissalFor, resolveInitialFocus } from './dialogBehavior';
 import { DialogContent, LiveRegion } from './DialogDocument';
 import { DialogFooter } from './DialogFooter';
 import { HeaderActions } from './DialogHeader';
-import type { CratisDialogHost, CratisDialogSlotProps } from './DialogHost';
+import type { CratisDialogDismissSource, CratisDialogHost, CratisDialogHostDismissal, CratisDialogSlotProps } from './DialogHost';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import { resolveDialogLabels } from './resolveDialogLabels';
 import { useDialogClose } from './useDialogClose';
@@ -41,6 +41,26 @@ const useHeaderActions = (props: DialogProps, dialogId: string, showsCloseButton
     );
 };
 
+// Whether the adapter dialogs rendered inside may open: false until the nearest adapter dialog has
+// committed its own open state, so modals open parent-first, and false as soon as it hides.
+const DescendantsMayOpenContext = createContext(true);
+
+// Passive effects run children-first, so this runs after the adapter dialog below opened itself.
+const useDescendantsMayOpen = (visible: boolean) => {
+    const [opened, setOpened] = useState(false);
+    useEffect(() => setOpened(visible), [visible]);
+    return visible && opened;
+};
+
+interface DismissGuard {
+    readonly visible: boolean;
+    readonly isBusy: boolean;
+    readonly dismissal: CratisDialogHostDismissal;
+}
+
+const mayDismiss = ({ visible, isBusy, dismissal }: DismissGuard, source: CratisDialogDismissSource) =>
+    visible && !isBusy && dismissal[source];
+
 /**
  * Builds the Components-owned host of one adapter-rendered dialog: its stack tier, the dialog
  * result flow, the footer and header actions, initial focus and the refused-confirmation
@@ -49,7 +69,9 @@ const useHeaderActions = (props: DialogProps, dialogId: string, showsCloseButton
  * @returns The host handed to the adapter and the overlay container for its descendants.
  */
 export const useDialogHost = (props: DialogProps) => {
-    const { visible = true, isBusy = false, buttons = DialogButtons.OkCancel, subtitle } = props;
+    const { isBusy = false, buttons = DialogButtons.OkCancel, subtitle } = props;
+    // A dialog nested in a hidden or still-opening adapter dialog stays closed until its parent is open.
+    const visible = (props.visible ?? true) && use(DescendantsMayOpenContext);
     const { messages } = useCratisComponentsConfig();
     const icon = useCratisIcon();
     const id = useId();
@@ -57,6 +79,7 @@ export const useDialogHost = (props: DialogProps) => {
     const labels = resolveDialogLabels(props, messages?.dialog);
     const initialFocus = resolveInitialFocus(props.initialFocus ?? DialogInitialFocus.Confirm, buttons);
     const { allowsOutsideDismissal, allowsEscapeDismissal, showsCloseButton } = dismissalFor(props, isBusy);
+    const dismissal = { outside: allowsOutsideDismissal, escape: allowsEscapeDismissal, closeButton: showsCloseButton };
     const zIndex = useDialogZIndex(visible) ?? DIALOG_ZINDEX_TOKEN;
     const overlayContainer = useOverlayContainer(visible);
     const { titleRef, confirmRef, cancelRef, announcement, onRefused } = useDialogFocus({
@@ -70,7 +93,7 @@ export const useDialogHost = (props: DialogProps) => {
     const host: CratisDialogHost = {
         id,
         zIndex,
-        dismissal: { outside: allowsOutsideDismissal, escape: allowsEscapeDismissal, closeButton: showsCloseButton },
+        dismissal,
         closeAriaLabel: labels.closeAria,
         closeIcon: icon('close', '×', props.closeIcon),
         subtitleId,
@@ -100,11 +123,13 @@ export const useDialogHost = (props: DialogProps) => {
                 />
             ),
         liveRegion: <LiveRegion announcement={announcement} />,
-        dismiss: () => void handleClose(DialogResult.Cancelled),
+        dismiss: (source) => {
+            if (mayDismiss({ visible, isBusy, dismissal }, source)) void handleClose(DialogResult.Cancelled);
+        },
         registerOverlayContainer: overlayContainer.register,
     };
 
-    return { host, overlayContainer };
+    return { host, overlayContainer, visible };
 };
 
 /** Props of {@link DialogSlotHost}. */
@@ -120,10 +145,15 @@ export interface DialogSlotHostProps {
  * stack tier and portal through the overlay element the adapter registered.
  */
 export const DialogSlotHost = ({ render, props }: DialogSlotHostProps) => {
-    const { host, overlayContainer } = useDialogHost(props);
+    const { host, overlayContainer, visible } = useDialogHost(props);
+    const descendantsMayOpen = useDescendantsMayOpen(visible);
     return (
         <DialogStackContext value={host.zIndex}>
-            <OverlayContainerScope host={overlayContainer}>{createElement(render, { ...props, host })}</OverlayContainerScope>
+            <DescendantsMayOpenContext value={descendantsMayOpen}>
+                <OverlayContainerScope host={overlayContainer}>
+                    {createElement(render, { ...props, visible, host })}
+                </OverlayContainerScope>
+            </DescendantsMayOpenContext>
         </DialogStackContext>
     );
 };
