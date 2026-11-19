@@ -26,8 +26,8 @@ npm install @cratis/components.primereact10@^4 @cratis/components@^4 \
 Node-based build, test, and server-rendering environments require Node.js 22 or newer.
 
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch, ProgressBar,
-and Surface. The five atomic interaction slots are not part of this profile and continue through the
-Components built-in fallback.
+and Surface. The five atomic interaction slots, the dialog among them, are not part of this profile
+and continue through the Components built-in fallback.
 
 PrimeReact 10 is MIT licensed and requires no PrimeUI key or Components renderer setup attestation.
 Version 10.9.9 is the minimum supported upstream because it fixes the prototype-pollution advisory

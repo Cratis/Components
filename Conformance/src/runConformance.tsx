@@ -41,6 +41,7 @@ import {
     normalizeStyle,
 } from './internal/reactNormalization.js';
 import { exercisedLibrary } from './internal/atomicSlots.js';
+import { absentPartsOf, findNativeRoot } from './internal/nativeRoot.js';
 import { createSlotProfiles } from './internal/slotProfiles.js';
 import type { SlotProfile } from './internal/SlotProfile.js';
 
@@ -408,6 +409,7 @@ const checkSlot = async (
     let fixture: MountedFixture | undefined;
     const variantFixtures: MountedFixture[] = [];
     const observedStateAssociations = new Set<string>();
+    let platformOwnedParts: readonly string[] = [];
     try {
         const baseProps: Readonly<Record<string, unknown>> = {
             ...profile.createProps(),
@@ -444,8 +446,11 @@ const checkSlot = async (
             collectRenderedStates(document, observedStateAssociations);
         }
 
+        const nativeRoot = findNativeRoot(profile, document, fixture.container);
+        platformOwnedParts = nativeRoot.platformOwnedParts;
+        const absentParts = absentPartsOf(profile, nativeRoot);
         const expectedParts = [...cratisParts[profile.partsKey]].filter(
-            (part) => !profile.conditionallyAbsentParts?.includes(part),
+            (part) => !absentParts.includes(part),
         );
         const foundParts = new Set(
             Array.from(document.querySelectorAll('[data-cratis-part]'))
@@ -466,7 +471,7 @@ const checkSlot = async (
         );
 
         const missingPassThrough = profile.ptKeys
-            .filter((part) => !profile.conditionallyAbsentParts?.includes(part))
+            .filter((part) => !absentParts.includes(part))
             .filter(
                 (part) =>
                     !document.querySelector(
@@ -488,12 +493,9 @@ const checkSlot = async (
         for (const variantFixture of variantFixtures) await unmount(variantFixture);
         variantFixtures.length = 0;
 
-        const native =
-            fixture.container.querySelector(profile.nativeSelector) ??
-            document.querySelector(profile.nativeSelector);
+        const native = nativeRoot.element;
         const exactElement =
-            Boolean(native) &&
-            native?.tagName === profile.nativeTag &&
+            nativeRoot.tagMatches &&
             (!profile.refCapable || fixture.ref.current === native);
         addCheck(
             checks,
@@ -686,7 +688,9 @@ const checkSlot = async (
 
     const expectedStateAssociations = Object.entries(
         cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>,
-    ).flatMap(([part, states]) => states.map((state) => `${part}.${state}`));
+    )
+        .filter(([part]) => !platformOwnedParts.includes(part))
+        .flatMap(([part, states]) => states.map((state) => `${part}.${state}`));
     const missingStateAssociations = expectedStateAssociations.filter(
         (association) => !observedStateAssociations.has(association),
     );
@@ -753,7 +757,9 @@ const checkServerRendering = (
     const overlayPassed =
         (tooltipOutput === undefined ||
             !tooltipOutput.includes('data-cratis-part="popup"')) &&
-        (dialogOutput === undefined || dialogOutput.includes('role="dialog"'));
+        (dialogOutput === undefined ||
+            dialogOutput.includes('role="dialog"') ||
+            dialogOutput.includes('<dialog'));
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,

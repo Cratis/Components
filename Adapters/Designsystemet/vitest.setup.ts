@@ -31,3 +31,19 @@ if (!Element.prototype.scrollIntoView) {
 if (!document.getAnimations) {
     document.getAnimations = () => [];
 }
+
+// jsdom has no modal dialog API; the Designsystemet Dialog opens the native <dialog> with it.
+if (!HTMLDialogElement.prototype.showModal) {
+    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+        this.setAttribute('open', '');
+    };
+    HTMLDialogElement.prototype.show = function show(this: HTMLDialogElement) {
+        this.setAttribute('open', '');
+    };
+    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement, returnValue?: string) {
+        if (!this.open) return;
+        if (returnValue !== undefined) this.returnValue = returnValue;
+        this.removeAttribute('open');
+        this.dispatchEvent(new Event('close'));
+    };
+}

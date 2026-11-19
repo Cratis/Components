@@ -39,7 +39,8 @@ Components that execute commands or run queries also need Arc's `<Arc>` provider
 
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
 ProgressBar, and Surface. It deliberately excludes MUI X and does not implement the five atomic
-interaction slots; `common.tooltip` among them is not implemented yet, so the built-in tooltip is used.
+interaction slots; `common.tooltip` and `dialogs.dialog` among them are not implemented yet, so the
+built-in tooltip and dialog are used.
 
 ## Theme integration
 

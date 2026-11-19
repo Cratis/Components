@@ -7,6 +7,7 @@ import {
     type unstable_SlotId,
     type unstable_UiLibrary,
 } from '@cratis/components/renderer';
+import { withHostedDialog } from './hostedDialog.js';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -37,7 +38,9 @@ export interface ExercisedLibrary {
 /**
  * Builds the library view the metadata, slot, SSR, hydration and environment checks exercise:
  * the stable atomic slots join the profile slots and the slot map, so package metadata lists them
- * alongside the nine. A library without stable atomic slots is returned unchanged.
+ * alongside the nine. A dialog declaration renders through the public `Dialog`, so an adapter
+ * dialog receives its Components-owned host; every other slot of a library without stable atomic
+ * slots is exercised unchanged.
  *
  * @param library Renderer library under test.
  * @returns The exercised library and the slot ids whose profiles run.
@@ -46,15 +49,15 @@ export const exercisedLibrary = (library: unstable_UiLibrary): ExercisedLibrary 
     const profileSlots: readonly unstable_SlotId[] =
         library.profileSlots ?? (Object.keys(library.slots) as unstable_SlotId[]);
     const atomic = declaredAtomicSlots(library);
-    if (atomic.length === 0) return { library, slotIds: profileSlots };
+    if (atomic.length === 0) return { library: withHostedDialog(library), slotIds: profileSlots };
 
     const slotIds = [...profileSlots, ...atomic.map(([slotId]) => slotId)];
     return {
-        library: {
+        library: withHostedDialog({
             ...library,
             profileSlots: slotIds,
             slots: { ...library.slots, ...Object.fromEntries(atomic) },
-        },
+        }),
         slotIds,
     };
 };
