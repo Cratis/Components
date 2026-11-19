@@ -1,16 +1,31 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ChangeEvent } from 'react';
+import { forwardRef, type ChangeEvent, type InputHTMLAttributes, type ReactElement } from 'react';
 import MuiCheckbox from '@mui/material/Checkbox';
 import MuiRadio from '@mui/material/Radio';
 import MuiSwitch from '@mui/material/Switch';
-import type { CheckboxParts, CheckboxProps, RadioParts, RadioProps, SwitchParts, SwitchProps } from '@cratis/components/Common';
-import { useResolvedMuiChoice, type ChoiceKind, type ChoiceParts, type ChoiceStateAttributes, type MuiChoiceProps, type NativeInputSlotProps } from './choiceState.js';
+import type {
+    CheckboxParts,
+    CheckboxProps,
+    RadioParts,
+    RadioProps,
+    SwitchParts,
+    SwitchProps,
+} from '@cratis/components/Common';
+import {
+    useResolvedMuiChoice,
+    type ChoiceKind,
+    type ChoiceParts,
+    type ChoiceProps,
+    type ChoiceStateAttributes,
+    type MuiChoiceProps,
+    type NativeInputSlotProps,
+    type ResolvedMuiChoice,
+} from './choiceState.js';
 import { classNames } from './shared.js';
 
-interface MuiChoiceControlProps {
-    readonly kind: ChoiceKind;
+interface ChoiceControlProps {
     readonly checked: boolean | undefined;
     readonly defaultChecked: boolean | undefined;
     readonly disabled: boolean | undefined;
@@ -19,6 +34,23 @@ interface MuiChoiceControlProps {
     readonly parts: ChoiceParts | undefined;
     readonly attributes: ChoiceStateAttributes;
 }
+
+interface MuiChoiceControlProps extends ChoiceControlProps {
+    readonly kind: ChoiceKind;
+}
+
+/** A part's attributes merged with the adapter's class, part name and state attributes. */
+const partProps = (
+    part: { className?: string } | undefined,
+    baseClassName: string,
+    partName: string,
+    attributes: ChoiceStateAttributes,
+) => ({
+    ...part,
+    className: classNames(baseClassName, part?.className),
+    'data-cratis-part': partName,
+    ...attributes,
+});
 
 const choiceIndicator = (
     kind: 'checkbox' | 'radio',
@@ -40,116 +72,81 @@ const choiceIndicator = (
     </span>
 );
 
-const MuiChoiceControl = ({
-    kind,
-    checked,
-    defaultChecked,
-    disabled,
-    onChange,
-    input,
-    parts,
-    attributes,
-}: MuiChoiceControlProps) => {
-    const uncontrolledDefault = checked === undefined ? defaultChecked : undefined;
-    switch (kind) {
-        case 'switch': {
-            const switchParts = parts as SwitchParts | undefined;
-            const root = {
-                ...switchParts?.control,
-                className: classNames(
-                    'cratis-mui-switch__control',
-                    switchParts?.control?.className,
-                ),
-                'data-cratis-part': 'control',
-                ...attributes,
-            };
-            const thumb = {
-                ...switchParts?.handle,
-                className: classNames(
-                    'cratis-mui-switch__handle',
-                    switchParts?.handle?.className,
-                ),
-                'data-cratis-part': 'handle',
-                ...attributes,
-            };
-            return (
-                <MuiSwitch
-                    checked={checked}
-                    defaultChecked={uncontrolledDefault}
-                    disabled={disabled}
-                    onChange={onChange}
-                    slotProps={{ root, input, thumb }}
-                />
-            );
-        }
-        case 'radio': {
-            const radioParts = parts as RadioParts | undefined;
-            const root = {
-                ...radioParts?.box,
-                className: classNames(
-                    'cratis-mui-radio__box',
-                    radioParts?.box?.className,
-                ),
-                'data-cratis-part': 'box',
-                ...attributes,
-            };
-            return (
-                <MuiRadio
-                    checked={checked}
-                    defaultChecked={uncontrolledDefault}
-                    disabled={disabled}
-                    onChange={onChange}
-                    icon={choiceIndicator('radio', radioParts, attributes, false)}
-                    checkedIcon={choiceIndicator('radio', radioParts, attributes, true)}
-                    slotProps={{ root, input }}
-                />
-            );
-        }
-        case 'checkbox': {
-            const checkboxParts = parts as CheckboxParts | undefined;
-            const root = {
-                ...checkboxParts?.box,
-                className: classNames(
-                    'cratis-mui-checkbox__box',
-                    checkboxParts?.box?.className,
-                ),
-                'data-cratis-part': 'box',
-                ...attributes,
-            };
-            return (
-                <MuiCheckbox
-                    checked={checked}
-                    defaultChecked={uncontrolledDefault}
-                    disabled={disabled}
-                    onChange={onChange}
-                    icon={choiceIndicator('checkbox', checkboxParts, attributes, false)}
-                    checkedIcon={choiceIndicator(
-                        'checkbox',
-                        checkboxParts,
-                        attributes,
-                        true,
-                    )}
-                    slotProps={{ root, input }}
-                />
-            );
-        }
-        default:
-            throw new Error(`Unsupported choice kind '${String(kind)}'.`);
-    }
+const uncontrolledDefault = ({ checked, defaultChecked }: ChoiceControlProps) =>
+    checked === undefined ? defaultChecked : undefined;
+
+const renderSwitchControl = (control: ChoiceControlProps) => {
+    const { checked, disabled, onChange, input, attributes } = control;
+    const parts = control.parts as SwitchParts | undefined;
+    return (
+        <MuiSwitch
+            checked={checked}
+            defaultChecked={uncontrolledDefault(control)}
+            disabled={disabled}
+            onChange={onChange}
+            slotProps={{
+                root: partProps(parts?.control, 'cratis-mui-switch__control', 'control', attributes),
+                input,
+                thumb: partProps(parts?.handle, 'cratis-mui-switch__handle', 'handle', attributes),
+            }}
+        />
+    );
 };
 
-const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
-    const {
-        parts,
-        inputPart,
-        checked,
-        defaultChecked,
-        disabled,
-        readOnly,
-        ariaInvalid,
-        state,
-        attributes,
-    } = useResolvedMuiChoice(kind, props, forwardedRef);
+const renderRadioControl = (control: ChoiceControlProps) => {
+    const { checked, disabled, onChange, input, attributes } = control;
+    const parts = control.parts as RadioParts | undefined;
+    return (
+        <MuiRadio
+            checked={checked}
+            defaultChecked={uncontrolledDefault(control)}
+            disabled={disabled}
+            onChange={onChange}
+            icon={choiceIndicator('radio', parts, attributes, false)}
+            checkedIcon={choiceIndicator('radio', parts, attributes, true)}
+            slotProps={{
+                root: partProps(parts?.box, 'cratis-mui-radio__box', 'box', attributes),
+                input,
+            }}
+        />
+    );
+};
+
+const renderCheckboxControl = (control: ChoiceControlProps) => {
+    const { checked, disabled, onChange, input, attributes } = control;
+    const parts = control.parts as CheckboxParts | undefined;
+    return (
+        <MuiCheckbox
+            checked={checked}
+            defaultChecked={uncontrolledDefault(control)}
+            disabled={disabled}
+            onChange={onChange}
+            icon={choiceIndicator('checkbox', parts, attributes, false)}
+            checkedIcon={choiceIndicator('checkbox', parts, attributes, true)}
+            slotProps={{
+                root: partProps(parts?.box, 'cratis-mui-checkbox__box', 'box', attributes),
+                input,
+            }}
+        />
+    );
+};
+
+const controlRenderers: Readonly<
+    Record<ChoiceKind, (control: ChoiceControlProps) => ReactElement>
+> = {
+    switch: renderSwitchControl,
+    radio: renderRadioControl,
+    checkbox: renderCheckboxControl,
+};
+
+const MuiChoiceControl = ({ kind, ...control }: MuiChoiceControlProps) => {
+    const renderControl = controlRenderers[kind];
+    if (!renderControl) throw new Error(`Unsupported choice kind '${String(kind)}'.`);
+    return renderControl(control);
+};
+
+/** The consumer props that are not consumed by the choice itself and flow to the native input. */
+const splitChoiceProps = (props: ChoiceProps) => {
     const {
         label,
         readOnly: _readOnly,
@@ -165,47 +162,100 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
         'aria-invalid': _ariaInvalid,
         ...nativeProps
     } = props;
+    return { label, onChange, className, style, onClick, nativeProps };
+};
+
+/** The input part attributes that are handled explicitly; the rest flow to the native input. */
+const splitInputPart = (inputPart: InputHTMLAttributes<HTMLInputElement> | undefined) => {
     const {
-        onClick: partOnClick,
-        onChange: partOnChange,
-        className: inputClassName,
-        style: inputStyle,
+        onClick,
+        onChange,
+        className,
+        style,
         readOnly: _partReadOnly,
         checked: _partChecked,
         defaultChecked: _partDefaultChecked,
         disabled: _partDisabled,
-        ...inputPartRest
+        ...rest
     } = inputPart ?? {};
+    return { onClick, onChange, className, style, rest };
+};
+
+type NativeChoiceProps = ReturnType<typeof splitChoiceProps>['nativeProps'];
+
+const choiceIdentity = (kind: ChoiceKind, props: ChoiceProps, nativeProps: NativeChoiceProps) => {
     const radioProps = props as RadioProps;
-    const input: NativeInputSlotProps = {
-        ...inputPartRest,
+    const isRadio = kind === 'radio';
+    return {
+        name: isRadio ? radioProps.name : nativeProps.name,
+        value: isRadio ? radioProps.value : nativeProps.value,
+    };
+};
+
+interface ChoiceInputOptions {
+    readonly kind: ChoiceKind;
+    readonly props: ChoiceProps;
+    readonly resolved: ResolvedMuiChoice;
+}
+
+const choiceInputProps = ({ kind, props, resolved }: ChoiceInputOptions): NativeInputSlotProps => {
+    const { inputPart, ariaInvalid, readOnly, state, attributes } = resolved;
+    const { onClick, nativeProps } = splitChoiceProps(props);
+    const part = splitInputPart(inputPart);
+    return {
+        ...part.rest,
         ...nativeProps,
         ref: state.ref,
-        name: kind === 'radio' ? radioProps.name : nativeProps.name,
-        value: kind === 'radio' ? radioProps.value : nativeProps.value,
+        ...choiceIdentity(kind, props, nativeProps),
         'aria-invalid': ariaInvalid,
         'aria-readonly': kind === 'radio' ? undefined : readOnly || undefined,
         role: kind === 'switch' ? 'switch' : nativeProps.role,
-        className: classNames('cratis-mui-choice__input', inputClassName),
-        style: inputStyle,
+        className: classNames('cratis-mui-choice__input', part.className),
+        style: part.style,
         'data-cratis-part': 'input',
         ...attributes,
         onClick: (event) => {
-            partOnClick?.(event);
+            part.onClick?.(event);
             onClick?.(event);
             if (readOnly) event.preventDefault();
         },
     };
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        partOnChange?.(event);
+};
+
+const choiceChangeHandler =
+    ({ kind, props, resolved }: ChoiceInputOptions) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+        const { state, readOnly } = resolved;
+        splitInputPart(resolved.inputPart).onChange?.(event);
         if (readOnly || (kind === 'radio' && !event.currentTarget.checked)) return;
         state.synchronize(event.currentTarget.checked);
-        onChange?.(event.currentTarget.checked, {
+        splitChoiceProps(props).onChange?.(event.currentTarget.checked, {
             source: 'user',
             nativeEvent: event.nativeEvent,
         });
     };
-    const labelPart = parts?.label;
+
+const choiceLabel = (
+    label: ChoiceProps['label'],
+    parts: ChoiceParts | undefined,
+    attributes: ChoiceStateAttributes,
+) =>
+    label !== undefined && (
+        <span
+            {...parts?.label}
+            className={classNames('cratis-mui-choice__label', parts?.label?.className)}
+            data-cratis-part='label'
+            {...attributes}
+        >
+            {label}
+        </span>
+    );
+
+const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
+    const resolved = useResolvedMuiChoice(kind, props, forwardedRef);
+    const { parts, checked, defaultChecked, disabled, attributes } = resolved;
+    const { label, className, style } = splitChoiceProps(props);
+    const options = { kind, props, resolved };
     return (
         <label
             {...parts?.root}
@@ -219,24 +269,12 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
                 checked={checked}
                 defaultChecked={defaultChecked}
                 disabled={disabled}
-                onChange={handleChange}
-                input={input}
+                onChange={choiceChangeHandler(options)}
+                input={choiceInputProps(options)}
                 parts={parts}
                 attributes={attributes}
             />
-            {label !== undefined && (
-                <span
-                    {...labelPart}
-                    className={classNames(
-                        'cratis-mui-choice__label',
-                        labelPart?.className,
-                    )}
-                    data-cratis-part='label'
-                    {...attributes}
-                >
-                    {label}
-                </span>
-            )}
+            {choiceLabel(label, parts, attributes)}
         </label>
     );
 };

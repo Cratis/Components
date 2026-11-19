@@ -88,6 +88,17 @@ export interface ResolvedMuiChoice {
     readonly attributes: ChoiceStateAttributes;
 }
 
+type InputAriaInvalid = InputHTMLAttributes<HTMLInputElement>['aria-invalid'];
+
+const resolveAriaInvalid = (
+    props: ChoiceProps,
+    inputPart: InputHTMLAttributes<HTMLInputElement> | undefined,
+): InputAriaInvalid =>
+    props['aria-invalid'] ?? inputPart?.['aria-invalid'] ?? (props.invalid || undefined);
+
+const isInvalid = (invalid: boolean | undefined, ariaInvalid: InputAriaInvalid) =>
+    Boolean(invalid) || ariaInvalid === true || ariaInvalid === 'true';
+
 export const useResolvedMuiChoice = (
     kind: ChoiceKind,
     props: ChoiceProps,
@@ -99,12 +110,8 @@ export const useResolvedMuiChoice = (
     const defaultChecked = props.defaultChecked ?? inputPart?.defaultChecked;
     const disabled = props.disabled ?? inputPart?.disabled;
     const readOnly = props.readOnly ?? inputPart?.readOnly;
-    const ariaInvalid =
-        props['aria-invalid'] ??
-        inputPart?.['aria-invalid'] ??
-        (props.invalid || undefined);
-    const invalid =
-        Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true';
+    const ariaInvalid = resolveAriaInvalid(props, inputPart);
+    const invalid = isInvalid(props.invalid, ariaInvalid);
     const state = useNativeCheckedState(checked, defaultChecked, forwardedRef, {
         observeRadioGroup: kind === 'radio',
     });
