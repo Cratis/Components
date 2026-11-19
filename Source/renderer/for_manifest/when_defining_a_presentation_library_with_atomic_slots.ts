@@ -31,8 +31,13 @@ const expectRejected = (atomicSlots: unknown, reason: string) =>
     ).to.throw(TypeError, `Invalid stable presentation UI library: ${reason}.`);
 
 describe('when defining a presentation library with atomic slots', () => {
-    it('should list only the paginator as a stable atomic slot', () => {
-        expect(cratisAtomicSlotIds).to.deep.equal(['datatables.paginator']);
+    it('should list the stable atomic slots in append order', () => {
+        expect(cratisAtomicSlotIds).to.deep.equal([
+            'datatables.paginator',
+            'common.tooltip',
+            'dropdown.select',
+            'display.datePicker',
+        ]);
         expect(Object.isFrozen(cratisAtomicSlotIds)).to.equal(true);
     });
 

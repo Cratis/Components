@@ -4,13 +4,16 @@
 import type { ComponentType } from 'react';
 import type { ButtonProps } from '../Common/Button';
 import type { CheckboxProps } from '../Common/Checkbox';
+import type { DatePickerInputProps } from '../Common/DatePickerInput';
 import type { IconButtonProps } from '../Common/IconButton';
 import type { RadioProps } from '../Common/Radio';
 import type { SurfaceProps } from '../Common/Surface';
 import type { SwitchProps } from '../Common/Switch';
 import type { TextAreaProps } from '../Common/TextArea';
 import type { TextInputProps } from '../Common/TextInput';
+import type { TooltipProps } from '../Common/Tooltip';
 import type { TablePaginatorProps } from '../DataTables/TablePaginator';
+import type { DropdownProps } from '../Dropdown/Dropdown';
 import type { ProgressBarProps } from '../Display/ProgressBar';
 import type { CratisPresentationUiLibraryProviderProps } from './manifest';
 import type { unstable_SlotMap } from './slots';
@@ -83,7 +86,12 @@ export type CratisPresentationSlotMap = {
  * implement any of them through {@link CratisPresentationUiLibrary.atomicSlots}; new ids are only
  * ever appended.
  */
-export const cratisAtomicSlotIds = Object.freeze(['datatables.paginator'] as const);
+export const cratisAtomicSlotIds = Object.freeze([
+    'datatables.paginator',
+    'common.tooltip',
+    'dropdown.select',
+    'display.datePicker',
+] as const);
 
 /** Identifier of one stable atomic slot. */
 export type CratisAtomicSlotId = (typeof cratisAtomicSlotIds)[number];
@@ -95,6 +103,22 @@ export interface CratisAtomicSlots {
      * `TablePaginatorParts` parts and no ref.
      */
     readonly 'datatables.paginator': TablePaginatorProps;
+    /**
+     * Tooltip contract: non-interactive `content`, `position`, `disabled`, `className` and exactly
+     * one focusable trigger child. The adapter keeps the trigger's `data-cratis-part` and renders
+     * the popup as the `popup` part; there is no ref.
+     */
+    readonly 'common.tooltip': TooltipProps;
+    /**
+     * Select contract: the public `DropdownProps` with an untyped value, the `DropdownParts` parts
+     * and no ref. The adapter owns the trigger, filter, listbox, keyboard and selection callbacks.
+     */
+    readonly 'dropdown.select': DropdownProps<unknown>;
+    /**
+     * Date picker contract: the public `DatePickerInputProps` with `Date | null` values, the
+     * `DatePickerInputPassThrough` parts and no ref. Calendar library values stay inside the adapter.
+     */
+    readonly 'display.datePicker': DatePickerInputProps;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */
