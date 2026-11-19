@@ -165,8 +165,8 @@ Do not render a second interactive semantic root inside the first, forward one u
 independent state machines, or stack a vendor focus owner around a built-in focus owner. One user
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
-All three concrete adapters currently declare only the nine presentation slots. Their conformance
-reports cover those declared controls, not the five atomic slots or any composite workflow.
+All four concrete adapters declare only the nine presentation slots. Their conformance reports
+cover those declared controls, not the atomic slots or any composite workflow.
 
 ## Stable atomic slots
 
@@ -207,8 +207,57 @@ profile for it.
 | Fallback | The built-in `TablePaginator` implementation |
 | Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
 
-A design system whose pagination model is one-based converts at the adapter boundary. The
-dialog, dropdown, date picker, and tooltip atomic slots are not stable yet.
+A design system whose pagination model is one-based converts at the adapter boundary.
+
+### `common.tooltip`
+
+| Contract | Value |
+| --- | --- |
+| Props | `TooltipProps`: non-interactive `content`, `position`, `disabled`, `className`, and exactly one focusable trigger child |
+| Ref | None; the trigger child keeps its own ref |
+| Parts | The trigger child keeps its `data-cratis-part` (default `trigger`); the popup is the `popup` part and carries `data-open` while open |
+| Behavior | Hover and keyboard focus open the tooltip, blur and Escape close it; empty `content` or `disabled` renders the child unchanged; `content` is a React node, rendered as-is |
+| Fallback | The built-in `Tooltip` implementation |
+| Conformance | The `common.tooltip` profile: parts, state coverage, server rendering (a closed tooltip omits its popup), hydration, and the opened popup |
+
+No concrete adapter implements this slot yet; all four keep the built-in tooltip. The MUI
+implementation is deferred to a follow-up. Designsystemet's own tooltip is a `data-tooltip`
+attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
+selector and cannot own the trigger or popup parts, so those adapters would not be faithful.
+
+### `dropdown.select`
+
+| Contract | Value |
+| --- | --- |
+| Props | `DropdownProps<unknown>`, the public `Dropdown` props; `value` and `onChange` carry the selected value, or the array in `multiple` mode |
+| Ref | None; the select does not forward a ref |
+| Parts | `DropdownParts`: `root`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`, plus the legacy `input` and `select` aliases |
+| Behavior | One keyboard and focus owner: the trigger or the filter input opens the listbox, arrows and Enter select, Escape closes, and `onChange` is called once per user selection with `source: 'user'` and the native event |
+| Fallback | The built-in `Dropdown` implementation |
+| Conformance | The `dropdown.select` profile: parts, pass-through, state coverage, server rendering, hydration, and one `onChange` call for the **Viewer** option |
+
+Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
+adapter implements this slot yet: a faithful implementation has to reproduce every part above, the
+filter and multiple-select paths, and the legacy aliases, which none of the Designsystemet, MUI, or
+PrimeReact select controls provide without re-implementing the built-in `Dropdown`. All four
+adapters keep the built-in select.
+
+### `display.datePicker`
+
+| Contract | Value |
+| --- | --- |
+| Props | `DatePickerInputProps`; the public value is a JavaScript `Date` or `null`, so any calendar library's value type stays inside the adapter |
+| Ref | None; the picker does not forward a ref |
+| Parts | `DatePickerInputPassThrough`: `root`, `group`, `input`, `segment`, `placeholder`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `previous`, `heading`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` |
+| Behavior | One keyboard and focus owner for the segmented input and the calendar popover; `onChange` is called once per user selection with `source: 'user'` and the native event; `minDate`, `maxDate`, `disabled`, `readOnly` and `invalid` are honored |
+| Fallback | The built-in `DatePickerInput` implementation |
+| Conformance | The `display.datePicker` profile: parts, pass-through, state coverage, server rendering, hydration, and the popover opened from the trigger |
+
+Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
+adapter implements this slot yet: a faithful implementation has to reproduce the segmented input
+and the calendar part model, which the Designsystemet, MUI (without MUI X), and PrimeReact date
+controls do not provide without re-implementing the built-in picker. All four adapters keep the built-in date picker. The dialog atomic
+slot is not stable yet.
 
 ## Fallback
 
