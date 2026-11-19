@@ -38,6 +38,7 @@ import type {
     TextInputProps,
 } from '@cratis/components/Common';
 import type { ProgressBarProps } from '@cratis/components/Display';
+import { PrimeDialogSlot } from './dialog.js';
 import { PrimePaginatorSlot } from './paginator.js';
 import {
     CRATIS_PRESENTATION_ABI_VERSION,
@@ -814,6 +815,11 @@ const atomicSlots = Object.freeze({
         mode: 'atomic',
         fidelity: 'native',
         render: PrimePaginatorSlot,
+    }),
+    'dialogs.dialog': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: PrimeDialogSlot,
     }),
 });
 

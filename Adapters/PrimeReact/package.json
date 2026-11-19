@@ -64,7 +64,8 @@
             "common.switch",
             "common.progress",
             "common.surface",
-            "datatables.paginator"
+            "datatables.paginator",
+            "dialogs.dialog"
         ],
         "modes": {
             "common.button": "presentation",
@@ -76,7 +77,8 @@
             "common.switch": "presentation",
             "common.progress": "presentation",
             "common.surface": "presentation",
-            "datatables.paginator": "atomic"
+            "datatables.paginator": "atomic",
+            "dialogs.dialog": "atomic"
         },
         "capabilities": [
             "slot.render",

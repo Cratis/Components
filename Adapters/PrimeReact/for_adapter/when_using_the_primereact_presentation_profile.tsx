@@ -99,8 +99,8 @@ describe('when using the PrimeReact stable presentation profile', () => {
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
         expect(report.summary).to.deep.equal({
-            total: 111,
-            passed: 111,
+            total: 124,
+            passed: 124,
             failed: 0,
             skipped: 0,
         });
@@ -118,6 +118,7 @@ describe('when using the PrimeReact stable presentation profile', () => {
         expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
             ...stablePresentationSlots,
             'datatables.paginator',
+            'dialogs.dialog',
         ]);
     });
 
