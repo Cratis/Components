@@ -74,7 +74,7 @@ import {
 | One command in a modal | `CommandDialog` | Closes on success through `useDialog`, or through host callbacks in controlled mode |
 | One command gathered across steps | `CommandStepper` or `StepperCommandDialog` | Keep required values and validation timing aligned across steps |
 
-The dialog and stepper containers already create an Arc `CommandForm`. Put fields inside them, not another `CommandForm` or `AutoCommandForm`, which would create a separate form and command instance.
+The dialog and stepper containers already create an Arc `CommandForm`. Put fields inside them, not another `CommandForm` or `AutoCommandForm`, which would create a separate form and command instance. To generate fields inside them, use [AutoCommandFields](auto-command-fields.md).
 
 A field accessor selects a generated command member; it does not supply missing context such as a parent id. Set required hidden values through `initialValues` before validation. `onBeforeExecute` cannot repair a missing value that prevents reaching submit.
 
