@@ -76,6 +76,13 @@ describe('when using the Designsystemet stable presentation profile', () => {
         ]);
     });
 
+    it('should leave the select and date picker on the built-in implementations', () => {
+        const declared = Object.keys(designsystemetUiLibrary.atomicSlots ?? {});
+
+        expect(declared).not.to.include('dropdown.select');
+        expect(declared).not.to.include('display.datePicker');
+    });
+
     it('should preserve native refs, forms, reset behavior, and value-first native events', () => {
         for (const slotId of stablePresentationSlots.filter(
             (candidate) => candidate !== 'common.progress',

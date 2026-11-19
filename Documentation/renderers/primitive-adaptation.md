@@ -167,7 +167,7 @@ interaction must produce one semantic value change and have one keyboard/focus o
 
 All four concrete adapters declare the nine presentation slots. The MUI adapter also declares the
 `common.tooltip` and `common.numberInput` atomic slots, and Designsystemet also declares the
-`dialogs.dialog` and `common.numberInput` atomic slots.
+`dialogs.dialog`, `common.numberInput`, `datatables.paginator` and `common.tooltip` atomic slots.
 Their conformance reports cover the declared controls, not the other atomic slots or any composite
 workflow.
 
@@ -212,7 +212,8 @@ what the adapter owns.
 | Fallback | The built-in `TablePaginator` implementation |
 | Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
 
-A design system whose pagination model is one-based converts at the adapter boundary.
+A design system whose pagination model is one-based converts at the adapter boundary. Designsystemet
+implements this slot.
 
 ### `common.numberInput`
 
@@ -249,10 +250,10 @@ or changes `id`, and when the overlay container or the library's theme changes; 
 transition only while the host, container and theme are unchanged. Describe the trigger with
 `aria-describedby` only, so its accessible name is unchanged.
 
-Only MUI implements this slot today. Designsystemet's own tooltip is a `data-tooltip`
-attribute that rewrites `aria-label` after mount, and PrimeReact's tooltip is bound to a target
-selector and cannot own the trigger or popup parts, so those three adapters keep the built-in
-tooltip.
+MUI and Designsystemet implement this slot. Designsystemet's own tooltip is a `data-tooltip`
+attribute that rewrites `aria-label` after mount, so its adapter composes the popup from design tokens
+instead. PrimeReact's tooltip is bound to a target selector and cannot own the trigger or popup parts,
+so both PrimeReact adapters keep the built-in tooltip.
 
 ### `dropdown.select`
 
@@ -268,7 +269,9 @@ tooltip.
 Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
 adapter implements this slot yet: a faithful implementation has to reproduce every part above, the
 filter and multiple-select paths, and the legacy aliases, which none of the Designsystemet, MUI, or
-PrimeReact select controls provide without re-implementing the built-in `Dropdown`. All four
+PrimeReact select controls provide without re-implementing the built-in `Dropdown`. Designsystemet's
+`Combobox` renders a text input where the slot expects a trigger button, takes string values only,
+debounces Enter selection and exposes no listbox, popover or clear part. All four
 adapters keep the built-in select.
 
 ### `display.datePicker`

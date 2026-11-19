@@ -4,7 +4,7 @@
 # Designsystemet adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. Repository evidence runs
-`@cratis/components.conformance` against all nine declared slots and the `dialogs.dialog` and `common.numberInput` atomic slots,
+`@cratis/components.conformance` against all nine declared slots and the `dialogs.dialog`, `common.numberInput`, `datatables.paginator` and `common.tooltip` atomic slots,
 and requires every applicable check to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:
@@ -84,7 +84,8 @@ These are in Cratis components or the token bridge rather than the Designsysteme
 assert them exactly; fix the source, then delete the expectation.
 
 - **Paginator current page:** the paginator has no page-number buttons by default, so there is no
-  `aria-current="page"`; the current page is the "1 / 2" text and the range.
+  `aria-current="page"`; the current page is the "1 / 2" text and the range. With `pageLinks` the current
+  page carries `aria-current="page"`.
 - **Dialog initial focus:** focus moves to the dialog container (`tabindex="-1"`), not the first field.
   This is accepted by the dialog pattern; it is recorded for the screen-reader pass.
 
