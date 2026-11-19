@@ -127,15 +127,12 @@ describe('keyboard operation of the Designsystemet DataPage', () => {
         await expect.poll(range).toBe('1–20 of 24');
     });
 
-    // Known finding: the paginator disables the button that was just activated when it reaches the
-    // end, so focus falls to the page body. Paging is asserted to succeed first so setup failures
-    // are red; flip the final assertion when the finding is fixed.
-    it('loses keyboard focus from the paginator after paging to the last page (known finding)', async () => {
+    it('keeps keyboard focus in the paginator after paging to the last page', async () => {
         await mountPaged();
         pager()?.querySelector<HTMLElement>('[aria-label="Next page"]')?.focus();
         await userEvent.keyboard('{Enter}');
         await expect.poll(range).toBe('21–24 of 24');
         expect(pager()?.querySelector<HTMLButtonElement>('[aria-label="Next page"]')?.disabled).toBe(true);
-        expect(pager()?.contains(document.activeElement)).toBe(false);
+        expect(pager()?.contains(document.activeElement)).toBe(true);
     });
 });

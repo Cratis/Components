@@ -80,14 +80,7 @@ tests.
 These are in Cratis components or the token bridge rather than the Designsystemet adapter. The tests
 assert them exactly; fix the source, then delete the expectation.
 
-- **Dark validation error contrast:** the stepper dialog's validation message is a hard-coded
-  `#cc0000`, 2.51:1 on the dark surface (needs 4.5:1).
-- **Dark secondary dialog button contrast:** its text bridges to 4.4:1 on the dark dialog surface at
-  `sm` and `md` (needs 4.5:1).
-- **Column sort buttons in forced colors:** the DataPage header sort buttons (ID, Name, Email, Role)
-  have no border, outline or fill, so they are indistinguishable flat text in forced colors.
-- **Paginator focus:** paging to the last page disables the activated Next button, so keyboard focus
-  falls to the page body. The paginator has no page-number buttons, so there is no
+- **Paginator current page:** the paginator has no page-number buttons by default, so there is no
   `aria-current="page"`; the current page is the "1 / 2" text and the range.
 - **Dialog initial focus:** focus moves to the dialog container (`tabindex="-1"`), not the first field.
   This is accepted by the dialog pattern; it is recorded for the screen-reader pass.
