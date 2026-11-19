@@ -102,6 +102,7 @@ export {
     unstable_useOverlayEnvironment,
     unstable_useRendererId,
 } from './RendererContext';
+export { unstable_useOverlayHost, type unstable_OverlayHost } from './useOverlayHost';
 export {
     unstable_RendererScope,
     type unstable_RendererScopeProps,

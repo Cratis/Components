@@ -787,6 +787,7 @@
     "unstable_CratisOverlayEnvironment": "export type unstable_CratisOverlayEnvironment = CratisOverlayEnvironment;",
     "unstable_CratisSlots": "export interface unstable_CratisSlots extends Record<never, never> { } | interface unstable_CratisSlots { 'common.button': ButtonProps; 'common.iconButton': IconButtonProps; 'common.textInput': TextInputProps; 'common.textArea': TextAreaProps; 'common.checkbox': CheckboxProps; 'common.radio': RadioProps; 'common.switch': SwitchProps; 'common.progress': ProgressBarProps; 'common.surface': SurfaceProps; 'common.tooltip': TooltipProps; 'dropdown.select': DropdownProps<unknown>; 'dialogs.dialog': DialogProps; 'display.datePicker': DatePickerInputProps; 'datatables.paginator': TablePaginatorProps; }",
     "unstable_Fidelity": "export type unstable_Fidelity = 'native' | 'emulated' | 'unsupported';",
+    "unstable_OverlayHost": "export interface unstable_OverlayHost { readonly id: string; readonly open: boolean; readonly tooltipZIndex: string; }",
     "unstable_RendererScope": "unstable_RendererScope: (props: unstable_RendererScopeProps) => string | number | bigint | boolean | import(\"react\").JSX.Element | Iterable<ReactNode> | Promise<string | number | bigint | boolean | Iterable<ReactNode> | import(\"react\").ReactElement<unknown, string | import(\"react\").JSXElementConstructor<any>> | import(\"react\").ReactPortal | null | undefined> | null | undefined",
     "unstable_RendererScopeProps": "export interface unstable_RendererScopeProps { readonly use: unstable_UiLibrary | readonly unstable_UiLibrary[]; readonly only?: readonly unstable_SlotId[]; readonly children: ReactNode; }",
     "unstable_RendererSetup": "export type unstable_RendererSetup = CratisRendererSetup;",
@@ -802,6 +803,7 @@
     "unstable_defineUiLibrary": "unstable_defineUiLibrary: <const T extends unstable_UiLibrary>(library: T) => T",
     "unstable_useCapability": "unstable_useCapability: (capability: unstable_CapabilityId) => boolean",
     "unstable_useOverlayEnvironment": "unstable_useOverlayEnvironment: () => unstable_CratisOverlayEnvironment",
+    "unstable_useOverlayHost": "unstable_useOverlayHost: () => unstable_OverlayHost",
     "unstable_useRendererId": "unstable_useRendererId: () => string"
   },
   "./renderer/builtin": {
