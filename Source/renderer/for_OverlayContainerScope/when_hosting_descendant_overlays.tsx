@@ -159,6 +159,25 @@ describe('when hosting descendant overlays', () => {
         staleElement.remove();
     });
 
+    it('should keep a newer session registration when a callback from an earlier session fires', async () => {
+        await render(<Host name='first' open register={false} />);
+        const staleRegister = hosts.get('first')!.register;
+        await render(<Host name='first' open={false} register={false} />);
+        await render(
+            <Host name='first' open>
+                <Probe name='inside' />
+            </Host>,
+        );
+
+        const staleElement = document.createElement('div');
+        document.body.append(staleElement);
+        await act(() => staleRegister(staleElement));
+        await act(() => staleRegister(null));
+
+        expect(containerOf('inside')).to.equal(overlayElementOf('first'));
+        staleElement.remove();
+    });
+
     it('should not carry a registration over when the host remounts', async () => {
         await render(
             <Host name='first' open>

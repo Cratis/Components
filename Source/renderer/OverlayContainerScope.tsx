@@ -53,6 +53,8 @@ export const useOverlayContainer = (open: boolean): OverlayContainer => {
     const register = useCallback(
         (element: HTMLElement | null) =>
             setSession((current) => {
+                // A callback from an earlier session never touches a newer session's registration.
+                if (current.id > sessionCount) return current;
                 if (!open) return closedSession;
                 if (element === null) return current.id === sessionCount ? closedSession : current;
                 return { id: sessionCount, element };
