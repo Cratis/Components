@@ -17,6 +17,7 @@ const rendererDependenciesById: Readonly<Record<string, readonly string[]>> = {
     'cratis-mui': [
         '@mui/material/Button',
         '@mui/material/Checkbox',
+        '@mui/material/Dialog',
         '@mui/material/IconButton',
         '@mui/material/InputBase',
         '@mui/material/LinearProgress',
@@ -24,6 +25,7 @@ const rendererDependenciesById: Readonly<Record<string, readonly string[]>> = {
         '@mui/material/Radio',
         '@mui/material/Switch',
         '@mui/material/Tooltip',
+        '@mui/material/Typography',
         '@mui/material/styles',
     ],
     'cratis-designsystemet': [
