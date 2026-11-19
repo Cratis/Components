@@ -7,7 +7,6 @@ import '@cratis/components/tokens';
 import '@cratis/components/themes/designsystemet';
 import '@cratis/components/styles';
 import { useState } from 'react';
-import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -23,7 +22,7 @@ let hideParent: () => void;
 const Example = () => {
     const [open, setOpen] = useState(false);
     const [parentVisible, setParentVisible] = useState(true);
-    hideParent = () => flushSync(() => setParentVisible(false));
+    hideParent = () => setParentVisible(false);
     const cancel = (title: string) => () => {
         cancellations.push(title);
         setOpen(false);
