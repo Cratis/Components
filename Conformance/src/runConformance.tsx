@@ -378,6 +378,56 @@ const checkNormalization = (checks: ConformanceCheck[], document: Document) => {
     );
 };
 
+// Checks that every documented stable part rendered and that every typed `pt` key reached its part.
+const checkPartCoverage = (
+    checks: ConformanceCheck[],
+    profile: SlotProfile,
+    document: Document,
+    absentParts: readonly string[],
+) => {
+    const contractId = `contract.${profile.slotId}`;
+    const expectedParts = [...cratisParts[profile.partsKey]].filter(
+        (part) => !absentParts.includes(part),
+    );
+    const foundParts = new Set(
+        Array.from(document.querySelectorAll('[data-cratis-part]'))
+            .map((element) => element.getAttribute('data-cratis-part'))
+            .filter((part): part is string => Boolean(part)),
+    );
+    const missingParts = expectedParts.filter((part) => !foundParts.has(part));
+    addCheck(
+        checks,
+        ConformanceFamily.Contract,
+        `${contractId}.parts`,
+        missingParts.length === 0,
+        missingParts.length === 0
+            ? 'Every documented stable DOM part was observed.'
+            : `Missing parts: ${missingParts.join(', ')}.`,
+        profile.slotId,
+        { expectedParts, foundParts: [...foundParts].sort() },
+    );
+
+    const missingPassThrough = profile.ptKeys
+        .filter((part) => !absentParts.includes(part))
+        .filter(
+            (part) =>
+                !document.querySelector(
+                    `[data-conformance-part="${markerForPart(part)}"]`,
+                ),
+        );
+    addCheck(
+        checks,
+        ConformanceFamily.Contract,
+        `${contractId}.pt`,
+        missingPassThrough.length === 0,
+        missingPassThrough.length === 0
+            ? 'Every typed pt key reached its intended real part.'
+            : `pt did not reach: ${missingPassThrough.join(', ')}.`,
+        profile.slotId,
+        { ptKeys: profile.ptKeys },
+    );
+};
+
 const checkSlot = async (
     checks: ConformanceCheck[],
     library: unstable_UiLibrary,
@@ -454,46 +504,7 @@ const checkSlot = async (
         const nativeRoot = findNativeRoot(profile, document, fixture.container);
         platformOwnedParts = nativeRoot.platformOwnedParts;
         const absentParts = absentPartsOf(profile, nativeRoot);
-        const expectedParts = [...cratisParts[profile.partsKey]].filter(
-            (part) => !absentParts.includes(part),
-        );
-        const foundParts = new Set(
-            Array.from(document.querySelectorAll('[data-cratis-part]'))
-                .map((element) => element.getAttribute('data-cratis-part'))
-                .filter((part): part is string => Boolean(part)),
-        );
-        const missingParts = expectedParts.filter((part) => !foundParts.has(part));
-        addCheck(
-            checks,
-            ConformanceFamily.Contract,
-            `${contractId}.parts`,
-            missingParts.length === 0,
-            missingParts.length === 0
-                ? 'Every documented stable DOM part was observed.'
-                : `Missing parts: ${missingParts.join(', ')}.`,
-            profile.slotId,
-            { expectedParts, foundParts: [...foundParts].sort() },
-        );
-
-        const missingPassThrough = profile.ptKeys
-            .filter((part) => !absentParts.includes(part))
-            .filter(
-                (part) =>
-                    !document.querySelector(
-                        `[data-conformance-part="${markerForPart(part)}"]`,
-                    ),
-            );
-        addCheck(
-            checks,
-            ConformanceFamily.Contract,
-            `${contractId}.pt`,
-            missingPassThrough.length === 0,
-            missingPassThrough.length === 0
-                ? 'Every typed pt key reached its intended real part.'
-                : `pt did not reach: ${missingPassThrough.join(', ')}.`,
-            profile.slotId,
-            { ptKeys: profile.ptKeys },
-        );
+        checkPartCoverage(checks, profile, document, absentParts);
 
         for (const variantFixture of variantFixtures) await unmount(variantFixture);
         variantFixtures.length = 0;
