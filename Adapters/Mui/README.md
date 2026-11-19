@@ -40,8 +40,9 @@ Components that execute commands or run queries also need Arc's `<Arc>` provider
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
 ProgressBar, and Surface. It also implements the stable atomic `common.tooltip` slot with the MUI tooltip,
 which is bound to the overlay host it opened in, and the stable atomic `common.numberInput` slot
-that styles number fields like text fields. It deliberately excludes MUI X and the dialog,
-dropdown, date picker, and paginator atomic slots, which use the built-in implementations.
+that styles number fields like text fields. The stable atomic `datatables.paginator` slot is composed from MUI
+buttons, and the stable atomic `dialogs.dialog` slot uses the MUI dialog as its modal shell. It deliberately
+excludes MUI X and the dropdown and date picker atomic slots, which use the built-in implementations.
 
 ## Theme integration
 
