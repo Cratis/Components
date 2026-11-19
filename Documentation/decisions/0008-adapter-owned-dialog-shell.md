@@ -1,7 +1,7 @@
 ---
 id: '0008'
 title: Adapter-owned dialog shell
-description: The stable dialogs.dialog atomic slot lets an adapter own the modal shell while Components keeps the dialog stack, result flow, actions and the descendants' overlay host, passed through a host prop.
+description: The stable dialogs.dialog atomic slot lets an adapter own the modal shell while Components keeps the dialog stack, result flow, actions and the descendants' overlay container, passed through a host prop.
 status: accepted
 stage: implemented
 class: contract
@@ -57,7 +57,7 @@ The host carries what the adapter needs from Components:
   parts and the consumer's `pt` attributes;
 - `dismiss()`, which an adapter calls for every user dismissal and Components turns into the
   dialog's cancel result;
-- `registerOverlayHost(element)`, a ref callback for an element inside the modal shell.
+- `registerOverlayContainer(element)`, a ref callback for an element inside the modal shell.
 
 While the dialog is open, Components gives its descendants an overlay environment whose container
 is the registered element, so a descendant dropdown or tooltip portals inside the dialog and stays
@@ -80,7 +80,7 @@ stand in for the `role="dialog"` root; the top layer then owns the backdrop and 
   native modal hides every descendant overlay.
 - **Adapter-owned stack and footer.** Rejected: each adapter would re-implement the result flow and
   the stacking that descendants depend on, and they would drift apart.
-- **No stable dialog slot.** Kept as the fallback had the overlay host not worked: a browser test
+- **No stable dialog slot.** Kept as the fallback had the overlay container not worked: a browser test
   proves that a dropdown, a tooltip and a nested dialog stay usable and on top inside a native
   modal `<dialog>`.
 

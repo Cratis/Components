@@ -27,7 +27,7 @@ const placements = { center: 'center', start: 'left', end: 'right' } as const sa
 
 // The element descendant overlays portal into. A fixed, zero-size origin inside the top-layer
 // dialog keeps popovers above it, interactive, and free of the dialog's scroll clipping.
-const overlayHostStyle: CSSProperties = { position: 'fixed', top: 0, left: 0, width: 0, height: 0 };
+const overlayContainerStyle: CSSProperties = { position: 'fixed', top: 0, left: 0, width: 0, height: 0 };
 
 const headerStyle: CSSProperties = {
     display: 'flex',
@@ -189,7 +189,7 @@ export const DesignsystemetDialogSlot = ({
             {host.content}
             {host.footer}
             {host.liveRegion}
-            <div data-cratis-overlay-host='' ref={host.registerOverlayHost} style={overlayHostStyle} />
+            <div data-cratis-overlay-container='' ref={host.registerOverlayContainer} style={overlayContainerStyle} />
         </DsDialog>
     );
 };

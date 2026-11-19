@@ -175,7 +175,7 @@ describe('when resolving a stable atomic dialog', () => {
         };
         await render(dialog({ children: <Probe /> }));
 
-        expect(environment?.getContainer()).to.equal(container.querySelector('[data-overlay-host]'));
+        expect(environment?.getContainer()).to.equal(container.querySelector('[data-overlay-container]'));
     });
 
     it('should give descendants no overlay container while the dialog is hidden', async () => {

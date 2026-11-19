@@ -9,11 +9,11 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import type { CratisOverlayEnvironment } from '../overlayEnvironment';
-import { OverlayHostScope, useOverlayHost, type OverlayHost } from '../OverlayHostScope';
+import { OverlayContainerScope, useOverlayContainer, type OverlayContainer } from '../OverlayContainerScope';
 import { unstable_useOverlayEnvironment } from '../RendererContext';
 
 const environments = new Map<string, CratisOverlayEnvironment>();
-const hosts = new Map<string, OverlayHost>();
+const hosts = new Map<string, OverlayContainer>();
 
 const Probe = ({ name }: { name: string }) => {
     environments.set(name, unstable_useOverlayEnvironment());
@@ -28,20 +28,20 @@ interface HostProps {
 }
 
 const Host = ({ name, open, register = true, children }: HostProps) => {
-    const host = useOverlayHost(open);
+    const host = useOverlayContainer(open);
     hosts.set(name, host);
     return (
-        <OverlayHostScope host={host}>
+        <OverlayContainerScope host={host}>
             <div data-host={name}>
-                {register && <div data-overlay-host={name} ref={host.register} />}
+                {register && <div data-overlay-container={name} ref={host.register} />}
                 {children}
             </div>
-        </OverlayHostScope>
+        </OverlayContainerScope>
     );
 };
 
 const containerOf = (name: string) => environments.get(name)?.getContainer();
-const overlayElementOf = (name: string) => document.querySelector(`[data-overlay-host="${name}"]`);
+const overlayElementOf = (name: string) => document.querySelector(`[data-overlay-container="${name}"]`);
 
 let container: HTMLDivElement;
 let root: Root;

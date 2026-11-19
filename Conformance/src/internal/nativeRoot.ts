@@ -51,3 +51,28 @@ export const absentPartsOf = (profile: SlotProfile, root: NativeRoot): readonly 
     ...(profile.conditionallyAbsentParts ?? []),
     ...root.platformOwnedParts,
 ];
+
+/**
+ * Lists the `part.state` associations a fixture must render, leaving out the parts the platform owns.
+ *
+ * @param partStates States each part of the slot's contract may carry.
+ * @param platformOwnedParts Parts the platform owns for the rendered native root.
+ * @returns The expected `part.state` associations.
+ */
+export const stateAssociationsOf = (
+    partStates: Readonly<Record<string, readonly string[]>>,
+    platformOwnedParts: readonly string[],
+): readonly string[] =>
+    Object.entries(partStates)
+        .filter(([part]) => !platformOwnedParts.includes(part))
+        .flatMap(([part, states]) => states.map((state) => `${part}.${state}`));
+
+/**
+ * Tells whether server-rendered dialog markup carries a dialog root: an element with the dialog
+ * role or a native `<dialog>`.
+ *
+ * @param markup Server-rendered markup of the dialog slot.
+ * @returns Whether the markup carries a dialog root.
+ */
+export const rendersDialogRoot = (markup: string): boolean =>
+    markup.includes('role="dialog"') || markup.includes('<dialog');

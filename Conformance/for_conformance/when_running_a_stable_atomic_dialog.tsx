@@ -49,7 +49,7 @@ const NativeDialog = ({ title, subtitle, isBusy = false, pt, host }: CratisDialo
         {host.content}
         {host.footer}
         {host.liveRegion}
-        <div ref={host.registerOverlayHost} />
+        <div ref={host.registerOverlayContainer} />
     </dialog>
 );
 

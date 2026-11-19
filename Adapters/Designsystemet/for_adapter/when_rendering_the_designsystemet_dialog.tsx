@@ -69,7 +69,7 @@ describe('when rendering the Designsystemet dialog', () => {
     it('should give descendant overlays a host inside the dialog', async () => {
         await render({});
 
-        expect(dialog()?.querySelector('[data-cratis-overlay-host]')).not.to.equal(null);
+        expect(dialog()?.querySelector('[data-cratis-overlay-container]')).not.to.equal(null);
     });
 
     it('should close through Components when the close button is pressed', async () => {

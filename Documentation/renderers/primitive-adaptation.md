@@ -269,7 +269,7 @@ built-in date picker.
 | Parts | `DialogParts`: the adapter renders `root`, `header`, `title`, `subtitle` and `close`; `host.content`, `host.headerActions` and `host.footer` already carry `content`, `busy-scope`, `header-actions`, `footer`, `confirm` and `cancel`; a native `<dialog>` root leaves `backdrop` and `positioner` to the browser top layer |
 | Behavior | The adapter owns the modal shell: focus trap, Escape, outside press, scroll lock and focus restoration. It calls `host.dismiss()` for every user dismissal allowed by `host.dismissal` |
 | Components keeps | The dialog stack and z-index, the `DialogResult` flow, the typed footer, the header actions, busy and validity state, initial focus and the live region |
-| Overlays | Pass an element inside the modal shell to `host.registerOverlayHost`; while the dialog is open, descendant dropdowns, date pickers and tooltips portal into it |
+| Overlays | Pass an element inside the modal shell to `host.registerOverlayContainer`; while the dialog is open, descendant dropdowns, date pickers and tooltips portal into it |
 | Fallback | The built-in `Dialog` implementation |
 | Conformance | The `dialogs.dialog` profile, rendered through the public `Dialog` so the adapter receives its host: parts, pass-through, state coverage, server rendering, hydration, and one `onClose` call from the close button |
 

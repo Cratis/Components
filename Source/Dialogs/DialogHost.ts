@@ -58,7 +58,7 @@ export interface CratisDialogHost {
      * A top-layer `<dialog>` registers an element inside itself so popovers, tooltips and nested
      * dialogs stay above it and interactive. Pass it as a ref callback.
      */
-    registerOverlayHost(element: HTMLElement | null): void;
+    registerOverlayContainer(element: HTMLElement | null): void;
 }
 
 /** Props an adapter-rendered `dialogs.dialog` receives: the public props plus its {@link CratisDialogHost}. */

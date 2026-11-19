@@ -41,7 +41,12 @@ import {
     normalizeStyle,
 } from './internal/reactNormalization.js';
 import { exercisedLibrary } from './internal/atomicSlots.js';
-import { absentPartsOf, findNativeRoot } from './internal/nativeRoot.js';
+import {
+    absentPartsOf,
+    findNativeRoot,
+    rendersDialogRoot,
+    stateAssociationsOf,
+} from './internal/nativeRoot.js';
 import { createSlotProfiles } from './internal/slotProfiles.js';
 import type { SlotProfile } from './internal/SlotProfile.js';
 
@@ -686,11 +691,10 @@ const checkSlot = async (
         }
     }
 
-    const expectedStateAssociations = Object.entries(
+    const expectedStateAssociations = stateAssociationsOf(
         cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>,
-    )
-        .filter(([part]) => !platformOwnedParts.includes(part))
-        .flatMap(([part, states]) => states.map((state) => `${part}.${state}`));
+        platformOwnedParts,
+    );
     const missingStateAssociations = expectedStateAssociations.filter(
         (association) => !observedStateAssociations.has(association),
     );
@@ -757,9 +761,7 @@ const checkServerRendering = (
     const overlayPassed =
         (tooltipOutput === undefined ||
             !tooltipOutput.includes('data-cratis-part="popup"')) &&
-        (dialogOutput === undefined ||
-            dialogOutput.includes('role="dialog"') ||
-            dialogOutput.includes('<dialog'));
+        (dialogOutput === undefined || rendersDialogRoot(dialogOutput));
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,

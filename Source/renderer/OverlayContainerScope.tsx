@@ -8,8 +8,8 @@ import {
     unstable_useOverlayEnvironment,
 } from './RendererContext';
 
-/** One overlay host: the element it registered and the registration callback it hands out. */
-export interface OverlayHost {
+/** One overlay container: the element it registered and the registration callback it hands out. */
+export interface OverlayContainer {
     /** Overlay environment its descendants portal through. */
     readonly environment: CratisOverlayEnvironment;
     /**
@@ -28,7 +28,7 @@ interface Session {
 const closedSession: Session = Object.freeze({ id: -1, element: null });
 
 /**
- * Creates the overlay host for one atomic overlay, such as an adapter dialog rendered in the
+ * Creates the overlay container for one atomic overlay, such as an adapter dialog rendered in the
  * browser top layer. While the host is open and an element is registered, its descendants portal
  * into that element, so they stay visible and interactive above the host; before registration they
  * keep the surrounding environment. While the host is closed its descendants get no container, so
@@ -37,7 +37,7 @@ const closedSession: Session = Object.freeze({ id: -1, element: null });
  * @param open Whether the host is currently open.
  * @returns The host's overlay environment and registration callback.
  */
-export const useOverlayHost = (open: boolean): OverlayHost => {
+export const useOverlayContainer = (open: boolean): OverlayContainer => {
     const parent = unstable_useOverlayEnvironment();
     const [sessionCount, setSessionCount] = useState(0);
     const [openedFor, setOpenedFor] = useState(open);
@@ -75,18 +75,18 @@ export const useOverlayHost = (open: boolean): OverlayHost => {
     return useMemo(() => ({ environment, register }), [environment, register]);
 };
 
-/** Props for {@link OverlayHostScope}. */
-export interface OverlayHostScopeProps {
-    /** The overlay host whose environment the children portal through. */
-    readonly host: OverlayHost;
+/** Props for {@link OverlayContainerScope}. */
+export interface OverlayContainerScopeProps {
+    /** The overlay container whose environment the children portal through. */
+    readonly host: OverlayContainer;
     readonly children: ReactNode;
 }
 
 /**
- * Provides an overlay host's environment to its descendants, keeping every other renderer setting
+ * Provides an overlay container's environment to its descendants, keeping every other renderer setting
  * of the surrounding provider. Without a surrounding renderer the children render unchanged.
  */
-export const OverlayHostScope = ({ host, children }: OverlayHostScopeProps) => {
+export const OverlayContainerScope = ({ host, children }: OverlayContainerScopeProps) => {
     const parent = use(RendererContext);
     const value = useMemo(
         () => (parent ? Object.freeze({ ...parent, overlayEnvironment: host.environment }) : undefined),

@@ -16,8 +16,8 @@ import '../theme.css';
 import './Dialog.css';
 
 // A minimal top-layer adapter: a native <dialog> opened with showModal(), owning Escape and
-// focus restoration, and registering an element inside itself as its descendants' overlay host.
-const overlayHostStyle = { position: 'fixed', top: 0, left: 0, width: 0, height: 0 } as const;
+// focus restoration, and registering an element inside itself as its descendants' overlay container.
+const overlayContainerStyle = { position: 'fixed', top: 0, left: 0, width: 0, height: 0 } as const;
 
 const NativeDialog = ({ title, visible = true, host }: CratisDialogSlotProps) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -43,7 +43,7 @@ const NativeDialog = ({ title, visible = true, host }: CratisDialogSlotProps) =>
             {host.content}
             {host.footer}
             {host.liveRegion}
-            <div ref={host.registerOverlayHost} style={overlayHostStyle} />
+            <div ref={host.registerOverlayContainer} style={overlayContainerStyle} />
         </dialog>
     );
 };
@@ -124,7 +124,7 @@ const openOuter = async () => {
     await expect.element(dialogNamed('Outer dialog')).toBeVisible();
 };
 
-describe('a native top-layer dialog with a registered overlay host', () => {
+describe('a native top-layer dialog with a registered overlay container', () => {
     it('keeps a dropdown popover above the dialog and usable', async () => {
         await openOuter();
         await userEvent.click(page.getByRole('button', { name: /Pick one/ }));

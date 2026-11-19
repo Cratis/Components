@@ -7,7 +7,7 @@ import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import { DIALOG_ZINDEX_TOKEN } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
-import { OverlayHostScope, useOverlayHost } from '../renderer/OverlayHostScope';
+import { OverlayContainerScope, useOverlayContainer } from '../renderer/OverlayContainerScope';
 import type { DialogProps } from './Dialog';
 import { dismissalFor, resolveInitialFocus } from './dialogBehavior';
 import { DialogContent, LiveRegion } from './DialogDocument';
@@ -44,9 +44,9 @@ const useHeaderActions = (props: DialogProps, dialogId: string, showsCloseButton
 /**
  * Builds the Components-owned host of one adapter-rendered dialog: its stack tier, the dialog
  * result flow, the footer and header actions, initial focus and the refused-confirmation
- * announcement, plus the overlay host its descendants portal through.
+ * announcement, plus the overlay container its descendants portal through.
  * @param props The dialog's public props.
- * @returns The host handed to the adapter and the overlay host for its descendants.
+ * @returns The host handed to the adapter and the overlay container for its descendants.
  */
 export const useDialogHost = (props: DialogProps) => {
     const { visible = true, isBusy = false, buttons = DialogButtons.OkCancel, subtitle } = props;
@@ -58,7 +58,7 @@ export const useDialogHost = (props: DialogProps) => {
     const initialFocus = resolveInitialFocus(props.initialFocus ?? DialogInitialFocus.Confirm, buttons);
     const { allowsOutsideDismissal, allowsEscapeDismissal, showsCloseButton } = dismissalFor(props, isBusy);
     const zIndex = useDialogZIndex(visible) ?? DIALOG_ZINDEX_TOKEN;
-    const overlayHost = useOverlayHost(visible);
+    const overlayContainer = useOverlayContainer(visible);
     const { titleRef, confirmRef, cancelRef, announcement, onRefused } = useDialogFocus({
         visible,
         isBusy,
@@ -101,10 +101,10 @@ export const useDialogHost = (props: DialogProps) => {
             ),
         liveRegion: <LiveRegion announcement={announcement} />,
         dismiss: () => void handleClose(DialogResult.Cancelled),
-        registerOverlayHost: overlayHost.register,
+        registerOverlayContainer: overlayContainer.register,
     };
 
-    return { host, overlayHost };
+    return { host, overlayContainer };
 };
 
 /** Props of {@link DialogSlotHost}. */
@@ -120,10 +120,10 @@ export interface DialogSlotHostProps {
  * stack tier and portal through the overlay element the adapter registered.
  */
 export const DialogSlotHost = ({ render, props }: DialogSlotHostProps) => {
-    const { host, overlayHost } = useDialogHost(props);
+    const { host, overlayContainer } = useDialogHost(props);
     return (
         <DialogStackContext value={host.zIndex}>
-            <OverlayHostScope host={overlayHost}>{createElement(render, { ...props, host })}</OverlayHostScope>
+            <OverlayContainerScope host={overlayContainer}>{createElement(render, { ...props, host })}</OverlayContainerScope>
         </DialogStackContext>
     );
 };

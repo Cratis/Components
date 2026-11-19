@@ -42,7 +42,7 @@ Stable atomic slots are a separate, optional extension of `CratisPresentationUiL
   `CratisAtomicSlotMap` makes every entry optional. Amended by
   [ADR 0008](0008-adapter-owned-dialog-shell.md): the `dialogs.dialog` contract is the public
   `DialogProps` plus a Components-owned `host` prop, because the dialog shares its stack, result
-  flow and overlay host with Components.
+  flow and overlay container with Components.
 - `CratisPresentationUiLibrary.atomicSlots` is optional. `profileSlots` and `slots` keep meaning
   the nine presentation slots, so no existing manifest, validator, or adapter changes.
 - `definePresentationUiLibrary()` validates and freezes `atomicSlots` when it is present and leaves

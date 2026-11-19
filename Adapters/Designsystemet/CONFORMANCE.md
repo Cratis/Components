@@ -18,7 +18,7 @@ The bounded checks cover:
   value reaches a Designsystemet element;
 - real Designsystemet DOM identities for all nine slots;
 - the dialog as a native `<dialog>` root whose `backdrop` and `positioner` belong to the browser top
-  layer, with the close button and Escape closing through Components and an overlay host inside the
+  layer, with the close button and Escape closing through Components and an overlay container inside the
   dialog for descendant popovers;
 - deterministic SSR and mismatch-free hydration; and
 - package peers, archive boundaries, runtime loading, and declaration hygiene.

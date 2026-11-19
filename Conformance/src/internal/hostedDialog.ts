@@ -16,7 +16,7 @@ const dialogSlotId = 'dialogs.dialog';
 /**
  * Renders one dialog declaration the way an application does: through the public `Dialog` inside a
  * renderer scope that selects it. Components then gives an adapter dialog its host (stack tier,
- * result flow, header and footer actions, overlay host) next to the public props.
+ * result flow, header and footer actions, overlay container) next to the public props.
  */
 const hostedDialog = (
     declaration: unstable_SlotDeclaration<typeof dialogSlotId>,

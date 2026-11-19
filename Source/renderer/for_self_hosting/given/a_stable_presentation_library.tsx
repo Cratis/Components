@@ -84,7 +84,7 @@ export const AdapterDialog: ComponentType<CratisDialogSlotProps> = ({ title, hos
         {host.content}
         {host.footer}
         {host.liveRegion}
-        <div data-overlay-host ref={host.registerOverlayHost} />
+        <div data-overlay-container ref={host.registerOverlayContainer} />
     </section>
 );
 
