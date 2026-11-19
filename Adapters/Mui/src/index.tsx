@@ -52,6 +52,7 @@ import {
     type CratisPresentationUiLibrary,
 } from '@cratis/components/renderer';
 import { MuiNumberInputSlot } from './numberInput.js';
+import { MuiPaginatorSlot } from './paginator.js';
 import { MuiTooltipSlot } from './tooltip.js';
 
 const capabilities = Object.freeze([
@@ -1019,6 +1020,11 @@ const atomicSlots = Object.freeze({
         mode: 'atomic',
         fidelity: 'native',
         render: MuiNumberInputSlot,
+    }),
+    'datatables.paginator': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: MuiPaginatorSlot,
     }),
 });
 

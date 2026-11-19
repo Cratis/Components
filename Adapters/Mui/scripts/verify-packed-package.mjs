@@ -176,7 +176,7 @@ try {
         .filter((file) => file.endsWith('.d.ts'))
         .map((file) => path.basename(file))
         .sort();
-    if (JSON.stringify(declarationNames) !== JSON.stringify(['index.d.ts', 'numberInput.d.ts', 'tooltip.d.ts'])) {
+    if (JSON.stringify(declarationNames) !== JSON.stringify(['index.d.ts', 'numberInput.d.ts', 'paginator.d.ts', 'tooltip.d.ts'])) {
         throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }
     const declarations = readFileSync(
@@ -225,7 +225,8 @@ try {
             path.join(nodeModules, '@cratis', dependency),
         );
     }
-    for (const dependency of ['reflect-metadata', 'tsyringe']) {
+    // The paginator imports the Core root, whose runtime graph needs these Core dependencies.
+    for (const dependency of ['reflect-metadata', 'tsyringe', '@internationalized/date', 'allotment', 'framer-motion', 'react-aria', 'react-aria-components', 'react-icons', 'ts-deepmerge']) {
         link(
             path.join(repositoryDirectory, 'node_modules', dependency),
             path.join(nodeModules, dependency),
