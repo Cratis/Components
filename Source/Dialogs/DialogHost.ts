@@ -27,7 +27,11 @@ export type CratisDialogDismissSource = keyof CratisDialogHostDismissal;
  * Escape, outside press, scroll lock and focus restoration.
  */
 export interface CratisDialogHost {
-    /** Identity of this host. Stable for the dialog's lifetime and distinct for every dialog. */
+    /**
+     * Identity of this host. Stable for the dialog's lifetime and distinct for every dialog. Render it
+     * as `data-cratis-dialog-id` on the dialog's root element: descendants such as FilterPanel find
+     * their enclosing modal through that attribute, as they do for the built-in shell.
+     */
     readonly id: string;
     /**
      * Stacking expression of this dialog's tier. Use it for a z-index based modal; a browser
