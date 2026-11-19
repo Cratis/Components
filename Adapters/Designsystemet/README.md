@@ -5,9 +5,9 @@
 
 [Digdir Designsystemet](https://designsystemet.no) adapter for the nine stable presentation slots in
 the Cratis Components renderer ABI v1. It exports one stable `CratisPresentationUiLibrary` manifest,
-`designsystemetUiLibrary`. It also implements the stable `dialogs.dialog` atomic slot as a native
-modal `<dialog>`. This certifies nine-slot primitive adaptation and the dialog shell, never
-full-catalog replacement.
+`designsystemetUiLibrary`. It also implements the stable `dialogs.dialog`, `common.numberInput`, `datatables.paginator` and
+`common.tooltip` atomic slots. This certifies nine-slot primitive adaptation and those atomic slots,
+never full-catalog replacement.
 
 > **Versions:** each release of `@cratis/components.designsystemet` is published at the same version
 > as `@cratis/components` and declares a peer on exactly that version. Install and upgrade the two
@@ -81,7 +81,17 @@ appearance vocabulary. The adapter therefore never forwards the Cratis values (`
   dialog stack. Dropdowns, date pickers and tooltips inside the dialog portal into it, so they stay
   on top. See [ADR 0008](https://github.com/Cratis/Components/blob/main/Documentation/decisions/0008-adapter-owned-dialog-shell.md).
 - The stable atomic `common.numberInput` slot renders number fields with the Designsystemet input.
-- The other atomic slots (paginator, tooltip, select and date picker) use the built-in implementation.
+- The paginator (`datatables.paginator`) renders the Designsystemet `Pagination` list and buttons inside a
+  labelled `navigation` element, keeps the zero-based page contract and keeps focus inside the paginator
+  when paging disables the focused control.
+- The tooltip (`common.tooltip`) is composed, not the upstream `data-tooltip` script, which is text-only and
+  rewrites `aria-label`. The trigger keeps its own element; the popup is styled from Designsystemet tokens,
+  mounts in the overlay container above the dialog it opened in and closes with that dialog. Hover and keyboard
+  focus open it, Escape and blur close it, and it does not flip near viewport edges.
+- `dropdown.select` and `display.datePicker` stay on the built-in implementation. The Designsystemet
+  `Combobox` is deprecated, renders a text input rather than the trigger button the slot contract expects,
+  accepts string values only, debounces keyboard selection and offers no hook for the listbox, popover and
+  clear parts. It has no date picker or calendar.
 - CommandForm fields (#527), the dialog footer (#528) and the theme bridge (#529) are separate work.
 
 ## Peer policy
