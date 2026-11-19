@@ -21,6 +21,15 @@ const currentPageStyle = {
     '--dsc-button-color--active': 'var(--ds-color-base-contrast-default)',
 } as CSSProperties;
 
+// The group is a flex box with the pagination gap, so the numbered pages space exactly as they did
+// when each was its own list item. Designsystemet's button variables inherit from the group.
+const pagesGroupStyle: CSSProperties = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 'var(--dsc-pagination-gap)',
+};
+
 const defaultRange = (start: number, end: number, total: number) => `${start}–${end} of ${total}`;
 
 const rangeReport = ({ page, pageSize, totalItems, ariaLabels }: TablePaginatorProps, format: typeof defaultRange) => {
@@ -121,18 +130,18 @@ interface PageItemProps {
 
 const PageItem = ({ number, current, label, pt, onSelect }: PageItemProps) => (
     <Pagination.Button
-            variant='tertiary'
-            {...pt?.page}
-            type='button'
-            aria-label={label}
-            aria-current={current ? 'page' : undefined}
-            style={current ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
-            className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
-            data-selected={current || undefined}
-            data-cratis-part='page'
-            onClick={onSelect}
-        >
-            {number}
+        variant='tertiary'
+        {...pt?.page}
+        type='button'
+        aria-label={label}
+        aria-current={current ? 'page' : undefined}
+        style={current ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
+        className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
+        data-selected={current || undefined}
+        data-cratis-part='page'
+        onClick={onSelect}
+    >
+        {number}
     </Pagination.Button>
 );
 
@@ -180,6 +189,7 @@ const PageList = ({
         <Pagination.Item>
             <div
                 {...pt?.pages}
+                style={{ ...pagesGroupStyle, ...pt?.pages?.style }}
                 role='group'
                 aria-label={pagesLabel}
                 className={classNames('cratis-designsystemet-paginator__pages', pt?.pages?.className)}
@@ -207,7 +217,7 @@ export const DesignsystemetPaginatorSlot = (props: TablePaginatorProps) => {
             parts={pt?.[name]}
             disabled={disabled}
             onActivate={() => onPageChange(target)}
-        >
+    >
             {content}
         </Control>
     );

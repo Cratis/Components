@@ -159,6 +159,9 @@ describe('when rendering the Designsystemet paginator with localized page links'
         expect(group?.getAttribute('aria-label')).to.equal('Páginas');
         expect(group?.querySelectorAll('button').length).to.be.greaterThan(2);
         expect(group?.contains(control('Primera') ?? null)).to.equal(false);
+        const layout = (group as HTMLElement).style;
+        expect([layout.display, layout.flexWrap, layout.alignItems]).to.deep.equal(['flex', 'wrap', 'center']);
+        expect(layout.gap).to.equal('var(--dsc-pagination-gap)');
     });
 
     it('should mark the clicked page as current once the page is applied', async () => {
