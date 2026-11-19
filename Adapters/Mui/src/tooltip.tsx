@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { cloneElement, useState, type FocusEvent, type ReactElement } from 'react';
+import { cloneElement, useId, useState, type FocusEvent, type ReactElement } from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import type { TooltipProps } from '@cratis/components/Common';
@@ -59,6 +59,7 @@ export const MuiTooltipSlot = ({
     const theme = useTheme();
     const container = overlay.getContainer();
     const [open, setOpen] = useState(false);
+    const popupId = useId();
     const generation = useEnvironmentGeneration(
         [host.id, host.open, container, theme],
         () => setOpen(false),
@@ -89,6 +90,7 @@ export const MuiTooltipSlot = ({
             title={content}
             placement={position}
             describeChild
+            id={popupId}
             disableInteractive
             open={open && host.open && container !== null}
             onOpen={() => setOpen(true)}
@@ -101,7 +103,14 @@ export const MuiTooltipSlot = ({
                     key: generation,
                     container,
                     style: { zIndex: host.tooltipZIndex },
-                    // The popper root carries role="tooltip", so it is the popup part.
+                    // MUI puts role and id on the popper root; the popup contract puts them on the element
+                    // that holds the content, so the root gives both up and the tooltip slot takes them.
+                    role: undefined,
+                    id: undefined,
+                } as Record<string, unknown>,
+                tooltip: {
+                    id: popupId,
+                    role: 'tooltip',
                     'data-cratis-part': 'popup',
                     'data-open': '',
                 } as Record<string, unknown>,
