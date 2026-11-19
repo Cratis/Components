@@ -8,7 +8,7 @@ import { releaseDispatchedVersion } from './release-dispatched-version.mjs';
 
 const sha = 'a'.repeat(40);
 const otherSha = 'b'.repeat(40);
-const input = { version: '4.44.3', sha, repository: 'Cratis/Components', notes: 'Release notes' };
+const input = { version: '4.44.3', sha, ref: 'refs/heads/main', repository: 'Cratis/Components', notes: 'Release notes' };
 const refFor = (version, commit = sha) => ({ ref: `refs/tags/v${version}`, object: { type: 'commit', sha: commit } });
 const releaseFor = version => ({ tag_name: `v${version}`, draft: false, prerelease: false });
 
@@ -98,6 +98,24 @@ test('placeholder is a no-op; malformed versions and SHAs refuse without API cal
     assert.throws(() => releaseDispatchedVersion({ ...input, sha: 'main' }, api), /SHA is invalid/);
 });
 
+test('non-main and missing refs refuse before API calls, including placeholder dispatches', () => {
+    const api = () => assert.fail('API must not be called');
+    for (const ref of ['refs/heads/feature', 'refs/heads/support/4', 'refs/tags/v4.44.3', '', undefined]) {
+        for (const version of [input.version, '0.0.0']) {
+            assert.throws(() => releaseDispatchedVersion({ ...input, ref, version }, api), /only allowed from refs\/heads\/main/);
+        }
+    }
+});
+
+test('unsafe numeric components refuse before API calls; the safe-integer boundary passes validation', () => {
+    const api = () => assert.fail('API must not be called');
+    for (const version of ['9007199254740992.0.0', '4.9007199254740992.0', '4.44.9007199254740992']) {
+        assert.throws(() => releaseDispatchedVersion({ ...input, version }, api), /MAX_SAFE_INTEGER/);
+    }
+    const readApi = () => { throw new Error('Validated input reached API'); };
+    assert.throws(() => releaseDispatchedVersion({ ...input, version: '9007199254740991.0.0' }, readApi), /Validated input reached API/);
+});
+
 test('draft and prerelease collisions refuse before writes', () => {
     for (const field of ['draft', 'prerelease']) {
         expectRefusal({ releases: [{ ...releaseFor(input.version), [field]: true }] }, /published stable GitHub release/);
@@ -142,6 +160,7 @@ test('workflow routes dispatch through the script and npm through verified relea
     const workflow = readFileSync(new URL('../.github/workflows/publish.yml', import.meta.url), 'utf8');
     assert.match(workflow, /name: Release dispatched version\n\s+if: github.event_name == 'workflow_dispatch'/);
     assert.match(workflow, /run: node scripts\/release-dispatched-version.mjs/);
+    assert.match(workflow, /DISPATCH_REF: \$\{\{ github.ref }}/);
     assert.match(workflow, /name: Release\n\s+if: github.event_name != 'workflow_dispatch'/);
     assert.match(workflow, /publish: \$\{\{ steps.dispatch.outputs.should-publish \|\| steps.release.outputs.should-publish }}/);
     assert.match(workflow, /publish-npm-packages:\n\s+if: needs.release.outputs.publish == 'true'\n/);

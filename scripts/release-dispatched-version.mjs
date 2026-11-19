@@ -7,6 +7,12 @@ import { pathToFileURL } from 'node:url';
 
 const stableVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
+function validateVersion(version) {
+    if (!stableVersion.test(version)) throw new Error(`'${version}' is not a version.`);
+    const safeComponents = version.split('.').every(component => Number.isSafeInteger(Number(component)));
+    if (!safeComponents) throw new Error('Version components must not exceed Number.MAX_SAFE_INTEGER.');
+}
+
 function compareVersions(left, right) {
     const leftParts = left.split('.').map(BigInt);
     const rightParts = right.split('.').map(BigInt);
@@ -61,9 +67,10 @@ function checkVersionOrder(version, tags) {
     }
 }
 
-export function releaseDispatchedVersion({ version, sha, repository, notes = '' }, api = githubApi(repository)) {
+export function releaseDispatchedVersion({ version, sha, ref: dispatchRef, repository, notes = '' }, api = githubApi(repository)) {
+    if (dispatchRef !== 'refs/heads/main') throw new Error('Dispatched publishing is only allowed from refs/heads/main.');
     if (version === '0.0.0') return { version: '', 'should-publish': false, reason: 'placeholder-version' };
-    if (!stableVersion.test(version)) throw new Error(`'${version}' is not a version.`);
+    validateVersion(version);
     if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('The dispatched commit SHA is invalid.');
 
     const tag = `v${version}`;
@@ -93,7 +100,7 @@ export function releaseDispatchedVersion({ version, sha, repository, notes = '' 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
     try {
         const outputs = releaseDispatchedVersion({
-            version: process.env.VERSION, sha: process.env.GITHUB_SHA,
+            version: process.env.VERSION, sha: process.env.GITHUB_SHA, ref: process.env.DISPATCH_REF,
             repository: process.env.GITHUB_REPOSITORY, notes: process.env.RELEASE_NOTES,
         });
         appendFileSync(process.env.GITHUB_OUTPUT, Object.entries(outputs).map(([key, value]) => `${key}=${value}\n`).join(''));
