@@ -1,25 +1,32 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { FilterPanel } from './FilterPanel';
-import { Dialog } from '../Dialogs/Dialog';
+import { Dialog, type DialogProps } from '../Dialogs/Dialog';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import type { FilterDefinition } from './types';
 
-// These stories use a slotted Dialog, so exercise every Dialog renderer adapter that keeps the
-// built-in dialog. They assert how FilterPanel joins the built-in shell (a .cratis-dialog root, its
-// positioner and slide entrance), so a renderer that implements dialogs.dialog itself skips them;
-// see Storybook/scripts/lib/renderer-story-exclusions.mjs.
-const meta: Meta<typeof Dialog> = {
-    title: 'Filter/FilterPanel/In Dialog',
-    component: Dialog,
-    tags: ['built-in-dialog-shell'],
-};
+// These stories use a slotted Dialog, so exercise every Dialog renderer adapter. Stories that assert
+// how FilterPanel joins the built-in shell itself (a .cratis-dialog root as the portal parent, its
+// positioner part and slide entrance) carry the built-in-dialog-shell tag, so a renderer that
+// implements dialogs.dialog skips them; see Storybook/scripts/lib/renderer-story-exclusions.mjs.
+const meta: Meta<typeof Dialog> = { title: 'Filter/FilterPanel/In Dialog', component: Dialog };
 export default meta;
 type Story = StoryObj<typeof Dialog>;
+const builtInDialogShell = ['built-in-dialog-shell'];
+
+// Every dialog shell, built-in or adapter-rendered, marks its root with the dialog's id.
+const dialogRoot = (dialog: HTMLElement) => dialog.closest<HTMLElement>('[data-cratis-dialog-id]')!;
+
+// The built-in shell flags its slide with data-entering; an adapter shell may animate the root with
+// CSS instead, which makes the root the fixed containing block until the animation ends.
+const entranceSettled = async (root: HTMLElement) => {
+    await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
+    await Promise.all(root.getAnimations().map(async (animation) => animation.finished.catch(() => undefined)));
+};
 
 const filters: FilterDefinition[] = [{
     key: 'status', label: 'Status', searchable: true, autoFocus: true,
@@ -27,8 +34,83 @@ const filters: FilterDefinition[] = [{
     options: [{ key: 'active', label: 'Active', value: 'active' }],
 }];
 
+interface SideDialogLabels {
+    overlayId: string;
+    openLabel: string;
+    title: string;
+    triggerLabel: string;
+    choicesLabel: string;
+}
+
+interface SideFilterDialogProps extends SideDialogLabels {
+    anchorInset: number;
+    width: string;
+    initiallyOpen?: boolean;
+    pt?: DialogProps['pt'];
+    page?: ReactNode;
+    pageHeight?: string;
+}
+
+/** A start-placed dialog whose filter trigger sits near its end edge, so the panel overhangs the root. */
+const SideFilterDialog = ({ overlayId, openLabel, title, triggerLabel, choicesLabel, anchorInset, width,
+    initiallyOpen = false, pt, page, pageHeight }: SideFilterDialogProps) => {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [panelOpen, setPanelOpen] = useState(initiallyOpen);
+    const anchorRef = useRef<HTMLButtonElement>(null);
+    return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById(overlayId) }}>
+        {page}
+        <div style={pageHeight ? { minHeight: pageHeight } : undefined}>
+            <button onClick={() => setDialogOpen(true)}>{openLabel}</button>
+        </div>
+        <div id={overlayId} />
+        {dialogOpen && <Dialog title={title} placement='start' width={width} onCancel={() => setDialogOpen(false)} pt={pt}>
+            <div style={{ paddingLeft: anchorInset, minHeight: 300 }}>
+                <button ref={anchorRef} onClick={() => setPanelOpen(true)}>{triggerLabel}</button>
+            </div>
+            <FilterPanel isOpen={panelOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                aria-label={choicesLabel} anchorRef={anchorRef}
+                onClose={() => undefined} onExpandedFilterChange={() => undefined}
+                onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                onRangeChange={() => undefined} />
+        </Dialog>}
+    </CratisComponentsProvider>;
+};
+
+const sideDialog: SideDialogLabels = {
+    overlayId: 'side-filter-overlays', openLabel: 'Open side dialog', title: 'Side filters',
+    triggerLabel: 'Side filter trigger', choicesLabel: 'Side filter choices',
+};
+const scrollableSideDialog: SideDialogLabels = {
+    overlayId: 'scrollbar-filter-overlays', openLabel: 'Open scrollable side dialog', title: 'Scrollable side filters',
+    triggerLabel: 'Scrollbar filter trigger', choicesLabel: 'Scrollable side choices',
+};
+const positionedDialog: SideDialogLabels = {
+    overlayId: 'positioned-filter-overlays', openLabel: 'Open positioned dialog', title: 'Positioned filters',
+    triggerLabel: 'Positioned filter trigger', choicesLabel: 'Positioned filter choices',
+};
+
+const SideDialog = () => <SideFilterDialog {...sideDialog} anchorInset={255} width='360px' initiallyOpen />;
+
+/** Opens the panel once the dialog has settled and expects it to overhang the root, visible and hittable. */
+const expectFilterExtendsPastRoot = async (canvasElement: HTMLElement, labels: SideDialogLabels) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: labels.openLabel }));
+    const body = within(document.body);
+    const root = dialogRoot(await body.findByRole('dialog', { name: labels.title }));
+    await entranceSettled(root);
+    await userEvent.click(body.getByRole('button', { name: labels.triggerLabel }));
+    const panel = await body.findByRole('dialog', { name: labels.choicesLabel });
+    await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+    const clip = root.getBoundingClientRect();
+    const bounds = panel.getBoundingClientRect();
+    await expect(bounds.width).toBeGreaterThan(300);
+    await expect(bounds.right).toBeGreaterThan(clip.right + 80);
+    await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
+};
+
+/** The focus flow asserts the built-in root as the portal parent of every mount. */
 export const FocusSearchAndDismiss: Story = {
     name: 'Focus search and dismiss inside and outside a modal',
+    tags: builtInDialogShell,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         const body = within(document.body);
@@ -115,6 +197,25 @@ export const FocusSearchAndDismiss: Story = {
     },
 };
 
+/** The built-in side sheet hosts an initially open dropdown directly, clipped while it slides in. */
+export const SideDialogEntranceInBuiltInShell: Story = {
+    name: 'Initially open filter joins the sliding built-in side dialog root',
+    tags: builtInDialogShell,
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open side dialog' }));
+        const body = within(document.body);
+        const root = dialogRoot(await body.findByRole('dialog', { name: 'Side filters' }));
+        const panel = await body.findByRole('dialog', { name: 'Side filter choices' });
+        await expect(root).toHaveClass('cratis-dialog');
+        await expect(panel.parentElement).toBe(root);
+        if (root.hasAttribute('data-entering')) {
+            await expect(getComputedStyle(root).overflow).toBe('hidden');
+        }
+        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
+    },
+    render: () => <SideDialog />,
+};
+
 /** Probe an initially open dropdown while its side-sheet host is still sliding into place. */
 export const SideDialogEntrance: Story = {
     name: 'Initially open filter in a sliding side dialog',
@@ -122,14 +223,10 @@ export const SideDialogEntrance: Story = {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole('button', { name: 'Open side dialog' }));
         const body = within(document.body);
-        const dialog = await body.findByRole('dialog', { name: 'Side filters' });
-        const root = dialog.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        const root = dialogRoot(await body.findByRole('dialog', { name: 'Side filters' }));
         const anchor = body.getByRole('button', { name: 'Side filter trigger' });
         const panel = await body.findByRole('dialog', { name: 'Side filter choices' });
-        await expect(panel.parentElement).toBe(root);
-        if (root.hasAttribute('data-entering')) {
-            await expect(getComputedStyle(root).overflow).toBe('hidden');
-        }
+        await expect(root.contains(panel)).toBe(true);
         await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
         await waitFor(() => expect(Math.abs(panel.getBoundingClientRect().left - anchor.getBoundingClientRect().left)).toBeLessThan(4), { timeout: 5000 });
         const finalAnchor = anchor.getBoundingClientRect();
@@ -142,106 +239,26 @@ export const SideDialogEntrance: Story = {
         const outsideRoot = document.elementFromPoint(finalRoot.right + 16, finalPanel.top + 20);
         await expect(panel.contains(outsideRoot)).toBe(true);
     },
-    render: () => {
-        const [dialogOpen, setDialogOpen] = useState(false);
-        const anchorRef = useRef<HTMLButtonElement>(null);
-        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('side-filter-overlays') }}>
-            <button onClick={() => setDialogOpen(true)}>Open side dialog</button>
-            <div id='side-filter-overlays' />
-            {dialogOpen && <Dialog title='Side filters' placement='start' width='360px' onCancel={() => setDialogOpen(false)}>
-                <div style={{ paddingLeft: 255, minHeight: 300 }}>
-                    <button ref={anchorRef}>Side filter trigger</button>
-                </div>
-                <FilterPanel isOpen filters={filters} filterValues={{}} rangeValues={{}}
-                    aria-label='Side filter choices' anchorRef={anchorRef}
-                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
-                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
-                    onRangeChange={() => undefined} />
-            </Dialog>}
-        </CratisComponentsProvider>;
-    },
+    render: () => <SideDialog />,
 };
 
 /** A scrollable page does not turn a viewport-fixed dropdown into a root-clipped one. */
 export const SideDialogWithClassicScrollbars: Story = {
     name: 'Side dialog filter extends past the root on a scrollable page',
-    play: async ({ canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open scrollable side dialog' }));
-        const body = within(document.body);
-        const root = (await body.findByRole('dialog', { name: 'Scrollable side filters' }))
-            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
-        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
-        await userEvent.click(body.getByRole('button', { name: 'Scrollbar filter trigger' }));
-        const panel = await body.findByRole('dialog', { name: 'Scrollable side choices' });
-        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
-        const clip = root.getBoundingClientRect();
-        const bounds = panel.getBoundingClientRect();
-        await expect(bounds.width).toBeGreaterThan(300);
-        await expect(bounds.right).toBeGreaterThan(clip.right + 80);
-        await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
-    },
-    render: () => {
-        const [dialogOpen, setDialogOpen] = useState(false);
-        const [panelOpen, setPanelOpen] = useState(false);
-        const anchorRef = useRef<HTMLButtonElement>(null);
-        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('scrollbar-filter-overlays') }}>
-            <style>{'html { overflow-y: scroll !important; } html::-webkit-scrollbar { width: 15px; background: #ccc; }'}</style>
-            <div style={{ minHeight: '200vh' }}>
-                <button onClick={() => setDialogOpen(true)}>Open scrollable side dialog</button>
-            </div>
-            <div id='scrollbar-filter-overlays' />
-            {dialogOpen && <Dialog title='Scrollable side filters' placement='start' width='360px' onCancel={() => setDialogOpen(false)}>
-                <div style={{ paddingLeft: 255, minHeight: 300 }}>
-                    <button ref={anchorRef} onClick={() => setPanelOpen(true)}>Scrollbar filter trigger</button>
-                </div>
-                <FilterPanel isOpen={panelOpen} filters={filters} filterValues={{}} rangeValues={{}}
-                    aria-label='Scrollable side choices' anchorRef={anchorRef}
-                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
-                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
-                    onRangeChange={() => undefined} />
-            </Dialog>}
-        </CratisComponentsProvider>;
-    },
+    play: async ({ canvasElement }) => expectFilterExtendsPastRoot(canvasElement, scrollableSideDialog),
+    render: () => <SideFilterDialog {...scrollableSideDialog} anchorInset={255} width='360px'
+        page={<style>{'html { overflow-y: scroll !important; } html::-webkit-scrollbar { width: 15px; background: #ccc; }'}</style>}
+        pageHeight='200vh' />,
 };
 
 /** A positioner containing block is outside the root, so the root cannot clip its fixed child. */
 export const TransformedPositioner: Story = {
     name: 'Filter stays full width outside a transformed positioner dialog root',
-    play: async ({ canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open positioned dialog' }));
-        const body = within(document.body);
-        const root = (await body.findByRole('dialog', { name: 'Positioned filters' }))
-            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
-        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
-        await userEvent.click(body.getByRole('button', { name: 'Positioned filter trigger' }));
-        const panel = await body.findByRole('dialog', { name: 'Positioned filter choices' });
-        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
-        const clip = root.getBoundingClientRect();
-        const bounds = panel.getBoundingClientRect();
-        await expect(bounds.width).toBeGreaterThan(300);
-        await expect(bounds.right).toBeGreaterThan(clip.right + 80);
-        await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
-    },
-    render: () => {
-        const [dialogOpen, setDialogOpen] = useState(false);
-        const [panelOpen, setPanelOpen] = useState(false);
-        const anchorRef = useRef<HTMLButtonElement>(null);
-        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('positioned-filter-overlays') }}>
-            <button onClick={() => setDialogOpen(true)}>Open positioned dialog</button>
-            <div id='positioned-filter-overlays' />
-            {dialogOpen && <Dialog title='Positioned filters' placement='start' width='220px' onCancel={() => setDialogOpen(false)}
-                pt={{ positioner: { style: { transform: 'translateZ(0)' } } }}>
-                <div style={{ paddingLeft: 120, minHeight: 300 }}>
-                    <button ref={anchorRef} onClick={() => setPanelOpen(true)}>Positioned filter trigger</button>
-                </div>
-                <FilterPanel isOpen={panelOpen} filters={filters} filterValues={{}} rangeValues={{}}
-                    aria-label='Positioned filter choices' anchorRef={anchorRef}
-                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
-                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
-                    onRangeChange={() => undefined} />
-            </Dialog>}
-        </CratisComponentsProvider>;
-    },
+    // Transforms the built-in positioner part, which an adapter's native modal does not render.
+    tags: builtInDialogShell,
+    play: async ({ canvasElement }) => expectFilterExtendsPastRoot(canvasElement, positionedDialog),
+    render: () => <SideFilterDialog {...positionedDialog} anchorInset={120} width='220px'
+        pt={{ positioner: { style: { transform: 'translateZ(0)' } } }} />,
 };
 
 /** A persistent fixed containing block must not clip a dropdown inside the modal root. */
@@ -250,8 +267,7 @@ export const PersistentContainingBlock: Story = {
     play: async ({ canvasElement }) => {
         await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open clipped dialog' }));
         const body = within(document.body);
-        const root = (await body.findByRole('dialog', { name: 'Clipped filters' }))
-            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        const root = dialogRoot(await body.findByRole('dialog', { name: 'Clipped filters' }));
         const panel = await body.findByRole('dialog', { name: 'Clipped filter choices' });
         await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
         const clip = root.getBoundingClientRect();
