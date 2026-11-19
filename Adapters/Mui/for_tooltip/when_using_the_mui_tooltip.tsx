@@ -225,3 +225,41 @@ describe('when the overlay environment changes during the exit transition', () =
         expect(document.body.querySelector(':scope > [role="tooltip"]')).to.equal(null);
     });
 });
+
+describe('when the environment changes around a stateful trigger', () => {
+    const field = () => document.querySelector<HTMLInputElement>('[data-cratis-tooltip-trigger]') as HTMLInputElement;
+    const stateful = (visible: boolean, mode: 'light' | 'dark') => (
+        <ThemeProvider theme={createTheme({ palette: { mode } })}>
+            <Dialog title='Host' visible={visible} buttons={null}>
+                <MuiTooltipSlot content='Field'>
+                    <input type='text' aria-label='Field' />
+                </MuiTooltipSlot>
+            </Dialog>
+        </ThemeProvider>
+    );
+
+    it('should keep the same trigger node and its state when the theme changes', async () => {
+        const render = await mount(stateful(true, 'light'));
+        const node = field();
+        node.value = 'typed';
+        await render(stateful(true, 'dark'));
+        expect(field()).to.equal(node);
+        expect(field().value).to.equal('typed');
+    });
+
+    it('should keep the same trigger node and its state when the container changes', async () => {
+        let container: HTMLElement | null = document.body.appendChild(document.createElement('div'));
+        const render = await mount(
+            <MuiTooltipSlot content='Field'>
+                <input type='text' aria-label='Field' />
+            </MuiTooltipSlot>,
+            () => container,
+        );
+        const node = field();
+        node.value = 'typed';
+        container = document.body.appendChild(document.createElement('div'));
+        await render();
+        expect(field()).to.equal(node);
+        expect(field().value).to.equal('typed');
+    });
+});

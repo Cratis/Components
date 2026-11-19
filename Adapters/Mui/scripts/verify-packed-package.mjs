@@ -172,6 +172,13 @@ try {
     if (JSON.stringify(Object.keys(packageJson.exports)) !== JSON.stringify(['./package.json', '.'])) {
         throw new Error('Only the root entry may be exported; internal modules must stay private.');
     }
+    const declarationNames = [...fileNames]
+        .filter((file) => file.endsWith('.d.ts'))
+        .map((file) => path.basename(file))
+        .sort();
+    if (JSON.stringify(declarationNames) !== JSON.stringify(['index.d.ts', 'tooltip.d.ts'])) {
+        throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
+    }
     const declarations = readFileSync(
         path.join(unpackedPackage, 'dist/index.d.ts'),
         'utf8',
