@@ -91,22 +91,35 @@ The adapter owns:
 - Closing immediately when the overlay host closes, unmounts or changes
 
 ```tsx
-import { cloneElement } from 'react';
+import { cloneElement, useId, useState } from 'react';
+import type { HTMLAttributes, ReactElement } from 'react';
 import type { TooltipProps } from '@cratis/components/Common';
 import type { CratisAtomicSlotMap } from '@cratis/components/renderer';
 
+type Trigger = TooltipProps['children']['props'] & HTMLAttributes<HTMLElement>;
+
 const ExampleTooltip = ({ content, disabled, children }: TooltipProps) => {
+    const [open, setOpen] = useState(false);
+    const popupId = useId();
     if (disabled || !content) {
         return children;
     }
     return (
         <>
-            {cloneElement(children, {
+            {cloneElement(children as ReactElement<Trigger>, {
                 'data-cratis-part': children.props['data-cratis-part'] ?? 'trigger',
+                'aria-describedby': open ? popupId : undefined,
+                onFocus: () => setOpen(true),
+                onBlur: () => setOpen(false),
+                onMouseEnter: () => setOpen(true),
+                onMouseLeave: () => setOpen(false),
+                onKeyDown: (event) => event.key === 'Escape' && setOpen(false),
             })}
-            <div role='tooltip' data-cratis-part='popup' data-open>
-                {content}
-            </div>
+            {open && (
+                <div id={popupId} role='tooltip' data-cratis-part='popup' data-open>
+                    {content}
+                </div>
+            )}
         </>
     );
 };
@@ -137,16 +150,65 @@ The adapter owns:
 - Calling `onChange` once per user selection with `source: 'user'` and the native event
 
 ```tsx
+import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { DropdownProps } from '@cratis/components/Dropdown';
 import type { CratisAtomicSlotMap } from '@cratis/components/renderer';
 
-const ExampleSelect = ({ disabled, pt }: DropdownProps<unknown>) => (
-    <div {...pt?.root} data-cratis-part='root'>
-        <button type='button' aria-haspopup='listbox' disabled={disabled} data-cratis-part='trigger'>
-            Choose
-        </button>
-    </div>
-);
+const read = (option: unknown, key?: string) => (key ? (option as Record<string, unknown>)[key] : option);
+const displayValue = (value: unknown, fallback = '') => String(value ?? fallback);
+
+const ExampleSelect = ({ name, value, options = [], optionLabel, optionValue, disabled, onChange, pt }: DropdownProps<unknown>) => {
+    const [open, setOpen] = useState(false);
+    const [active, setActive] = useState(0);
+    const choose = (option: unknown, nativeEvent: Event) => {
+        onChange?.(read(option, optionValue), { source: 'user', nativeEvent });
+        setOpen(false);
+    };
+    const move = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            setOpen(true);
+            setActive((active + (event.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length);
+        } else if (event.key === 'Escape') {
+            setOpen(false);
+        } else if (event.key === 'Enter' && open) {
+            event.preventDefault();
+            choose(options[active], event.nativeEvent);
+        }
+    };
+    return (
+        <div {...pt?.root} data-cratis-part='root'>
+            <input type='hidden' name={name} value={displayValue(value)} />
+            <button
+                type='button'
+                aria-haspopup='listbox'
+                aria-expanded={open}
+                disabled={disabled}
+                data-cratis-part='trigger'
+                onClick={() => setOpen(!open)}
+                onKeyDown={move}
+            >
+                {displayValue(value, 'Choose')}
+            </button>
+            {open && (
+                <ul role='listbox' data-cratis-part='listbox'>
+                    {options.map((option, index) => (
+                        <li
+                            key={index}
+                            role='option'
+                            aria-selected={index === active}
+                            data-cratis-part='option'
+                            onClick={(event) => choose(option, event.nativeEvent)}
+                        >
+                            {String(read(option, optionLabel))}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
 
 export const atomicSlots = {
     'dropdown.select': { mode: 'atomic', fidelity: 'native', render: ExampleSelect },
@@ -174,15 +236,41 @@ The adapter owns:
 - Keeping the value type of its calendar library inside the adapter
 
 ```tsx
+import { useState } from 'react';
 import type { DatePickerInputProps } from '@cratis/components/Common';
 import type { CratisAtomicSlotMap } from '@cratis/components/renderer';
 
-const ExampleDatePicker = ({ disabled, pt }: DatePickerInputProps) => (
-    <div {...pt?.group} role='group' data-cratis-part='group'>
-        <input {...pt?.input} disabled={disabled} data-cratis-part='input' />
-        <button type='button' aria-label='Open calendar' disabled={disabled} data-cratis-part='trigger' />
-    </div>
-);
+const ExampleDatePicker = ({ disabled, onChange, pt }: DatePickerInputProps) => {
+    const [open, setOpen] = useState(false);
+    return (
+        <div {...pt?.group} role='group' data-cratis-part='group'>
+            <input {...pt?.input} disabled={disabled} data-cratis-part='input' />
+            <button
+                type='button'
+                aria-label='Open calendar'
+                aria-expanded={open}
+                disabled={disabled}
+                data-cratis-part='trigger'
+                onClick={() => setOpen(!open)}
+                onKeyDown={(event) => event.key === 'Escape' && setOpen(false)}
+            />
+            {open && (
+                <div role='dialog' aria-label='Calendar' data-cratis-part='calendar'>
+                    <button
+                        type='button'
+                        data-cratis-part='today'
+                        onClick={(event) => {
+                            onChange(new Date(), { source: 'user', nativeEvent: event.nativeEvent });
+                            setOpen(false);
+                        }}
+                    >
+                        Today
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export const atomicSlots = {
     'display.datePicker': { mode: 'atomic', fidelity: 'native', render: ExampleDatePicker },

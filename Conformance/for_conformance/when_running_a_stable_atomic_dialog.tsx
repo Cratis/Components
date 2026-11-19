@@ -76,6 +76,21 @@ const IgnoresEscape = ({ title, host }: CratisDialogSlotProps) => (
     </dialog>
 );
 
+// An adapter dialog that renders its content and footer outside the dialog, so initial focus lands outside it.
+const NoInitialFocus = ({ title, host }: CratisDialogSlotProps) => (
+    <>
+        <dialog open data-cratis-part='root' onCancel={() => host.dismiss('escape')}>
+            <h2 data-cratis-part='title'>{title}</h2>
+            <button type='button' aria-label={host.closeAriaLabel} data-cratis-part='close' onClick={() => host.dismiss('closeButton')}>
+                {host.closeIcon}
+            </button>
+            <div ref={host.registerOverlayContainer} />
+        </dialog>
+        {host.content}
+        {host.footer}
+    </>
+);
+
 describe('when running a stable atomic dialog', () => {
     it('should exercise and pass the built-in dialog', async () => {
         const report = await run(builtInAtomicSlot('dialogs.dialog'));
@@ -106,6 +121,12 @@ describe('when running a stable atomic dialog', () => {
             'behavior.dialogs.dialog.focus',
             'behavior.dialogs.dialog.dismissal',
         ]);
+    }, 30_000);
+
+    it('should report a dialog that holds no initial focus', async () => {
+        const report = await run(NoInitialFocus);
+
+        expect(failedCheckIds(report)).to.include('behavior.dialogs.dialog.focus');
     }, 30_000);
 
     it('should report a dialog that ignores Escape', async () => {

@@ -10,12 +10,31 @@ const pause = (milliseconds: number) =>
 
 const find = (root: ParentNode, selector: string) => root.querySelector<HTMLElement>(selector);
 
+/** Elements a browser activates with Enter (on keydown) or Space (on keyup) as a click. */
+const keyActivated = (element: Element | null): element is HTMLElement =>
+    element instanceof HTMLElement && element.matches('button, [role="button"], a[href], summary');
+
+/**
+ * Presses a key the way a browser delivers it: keydown and keyup events, then the default activation of
+ * a button or link, which a dispatched event never triggers by itself and which a handler can prevent.
+ */
 const press = (target: Element | null, key: string) => {
-    for (const type of ['keydown', 'keyup'] as const) {
-        target?.dispatchEvent(
-            new KeyboardEvent(type, { key, code: key, bubbles: true, cancelable: true }),
-        );
-    }
+    if (!target) return;
+    const send = (type: 'keydown' | 'keyup') => {
+        const event = new KeyboardEvent(type, { key, code: key, bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    };
+    const activates = keyActivated(target);
+    const down = send('keydown');
+    const canActivate = activates && !down;
+    if (canActivate) activateKey(target, key, 'Enter');
+    const up = send('keyup');
+    if (canActivate && !up) activateKey(target, key, ' ');
+};
+
+const activateKey = (target: HTMLElement, key: string, activationKey: string) => {
+    if (key === activationKey) target.click();
 };
 
 /** Polls until the condition holds or the wait runs out; overlays open and close asynchronously. */
@@ -68,6 +87,8 @@ interface OverlayProfile {
     readonly overlaySelector: string;
     readonly openKeys: readonly string[];
     readonly targetSelectors: readonly string[];
+    /** Slot whose change callback must fire once when an option is chosen with the arrow keys and Enter. */
+    readonly choosesSlot?: string;
 }
 
 /** Presses each key on the target until the overlay opens and returns the key that did, if any. */
@@ -79,12 +100,38 @@ const openWithKeys = async (target: HTMLElement | null, keys: readonly string[],
     return undefined;
 };
 
+/** Reopens the overlay, moves to an option with ArrowDown, chooses it with Enter and reports whether the change callback fired once. */
+const chooseWithKeys = async (
+    evidence: Evidence,
+    slotId: string,
+    trigger: HTMLElement | null,
+    overlay: { openKeys: readonly string[]; isOpen: () => boolean },
+) => {
+    const { openKeys, isOpen } = overlay;
+    evidence.delete(slotId);
+    trigger?.focus();
+    if ((await openWithKeys(trigger, openKeys, isOpen)) === undefined) return false;
+    const target = trigger?.ownerDocument.activeElement ?? trigger;
+    press(target, 'ArrowDown');
+    press(target, 'Enter');
+    await pause(0);
+    const selection = evidence.get(slotId);
+    return selection?.callbacks === 1 && ['developer', 'admin', 'viewer'].includes(String(selection.value));
+};
+
+const optionalChoice = (
+    evidence: Evidence,
+    slotId: string | undefined,
+    trigger: HTMLElement | null,
+    overlay: { openKeys: readonly string[]; isOpen: () => boolean },
+) => slotId === undefined ? true : chooseWithKeys(evidence, slotId, trigger, overlay);
+
 /**
  * Opens an overlay slot from its focused trigger, or from its filter field when it has one, with the keys a keyboard user has, then dismisses
  * it with Escape. The trigger must open the overlay, Escape must close it and focus must return.
  */
 const overlayInteraction =
-    ({ overlaySelector, openKeys, targetSelectors }: OverlayProfile): SlotInteraction =>
+    (evidence: Evidence, { overlaySelector, openKeys, targetSelectors, choosesSlot }: OverlayProfile): SlotInteraction =>
     async (document, container): Promise<SlotInteractionResult> => {
         const trigger = targetSelectors
             .map((selector) => find(container, `[data-cratis-part="${selector}"]`))
@@ -98,11 +145,13 @@ const overlayInteraction =
         const activeWhenOpen = document.activeElement?.outerHTML.slice(0, 120);
         press(document.activeElement ?? trigger, 'Escape');
         const closed = opened && (await settle(() => !isOpen()));
+        const focusReturned = closed && (await settle(() => isFocused(trigger)));
+        const chosen = await optionalChoice(evidence, choosesSlot, trigger, { openKeys, isOpen });
         return {
-            keyboard: triggerFocusable && opened,
+            keyboard: triggerFocusable && opened && chosen,
             dismissal: closed,
-            focus: closed && (await settle(() => isFocused(trigger))),
-            detail: { openBefore, activeWhenOpen, triggerFocusable, openedWith, closed, active: document.activeElement?.outerHTML.slice(0, 80) },
+            focus: focusReturned,
+            detail: { chosen, openBefore, activeWhenOpen, triggerFocusable, openedWith, closed, active: document.activeElement?.outerHTML.slice(0, 80) },
         };
     };
 
@@ -122,8 +171,23 @@ const tooltipInteraction =
         };
     };
 
+/** Activates next with Enter and previous with Space, and reports whether each raised the page change it names. */
+const activateWithKeys = async (evidence: Evidence, previous: HTMLElement | null, next: HTMLElement | null) => {
+    const slotId = 'datatables.paginator';
+    evidence.delete(slotId);
+    next?.focus();
+    press(next, 'Enter');
+    await pause(0);
+    const forward = evidence.get(slotId);
+    previous?.focus();
+    press(previous, ' ');
+    await pause(0);
+    const backward = evidence.get(slotId);
+    return forward?.page === 2 && backward?.page === 0 && backward.callbacks === 2;
+};
+
 const paginatorInteraction =
-    (_evidence: Evidence): SlotInteraction =>
+    (evidence: Evidence): SlotInteraction =>
     async (_document, container): Promise<SlotInteractionResult> => {
         const controls = ['previous', 'next'].map((name) =>
             find(container, `[data-cratis-part="${name}"], [aria-label="${name === 'next' ? 'Next' : 'Previous'} page"]`),
@@ -133,17 +197,19 @@ const paginatorInteraction =
         next?.focus();
         const focusable = isFocused(next);
         const native = interactiveParts(container, 'button, a[href]').length > 0;
-        return { keyboard: reachable && native, focus: focusable };
+        const pages = await activateWithKeys(evidence, controls[0], next);
+        return { keyboard: reachable && native && pages, focus: focusable, detail: { reachable, native, pages } };
     };
 
 const interactions: Readonly<Record<string, (evidence: Evidence) => SlotInteraction>> = {
     'dialogs.dialog': dialogInteraction,
-    'dropdown.select': () => overlayInteraction({
+    'dropdown.select': (evidence) => overlayInteraction(evidence, {
             overlaySelector: '[data-cratis-part="listbox"]',
             openKeys: ['ArrowDown', 'Enter'],
             targetSelectors: ['filter', 'trigger'],
+            choosesSlot: 'dropdown.select',
         }),
-    'display.datePicker': () => overlayInteraction({
+    'display.datePicker': (evidence) => overlayInteraction(evidence, {
             overlaySelector: '[data-cratis-part="calendar"]',
             openKeys: ['Enter', ' ', 'ArrowDown'],
             targetSelectors: ['trigger'],

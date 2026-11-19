@@ -4,6 +4,7 @@
 import { expect } from 'chai';
 import { useState } from 'react';
 import { describe, it } from 'vitest';
+import { atomicSlots as publishedSelect } from '../for_slot_contracts/snippets/select.js';
 import {
     builtInAtomicSlot,
     failedCheckIds,
@@ -15,12 +16,64 @@ import {
 const run = (render: ReturnType<typeof builtInAtomicSlot<'dropdown.select'>>) =>
     runAtomicSlotConformance(libraryWithAtomicSlot('dropdown.select', render), 'dropdown.select');
 
-// An adapter select that opens its listbox on a pointer press only, never from the keyboard.
+// An adapter select whose trigger is a non-focusable element that reacts to a pointer press only.
 const PointerOnly = () => {
     const [open, setOpen] = useState(false);
     return (
         <div data-cratis-part='root'>
-            <button type='button' data-cratis-part='trigger' aria-haspopup='listbox' onClick={() => setOpen(!open)}>
+            <div
+                role='button'
+                data-cratis-part='trigger'
+                onPointerDown={() => setOpen(!open)}
+                onMouseDown={() => setOpen(!open)}
+            >
+                Choose
+            </div>
+            {open && <ul role='listbox' data-cratis-part='listbox' />}
+        </div>
+    );
+};
+
+// An adapter select that opens from the keyboard and closes on Escape but never selects with Enter.
+const NoKeyboardSelection = () => {
+    const [open, setOpen] = useState(false);
+    return (
+        <div data-cratis-part='root'>
+            <button
+                type='button'
+                data-cratis-part='trigger'
+                onClick={() => setOpen(!open)}
+                onKeyDown={(event) => event.key === 'Escape' && setOpen(false)}
+            >
+                Choose
+            </button>
+            {open && (
+                <ul role='listbox' data-cratis-part='listbox'>
+                    <li role='option' data-cratis-part='option'>
+                        Developer
+                    </li>
+                </ul>
+            )}
+        </div>
+    );
+};
+
+// An adapter select that closes on Escape but drops focus instead of returning it to the trigger.
+const NoFocusReturn = () => {
+    const [open, setOpen] = useState(false);
+    return (
+        <div data-cratis-part='root'>
+            <button
+                type='button'
+                data-cratis-part='trigger'
+                onClick={() => setOpen(!open)}
+                onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                        setOpen(false);
+                        event.currentTarget.blur();
+                    }
+                }}
+            >
                 Choose
             </button>
             {open && <ul role='listbox' data-cratis-part='listbox' />}
@@ -54,9 +107,31 @@ describe('when running a stable atomic select', () => {
         ]);
     }, 30_000);
 
+    it('should pass a select whose trigger is a native button operated from the keyboard', async () => {
+        const report = await run(publishedSelect['dropdown.select'].render);
+
+        expect(passedCheckIds(report)).to.include.members([
+            'behavior.dropdown.select.keyboard',
+            'behavior.dropdown.select.focus',
+            'behavior.dropdown.select.dismissal',
+        ]);
+    }, 30_000);
+
     it('should report a select that cannot be opened from the keyboard', async () => {
         const report = await run(PointerOnly);
 
         expect(failedCheckIds(report)).to.include('behavior.dropdown.select.keyboard');
+    }, 30_000);
+
+    it('should report a select that opens but never selects with the keyboard', async () => {
+        const report = await run(NoKeyboardSelection);
+
+        expect(failedCheckIds(report)).to.include('behavior.dropdown.select.keyboard');
+    }, 30_000);
+
+    it('should report a select that does not return focus to its trigger after Escape', async () => {
+        const report = await run(NoFocusReturn);
+
+        expect(failedCheckIds(report)).to.include('behavior.dropdown.select.focus');
     }, 30_000);
 });
