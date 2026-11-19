@@ -62,9 +62,9 @@ jobs:
             issues: write
             pull-requests: read
         outputs:
-            version: ${{ steps.release.outputs.version }}
-            publish: ${{ steps.release.outputs.should-publish }}
-            reason: ${{ steps.release.outputs.reason }}
+            version: ${{ steps.dispatch.outputs.version || steps.release.outputs.version }}
+            publish: ${{ steps.dispatch.outputs.should-publish || steps.release.outputs.should-publish }}
+            reason: ${{ steps.dispatch.outputs.reason || steps.release.outputs.reason }}
 
         steps:
             - name: Checkout code
@@ -94,7 +94,20 @@ jobs:
                     exit 1
                   fi
 
+            # Complete the dispatch tag and release before any npm job can start. The label path
+            # keeps release-action's post-step ordering; dispatch must also verify version/tag safety.
+            - name: Release dispatched version
+              if: github.event_name == 'workflow_dispatch'
+              id: dispatch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  DISPATCH_REF: ${{ github.ref }}
+                  VERSION: ${{ github.event.inputs.version }}
+                  RELEASE_NOTES: ${{ github.event.inputs.release-notes }}
+              run: node scripts/release-dispatched-version.mjs
+
             - name: Release
+              if: github.event_name != 'workflow_dispatch'
               id: release
               uses: cratis/release-action@f5fc6db6adbb4db6e6c4548cd7addfc924426e69 # v1
               with:
@@ -123,7 +136,7 @@ jobs:
                   fi
 
     publish-npm-packages:
-        if: needs.release.outputs.publish == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.version != '0.0.0')
+        if: needs.release.outputs.publish == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 60
         needs: [release]
@@ -180,7 +193,7 @@ jobs:
 
             - name: Publish NPM packages
               env:
-                  RELEASE_VERSION: ${{ needs.release.outputs.version || github.event.inputs.version }}
+                  RELEASE_VERSION: ${{ needs.release.outputs.version }}
               run: |
                   echo "npm $(npm --version) | node $(node --version)"
                   if [[ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]]; then
@@ -202,7 +215,7 @@ jobs:
             # Ask the registry itself, in the job that published, so the answer cannot be skipped.
             - name: Verify every published package reached the registry
               env:
-                  RELEASE_VERSION: ${{ needs.release.outputs.version || github.event.inputs.version }}
+                  RELEASE_VERSION: ${{ needs.release.outputs.version }}
               run: |
                   missing=()
                   for manifest in Source/package.json ESLint/package.json Migrator/package.json Conformance/package.json Adapters/*/package.json; do
