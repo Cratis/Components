@@ -70,6 +70,7 @@ describe('when using the Designsystemet stable presentation profile', () => {
         expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
             ...stablePresentationSlots,
             'dialogs.dialog',
+            'common.numberInput',
         ]);
     });
 

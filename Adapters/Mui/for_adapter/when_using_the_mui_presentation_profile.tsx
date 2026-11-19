@@ -83,6 +83,7 @@ describe('when using the MUI stable presentation profile', () => {
         expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
             ...stablePresentationSlots,
             'common.tooltip',
+            'common.numberInput',
         ]);
     });
 

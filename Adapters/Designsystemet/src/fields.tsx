@@ -3,7 +3,7 @@
 
 import { forwardRef } from 'react';
 import { Input as DsInput, Textarea as DsTextarea } from '@digdir/designsystemet-react';
-import type { TextAreaProps, TextInputProps } from '@cratis/components/Common';
+import type { NumericInputProps, TextAreaProps, TextInputProps } from '@cratis/components/Common';
 import { classNames } from './classNames.js';
 
 type AriaInvalid = TextInputProps['aria-invalid'];
@@ -52,6 +52,55 @@ export const DesignsystemetTextInputSlot = forwardRef<HTMLInputElement, TextInpu
                 onChange={(event) => {
                     pt?.root?.onChange?.(event);
                     onChange?.(event.currentTarget.value, {
+                        source: 'user',
+                        nativeEvent: event.nativeEvent,
+                    });
+                }}
+                className={classNames('cratis-designsystemet-text-input', pt?.root?.className, className)}
+                style={{ ...pt?.root?.style, ...style }}
+                data-cratis-part='root'
+                data-disabled={effectiveDisabled || undefined}
+                data-invalid={state.invalid || undefined}
+                data-readonly={effectiveReadOnly || undefined}
+            />
+        );
+    },
+);
+
+/** Designsystemet implementation of the stable atomic `common.numberInput` slot. */
+export const DesignsystemetNumberInputSlot = forwardRef<HTMLInputElement, NumericInputProps>(
+    function DesignsystemetNumberInputSlot(
+        {
+            value,
+            invalid = false,
+            onChange,
+            pt,
+            className,
+            style,
+            disabled,
+            readOnly,
+            'aria-invalid': ariaInvalid,
+            ...nativeProps
+        },
+        ref,
+    ) {
+        const effectiveDisabled = disabled ?? pt?.root?.disabled;
+        const effectiveReadOnly = readOnly ?? pt?.root?.readOnly;
+        const state = resolveInvalid(invalid, ariaInvalid, pt?.root?.['aria-invalid']);
+        return (
+            <DsInput
+                {...pt?.root}
+                {...nativeProps}
+                ref={ref}
+                type='number'
+                value={value ?? ''}
+                disabled={effectiveDisabled}
+                readOnly={effectiveReadOnly}
+                aria-invalid={state.ariaInvalid}
+                onChange={(event) => {
+                    pt?.root?.onChange?.(event);
+                    const next = event.currentTarget.valueAsNumber;
+                    onChange?.(Number.isNaN(next) ? undefined : next, {
                         source: 'user',
                         nativeEvent: event.nativeEvent,
                     });

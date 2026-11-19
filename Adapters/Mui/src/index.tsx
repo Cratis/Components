@@ -51,6 +51,7 @@ import {
     type CratisPresentationSlotId,
     type CratisPresentationUiLibrary,
 } from '@cratis/components/renderer';
+import { MuiNumberInputSlot } from './numberInput.js';
 import { MuiTooltipSlot } from './tooltip.js';
 
 const capabilities = Object.freeze([
@@ -1013,6 +1014,11 @@ const atomicSlots = Object.freeze({
         mode: 'atomic',
         fidelity: 'native',
         render: MuiTooltipSlot,
+    }),
+    'common.numberInput': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: MuiNumberInputSlot,
     }),
 });
 

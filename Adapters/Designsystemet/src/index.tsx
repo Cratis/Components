@@ -20,7 +20,11 @@ import {
 } from './choice.js';
 import { DesignsystemetDialogSlot } from './dialog.js';
 import { DesignsystemetProgressSlot, DesignsystemetSurfaceSlot } from './display.js';
-import { DesignsystemetTextAreaSlot, DesignsystemetTextInputSlot } from './fields.js';
+import {
+    DesignsystemetNumberInputSlot,
+    DesignsystemetTextAreaSlot,
+    DesignsystemetTextInputSlot,
+} from './fields.js';
 
 const capabilities = Object.freeze([
     'slot.render',
@@ -53,6 +57,7 @@ const slots = Object.freeze({
 // slot keeps the built-in Components implementation.
 const atomicSlots = Object.freeze({
     'dialogs.dialog': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetDialogSlot }),
+    'common.numberInput': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetNumberInputSlot }),
 }) satisfies CratisAtomicSlotMap;
 
 /** Digdir Designsystemet implementation of the stable Cratis presentation profile. */

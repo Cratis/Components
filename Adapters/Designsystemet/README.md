@@ -80,6 +80,7 @@ appearance vocabulary. The adapter therefore never forwards the Cratis values (`
   Components keeps the result flow, the footer and header actions, busy state, initial focus and the
   dialog stack. Dropdowns, date pickers and tooltips inside the dialog portal into it, so they stay
   on top. See [ADR 0008](https://github.com/Cratis/Components/blob/main/Documentation/decisions/0008-adapter-owned-dialog-shell.md).
+- The stable atomic `common.numberInput` slot renders number fields with the Designsystemet input.
 - The other atomic slots (paginator, tooltip, select and date picker) use the built-in implementation.
 - CommandForm fields (#527), the dialog footer (#528) and the theme bridge (#529) are separate work.
 
