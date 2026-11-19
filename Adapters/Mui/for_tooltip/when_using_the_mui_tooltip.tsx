@@ -97,6 +97,26 @@ describe('when the MUI tooltip is outside a dialog', () => {
     });
 });
 
+describe('when the MUI tooltip popper is styled by MUI', () => {
+    it('should not intercept pointer events and keep the MUI popper class', async () => {
+        await mount(tooltipTrigger('Styled'));
+        await focusTrigger();
+        const element = popper() as HTMLElement;
+        expect(getComputedStyle(element).pointerEvents).to.equal('none');
+        expect(element.classList.contains('MuiTooltip-popper')).to.equal(true);
+        expect(element.classList.contains('MuiTooltip-popperInteractive')).to.equal(false);
+    });
+
+    it('should apply the theme styleOverrides for the popper', async () => {
+        const theme = createTheme({
+            components: { MuiTooltip: { styleOverrides: { popper: { opacity: 0.42 } } } },
+        });
+        await mount(<ThemeProvider theme={theme}>{tooltipTrigger('Themed')}</ThemeProvider>);
+        await focusTrigger();
+        expect(getComputedStyle(popper() as HTMLElement).opacity).to.equal('0.42');
+    });
+});
+
 describe('when the overlay container is null', () => {
     it('should defer the popup instead of mounting it in the body', async () => {
         await mount(tooltipTrigger('Deferred'), () => null);

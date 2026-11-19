@@ -1,8 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { cloneElement, forwardRef, useState, type FocusEvent, type ReactElement } from 'react';
-import MuiPopper, { type PopperProps } from '@mui/material/Popper';
+import { cloneElement, useState, type FocusEvent, type ReactElement } from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import type { TooltipProps } from '@cratis/components/Common';
@@ -24,21 +23,6 @@ const isEmpty = (content: TooltipProps['content']) =>
 
 const sameEnvironment = (previous: readonly unknown[], next: readonly unknown[]) =>
     previous.every((value, index) => Object.is(value, next[index]));
-
-interface GenerationPopperProps extends PopperProps {
-    readonly generation: number;
-}
-
-/**
- * The popper slot. Keying the popper by the environment generation remounts only the popup, so a
- * popper still in its exit transition is dropped while the trigger and its subtree stay mounted.
- */
-const GenerationPopper = forwardRef<HTMLDivElement, GenerationPopperProps>(function GenerationPopper(
-    { generation, ...props },
-    ref,
-) {
-    return <MuiPopper key={generation} ref={ref} {...props} />;
-});
 
 /**
  * Counts how many times the environment the popup is bound to has changed. The environment is the
@@ -102,7 +86,6 @@ export const MuiTooltipSlot = ({
     // With no container the popup is deferred, never retargeted to the body.
     return (
         <MuiTooltip
-            slots={{ popper: GenerationPopper }}
             title={content}
             placement={position}
             describeChild
@@ -111,7 +94,10 @@ export const MuiTooltipSlot = ({
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             slotProps={{
-                popper: { generation, container, style: { zIndex: host.tooltipZIndex } } as Record<string, unknown>,
+                // Keying the popper by the generation remounts only the popup, so a popper still in its exit
+                // transition is dropped while the trigger stays mounted. MUI's own styled popper stays in
+                // place, keeping its pointer-events, theme overrides and classes.
+                popper: { key: generation, container, style: { zIndex: host.tooltipZIndex } } as Record<string, unknown>,
                 tooltip: { 'data-cratis-part': 'popup', 'data-open': '' } as Record<string, unknown>,
             }}
         >
