@@ -64,8 +64,8 @@ describe('when using the MUI stable presentation profile', () => {
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
         expect(report.summary).to.deep.equal({
-            total: 119,
-            passed: 119,
+            total: 121,
+            passed: 121,
             failed: 0,
             skipped: 0,
         });
