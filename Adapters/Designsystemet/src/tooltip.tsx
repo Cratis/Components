@@ -102,7 +102,18 @@ export const DesignsystemetTooltipSlot = ({ content, position = 'top', disabled 
     const shown = open && host.open && container !== null;
     const rect = useTriggerRect(triggerElement, shown);
 
-    useEffect(() => setOpen(false), [host.id, container]);
+    // Closing or changing the host fully resets the open state, so the popup cannot reappear when the host reopens.
+    useEffect(() => setOpen(false), [host.id, host.open, container]);
+
+    // A hover-opened popup must close on Escape even though focus is elsewhere.
+    useEffect(() => {
+        if (!shown) return undefined;
+        const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+            if (event.key === 'Escape') setOpen(false);
+        };
+        document.addEventListener('keydown', closeOnEscape, true);
+        return () => document.removeEventListener('keydown', closeOnEscape, true);
+    }, [shown]);
 
     const triggerProps = children.props as TriggerProps;
     if (isEmpty(content) || disabled) return children;

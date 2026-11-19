@@ -76,6 +76,17 @@ describe('when rendering the Designsystemet tooltip', () => {
         expect(popup()).to.equal(null);
     });
 
+    it('should close a hover-opened popup on Escape pressed elsewhere in the document', async () => {
+        await render({});
+        await act(async () => trigger().dispatchEvent(new MouseEvent('mouseover', { bubbles: true })));
+        expect(popup()).not.to.equal(null);
+        expect(document.activeElement).not.to.equal(trigger());
+
+        await act(async () => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+
+        expect(popup()).to.equal(null);
+    });
+
     it('should return the trigger unchanged for empty content or when disabled', async () => {
         for (const props of [{ content: '' }, { content: null }, { content: false }, { disabled: true }] as const) {
             await render(props);
