@@ -19,6 +19,7 @@ import {
     DesignsystemetSwitchSlot,
 } from './choice.js';
 import { DesignsystemetDialogSlot } from './dialog.js';
+import { DesignsystemetPaginatorSlot } from './paginator.js';
 import { DesignsystemetProgressSlot, DesignsystemetSurfaceSlot } from './display.js';
 import {
     DesignsystemetNumberInputSlot,
@@ -53,11 +54,12 @@ const slots = Object.freeze({
     'common.surface': declaration<'common.surface'>(DesignsystemetSurfaceSlot),
 });
 
-// The native top-layer <dialog> is the one interaction Designsystemet owns; every other atomic
-// slot keeps the built-in Components implementation.
+// Atomic slots Designsystemet implements natively; every other atomic slot keeps the built-in
+// Components implementation.
 const atomicSlots = Object.freeze({
     'dialogs.dialog': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetDialogSlot }),
     'common.numberInput': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetNumberInputSlot }),
+    'datatables.paginator': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetPaginatorSlot }),
 }) satisfies CratisAtomicSlotMap;
 
 /** Digdir Designsystemet implementation of the stable Cratis presentation profile. */
