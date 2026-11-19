@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
-import { createContext, createElement, use, useEffect, useId, useState, type ComponentType } from 'react';
+import { createContext, createElement, use, useEffect, useId, useMemo, useState, type ComponentType } from 'react';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import { DIALOG_ZINDEX_TOKEN } from '../renderer/dialogStack';
-import { DialogStackContext } from '../renderer/DialogStackContext';
+import { DialogStackContext, OverlayHostContext } from '../renderer/DialogStackContext';
 import { OverlayContainerScope, useOverlayContainer } from '../renderer/OverlayContainerScope';
 import type { DialogProps } from './Dialog';
 import { dismissalFor, resolveInitialFocus } from './dialogBehavior';
@@ -142,18 +142,25 @@ export interface DialogSlotHostProps {
 
 /**
  * Renders an adapter-owned dialog with its Components-owned host. Descendants read this dialog's
- * stack tier and portal through the overlay element the adapter registered.
+ * stack tier, see it as their overlay host, and portal through the overlay element the adapter
+ * registered.
  */
 export const DialogSlotHost = ({ render, props }: DialogSlotHostProps) => {
     const { host, overlayContainer, visible } = useDialogHost(props);
     const descendantsMayOpen = useDescendantsMayOpen(visible);
+    const overlayHost = useMemo(
+        () => ({ id: host.id, open: visible, stackZIndex: host.zIndex }),
+        [host.id, visible, host.zIndex],
+    );
     return (
         <DialogStackContext value={host.zIndex}>
-            <DescendantsMayOpenContext value={descendantsMayOpen}>
-                <OverlayContainerScope host={overlayContainer}>
-                    {createElement(render, { ...props, visible, host })}
-                </OverlayContainerScope>
-            </DescendantsMayOpenContext>
+            <OverlayHostContext value={overlayHost}>
+                <DescendantsMayOpenContext value={descendantsMayOpen}>
+                    <OverlayContainerScope host={overlayContainer}>
+                        {createElement(render, { ...props, visible, host })}
+                    </OverlayContainerScope>
+                </DescendantsMayOpenContext>
+            </OverlayHostContext>
         </DialogStackContext>
     );
 };
