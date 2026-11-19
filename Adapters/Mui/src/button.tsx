@@ -1,54 +1,72 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ReactElement, type ReactNode } from 'react';
+import { forwardRef, type CSSProperties, type ReactElement, type ReactNode } from 'react';
 import MuiButton from '@mui/material/Button';
 import MuiIconButton from '@mui/material/IconButton';
 import MuiTooltip from '@mui/material/Tooltip';
 import type { ButtonProps, IconButtonProps } from '@cratis/components/Common';
-import { muiColorForTone, muiSize, muiVariant, resolveButtonAppearance, type ResolvedButtonAppearance } from './buttonAppearance.js';
+import {
+    muiColorForTone,
+    muiSize,
+    muiVariant,
+    resolveButtonAppearance,
+    type ResolvedButtonAppearance,
+} from './buttonAppearance.js';
 import { classNames, renderIcon } from './shared.js';
+
+type ButtonParts = ButtonProps['pt'];
+
+const buttonIcon = (icon: ReactNode, pt: ButtonParts) => (
+    <span
+        {...pt?.icon}
+        className={classNames('cratis-mui-button__icon', pt?.icon?.className)}
+        data-cratis-part='icon'
+        aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
+    >
+        {renderIcon(icon)}
+    </span>
+);
+
+const buttonLabel = (label: ReactNode, children: ReactNode, pt: ButtonParts) => (
+    <span
+        {...pt?.label}
+        className={classNames('cratis-mui-button__label', pt?.label?.className)}
+        data-cratis-part='label'
+    >
+        {label}
+        {children}
+    </span>
+);
 
 interface MuiButtonContentProps {
     readonly icon: ReactNode;
     readonly label: ReactNode;
     readonly children: ReactNode;
-    readonly pt: ButtonProps['pt'];
+    readonly pt: ButtonParts;
 }
 
-const MuiButtonContent = ({ icon, label, children, pt }: MuiButtonContentProps) => (
-    <>
-        {icon ? (
-            <span
-                {...pt?.icon}
-                className={classNames('cratis-mui-button__icon', pt?.icon?.className)}
-                data-cratis-part='icon'
-                aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
-            >
-                {renderIcon(icon)}
-            </span>
-        ) : null}
-        {label !== undefined || children !== undefined ? (
-            <span
-                {...pt?.label}
-                className={classNames('cratis-mui-button__label', pt?.label?.className)}
-                data-cratis-part='label'
-            >
-                {label}
-                {children}
-            </span>
-        ) : null}
-    </>
-);
+const MuiButtonContent = ({ icon, label, children, pt }: MuiButtonContentProps) => {
+    const hasLabel = label !== undefined || children !== undefined;
+    return (
+        <>
+            {icon ? buttonIcon(icon, pt) : null}
+            {hasLabel ? buttonLabel(label, children, pt) : null}
+        </>
+    );
+};
 
-const muiButtonStyles = (appearance: ResolvedButtonAppearance) => ({
-    borderRadius: appearance.shape === 'pill' ? 9999 : undefined,
-    textTransform: appearance.variant === 'link' ? 'none' : undefined,
-    padding: appearance.variant === 'link' ? 0 : undefined,
-    minWidth: appearance.variant === 'link' ? 0 : undefined,
-});
+const muiButtonStyles = (appearance: ResolvedButtonAppearance) => {
+    const link = appearance.variant === 'link';
+    return {
+        borderRadius: appearance.shape === 'pill' ? 9999 : undefined,
+        textTransform: link ? 'none' : undefined,
+        padding: link ? 0 : undefined,
+        minWidth: link ? 0 : undefined,
+    };
+};
 
-const muiLoadingIndicator = (pt: ButtonProps['pt']) => (
+const muiLoadingIndicator = (pt: ButtonParts) => (
     <span
         {...pt?.spinner}
         className={classNames('cratis-mui-button__spinner', pt?.spinner?.className)}
@@ -82,12 +100,62 @@ const withMuiTooltip = (
 const rootState = (
     loading: boolean,
     props: { 'aria-busy'?: ButtonProps['aria-busy']; title?: string },
-    root: NonNullable<ButtonProps['pt']>['root'],
+    root: NonNullable<ButtonParts>['root'],
     fallbackTitle?: string,
 ) => ({
     'aria-busy': loading ? true : (props['aria-busy'] ?? root?.['aria-busy']),
     title: props.title ?? fallbackTitle ?? root?.title,
 });
+
+interface ButtonChrome {
+    readonly baseClassName: string;
+    readonly pt: ButtonParts;
+    readonly className: string | undefined;
+    readonly style: CSSProperties | undefined;
+    readonly appearance: ResolvedButtonAppearance;
+    readonly size: 'small' | 'normal' | 'large';
+    readonly loading: boolean;
+}
+
+/** Class, style, color, size and loading props shared by the button and icon button roots. */
+const chromeProps = ({
+    baseClassName,
+    pt,
+    className,
+    style,
+    appearance,
+    size,
+    loading,
+}: ButtonChrome) => ({
+    className: classNames(baseClassName, pt?.root?.className, className),
+    style: { ...pt?.root?.style, ...style },
+    color: muiColorForTone(appearance.tone),
+    size: muiSize(size),
+    loading,
+    loadingIndicator: muiLoadingIndicator(pt),
+});
+
+/** The canonical state data attributes both button roots expose. */
+const stateAttributes = (
+    appearance: ResolvedButtonAppearance,
+    size: string,
+    disabled: boolean,
+    loading: boolean,
+) => ({
+    'data-variant': appearance.variant,
+    'data-tone': appearance.tone,
+    'data-severity': appearance.severity,
+    'data-shape': appearance.shape,
+    'data-size': size,
+    'data-disabled': disabled || undefined,
+    'data-loading': loading || undefined,
+});
+
+const isDisabled = (disabled: boolean | undefined, loading: boolean) =>
+    Boolean(disabled || loading);
+
+const isIconOnly = (icon: ReactNode, label: ReactNode, children: ReactNode) =>
+    Boolean(icon) && label === undefined && !children;
 
 export const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiButtonSlot(
     {
@@ -128,8 +196,7 @@ export const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function
         rounded,
         severity,
     });
-    const effectiveDisabled = Boolean(disabled || loading);
-    const iconOnly = Boolean(icon) && label === undefined && !children;
+    const effectiveDisabled = isDisabled(disabled, loading);
     const button = (
         <MuiButton
             {...pt?.root}
@@ -139,24 +206,21 @@ export const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function
             autoFocus={autoFocus}
             disabled={effectiveDisabled}
             onClick={onClick}
-            className={classNames('cratis-mui-button', pt?.root?.className, className)}
-            style={{ ...pt?.root?.style, ...style }}
+            {...chromeProps({
+                baseClassName: 'cratis-mui-button',
+                pt,
+                className,
+                style,
+                appearance,
+                size,
+                loading,
+            })}
             variant={muiVariant(appearance.variant)}
-            color={muiColorForTone(appearance.tone)}
-            size={muiSize(size)}
-            loading={loading}
-            loadingIndicator={muiLoadingIndicator(pt)}
             sx={muiButtonStyles(appearance)}
             {...rootState(loading, { 'aria-busy': nativeProps['aria-busy'], title }, pt?.root)}
             data-cratis-part='root'
-            data-variant={appearance.variant}
-            data-tone={appearance.tone}
-            data-severity={appearance.severity}
-            data-shape={appearance.shape}
-            data-size={size}
-            data-disabled={effectiveDisabled || undefined}
-            data-loading={loading || undefined}
-            data-icon-only={iconOnly || undefined}
+            {...stateAttributes(appearance, size, effectiveDisabled, loading)}
+            data-icon-only={isIconOnly(icon, label, children) || undefined}
         >
             <MuiButtonContent icon={loading ? undefined : icon} label={label} pt={pt}>
                 {children}
@@ -205,7 +269,7 @@ export const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
             rounded,
             severity,
         });
-        const effectiveDisabled = Boolean(disabled || loading);
+        const effectiveDisabled = isDisabled(disabled, loading);
         const button = (
             <MuiIconButton
                 {...pt?.root}
@@ -216,42 +280,23 @@ export const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
                 autoFocus={autoFocus}
                 disabled={effectiveDisabled}
                 onClick={onClick}
-                className={classNames(
-                    'cratis-mui-icon-button',
-                    pt?.root?.className,
+                {...chromeProps({
+                    baseClassName: 'cratis-mui-icon-button',
+                    pt,
                     className,
-                )}
-                style={{ ...pt?.root?.style, ...style }}
-                color={muiColorForTone(appearance.tone)}
-                size={muiSize(size)}
-                loading={loading}
-                loadingIndicator={muiLoadingIndicator(pt)}
+                    style,
+                    appearance,
+                    size,
+                    loading,
+                })}
                 sx={{ borderRadius: appearance.shape === 'pill' ? '50%' : 1 }}
                 aria-label={ariaLabel}
                 aria-busy={loading || undefined}
                 data-cratis-part='root'
-                data-variant={appearance.variant}
-                data-tone={appearance.tone}
-                data-severity={appearance.severity}
-                data-shape={appearance.shape}
-                data-size={size}
-                data-disabled={effectiveDisabled || undefined}
-                data-loading={loading || undefined}
+                {...stateAttributes(appearance, size, effectiveDisabled, loading)}
                 data-icon-only='true'
             >
-                {!loading && (
-                    <span
-                        {...pt?.icon}
-                        className={classNames(
-                            'cratis-mui-button__icon',
-                            pt?.icon?.className,
-                        )}
-                        data-cratis-part='icon'
-                        aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
-                    >
-                        {renderIcon(icon)}
-                    </span>
-                )}
+                {!loading && buttonIcon(icon, pt)}
             </MuiIconButton>
         );
         return withMuiTooltip(button, tooltip, tooltipOptions);

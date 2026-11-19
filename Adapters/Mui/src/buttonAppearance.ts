@@ -3,7 +3,9 @@
 
 import type { ButtonProps, ButtonSeverity, ButtonTone } from '@cratis/components/Common';
 
-export const toneForSeverity: Readonly<Record<ButtonSeverity, ButtonTone>> = {
+type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link';
+
+const toneForSeverity: Readonly<Record<ButtonSeverity, ButtonTone>> = {
     secondary: 'neutral',
     info: 'accent',
     help: 'accent',
@@ -13,7 +15,7 @@ export const toneForSeverity: Readonly<Record<ButtonSeverity, ButtonTone>> = {
     contrast: 'neutral',
 };
 
-export const severityForTone: Readonly<Record<ButtonTone, ButtonSeverity>> = {
+const severityForTone: Readonly<Record<ButtonTone, ButtonSeverity>> = {
     neutral: 'secondary',
     accent: 'info',
     positive: 'success',
@@ -21,43 +23,45 @@ export const severityForTone: Readonly<Record<ButtonTone, ButtonSeverity>> = {
     critical: 'danger',
 };
 
-export const muiColorForTone = (tone: ButtonTone | undefined) => {
-    switch (tone) {
-        case 'neutral':
-            return 'secondary';
-        case 'positive':
-            return 'success';
-        case 'caution':
-            return 'warning';
-        case 'critical':
-            return 'error';
-        case 'accent':
-        default:
-            return 'primary';
-    }
+const colorForTone: Readonly<Record<ButtonTone, 'primary' | 'secondary' | 'success' | 'warning' | 'error'>> = {
+    neutral: 'secondary',
+    positive: 'success',
+    caution: 'warning',
+    critical: 'error',
+    accent: 'primary',
 };
 
-export const muiVariant = (variant: 'solid' | 'outline' | 'ghost' | 'link') => {
-    switch (variant) {
-        case 'solid':
-            return 'contained';
-        case 'outline':
-            return 'outlined';
-        case 'ghost':
-        case 'link':
-            return 'text';
-        default:
-            throw new Error(`Unsupported Button variant '${String(variant)}'.`);
-    }
+const variantForButtonVariant: Readonly<Record<ButtonVariant, 'contained' | 'outlined' | 'text'>> = {
+    solid: 'contained',
+    outline: 'outlined',
+    ghost: 'text',
+    link: 'text',
 };
 
-export const muiSize = (size: 'small' | 'normal' | 'large') =>
+export const muiColorForTone = (tone: ButtonTone | undefined) =>
+    (tone && colorForTone[tone]) ?? 'primary';
+
+export const muiVariant = (variant: ButtonVariant) => {
+    const muiVariantName = variantForButtonVariant[variant];
+    if (!muiVariantName)
+        throw new Error(`Unsupported Button variant '${String(variant)}'.`);
+    return muiVariantName;
+};
+
+export const muiSize = (size: 'small' | 'normal' | 'large'): 'small' | 'medium' | 'large' =>
     size === 'normal' ? 'medium' : size;
 
-export type DeprecatedButtonProp = 'severity' | 'text' | 'link' | 'outlined' | 'rounded';
-export const warnedDeprecatedProps = new Set<DeprecatedButtonProp>();
+type DeprecatedButtonProp = 'severity' | 'text' | 'link' | 'outlined' | 'rounded';
+const deprecatedButtonProps: readonly DeprecatedButtonProp[] = [
+    'text',
+    'link',
+    'outlined',
+    'rounded',
+    'severity',
+];
+const warnedDeprecatedProps = new Set<DeprecatedButtonProp>();
 
-export const warnForDeprecatedProp = (prop: DeprecatedButtonProp) => {
+const warnForDeprecatedProp = (prop: DeprecatedButtonProp) => {
     const environment = (
         globalThis as typeof globalThis & {
             process?: { env?: { NODE_ENV?: string } };
@@ -71,13 +75,13 @@ export const warnForDeprecatedProp = (prop: DeprecatedButtonProp) => {
 };
 
 export interface ResolvedButtonAppearance {
-    readonly variant: 'solid' | 'outline' | 'ghost' | 'link';
+    readonly variant: ButtonVariant;
     readonly tone: ButtonTone | undefined;
     readonly shape: 'default' | 'pill';
     readonly severity: ButtonSeverity | undefined;
 }
 
-export interface ButtonAppearanceOptions {
+interface ButtonAppearanceOptions {
     readonly variant: ButtonProps['variant'];
     readonly tone: ButtonProps['tone'];
     readonly shape: ButtonProps['shape'];
@@ -88,12 +92,12 @@ export interface ButtonAppearanceOptions {
     readonly severity: ButtonProps['severity'];
 }
 
-export const resolveButtonVariant = ({
+const resolveButtonVariant = ({
     variant,
     link,
     text,
     outlined,
-}: ButtonAppearanceOptions): ResolvedButtonAppearance['variant'] => {
+}: ButtonAppearanceOptions): ButtonVariant => {
     if (variant) return variant;
     if (link) return 'link';
     if (text) return 'ghost';
@@ -101,15 +105,16 @@ export const resolveButtonVariant = ({
     return 'solid';
 };
 
+const warnForDeprecatedProps = (options: ButtonAppearanceOptions) => {
+    for (const prop of deprecatedButtonProps)
+        if (options[prop] !== undefined) warnForDeprecatedProp(prop);
+};
+
 export const resolveButtonAppearance = (
     options: ButtonAppearanceOptions,
 ): ResolvedButtonAppearance => {
-    const { tone, shape, text, link, outlined, rounded, severity } = options;
-    if (text !== undefined) warnForDeprecatedProp('text');
-    if (link !== undefined) warnForDeprecatedProp('link');
-    if (outlined !== undefined) warnForDeprecatedProp('outlined');
-    if (rounded !== undefined) warnForDeprecatedProp('rounded');
-    if (severity !== undefined) warnForDeprecatedProp('severity');
+    const { tone, shape, rounded, severity } = options;
+    warnForDeprecatedProps(options);
     return {
         variant: resolveButtonVariant(options),
         tone: tone ?? (severity ? toneForSeverity[severity] : undefined),
@@ -117,4 +122,3 @@ export const resolveButtonAppearance = (
         severity: tone ? severityForTone[tone] : severity,
     };
 };
-
