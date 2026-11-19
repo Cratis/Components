@@ -107,10 +107,87 @@ const expectFilterExtendsPastRoot = async (canvasElement: HTMLElement, labels: S
     await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
 };
 
-/** The focus flow asserts the built-in root as the portal parent of every mount. */
+/** A standalone filter panel beside an "Edit filters" modal that opens with its own panel open. */
+const FocusFlow = () => {
+    const anchorRef = useRef<HTMLButtonElement>(null);
+    const modalAnchorRef = useRef<HTMLButtonElement>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalPanelOpen, setModalPanelOpen] = useState(false);
+    const [modalGroup, setModalGroup] = useState<string | null>(null);
+    const [expandedFilterKey, setExpandedFilterKey] = useState<string | null>(null);
+    return <CratisComponentsProvider overlayEnvironment={{
+        getContainer: () => document.getElementById('filter-story-overlays'),
+    }}>
+        <div style={{ padding: '3rem' }}>
+            <button ref={anchorRef} aria-expanded={isOpen} onClick={() => setIsOpen(!isOpen)}>Filters</button>
+            <button onClick={() => { setModalPanelOpen(true); setModalOpen(true); }}>Edit filters</button>
+            <div id='filter-story-overlays' />
+            <FilterPanel isOpen={isOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                aria-label='Filter choices' anchorRef={anchorRef} expandedFilterKey={expandedFilterKey}
+                onClose={() => setIsOpen(false)} onExpandedFilterChange={setExpandedFilterKey}
+                onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                onRangeChange={() => undefined} />
+        </div>
+        {modalOpen && <Dialog title='Edit filters' onCancel={() => setModalOpen(false)}>
+            <button ref={modalAnchorRef} onClick={() => setModalPanelOpen(true)}>Filters</button>
+            <FilterPanel isOpen={modalPanelOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                aria-label='Filter choices' anchorRef={modalAnchorRef} expandedFilterKey={modalGroup}
+                onClose={() => setModalPanelOpen(false)} onExpandedFilterChange={setModalGroup}
+                onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                onRangeChange={() => undefined} />
+        </Dialog>}
+    </CratisComponentsProvider>;
+};
+
+// Records the parent of every filter panel mounted while the returned stop function has not run.
+const observePanelMounts = () => {
+    const mounts: { parent: Node; opacity: number }[] = [];
+    const observer = new MutationObserver((records) => {
+        for (const record of records) {
+            const panels = [...record.addedNodes].filter((node): node is HTMLElement =>
+                node instanceof HTMLElement && node.matches('.pv-filter-dropdown'));
+            mounts.push(...panels.map((node) => ({ parent: record.target, opacity: Number(getComputedStyle(node).opacity) })));
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return { mounts, stop: () => observer.disconnect() };
+};
+
+const modalFilterTrigger = () => within(document.body).getAllByRole('button', { name: 'Filters' })
+    .find((button) => !button.hasAttribute('aria-expanded'))!;
+
+/** The built-in shell is the direct portal parent of every filter panel mounted in its modal. */
+export const FocusSearchInBuiltInShell: Story = {
+    name: 'Filter panels mount directly in the built-in modal root',
+    tags: builtInDialogShell,
+    play: async ({ canvasElement }) => {
+        const body = within(document.body);
+        const { mounts, stop } = observePanelMounts();
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Edit filters' }));
+        stop();
+        const modalTrigger = modalFilterTrigger();
+        const modalRoot = modalTrigger.closest('.cratis-dialog[data-cratis-part="root"]');
+        await expect(mounts.length).toBeGreaterThan(0);
+        await expect(mounts.every(({ parent }) => parent === modalRoot)).toBe(true);
+        const modalPanel = await body.findByRole('dialog', { name: 'Filter choices' });
+        await expect(modalPanel.parentElement).toBe(modalRoot);
+        await waitFor(() => expect(getComputedStyle(modalPanel).opacity).toBe('1'), { timeout: 5000 });
+        await userEvent.click(body.getByRole('button', { name: 'Status' }));
+        await userEvent.keyboard('{Escape}');
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
+        await userEvent.click(modalTrigger);
+        await expect((await body.findByRole('dialog', { name: 'Filter choices' })).parentElement).toBe(modalRoot);
+        await userEvent.keyboard('{Escape}');
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
+        await userEvent.click(body.getByRole('button', { name: 'Close' }));
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Edit filters' })).toBeNull(), { timeout: 5000 });
+    },
+    render: () => <FocusFlow />,
+};
+
 export const FocusSearchAndDismiss: Story = {
     name: 'Focus search and dismiss inside and outside a modal',
-    tags: builtInDialogShell,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         const body = within(document.body);
@@ -126,31 +203,20 @@ export const FocusSearchAndDismiss: Story = {
         await expect(standaloneTrigger).toHaveFocus();
         await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
 
-        const mounts: { parent: Node; opacity: number }[] = [];
-        const observer = new MutationObserver((records) => {
-            for (const record of records) {
-                for (const node of record.addedNodes) {
-                    if (node instanceof HTMLElement && node.matches('.pv-filter-dropdown')) {
-                        mounts.push({ parent: record.target, opacity: Number(getComputedStyle(node).opacity) });
-                    }
-                }
-            }
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+        const { mounts, stop } = observePanelMounts();
         await userEvent.click(canvas.getByRole('button', { name: 'Edit filters' }));
-        observer.disconnect();
-        const modalTrigger = body.getAllByRole('button', { name: 'Filters' })
-            .find((button) => !button.hasAttribute('aria-expanded'))!;
-        const modalRoot = modalTrigger.closest('.cratis-dialog[data-cratis-part="root"]');
+        stop();
+        const modalTrigger = modalFilterTrigger();
+        const modalRoot = dialogRoot(modalTrigger);
         await expect(mounts.length).toBeGreaterThan(0);
-        await expect(mounts.every(({ parent }) => parent === modalRoot)).toBe(true);
+        await expect(mounts.every(({ parent }) => modalRoot.contains(parent))).toBe(true);
         // The first frame starts transparent in the modal, then the enter transition completes.
         await expect(mounts[0].opacity).toBeLessThan(1);
         const modalPanel = await body.findByRole('dialog', { name: 'Filter choices' });
-        await expect(modalPanel.parentElement).toHaveAttribute('data-cratis-part', 'root');
+        await expect(modalRoot.contains(modalPanel)).toBe(true);
         await expect(modalPanel.closest('[aria-hidden="true"], [inert]')).toBeNull();
         await waitFor(() => expect(getComputedStyle(modalPanel).opacity).toBe('1'), { timeout: 5000 });
-        await expect(modalRoot?.contains(document.activeElement)).toBe(true);
+        await expect(modalRoot.contains(document.activeElement)).toBe(true);
         await userEvent.click(body.getByRole('button', { name: 'Status' }));
         await expect(body.getByRole('searchbox', { name: 'Find a status' })).toHaveFocus();
         await userEvent.keyboard('{Escape}');
@@ -158,43 +224,14 @@ export const FocusSearchAndDismiss: Story = {
         await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
         await expect(body.getByRole('dialog', { name: 'Edit filters' })).toBeTruthy();
         await userEvent.click(modalTrigger);
-        await expect((await body.findByRole('dialog', { name: 'Filter choices' })).parentElement).toBe(modalRoot);
+        await expect(modalRoot.contains(await body.findByRole('dialog', { name: 'Filter choices' }))).toBe(true);
         await userEvent.keyboard('{Escape}');
         await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
+        await expect(body.getByRole('dialog', { name: 'Edit filters' })).toBeTruthy();
         await userEvent.click(body.getByRole('button', { name: 'Close' }));
         await waitFor(() => expect(body.queryByRole('dialog', { name: 'Edit filters' })).toBeNull(), { timeout: 5000 });
     },
-    render: () => {
-        const anchorRef = useRef<HTMLButtonElement>(null);
-        const modalAnchorRef = useRef<HTMLButtonElement>(null);
-        const [isOpen, setIsOpen] = useState(false);
-        const [modalOpen, setModalOpen] = useState(false);
-        const [modalPanelOpen, setModalPanelOpen] = useState(false);
-        const [modalGroup, setModalGroup] = useState<string | null>(null);
-        const [expandedFilterKey, setExpandedFilterKey] = useState<string | null>(null);
-        return <CratisComponentsProvider overlayEnvironment={{
-            getContainer: () => document.getElementById('filter-story-overlays'),
-        }}>
-            <div style={{ padding: '3rem' }}>
-                <button ref={anchorRef} aria-expanded={isOpen} onClick={() => setIsOpen(!isOpen)}>Filters</button>
-                <button onClick={() => { setModalPanelOpen(true); setModalOpen(true); }}>Edit filters</button>
-                <div id='filter-story-overlays' />
-                <FilterPanel isOpen={isOpen} filters={filters} filterValues={{}} rangeValues={{}}
-                    aria-label='Filter choices' anchorRef={anchorRef} expandedFilterKey={expandedFilterKey}
-                    onClose={() => setIsOpen(false)} onExpandedFilterChange={setExpandedFilterKey}
-                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
-                    onRangeChange={() => undefined} />
-            </div>
-            {modalOpen && <Dialog title='Edit filters' onCancel={() => setModalOpen(false)}>
-                <button ref={modalAnchorRef} onClick={() => setModalPanelOpen(true)}>Filters</button>
-                <FilterPanel isOpen={modalPanelOpen} filters={filters} filterValues={{}} rangeValues={{}}
-                    aria-label='Filter choices' anchorRef={modalAnchorRef} expandedFilterKey={modalGroup}
-                    onClose={() => setModalPanelOpen(false)} onExpandedFilterChange={setModalGroup}
-                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
-                    onRangeChange={() => undefined} />
-            </Dialog>}
-        </CratisComponentsProvider>;
-    },
+    render: () => <FocusFlow />,
 };
 
 /** The built-in side sheet hosts an initially open dropdown directly, clipped while it slides in. */
