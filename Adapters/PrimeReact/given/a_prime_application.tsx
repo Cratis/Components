@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { createElement, type ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import { PrimeReactContext, defaultConfigProps } from '@primereact/core/config';
 import { LocaleProvider } from '@primereact/core/locale';
 import { PassThroughProvider } from '@primereact/core/passthrough';
@@ -15,17 +15,15 @@ const fixtureConfig = Object.freeze({ ...defaultConfigProps });
 /** Wraps a slot component in the application providers PrimeReact components require. */
 export const withPrimeApplication = (Slot: ComponentType<Record<string, unknown>>): ComponentType<Record<string, unknown>> =>
     function PrimeApplication(props) {
-        return createElement(
-            PrimeReactContext.Provider,
-            { value: fixtureConfig },
-            createElement(
-                LocaleProvider,
-                { lang: 'en' },
-                createElement(
-                    PassThroughProvider,
-                    { mergeSections: true, mergeProps: true },
-                    createElement(PrimeThemeProvider, { preset: Aura }, createElement(Slot, props)),
-                ),
-            ),
+        return (
+            <PrimeReactContext.Provider value={fixtureConfig}>
+                <LocaleProvider lang='en'>
+                    <PassThroughProvider mergeSections mergeProps>
+                        <PrimeThemeProvider preset={Aura}>
+                            <Slot {...props} />
+                        </PrimeThemeProvider>
+                    </PassThroughProvider>
+                </LocaleProvider>
+            </PrimeReactContext.Provider>
         );
     };
