@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useLayoutEffect, useRef, type CSSProperties, type HTMLAttributes, type ReactNode, type RefObject } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { Pagination } from '@digdir/designsystemet-react';
 import { useCratisComponentsConfig } from '@cratis/components';
 import { paginatorPages, type TablePaginatorProps } from '@cratis/components/DataTables';
@@ -20,6 +20,15 @@ const currentPageStyle = {
     '--dsc-button-color--hover': 'var(--ds-color-base-contrast-default)',
     '--dsc-button-color--active': 'var(--ds-color-base-contrast-default)',
 } as CSSProperties;
+
+// The group is a flex box with the pagination gap, so the numbered pages space exactly as they did
+// when each was its own list item. Designsystemet's button variables inherit from the group.
+const pagesGroupStyle: CSSProperties = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 'var(--dsc-pagination-gap)',
+};
 
 const defaultRange = (start: number, end: number, total: number) => `${start}–${end} of ${total}`;
 
@@ -74,16 +83,6 @@ const useFocusKeeper = (rootRef: RefObject<HTMLDivElement | null>, isFirst: bool
     };
 };
 
-// The numbered pages and the previous/next controls share Designsystemet's one list, so that list
-// carries the pages part; its group name is the list's accessible name.
-const pagesPart = (parts: HTMLAttributes<HTMLDivElement> | undefined, label: string) =>
-    ({
-        ...parts,
-        'aria-label': label,
-        className: classNames('cratis-designsystemet-paginator__pages', parts?.className),
-        'data-cratis-part': 'pages',
-    }) as unknown as HTMLAttributes<HTMLUListElement>;
-
 interface ControlProps {
     readonly name: ControlName;
     readonly label: string;
@@ -110,17 +109,15 @@ const Control = ({ name, label, parts, disabled, onActivate, children }: Control
 
 type Parts = TablePaginatorProps['pt'];
 
-const EllipsisItem = ({ pt }: { readonly pt: Parts }) => (
-    <Pagination.Item>
-        <span
-            {...pt?.ellipsis}
-            aria-hidden='true'
-            className={classNames('cratis-designsystemet-paginator__ellipsis', pt?.ellipsis?.className)}
-            data-cratis-part='ellipsis'
-        >
-            …
-        </span>
-    </Pagination.Item>
+const Ellipsis = ({ pt }: { readonly pt: Parts }) => (
+    <span
+        {...pt?.ellipsis}
+        aria-hidden='true'
+        className={classNames('cratis-designsystemet-paginator__ellipsis', pt?.ellipsis?.className)}
+        data-cratis-part='ellipsis'
+    >
+        …
+    </span>
 );
 
 interface PageItemProps {
@@ -132,22 +129,20 @@ interface PageItemProps {
 }
 
 const PageItem = ({ number, current, label, pt, onSelect }: PageItemProps) => (
-    <Pagination.Item>
-        <Pagination.Button
-            variant='tertiary'
-            {...pt?.page}
-            type='button'
-            aria-label={label}
-            aria-current={current ? 'page' : undefined}
-            style={current ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
-            className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
-            data-selected={current || undefined}
-            data-cratis-part='page'
-            onClick={onSelect}
-        >
-            {number}
-        </Pagination.Button>
-    </Pagination.Item>
+    <Pagination.Button
+        variant='tertiary'
+        {...pt?.page}
+        type='button'
+        aria-label={label}
+        aria-current={current ? 'page' : undefined}
+        style={current ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
+        className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
+        data-selected={current || undefined}
+        data-cratis-part='page'
+        onClick={onSelect}
+    >
+        {number}
+    </Pagination.Button>
 );
 
 const RangeReport = ({ text, pt }: { readonly text: string | undefined; readonly pt: Parts }) =>
@@ -172,11 +167,12 @@ const PageList = ({
     onPageChange,
     pt,
     pageLabel,
-}: TablePaginatorProps & { readonly pageLabel: (page: number) => string }) => {
+    pagesLabel,
+}: TablePaginatorProps & { readonly pageLabel: (page: number) => string; readonly pagesLabel: string }) => {
     const options = typeof pageLinks === 'object' ? pageLinks : undefined;
-    return paginatorPages(page, pageCount, options?.siblings, options?.boundaries).map((item) =>
+    const items = paginatorPages(page, pageCount, options?.siblings, options?.boundaries).map((item) =>
         item.kind === 'ellipsis' ? (
-            <EllipsisItem key={item.key} pt={pt} />
+            <Ellipsis key={item.key} pt={pt} />
         ) : (
             <PageItem
                 key={item.page}
@@ -187,6 +183,21 @@ const PageList = ({
                 onSelect={() => onPageChange(item.page)}
             />
         ),
+    );
+    // Same semantics as the built-in paginator: the numbered pages form one labelled group.
+    return (
+        <Pagination.Item>
+            <div
+                {...pt?.pages}
+                style={{ ...pagesGroupStyle, ...pt?.pages?.style }}
+                role='group'
+                aria-label={pagesLabel}
+                className={classNames('cratis-designsystemet-paginator__pages', pt?.pages?.className)}
+                data-cratis-part='pages'
+            >
+                {items}
+            </div>
+        </Pagination.Item>
     );
 };
 
@@ -206,7 +217,7 @@ export const DesignsystemetPaginatorSlot = (props: TablePaginatorProps) => {
             parts={pt?.[name]}
             disabled={disabled}
             onActivate={() => onPageChange(target)}
-        >
+    >
             {content}
         </Control>
     );
@@ -227,10 +238,10 @@ export const DesignsystemetPaginatorSlot = (props: TablePaginatorProps) => {
             >
                 <RangeReport text={range} pt={pt} />
                 {control('first', isFirst, 0, <span aria-hidden='true'>«</span>)}
-                <Pagination.List {...(pageLinks ? pagesPart(pt?.pages, labels.pages) : undefined)}>
+                <Pagination.List>
                     <Pagination.Item>{control('previous', isFirst, page - 1, labels.previous)}</Pagination.Item>
                     {pageLinks ? (
-                        <PageList {...props} pageLabel={labels.page} />
+                        <PageList {...props} pageLabel={labels.page} pagesLabel={labels.pages} />
                     ) : (
                         <PageInfo page={page} pageCount={pageCount} pt={pt} />
                     )}
