@@ -4,7 +4,7 @@
 # Built-in renderer conformance evidence
 
 The opt-in `@cratis/components/renderer/builtin` manifest is exercised by
-`@cratis/components.conformance` against all fourteen renderer ABI v1 slots. The repository gate
+`@cratis/components.conformance` against all fifteen renderer ABI v1 slots. The repository gate
 requires every bounded check to pass with zero skips, validates the package's static `cratis`
 metadata against the public adapter schema, and plants dropped-ref, omitted-part,
 over-declared-capability, unjustified-skip, and duplicate-semantic-root defects with exact failure

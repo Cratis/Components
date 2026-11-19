@@ -38,6 +38,7 @@ describe('when defining a presentation library with atomic slots', () => {
             'dropdown.select',
             'display.datePicker',
             'dialogs.dialog',
+            'common.numberInput',
         ]);
         expect(Object.isFrozen(cratisAtomicSlotIds)).to.equal(true);
     });

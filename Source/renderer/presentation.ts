@@ -7,6 +7,7 @@ import type { CheckboxProps } from '../Common/Checkbox';
 import type { DatePickerInputProps } from '../Common/DatePickerInput';
 import type { IconButtonProps } from '../Common/IconButton';
 import type { RadioProps } from '../Common/Radio';
+import type { NumericInputProps } from '../Common/NumericInput';
 import type { SurfaceProps } from '../Common/Surface';
 import type { SwitchProps } from '../Common/Switch';
 import type { TextAreaProps } from '../Common/TextArea';
@@ -93,6 +94,7 @@ export const cratisAtomicSlotIds = Object.freeze([
     'dropdown.select',
     'display.datePicker',
     'dialogs.dialog',
+    'common.numberInput',
 ] as const);
 
 /** Identifier of one stable atomic slot. */
@@ -128,6 +130,13 @@ export interface CratisAtomicSlots {
      * focus trap, Escape, outside press, scroll lock and focus restoration. There is no ref.
      */
     readonly 'dialogs.dialog': CratisDialogSlotProps;
+    /**
+     * Number-input contract: a controlled native number input. `value` is a `number` (`undefined`
+     * renders empty), `onChange` receives the next number or `undefined` when the input is empty or
+     * not a valid number, and the `NumericInputParts` `root` part is the input. The adapter owns the
+     * typing interaction; Components owns converting `undefined` to the command value.
+     */
+    readonly 'common.numberInput': NumericInputProps;
 }
 
 /** One stable, adapter-owned atomic slot declaration. */

@@ -31,6 +31,7 @@ const knownSlots = new Set<unstable_SlotId>([
     'dialogs.dialog',
     'display.datePicker',
     'datatables.paginator',
+    'common.numberInput',
 ]);
 
 /** Internal immutable renderer layer used by context resolution. */

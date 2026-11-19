@@ -6,6 +6,8 @@ const slotByCase: Record<string, string> = {
     email: 'common.textInput',
     'text with parts': 'common.textInput',
     'invalid text': 'common.textInput',
+    number: 'common.numberInput',
+    'number with parts': 'common.numberInput',
     textarea: 'common.textArea',
     'textarea defaults': 'common.textArea',
     checkbox: 'common.checkbox',

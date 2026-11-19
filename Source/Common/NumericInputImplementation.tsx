@@ -1,0 +1,81 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+import { forwardRef, type ChangeEvent } from 'react';
+import type { NumericInputProps } from './NumericInput';
+
+type Root = NonNullable<NumericInputProps['pt']>['root'];
+type AriaInvalid = NumericInputProps['aria-invalid'];
+
+interface RootState {
+    readonly disabled?: boolean;
+    readonly readOnly?: boolean;
+    readonly ariaInvalid: AriaInvalid;
+    readonly invalid: boolean;
+}
+
+const resolveState = (props: NumericInputProps, root: Root): RootState => {
+    const ariaInvalid = props['aria-invalid'] ?? root?.['aria-invalid'] ?? (props.invalid || undefined);
+    return {
+        disabled: props.disabled ?? root?.disabled,
+        readOnly: props.readOnly ?? root?.readOnly,
+        ariaInvalid,
+        invalid: Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true',
+    };
+};
+
+const joinClassNames = (...values: readonly (string | undefined)[]) =>
+    values.filter(Boolean).join(' ');
+
+const createChangeHandler =
+    (root: Root, onChange: NumericInputProps['onChange']) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+        root?.onChange?.(event);
+        const next = event.currentTarget.valueAsNumber;
+        onChange?.(Number.isNaN(next) ? undefined : next, {
+            source: 'user',
+            nativeEvent: event.nativeEvent,
+        });
+    };
+
+/** Core implementation for the native number-input atomic slot. */
+export const NumericInputImplementation = forwardRef<
+    HTMLInputElement,
+    NumericInputProps
+>(function NumericInputImplementation(props, ref) {
+    const {
+        value,
+        invalid: _invalid,
+        onChange,
+        pt,
+        className,
+        style,
+        disabled: _disabled,
+        readOnly: _readOnly,
+        'aria-invalid': _ariaInvalid,
+        ...nativeProps
+    } = props;
+    const root = pt?.root;
+    const state = resolveState(props, root);
+
+    return (
+        <input
+            {...root}
+            {...nativeProps}
+            ref={ref}
+            type='number'
+            value={value ?? ''}
+            disabled={state.disabled}
+            readOnly={state.readOnly}
+            aria-invalid={state.ariaInvalid}
+            onChange={createChangeHandler(root, onChange)}
+            className={joinClassNames('cratis-text-input', 'cratis-numeric-input', root?.className, className)}
+            style={{ ...root?.style, ...style }}
+            data-cratis-component='NumericInput'
+            data-cratis-part='root'
+            data-disabled={state.disabled || undefined}
+            data-invalid={state.invalid || undefined}
+            data-readonly={state.readOnly || undefined}
+        />
+    );
+});

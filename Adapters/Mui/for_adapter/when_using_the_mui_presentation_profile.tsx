@@ -64,8 +64,8 @@ describe('when using the MUI stable presentation profile', () => {
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
         expect(report.summary).to.deep.equal({
-            total: 109,
-            passed: 109,
+            total: 119,
+            passed: 119,
             failed: 0,
             skipped: 0,
         });
@@ -83,6 +83,7 @@ describe('when using the MUI stable presentation profile', () => {
         expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
             ...stablePresentationSlots,
             'common.tooltip',
+            'common.numberInput',
         ]);
     });
 

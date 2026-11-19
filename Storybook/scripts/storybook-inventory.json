@@ -312,6 +312,7 @@
     "slotOwningModules": [
         "Source/CommandForm/fields/CheckboxField.tsx",
         "Source/CommandForm/fields/InputTextField.tsx",
+        "Source/CommandForm/fields/NumberField.tsx",
         "Source/CommandForm/fields/RadioButtonField.tsx",
         "Source/CommandForm/fields/RadioGroupField.tsx",
         "Source/CommandForm/fields/TextAreaField.tsx",
@@ -320,6 +321,7 @@
         "Source/Common/Checkbox.tsx",
         "Source/Common/DatePickerInput.tsx",
         "Source/Common/IconButton.tsx",
+        "Source/Common/NumericInput.tsx",
         "Source/Common/Radio.tsx",
         "Source/Common/Surface.tsx",
         "Source/Common/Switch.tsx",
