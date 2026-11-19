@@ -4,6 +4,9 @@
 import { useLayoutEffect, useState } from 'react';
 import type { RefObject } from 'react';
 
+// Every dialog shell, built-in or adapter-rendered, marks its root with the dialog's id.
+const MODAL_ROOT_SELECTOR = '[data-cratis-dialog-id]';
+
 /** The anchor element and the Cratis Dialog (if any) that contains it. */
 export interface ResolvedAnchor {
     anchor: HTMLButtonElement | null;
@@ -25,7 +28,7 @@ export function useResolvedAnchor(anchorRef: RefObject<HTMLButtonElement | null>
     // eslint-disable-next-line @eslint-react/exhaustive-deps
     useLayoutEffect(() => {
         const anchor = anchorRef.current;
-        const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
+        const modalRoot = anchor?.closest<HTMLElement>(MODAL_ROOT_SELECTOR) ?? null;
         setResolvedAnchor((previous) => previous?.anchor === anchor && previous.modalRoot === modalRoot
             ? previous
             : { anchor, modalRoot });

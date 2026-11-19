@@ -195,6 +195,7 @@ export const DesignsystemetDialogSlot = ({
             aria-describedby={host.hasSubtitle ? host.subtitleId : undefined}
             aria-busy={isBusy || undefined}
             data-cratis-part='root'
+            data-cratis-dialog-id={host.id}
             data-open={visible || undefined}
             data-busy={isBusy || undefined}
             onCancel={cancelHandler(host)}

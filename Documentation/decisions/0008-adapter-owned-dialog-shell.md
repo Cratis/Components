@@ -51,6 +51,8 @@ The work is split between Components and the adapter:
 The host carries what the adapter needs from Components:
 
 - `id`, `zIndex`, `subtitleId`, `hasSubtitle` and `titleRef` (initial focus may land on the title);
+  the shell renders `id` as `data-cratis-dialog-id` on its root, the marker descendants use to find
+  their enclosing modal, as on the built-in shell;
 - `dismissal`: whether outside press, Escape and the close button may dismiss the dialog;
 - `closeAriaLabel` and `closeIcon` for the close button;
 - `content`, `headerActions`, `footer` and `liveRegion`, rendered by Components with their Cratis
