@@ -165,7 +165,8 @@ Do not render a second interactive semantic root inside the first, forward one u
 independent state machines, or stack a vendor focus owner around a built-in focus owner. One user
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
-All four concrete adapters declare the nine presentation slots. The MUI adapter also declares the
+All four concrete adapters declare the nine presentation slots. PrimeReact 11 also declares the `datatables.paginator` and `dialogs.dialog` atomic slots and PrimeReact 10 declares
+`datatables.paginator`. The MUI adapter also declares the
 `common.tooltip`, `common.numberInput`, `datatables.paginator` and `dialogs.dialog` atomic slots, and Designsystemet also declares the
 `dialogs.dialog`, `common.numberInput`, `datatables.paginator` and `common.tooltip` atomic slots.
 Their conformance reports cover the declared controls, not the other atomic slots or any composite
@@ -212,8 +213,8 @@ what the adapter owns.
 | Fallback | The built-in `TablePaginator` implementation |
 | Conformance | The `datatables.paginator` profile: parts, pass-through, server rendering, hydration, and one `onPageChange` call for **Next page** |
 
-A design system whose pagination model is one-based converts at the adapter boundary. Designsystemet
-implements this slot.
+A design system whose pagination model is one-based converts at the adapter boundary. Designsystemet,
+MUI, PrimeReact 11, and PrimeReact 10 implement this slot; the PrimeReact adapters compose it from their Button.
 
 ### `common.numberInput`
 
@@ -305,8 +306,9 @@ built-in date picker.
 | Conformance | The `dialogs.dialog` profile, rendered through the public `Dialog` so the adapter receives its host: parts, pass-through, state coverage, server rendering, hydration, and one `onClose` call from the close button |
 
 [ADR 0008](../decisions/0008-adapter-owned-dialog-shell.md) records why the dialog takes a host.
-Designsystemet implements this slot with its `Dialog` as a native modal `<dialog>`. MUI,
-PrimeReact 11 and PrimeReact 10 keep the built-in dialog.
+Designsystemet implements this slot with its `Dialog` as a native modal `<dialog>`, and PrimeReact 11 with the
+PrimeReact `Dialog` portal, backdrop, positioner, and popup parts. PrimeReact 10 keeps the built-in dialog: its dialog is
+a fixed `div` with a single mask element.
 
 ## Fallback
 

@@ -4,7 +4,7 @@
 # PrimeReact 10 adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. The repository gate runs
-`@cratis/components.conformance` against all nine declared slots and requires every applicable check
+`@cratis/components.conformance` against all nine declared slots and the atomic `datatables.paginator` slot, and requires every applicable check
 to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:
@@ -26,8 +26,10 @@ PrimeReact 10 is MIT licensed and has no key or setup attestation. The adapter p
 application-owned `PrimeReactProvider` when present and creates a default provider only when no
 outer context exists.
 
-The generic overlay absent/present check has no applicable slot in this nine-slot profile and
-supplies no PrimeReact overlay evidence. Portable part names and typed `pt` destinations are
+The paginator is composed from PrimeReact Button and mirrors the built-in element, label, `aria-current`
+and focus behavior. The dialog, tooltip, select, date picker, and number input stay built in; the PrimeReact 10
+dialog is a fixed `div` with a single mask element and cannot supply the backdrop and positioner parts. The
+generic overlay absent/present check has no applicable slot and supplies no PrimeReact overlay evidence. Portable part names and typed `pt` destinations are
 preserved, while PrimeReact may add wrappers or nest parts differently from the built-in renderer;
 undocumented descendant order and sibling selectors are not portable contracts.
 

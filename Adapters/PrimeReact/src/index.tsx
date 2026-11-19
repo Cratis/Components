@@ -38,6 +38,8 @@ import type {
     TextInputProps,
 } from '@cratis/components/Common';
 import type { ProgressBarProps } from '@cratis/components/Display';
+import { PrimeDialogSlot } from './dialog.js';
+import { PrimePaginatorSlot } from './paginator.js';
 import {
     CRATIS_PRESENTATION_ABI_VERSION,
     CRATIS_PRESENTATION_PROFILE,
@@ -808,6 +810,19 @@ const slots = Object.freeze({
     'common.surface': declaration<'common.surface'>(PrimeSurfaceSlot),
 });
 
+const atomicSlots = Object.freeze({
+    'datatables.paginator': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: PrimePaginatorSlot,
+    }),
+    'dialogs.dialog': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: PrimeDialogSlot,
+    }),
+});
+
 /** PrimeReact 11 implementation of the stable Cratis presentation profile. */
 export const primeReactUiLibrary: CratisPresentationUiLibrary =
     definePresentationUiLibrary({
@@ -819,5 +834,6 @@ export const primeReactUiLibrary: CratisPresentationUiLibrary =
         profileSlots: cratisPresentationSlotIds,
         capabilities,
         slots,
+        atomicSlots,
         Provider: PrimeReactAdapterProvider,
     });

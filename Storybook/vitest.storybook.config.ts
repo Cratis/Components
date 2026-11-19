@@ -43,6 +43,7 @@ const rendererDependenciesById: Readonly<Record<string, readonly string[]>> = {
         '@primereact/ui/button',
         '@primereact/ui/card',
         '@primereact/ui/checkbox',
+        '@primereact/ui/dialog',
         '@primereact/ui/inputtext',
         '@primereact/ui/progressbar',
         '@primereact/ui/radiobutton',
