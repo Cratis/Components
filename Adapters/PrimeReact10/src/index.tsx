@@ -34,6 +34,7 @@ import {
     RadioButton as PrimeRadioButton,
     type RadioButtonPassThroughOptions,
 } from 'primereact/radiobutton/radiobutton.cjs.js';
+import { Prime10PaginatorSlot } from './paginator.js';
 import type {
     ButtonProps,
     ButtonSeverity,
@@ -858,6 +859,14 @@ const slots = Object.freeze({
     'common.surface': declaration<'common.surface'>(PrimeSurfaceSlot),
 });
 
+const atomicSlots = Object.freeze({
+    'datatables.paginator': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: Prime10PaginatorSlot,
+    }),
+});
+
 /** PrimeReact 10 implementation of the stable Cratis presentation profile. */
 export const primeReact10UiLibrary: CratisPresentationUiLibrary =
     definePresentationUiLibrary({
@@ -869,5 +878,6 @@ export const primeReact10UiLibrary: CratisPresentationUiLibrary =
         profileSlots: cratisPresentationSlotIds,
         capabilities,
         slots,
+        atomicSlots,
         Provider: PrimeReact10AdapterProvider,
     });

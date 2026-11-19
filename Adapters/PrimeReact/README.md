@@ -25,8 +25,10 @@ npm install @cratis/components.primereact@^4 @cratis/components@^4 \
 Node-based build, test, and server-rendering environments require Node.js 22 or newer.
 
 The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
-TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are
-not part of this profile; the dialog, among them, falls back to the built-in Components dialog.
+TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. It also implements the atomic
+`datatables.paginator` slot with PrimeReact Button and the atomic `dialogs.dialog` slot with the PrimeReact
+Dialog parts. The tooltip, select, date picker, and number input slots are not part of this profile and
+fall back to the built-in Components implementations.
 
 ## Application-owned provider and license
 

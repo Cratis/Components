@@ -11,8 +11,8 @@ Renderer adaptation is a bounded React contract. The following claims are not pa
 ## No transparent full-catalog replacement
 
 Selecting a renderer library does not transform every Components export into an equivalent vendor
-component. The current MUI, PrimeReact 11, and PrimeReact 10 adapters implement only the nine
-`stable-presentation/v1` slots.
+component. The current MUI, PrimeReact 11, and PrimeReact 10 adapters implement the nine
+`stable-presentation/v1` slots and only the atomic slots listed below.
 
 A stable presentation adapter may also implement the stable atomic slots listed in
 `cratisAtomicSlotIds`; today those are `datatables.paginator`, `common.tooltip`, `dropdown.select`,
@@ -20,7 +20,8 @@ A stable presentation adapter may also implement the stable atomic slots listed 
 `common.numberInput` and `common.tooltip`, plus `datatables.paginator` and `dialogs.dialog`. No
 adapter implements `dropdown.select` or `display.datePicker` yet, and those use the built-in
 implementations. Designsystemet implements `dialogs.dialog` as a native modal `<dialog>` and MUI with the MUI dialog;
-PrimeReact 11 and PrimeReact 10 use the built-in dialog and paginator.
+PrimeReact 11 implements `dialogs.dialog` with the PrimeReact Dialog parts and `datatables.paginator` with PrimeReact
+Button; PrimeReact 10 implements only `datatables.paginator` and uses the built-in dialog.
 
 Components does not promise one-to-one vendor coverage for its full catalog, and it does not infer
 adapter support from matching component names. A package must declare and prove each renderer slot

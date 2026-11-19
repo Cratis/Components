@@ -25,8 +25,8 @@ behavior contracts:
 | Package                           | Vendor peers                                                                                        | Declared coverage              |
 | --------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
 | `@cratis/components.mui`          | `@mui/material >=9 <10`, `@emotion/react >=11.5 <12`, `@emotion/styled >=11.11 <12`                 | Nine stable presentation slots |
-| `@cratis/components.primereact`   | `primereact`, `@primereact/core`, `@primereact/ui` `>=11 <12`; `@primeuix/themes >=3 <4`            | Nine stable presentation slots |
-| `@cratis/components.primereact10` | `primereact >=10.9.9 <11`                                                                           | Nine stable presentation slots |
+| `@cratis/components.primereact`   | `primereact`, `@primereact/core`, `@primereact/ui` `>=11 <12`; `@primeuix/themes >=3 <4`            | Nine stable presentation slots, plus the paginator and dialog |
+| `@cratis/components.primereact10` | `primereact >=10.9.9 <11`                                                                           | Nine stable presentation slots, plus the paginator |
 | `@cratis/components.designsystemet` | `@digdir/designsystemet-react >=1.24 <2`, `@digdir/designsystemet-css >=1.24 <2`                  | Nine stable presentation slots |
 
 Every adapter also has React and ReactDOM 19 as peers. Each published adapter release declares a peer on exactly its own version of `@cratis/components` (for example, `@cratis/components.mui@4.14.0` requires `@cratis/components@4.14.0`), so install and upgrade the adapter and `@cratis/components` together at the same version. PrimeReact is a peer of the two PrimeReact adapters only; `@cratis/components` itself depends on no PrimeReact package.
@@ -119,7 +119,7 @@ simultaneously, the application must:
 
 The nine-slot adapters do not include dialog, dropdown, date-picker, tooltip, or paginator atomic
 slots, except where a stable adapter declares one through `atomicSlots`: only the MUI adapter
-implements the tooltip, only Designsystemet implements the dialog, and no adapter implements the
+implements the tooltip, Designsystemet, MUI and PrimeReact 11 implement the dialog, every adapter implements the paginator, and no adapter implements the
 select or date-picker atomic slots yet. Those controls use the built-in implementation by default.
 Replacing their interactions requires an adapter that explicitly implements the corresponding atomic
 slot contract. A stable presentation adapter can implement the paginator, the tooltip, the select,

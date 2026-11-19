@@ -223,11 +223,15 @@ try {
         }
     }
 
-    const declarationFiles = [...fileNames].filter((file) => file.endsWith('.d.ts'));
-    if (declarationFiles.length !== 1) {
-        throw new Error(
-            `Expected one public declaration file, found ${declarationFiles.length}.`,
-        );
+    const declarationNames = [...fileNames]
+        .filter((file) => file.endsWith('.d.ts'))
+        .map((file) => path.basename(file))
+        .sort();
+    if (
+        JSON.stringify(declarationNames) !==
+        JSON.stringify(['index.d.ts', 'paginator.d.ts', 'paginatorLabels.d.ts'])
+    ) {
+        throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }
     const declarations = readFileSync(
         path.join(unpackedPackage, 'dist/index.d.ts'),
@@ -278,7 +282,8 @@ try {
             path.join(nodeModules, '@cratis', dependency),
         );
     }
-    for (const dependency of ['reflect-metadata', 'tsyringe']) {
+    // The paginator imports the Core root, whose runtime graph needs these Core dependencies.
+    for (const dependency of ['reflect-metadata', 'tsyringe', '@internationalized/date', 'allotment', 'framer-motion', 'react-aria', 'react-aria-components', 'react-icons', 'ts-deepmerge']) {
         link(
             path.join(repositoryDirectory, 'node_modules', dependency),
             path.join(nodeModules, dependency),

@@ -99,8 +99,8 @@ describe('when using the PrimeReact stable presentation profile', () => {
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
         expect(report.summary).to.deep.equal({
-            total: 100,
-            passed: 100,
+            total: 124,
+            passed: 124,
             failed: 0,
             skipped: 0,
         });
@@ -115,9 +115,11 @@ describe('when using the PrimeReact stable presentation profile', () => {
             report.checks.find((check) => check.id === 'manifest.runtimeConsistency')
                 ?.status,
         ).to.equal('passed');
-        expect(Object.keys(packageJson.cratis.modes)).to.deep.equal(
-            stablePresentationSlots,
-        );
+        expect(Object.keys(packageJson.cratis.modes)).to.deep.equal([
+            ...stablePresentationSlots,
+            'datatables.paginator',
+            'dialogs.dialog',
+        ]);
     });
 
     it('should preserve native refs, forms, reset behavior, and value-first native events', () => {
