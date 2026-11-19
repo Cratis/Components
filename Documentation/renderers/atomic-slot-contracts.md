@@ -221,6 +221,10 @@ const ExampleDialog = ({ title, pt, host }: CratisDialogSlotProps) => (
         aria-labelledby={`${host.id}-title`}
         data-cratis-part='root'
         data-open
+        onCancel={(event) => {
+            event.preventDefault();
+            host.dismiss('escape');
+        }}
     >
         <h2 id={`${host.id}-title`} ref={host.titleRef} data-cratis-part='title'>
             {title}

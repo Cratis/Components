@@ -8,6 +8,7 @@ import type { CratisDialogSlotProps } from '@cratis/components/Dialogs';
 import {
     builtInAtomicSlot,
     failedCheckIds,
+    passedCheckIds,
     libraryWithAtomicSlot,
     runAtomicSlotConformance,
 } from './given/a_stable_atomic_slot_library.js';
@@ -21,6 +22,10 @@ const NativeDialog = ({ title, subtitle, isBusy = false, pt, host }: CratisDialo
         aria-labelledby={`${host.id}-title`}
         data-cratis-part='root'
         data-open
+        onCancel={(event) => {
+            event.preventDefault();
+            host.dismiss('escape');
+        }}
         data-busy={isBusy || undefined}
     >
         <header {...pt?.header} data-cratis-part='header'>
@@ -56,6 +61,21 @@ const NativeDialog = ({ title, subtitle, isBusy = false, pt, host }: CratisDialo
 const run = (render: ComponentType<CratisDialogSlotProps>) =>
     runAtomicSlotConformance(libraryWithAtomicSlot('dialogs.dialog', render), 'dialogs.dialog');
 
+// An adapter dialog that renders a close button but ignores Escape.
+const IgnoresEscape = ({ title, host }: CratisDialogSlotProps) => (
+    <dialog open aria-labelledby={`${host.id}-title`} data-cratis-part='root'>
+        <h2 id={`${host.id}-title`} ref={host.titleRef} data-cratis-part='title'>
+            {title}
+        </h2>
+        <button type='button' aria-label={host.closeAriaLabel} data-cratis-part='close' onClick={() => host.dismiss('closeButton')}>
+            {host.closeIcon}
+        </button>
+        {host.content}
+        {host.footer}
+        <div ref={host.registerOverlayContainer} />
+    </dialog>
+);
+
 describe('when running a stable atomic dialog', () => {
     it('should exercise and pass the built-in dialog', async () => {
         const report = await run(builtInAtomicSlot('dialogs.dialog'));
@@ -76,5 +96,21 @@ describe('when running a stable atomic dialog', () => {
         const report = await run(() => <div />);
 
         expect(failedCheckIds(report)).to.include('contract.dialogs.dialog.parts');
+    }, 30_000);
+
+    it('should check keyboard, focus and dismissal behavior of the conforming dialog', async () => {
+        const report = await run(builtInAtomicSlot('dialogs.dialog'));
+
+        expect(passedCheckIds(report)).to.include.members([
+            'behavior.dialogs.dialog.keyboard',
+            'behavior.dialogs.dialog.focus',
+            'behavior.dialogs.dialog.dismissal',
+        ]);
+    }, 30_000);
+
+    it('should report a dialog that ignores Escape', async () => {
+        const report = await run(IgnoresEscape);
+
+        expect(failedCheckIds(report)).to.include('behavior.dialogs.dialog.dismissal');
     }, 30_000);
 });

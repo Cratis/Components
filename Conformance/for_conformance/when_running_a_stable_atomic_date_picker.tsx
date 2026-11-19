@@ -6,6 +6,7 @@ import { describe, it } from 'vitest';
 import {
     builtInAtomicSlot,
     failedCheckIds,
+    passedCheckIds,
     libraryWithAtomicSlot,
     runAtomicSlotConformance,
 } from './given/a_stable_atomic_slot_library.js';
@@ -27,5 +28,15 @@ describe('when running a stable atomic date picker', () => {
         const report = await run(() => <div />);
 
         expect(failedCheckIds(report)).to.include('contract.display.datePicker.parts');
+    }, 30_000);
+
+    it('should check keyboard, focus and dismissal behavior of the conforming date picker', async () => {
+        const report = await run(builtInAtomicSlot('display.datePicker'));
+
+        expect(passedCheckIds(report)).to.include.members([
+            'behavior.display.datePicker.keyboard',
+            'behavior.display.datePicker.focus',
+            'behavior.display.datePicker.dismissal',
+        ]);
     }, 30_000);
 });

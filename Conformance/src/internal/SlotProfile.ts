@@ -20,6 +20,20 @@ export interface SlotOwnership {
     readonly adapter: readonly string[];
 }
 
+/** Observations of keyboard, focus and dismissal behavior; a key is present only when the slot has that concern. */
+export interface SlotInteractionResult {
+    readonly keyboard?: boolean;
+    readonly focus?: boolean;
+    readonly dismissal?: boolean;
+    /** Raw observations that explain the outcome, attached to every check as evidence. */
+    readonly detail?: Readonly<Record<string, unknown>>;
+    /** Observations that only settle after the interaction scope has ended, such as renderer state flushed on exit. */
+    readonly settled?: () => Promise<Pick<SlotInteractionResult, 'keyboard' | 'focus' | 'dismissal'>>;
+}
+
+/** Drives a mounted slot with dispatched keyboard and focus events and reports what happened. */
+export type SlotInteraction = (document: Document, container: HTMLElement) => Promise<SlotInteractionResult>;
+
 /** Internal fixture for one public renderer slot. */
 export interface SlotProfile {
     readonly slotId: unstable_SlotId;
@@ -43,6 +57,8 @@ export interface SlotProfile {
     readonly refCapable: boolean;
     readonly ownershipSelectors: readonly string[];
     readonly activate?: (document: Document, container: HTMLElement) => Promise<void>;
+    /** Keyboard, focus and dismissal observations, run against a fresh fixture of an atomic slot. */
+    readonly interact?: SlotInteraction;
     readonly exercise?: (
         document: Document,
         container: HTMLElement,

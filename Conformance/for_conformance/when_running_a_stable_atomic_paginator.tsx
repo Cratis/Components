@@ -96,4 +96,14 @@ describe('when running a stable atomic paginator', () => {
 
         expect(failedIds(report)).to.deep.equal(['behavior.datatables.paginator']);
     }, 30_000);
+
+    it('should check keyboard and focus behavior of the conforming paginator', async () => {
+        const report = await run(libraryWithPaginator(BuiltInPaginator));
+        const passed = report.checks.filter((check) => check.status === 'passed').map((check) => check.id);
+
+        expect(passed).to.include.members([
+            'behavior.datatables.paginator.keyboard',
+            'behavior.datatables.paginator.focus',
+        ]);
+    }, 30_000);
 });
