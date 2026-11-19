@@ -367,7 +367,7 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 
 `CommandDialog` is built on top of `CommandForm` and `Dialog`, and uses command form context internally for values, validation, and execution state.
 
-Field children are bound to the dialog's own command instance. Do not nest another `CommandForm` or an [`AutoCommandForm`](../CommandForm/auto-command-form.md) inside a `CommandDialog`: the inner form has its own command instance, so its fields never reach the command the dialog executes.
+Field children are bound to the dialog's own command instance. Do not nest another `CommandForm` or an [`AutoCommandForm`](../CommandForm/auto-command-form.md) inside a `CommandDialog`: the inner form has its own command instance, so its fields never reach the command the dialog executes. To generate fields inside a dialog, use [AutoCommandFields](../CommandForm/auto-command-fields.md).
 
 ## Integration
 

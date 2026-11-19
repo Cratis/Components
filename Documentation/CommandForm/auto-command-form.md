@@ -3,7 +3,7 @@ title: 'AutoCommandForm: generate command input fields'
 description: AutoCommandForm generates React inputs from Arc command property descriptors, with a field type registry for choosing or replacing controls.
 ---
 
-`AutoCommandForm` builds an input form from an Arc command's property descriptors, so you do not have to declare a field for every property. Use it when the command's types are enough to choose the controls; use explicit fields when you need individual labels, placement, or input-specific props.
+`AutoCommandForm` builds an input form from an Arc command's property descriptors, so you do not have to declare a field for every property. Use it when the command's types are enough to choose the controls; use explicit fields when you need individual labels, placement, or input-specific props. To generate fields inside a form or dialog you already have, use [AutoCommandFields](auto-command-fields.md).
 
 A property descriptor names a command property, its runtime type, and whether it is optional. A registry matches each descriptor to a field component. The built-in mappings use the same controls you can declare by hand:
 
