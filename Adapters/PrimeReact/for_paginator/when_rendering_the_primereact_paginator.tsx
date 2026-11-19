@@ -216,3 +216,13 @@ describe('when rendering the PrimeReact paginator with localized page links', ()
         expect(ellipses()).to.equal(0);
     });
 });
+
+describe('when rendering the PrimeReact paginator controls', () => {
+    it('should use the neutral secondary severity so no control paints primary text', async () => {
+        await render({ page: 2, pageCount: 6 });
+
+        const buttons = [...(navigation()?.querySelectorAll('button') ?? [])];
+        expect(buttons.length).to.be.greaterThan(0);
+        expect(buttons.every((button) => button.classList.contains('p-button-secondary'))).to.equal(true);
+    });
+});
