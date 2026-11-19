@@ -11,7 +11,7 @@ const sampleGuid = '852afc19-b630-43ba-a612-93e1c522078d';
 
 describe('when resetting a draft and an unrelated edit follows', given(an_auto_fields_host, host => {
     beforeEach(async () => {
-        await host.render('form', { registerGuid: true, fields: { currentValues: { sampleId: Guid.parse(sampleGuid) } } });
+        await host.render('form', { registerGuid: true, hostCurrentValues: { sampleId: Guid.parse(sampleGuid) }, fields: { currentValues: { sampleId: Guid.parse(sampleGuid) } } });
         await host.edit('Sample Id', 'partial');
         await host.edit('Name', 'Edited User');
     });

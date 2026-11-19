@@ -12,10 +12,14 @@ const otherGuid = '715ad639-c834-4032-b193-42eb599b73d7';
 
 describe('when resetting a draft and the overlay changes to another guid', given(an_auto_fields_host, host => {
     beforeEach(async () => {
-        await host.render('form', { registerGuid: true, fields: { currentValues: { sampleId: Guid.parse(sampleGuid) } } });
+        await host.render('form', { registerGuid: true, hostCurrentValues: { sampleId: Guid.parse(sampleGuid) }, fields: { currentValues: { sampleId: Guid.parse(sampleGuid) } } });
         await host.edit('Sample Id', 'partial');
-        await host.rerender('form', { fields: { currentValues: { sampleId: Guid.parse(otherGuid) } } });
+        await host.rerender('form', { hostCurrentValues: { sampleId: Guid.parse(otherGuid) }, fields: { currentValues: { sampleId: Guid.parse(otherGuid) } } });
     });
 
-    it('should discard the draft', () => host.input('Sample Id').value.should.not.equal('partial'));
+    it('should display the new identifier', () => host.input('Sample Id').value.should.equal(otherGuid));
+    it('should submit the new identifier', async () => {
+        await host.submit('form');
+        (host.submitted[0] as { sampleId: string }).sampleId.should.equal(otherGuid);
+    });
 }));
