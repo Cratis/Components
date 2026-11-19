@@ -12,9 +12,21 @@ export interface PlatformRoot {
     readonly ownedParts: readonly string[];
 }
 
+/** Who owns which part of a stable atomic slot's behavior, as published on the contract page. */
+export interface SlotOwnership {
+    /** What Components keeps for the slot. */
+    readonly core: readonly string[];
+    /** What an adapter that implements the slot owns. */
+    readonly adapter: readonly string[];
+}
+
 /** Internal fixture for one public renderer slot. */
 export interface SlotProfile {
     readonly slotId: unstable_SlotId;
+    /** Public props type of a stable atomic slot, for the generated contract page. */
+    readonly propsType?: string;
+    /** Core-versus-adapter ownership of a stable atomic slot, for the generated contract page. */
+    readonly ownership?: SlotOwnership;
     readonly partsKey: keyof CratisPartsManifest;
     readonly createProps: () => Readonly<Record<string, unknown>>;
     readonly createStateProps?: () => Readonly<Record<string, unknown>>;

@@ -18,6 +18,7 @@ import type { ProgressBarProps } from '@cratis/components/Display';
 import type { DialogProps } from '@cratis/components/Dialogs';
 import type { DropdownProps } from '@cratis/components/Dropdown';
 import type { SlotProfile } from './SlotProfile.js';
+import { slotContracts } from './slotContracts.js';
 
 const recordProps = <T extends object>(props: T) => {
     // SAFETY: Slot fixtures preserve the original typed object; the runner reads keys without mutation.
@@ -183,6 +184,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: numberInputSlotId,
+        ...slotContracts[numberInputSlotId],
         partsKey: 'NumericInput',
         ptKeys: ['root'],
         nativeSelector: 'input[type="number"]',
@@ -402,6 +404,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: 'common.tooltip',
+        ...slotContracts['common.tooltip'],
         partsKey: 'Tooltip',
         ptKeys: [],
         nativeSelector: '[data-cratis-part="trigger"]',
@@ -434,6 +437,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: 'dropdown.select',
+        ...slotContracts['dropdown.select'],
         partsKey: 'Dropdown',
         ptKeys: [
             'root',
@@ -568,6 +572,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: 'dialogs.dialog',
+        ...slotContracts['dialogs.dialog'],
         partsKey: 'Dialog',
         ptKeys: [
             'backdrop',
@@ -622,6 +627,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: 'display.datePicker',
+        ...slotContracts['display.datePicker'],
         partsKey: 'DatePickerInput',
         ptKeys: [
             'root',
@@ -715,6 +721,7 @@ export const createSlotProfiles = (
     },
     {
         slotId: 'datatables.paginator',
+        ...slotContracts['datatables.paginator'],
         partsKey: 'TablePaginator',
         ptKeys: [
             'root',

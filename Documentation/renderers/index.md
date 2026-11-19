@@ -124,7 +124,8 @@ select or date-picker atomic slots yet. Those controls use the built-in implemen
 Replacing their interactions requires an adapter that explicitly implements the corresponding atomic
 slot contract. A stable presentation adapter can implement the paginator, the tooltip, the select,
 the date picker, the dialog, or the number input through its optional `atomicSlots` map; see
-[stable atomic slots](primitive-adaptation.md#stable-atomic-slots).
+[stable atomic slots](primitive-adaptation.md#stable-atomic-slots); the
+[atomic slot contracts](atomic-slot-contracts.md) list each slot's props, parts and ownership.
 
 ## Focus ownership
 
@@ -158,6 +159,8 @@ Use the schema for editor/build-time manifest validation, then run `@cratis/comp
 
 - Use [primitive adaptation](primitive-adaptation.md) when the nine stable controls need vendor
   presentation.
+- Use [atomic slot contracts](atomic-slot-contracts.md) to see exactly what an adapter owns when it
+  implements the paginator, tooltip, select, date picker, dialog, or number input.
 - Use [custom composition](custom-composition.md) when the workflow itself must be vendor-native.
 - Check [unsupported renderer claims](unsupported.md) before promising replacement behavior.
 - Use [Troubleshooting](../troubleshooting.md#an-adapter-still-renders-a-built-in-control) when an active adapter falls back to a built-in control.
