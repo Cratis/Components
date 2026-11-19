@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef } from 'react';
+import { forwardRef, type ChangeEvent } from 'react';
 import { Input as DsInput, Textarea as DsTextarea } from '@digdir/designsystemet-react';
 import type { NumericInputProps, TextAreaProps, TextInputProps } from '@cratis/components/Common';
 import { classNames } from './classNames.js';
@@ -67,50 +67,66 @@ export const DesignsystemetTextInputSlot = forwardRef<HTMLInputElement, TextInpu
     },
 );
 
+type NumberRoot = NonNullable<NumericInputProps['pt']>['root'];
+
+const resolveNumberState = (props: NumericInputProps, root: NumberRoot) => {
+    const state = resolveInvalid(
+        props.invalid ?? false,
+        props['aria-invalid'],
+        root?.['aria-invalid'],
+    );
+    return {
+        ...state,
+        disabled: props.disabled ?? root?.disabled,
+        readOnly: props.readOnly ?? root?.readOnly,
+    };
+};
+
+const createNumberChangeHandler =
+    (root: NumberRoot, onChange: NumericInputProps['onChange']) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+        root?.onChange?.(event);
+        const next = event.currentTarget.valueAsNumber;
+        onChange?.(Number.isNaN(next) ? undefined : next, {
+            source: 'user',
+            nativeEvent: event.nativeEvent,
+        });
+    };
+
 /** Designsystemet implementation of the stable atomic `common.numberInput` slot. */
 export const DesignsystemetNumberInputSlot = forwardRef<HTMLInputElement, NumericInputProps>(
-    function DesignsystemetNumberInputSlot(
-        {
+    function DesignsystemetNumberInputSlot(props, ref) {
+        const {
             value,
-            invalid = false,
+            invalid: _invalid,
             onChange,
             pt,
             className,
             style,
-            disabled,
-            readOnly,
-            'aria-invalid': ariaInvalid,
+            disabled: _disabled,
+            readOnly: _readOnly,
+            'aria-invalid': _ariaInvalid,
             ...nativeProps
-        },
-        ref,
-    ) {
-        const effectiveDisabled = disabled ?? pt?.root?.disabled;
-        const effectiveReadOnly = readOnly ?? pt?.root?.readOnly;
-        const state = resolveInvalid(invalid, ariaInvalid, pt?.root?.['aria-invalid']);
+        } = props;
+        const root = pt?.root;
+        const state = resolveNumberState(props, root);
         return (
             <DsInput
-                {...pt?.root}
+                {...root}
                 {...nativeProps}
                 ref={ref}
                 type='number'
                 value={value ?? ''}
-                disabled={effectiveDisabled}
-                readOnly={effectiveReadOnly}
+                disabled={state.disabled}
+                readOnly={state.readOnly}
                 aria-invalid={state.ariaInvalid}
-                onChange={(event) => {
-                    pt?.root?.onChange?.(event);
-                    const next = event.currentTarget.valueAsNumber;
-                    onChange?.(Number.isNaN(next) ? undefined : next, {
-                        source: 'user',
-                        nativeEvent: event.nativeEvent,
-                    });
-                }}
-                className={classNames('cratis-designsystemet-text-input', pt?.root?.className, className)}
-                style={{ ...pt?.root?.style, ...style }}
+                onChange={createNumberChangeHandler(root, onChange)}
+                className={classNames('cratis-designsystemet-text-input', root?.className, className)}
+                style={{ ...root?.style, ...style }}
                 data-cratis-part='root'
-                data-disabled={effectiveDisabled || undefined}
+                data-disabled={state.disabled || undefined}
                 data-invalid={state.invalid || undefined}
-                data-readonly={effectiveReadOnly || undefined}
+                data-readonly={state.readOnly || undefined}
             />
         );
     },

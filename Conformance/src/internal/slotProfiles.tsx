@@ -32,6 +32,30 @@ const click = (container: ParentNode, selector: string) => {
     element?.click();
 };
 
+const numberInputSlotId = 'common.numberInput';
+
+const recordNumberChanges = (evidence: Map<string, Readonly<Record<string, unknown>>>) => {
+    let callbacks = 0;
+    const onChange: NumericInputProps['onChange'] = (value, meta) => {
+        callbacks += 1;
+        evidence.set(numberInputSlotId, {
+            callbacks,
+            value,
+            source: meta?.source,
+            nativeEvent: meta?.nativeEvent instanceof Event,
+        });
+    };
+    return onChange;
+};
+
+const typeNumber = (input: HTMLInputElement | null, value: string) => {
+    if (!input) {
+        return;
+    }
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+};
+
 /** Creates fresh public-prop fixtures for all fifteen ABI v1 slots. */
 export const createSlotProfiles = (
     evidence: Map<string, Readonly<Record<string, unknown>>>,
@@ -158,31 +182,20 @@ export const createSlotProfiles = (
         },
     },
     {
-        slotId: 'common.numberInput',
+        slotId: numberInputSlotId,
         partsKey: 'NumericInput',
         ptKeys: ['root'],
         nativeSelector: 'input[type="number"]',
         nativeTag: 'INPUT',
         refCapable: true,
         ownershipSelectors: ['input[type="number"]'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
+        createProps: () =>
+            recordProps({
                 name: 'quantity',
                 value: 3,
                 'aria-label': 'Sample quantity',
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('common.numberInput', {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
-            } satisfies NumericInputProps;
-            return recordProps(props);
-        },
+                onChange: recordNumberChanges(evidence),
+            } satisfies NumericInputProps),
         createStateProps: () =>
             recordProps({
                 value: 4,
@@ -192,16 +205,8 @@ export const createSlotProfiles = (
             } satisfies NumericInputProps),
         exercise: async (_document, container) => {
             const input = container.querySelector<HTMLInputElement>('input[type="number"]');
-            if (input) {
-                Object.getOwnPropertyDescriptor(
-                    HTMLInputElement.prototype,
-                    'value',
-                )?.set?.call(input, '7');
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            return (
-                evidence.get('common.numberInput') ?? { callbacks: 0, value: input?.value }
-            );
+            typeNumber(input, '7');
+            return evidence.get(numberInputSlotId) ?? { callbacks: 0, value: input?.value };
         },
     },
     {

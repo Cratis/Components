@@ -1,74 +1,81 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef } from 'react';
+import { forwardRef, type ChangeEvent } from 'react';
 import type { NumericInputProps } from './NumericInput';
 
+type Root = NonNullable<NumericInputProps['pt']>['root'];
 type AriaInvalid = NumericInputProps['aria-invalid'];
 
-const resolveInvalid = (invalid: boolean, ariaInvalid: AriaInvalid, partAriaInvalid: AriaInvalid) => {
-    const effective = ariaInvalid ?? partAriaInvalid ?? (invalid || undefined);
+interface RootState {
+    readonly disabled?: boolean;
+    readonly readOnly?: boolean;
+    readonly ariaInvalid: AriaInvalid;
+    readonly invalid: boolean;
+}
+
+const resolveState = (props: NumericInputProps, root: Root): RootState => {
+    const ariaInvalid = props['aria-invalid'] ?? root?.['aria-invalid'] ?? (props.invalid || undefined);
     return {
-        ariaInvalid: effective,
-        invalid: invalid || effective === true || effective === 'true',
+        disabled: props.disabled ?? root?.disabled,
+        readOnly: props.readOnly ?? root?.readOnly,
+        ariaInvalid,
+        invalid: Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true',
     };
 };
 
 const joinClassNames = (...values: readonly (string | undefined)[]) =>
     values.filter(Boolean).join(' ');
 
-const toNumber = (input: HTMLInputElement) => {
-    const next = input.valueAsNumber;
-    return Number.isNaN(next) ? undefined : next;
-};
+const createChangeHandler =
+    (root: Root, onChange: NumericInputProps['onChange']) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+        root?.onChange?.(event);
+        const next = event.currentTarget.valueAsNumber;
+        onChange?.(Number.isNaN(next) ? undefined : next, {
+            source: 'user',
+            nativeEvent: event.nativeEvent,
+        });
+    };
 
 /** Core implementation for the native number-input atomic slot. */
 export const NumericInputImplementation = forwardRef<
     HTMLInputElement,
     NumericInputProps
->(function NumericInputImplementation(
-    {
+>(function NumericInputImplementation(props, ref) {
+    const {
         value,
-        invalid = false,
+        invalid: _invalid,
         onChange,
         pt,
         className,
         style,
-        disabled,
-        readOnly,
-        'aria-invalid': ariaInvalid,
+        disabled: _disabled,
+        readOnly: _readOnly,
+        'aria-invalid': _ariaInvalid,
         ...nativeProps
-    },
-    ref,
-) {
-    const effectiveDisabled = disabled ?? pt?.root?.disabled;
-    const effectiveReadOnly = readOnly ?? pt?.root?.readOnly;
-    const state = resolveInvalid(invalid, ariaInvalid, pt?.root?.['aria-invalid']);
+    } = props;
+    const root = pt?.root;
+    const state = resolveState(props, root);
 
     return (
         <input
-            {...pt?.root}
+            {...root}
             {...nativeProps}
             ref={ref}
             type='number'
             value={value ?? ''}
-            disabled={effectiveDisabled}
-            readOnly={effectiveReadOnly}
+            disabled={state.disabled}
+            readOnly={state.readOnly}
             aria-invalid={state.ariaInvalid}
-            onChange={(event) => {
-                pt?.root?.onChange?.(event);
-                onChange?.(toNumber(event.currentTarget), {
-                    source: 'user',
-                    nativeEvent: event.nativeEvent,
-                });
-            }}
-            className={joinClassNames('cratis-text-input', 'cratis-numeric-input', pt?.root?.className, className)}
-            style={{ ...pt?.root?.style, ...style }}
+            onChange={createChangeHandler(root, onChange)}
+            className={joinClassNames('cratis-text-input', 'cratis-numeric-input', root?.className, className)}
+            style={{ ...root?.style, ...style }}
             data-cratis-component='NumericInput'
             data-cratis-part='root'
-            data-disabled={effectiveDisabled || undefined}
+            data-disabled={state.disabled || undefined}
             data-invalid={state.invalid || undefined}
-            data-readonly={effectiveReadOnly || undefined}
+            data-readonly={state.readOnly || undefined}
         />
     );
 });
