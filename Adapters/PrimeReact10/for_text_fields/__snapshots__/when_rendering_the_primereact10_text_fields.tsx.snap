@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`when rendering the PrimeReact 10 text fields > should render the text area markup unchanged for every characterized input 1`] = `
+{
+  "ariaInvalidFalse": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-invalid" aria-invalid="false" data-cratis-part="root" data-invalid="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "ariaInvalidString": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-invalid" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "ariaInvalidTrue": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-invalid" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "classAndStyle": "<textarea class="cratis-primereact10-text-area part consumer p-inputtextarea p-inputtext p-component" style="margin:1px;color:red" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "defaultValue": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-filled" placeholder="Type" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root">text</textarea>",
+  "disabled": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-disabled" disabled="" data-cratis-part="root" data-disabled="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "explicitBeatsPart": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component" aria-invalid="false" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "invalid": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-invalid" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "nativeProps": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component" name="field" data-extra="x" maxLength="4" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "partFallbacks": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-disabled p-invalid" disabled="" readOnly="" aria-invalid="true" id="root" data-cratis-part="root" data-disabled="true" data-invalid="true" data-readonly="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "plain": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "readOnly": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component" readOnly="" data-cratis-part="root" data-readonly="true" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "typePassword": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component" type="password" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root"></textarea>",
+  "value": "<textarea class="cratis-primereact10-text-area p-inputtextarea p-inputtext p-component p-filled" data-cratis-part="root" data-pc-name="inputtextarea" data-pc-section="root">text</textarea>",
+}
+`;
+
+exports[`when rendering the PrimeReact 10 text fields > should render the text input markup unchanged for every characterized input 1`] = `
+{
+  "ariaInvalidFalse": "<input class="cratis-primereact10-text-input p-inputtext p-component p-invalid" type="text" aria-invalid="false" data-cratis-part="root" data-invalid="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "ariaInvalidString": "<input class="cratis-primereact10-text-input p-inputtext p-component p-invalid" type="text" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "ariaInvalidTrue": "<input class="cratis-primereact10-text-input p-inputtext p-component p-invalid" type="text" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "classAndStyle": "<input class="cratis-primereact10-text-input part consumer p-inputtext p-component" style="margin:1px;color:red" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root"/>",
+  "defaultValue": "<input class="cratis-primereact10-text-input p-inputtext p-component p-filled" placeholder="Type" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root" value="text"/>",
+  "disabled": "<input class="cratis-primereact10-text-input p-inputtext p-component p-disabled" type="text" disabled="" data-cratis-part="root" data-disabled="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "explicitBeatsPart": "<input class="cratis-primereact10-text-input p-inputtext p-component" aria-invalid="false" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root"/>",
+  "invalid": "<input class="cratis-primereact10-text-input p-inputtext p-component p-invalid" type="text" aria-invalid="true" data-cratis-part="root" data-invalid="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "nativeProps": "<input class="cratis-primereact10-text-input p-inputtext p-component" data-extra="x" maxLength="4" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root" name="field"/>",
+  "partFallbacks": "<input class="cratis-primereact10-text-input p-inputtext p-component p-disabled p-invalid" disabled="" readOnly="" aria-invalid="true" id="root" type="text" data-cratis-part="root" data-disabled="true" data-invalid="true" data-readonly="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "plain": "<input class="cratis-primereact10-text-input p-inputtext p-component" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root"/>",
+  "readOnly": "<input class="cratis-primereact10-text-input p-inputtext p-component" type="text" readOnly="" data-cratis-part="root" data-readonly="true" data-pc-name="inputtext" data-pc-section="root"/>",
+  "typePassword": "<input class="cratis-primereact10-text-input p-inputtext p-component" type="password" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root"/>",
+  "value": "<input class="cratis-primereact10-text-input p-inputtext p-component p-filled" type="text" data-cratis-part="root" data-pc-name="inputtext" data-pc-section="root" value="text"/>",
+}
+`;

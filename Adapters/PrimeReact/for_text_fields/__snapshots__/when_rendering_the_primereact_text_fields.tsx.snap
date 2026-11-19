@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`when rendering the PrimeReact text fields > should render the text area markup unchanged for every characterized input 1`] = `
+{
+  "ariaInvalidFalse": "<textarea data-scope="textarea" aria-invalid="false" data-invalid="true" id="pr_id__R_1_" class="p-textarea p-component p-invalid cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "ariaInvalidString": "<textarea data-scope="textarea" aria-invalid="true" data-invalid="true" id="pr_id__R_1_" class="p-textarea p-component p-invalid cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "ariaInvalidTrue": "<textarea data-scope="textarea" aria-invalid="true" data-invalid="true" id="pr_id__R_1_" class="p-textarea p-component p-invalid cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "classAndStyle": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area part consumer" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root" style="margin:1px;color:red"></textarea>",
+  "defaultValue": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component p-filled cratis-primereact-text-area" placeholder="Type" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root">text</textarea>",
+  "disabled": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" disabled="" data-cratis-part="root" data-disabled="true" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "explicitBeatsPart": "<textarea data-scope="textarea" aria-invalid="false" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "invalid": "<textarea data-scope="textarea" aria-invalid="true" data-invalid="true" id="pr_id__R_1_" class="p-textarea p-component p-invalid cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "nativeProps": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" name="field" data-extra="x" maxLength="4" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "partFallbacks": "<textarea data-scope="textarea" aria-invalid="true" data-invalid="true" id="root" class="p-textarea p-component p-invalid cratis-primereact-text-area" disabled="" readOnly="" data-cratis-part="root" data-disabled="true" data-readonly="true" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "plain": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "readOnly": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" readOnly="" data-cratis-part="root" data-readonly="true" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "typePassword": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component cratis-primereact-text-area" type="password" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root"></textarea>",
+  "value": "<textarea data-scope="textarea" id="pr_id__R_1_" class="p-textarea p-component p-filled cratis-primereact-text-area" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="textarea" data-slot="root">text</textarea>",
+}
+`;
+
+exports[`when rendering the PrimeReact text fields > should render the text input markup unchanged for every characterized input 1`] = `
+{
+  "ariaInvalidFalse": "<input type="text" data-scope="inputtext" data-invalid="true" id="pr_id__R_1_" class="p-inputtext p-component p-invalid cratis-primereact-text-input" aria-invalid="false" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "ariaInvalidString": "<input type="text" data-scope="inputtext" data-invalid="true" id="pr_id__R_1_" class="p-inputtext p-component p-invalid cratis-primereact-text-input" aria-invalid="true" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "ariaInvalidTrue": "<input type="text" data-scope="inputtext" data-invalid="true" id="pr_id__R_1_" class="p-inputtext p-component p-invalid cratis-primereact-text-input" aria-invalid="true" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "classAndStyle": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input part consumer" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root" style="margin:1px;color:red"/>",
+  "defaultValue": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component p-filled cratis-primereact-text-input" placeholder="Type" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root" value="text"/>",
+  "disabled": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" disabled="" data-cratis-part="root" data-disabled="true" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "explicitBeatsPart": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" aria-invalid="false" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "invalid": "<input type="text" data-scope="inputtext" data-invalid="true" id="pr_id__R_1_" class="p-inputtext p-component p-invalid cratis-primereact-text-input" aria-invalid="true" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "nativeProps": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" data-extra="x" maxLength="4" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root" name="field"/>",
+  "partFallbacks": "<input type="text" data-scope="inputtext" data-invalid="true" id="root" class="p-inputtext p-component p-invalid cratis-primereact-text-input" disabled="" readOnly="" aria-invalid="true" data-cratis-part="root" data-disabled="true" data-readonly="true" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "plain": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "readOnly": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" readOnly="" data-cratis-part="root" data-readonly="true" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "typePassword": "<input type="password" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component cratis-primereact-text-input" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root"/>",
+  "value": "<input type="text" data-scope="inputtext" id="pr_id__R_1_" class="p-inputtext p-component p-filled cratis-primereact-text-input" data-cratis-part="root" data-id="pc__r_1h1_" data-styled="inputtext" data-slot="root" value="text"/>",
+}
+`;
