@@ -105,7 +105,7 @@ The package also exports:
   `ConformanceLimitation`, and `ConformanceReport` types.
 
 The stable `stable-presentation/v1` profile covers exactly nine primitive slots. The broader
-fourteen-slot inventory remains experimental. Checks cover static/runtime metadata consistency,
+fifteen-slot inventory remains experimental. Checks cover static/runtime metadata consistency,
 stable parts and canonical states, pass-through routing, native elements and refs, bounded form and
 callback behavior, behavior ownership, SSR/hydration, axe, RTL/forced-color/reduced-motion inputs,
 and skip discipline. See [CONFORMANCE.md](./CONFORMANCE.md) for the precise evidence boundary.

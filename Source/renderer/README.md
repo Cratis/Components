@@ -9,7 +9,7 @@ plus atomic self-hosting. `preloadRenderer` and lazy renderer entries remain def
 `SlotDeclaration` has no load contract yet, so adding preload behavior now would invent an ABI that
 adapter declarations cannot honor.
 
-All fourteen facades resolve external scopes/providers first and then pass a frozen, facade-local
+All fifteen facades resolve external scopes/providers first and then pass a frozen, facade-local
 Core declaration to `unstable_useSlot`. This keeps the application provider and package root
 setup-only: neither imports the private all-family `coreSlots.ts` ABI-proof table. Zero-configuration
 local Core resolution is silent, an active partial adapter reports fallback once after mount, and
