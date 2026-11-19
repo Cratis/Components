@@ -3,6 +3,7 @@
 
 import type { ComponentType } from 'react';
 import type { DatePickerInputProps } from '../../../Common/DatePickerInput';
+import type { NumericInputProps } from '../../../Common/NumericInput';
 import type { TooltipProps } from '../../../Common/Tooltip';
 import type { CratisDialogSlotProps } from '../../../Dialogs/DialogHost';
 import type { DropdownProps } from '../../../Dropdown/Dropdown';
@@ -50,6 +51,18 @@ export const tooltipAtomicSlots = (
     render: ComponentType<TooltipProps> = AdapterTooltip,
 ): CratisAtomicSlotMap => ({
     'common.tooltip': { mode: 'atomic', fidelity: 'native', render },
+});
+
+/** Adapter-owned number input that echoes the number it received. */
+export const AdapterNumericInput: ComponentType<NumericInputProps> = ({ value }) => (
+    <div data-adapter-number-input={String(value)} />
+);
+
+/** Atomic map implementing the stable number input with the adapter's component. */
+export const numberInputAtomicSlots = (
+    render: ComponentType<NumericInputProps> = AdapterNumericInput,
+): CratisAtomicSlotMap => ({
+    'common.numberInput': { mode: 'atomic', fidelity: 'native', render },
 });
 
 /** Adapter-owned select that echoes the value it received. */

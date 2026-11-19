@@ -26,5 +26,6 @@ export * from './Radio';
 export * from './Surface';
 export * from './Switch';
 export * from './TextArea';
+export * from './NumericInput';
 export * from './TextInput';
 export * from './NumberInput';

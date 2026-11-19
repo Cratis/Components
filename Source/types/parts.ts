@@ -30,6 +30,7 @@ export const cratisParts = {
     ActionMenubar: ['root', 'spinner', 'icon', 'label'],
     IconButton: ['root', 'spinner', 'icon', 'label'],
     TextInput: ['root'],
+    NumericInput: ['root'],
     TextArea: ['root'],
     Checkbox: ['root', 'input', 'box', 'indicator', 'label'],
     Radio: ['root', 'input', 'box', 'indicator', 'label'],
@@ -290,6 +291,9 @@ export const cratisPartStates = {
         'label': [],
     },
     TextInput: {
+        'root': ['disabled', 'invalid', 'readonly'],
+    },
+    NumericInput: {
         'root': ['disabled', 'invalid', 'readonly'],
     },
     TextArea: {

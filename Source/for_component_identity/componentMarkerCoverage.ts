@@ -84,6 +84,7 @@ export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCov
     NumberField: { marked: ['CommandForm/fields/NumberField.tsx'] },
     NumberInput: { marked: ['Common/NumberInput.tsx'] },
     NumberInputField: { delegatesTo: 'NumberInput' },
+    NumericInput: { marked: ['Common/NumericInputImplementation.tsx'] },
     ObjectContentEditor: { pending: true },
     ObjectNavigationalBar: { pending: true },
     OrderedItemEditor: { marked: ['ConfigurationEditor/OrderedItemEditor.tsx'] },

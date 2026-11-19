@@ -5,6 +5,7 @@ import type { ButtonProps } from '../Common/Button';
 import type { CheckboxProps } from '../Common/Checkbox';
 import type { DatePickerInputProps } from '../Common/DatePickerInput';
 import type { IconButtonProps } from '../Common/IconButton';
+import type { NumericInputProps } from '../Common/NumericInput';
 import type { RadioProps } from '../Common/Radio';
 import type { SurfaceProps } from '../Common/Surface';
 import type { SwitchProps } from '../Common/Switch';
@@ -47,6 +48,8 @@ declare module './slots.js' {
         'display.datePicker': DatePickerInputProps;
         /** Interaction-heavy, composite-adjacent table paginator contract. */
         'datatables.paginator': TablePaginatorProps;
+        /** Native number-input contract with a `number | undefined` value. */
+        'common.numberInput': NumericInputProps;
     }
 }
 

@@ -1,5 +1,6 @@
 {
     "atomicSlots": [
+        "common.numberInput",
         "common.tooltip",
         "datatables.paginator",
         "dialogs.dialog",
@@ -10,6 +11,7 @@
         "common.button",
         "common.checkbox",
         "common.iconButton",
+        "common.numberInput",
         "common.progress",
         "common.radio",
         "common.surface",

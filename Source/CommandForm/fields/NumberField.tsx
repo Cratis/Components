@@ -3,6 +3,11 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { NumericInputProps } from '../../Common/NumericInput';
+import { unstable_useSlot } from '../../renderer/RendererContext';
+import { renderSlot } from '../../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../../renderer/slots';
+import { joinClassNames, userChange } from './fieldSlotHelpers';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
@@ -34,6 +39,59 @@ interface NumberFieldComponentProps
     unstyled?: boolean;
 }
 
+/** Core NumberField markup, used when no adapter supplies `common.numberInput`. */
+const NumberFieldCore = ({
+    id,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    value,
+    onChange,
+    placeholder,
+    min,
+    max,
+    step,
+    invalid,
+    pt,
+}: NumericInputProps) => (
+    <input
+        {...pt?.root}
+        id={id}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        type='number'
+        value={value}
+        onChange={(event) =>
+            onChange?.(
+                Number.isNaN(event.currentTarget.valueAsNumber)
+                    ? undefined
+                    : event.currentTarget.valueAsNumber,
+                userChange(event),
+            )
+        }
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        aria-invalid={invalid || undefined}
+        data-disabled={pt?.root?.disabled || undefined}
+        data-invalid={invalid || undefined}
+        data-readonly={pt?.root?.readOnly || undefined}
+        data-cratis-part='input'
+        className={joinClassNames('cratis-field-input', 'cratis:w-full', pt?.root?.className)}
+    />
+);
+
+/** Frozen Core declaration resolved when no active renderer supplies `common.numberInput`. */
+const coreNumberInputDeclaration = Object.freeze({
+    mode: 'atomic',
+    fidelity: 'native',
+    render: NumberFieldCore,
+}) satisfies unstable_SlotDeclaration<'common.numberInput'>;
+
+/** Resolves `common.numberInput` and renders it. */
+const SlotNumberInput = (props: NumericInputProps) =>
+    renderSlot(unstable_useSlot('common.numberInput', coreNumberInputDeclaration), props);
+
 /** A numeric field bound to a number property on an Arc command. */
 export const NumberField = asCommandFormField<NumberFieldComponentProps>(
     (props) => {
@@ -60,32 +118,19 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
                 .filter(Boolean)
                 .join(' ')}
         >
-            <input
-                {...props.pt?.input}
+            <SlotNumberInput
                 id={accessibility.controlId}
                 aria-label={accessibility.ariaLabel}
                 aria-describedby={accessibility.ariaDescribedBy}
-                type='number'
                 value={props.value}
-                onChange={(event) =>
-                    props.onChange(
-                        Number.isNaN(event.currentTarget.valueAsNumber)
-                            ? 0
-                            : event.currentTarget.valueAsNumber,
-                    )
-                }
+                onChange={(value) => props.onChange(value ?? 0)}
                 placeholder={props.placeholder}
                 min={props.min}
                 max={props.max}
                 step={props.step}
+                invalid={props.invalid}
                 aria-invalid={props.invalid || undefined}
-                data-disabled={props.pt?.input?.disabled || undefined}
-                data-invalid={props.invalid || undefined}
-                data-readonly={props.pt?.input?.readOnly || undefined}
-                data-cratis-part='input'
-                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
-                    .filter(Boolean)
-                    .join(' ')}
+                pt={{ root: props.pt?.input }}
             />
             {accessibility.hiddenError}
         </div>

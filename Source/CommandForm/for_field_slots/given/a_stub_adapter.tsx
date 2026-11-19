@@ -14,6 +14,12 @@ type AnyProps = Record<string, unknown>;
 /** Props each stub slot received, keyed by slot id, for the latest render. */
 export const slotCalls: Record<string, AnyProps[]> = {};
 
+const stubValue = (type: string, input: HTMLInputElement) => {
+    if (type === 'text') return input.value;
+    if (type === 'number') return Number.isNaN(input.valueAsNumber) ? undefined : input.valueAsNumber;
+    return input.checked;
+};
+
 const stub = (slotId: string, marker: string, type: string) => {
     const Stub = (props: AnyProps) => {
         (slotCalls[slotId] ??= []).push(props);
@@ -24,7 +30,7 @@ const stub = (slotId: string, marker: string, type: string) => {
                 type={type}
                 id={props.id as string | undefined}
                 onChange={(event) =>
-                    onChange?.(type === 'text' ? event.currentTarget.value : event.currentTarget.checked)
+                    onChange?.(stubValue(type, event.currentTarget))
                 }
                 onBlur={props.onBlur as never}
             />
@@ -35,6 +41,7 @@ const stub = (slotId: string, marker: string, type: string) => {
 
 const slots = {
     'common.textInput': stub('common.textInput', 'text', 'text'),
+    'common.numberInput': stub('common.numberInput', 'number', 'number'),
     'common.textArea': stub('common.textArea', 'textarea', 'text'),
     'common.checkbox': stub('common.checkbox', 'checkbox', 'checkbox'),
     'common.radio': stub('common.radio', 'radio', 'radio'),

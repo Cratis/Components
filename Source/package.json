@@ -223,7 +223,8 @@
             "dropdown.select",
             "dialogs.dialog",
             "display.datePicker",
-            "datatables.paginator"
+            "datatables.paginator",
+            "common.numberInput"
         ],
         "modes": {
             "common.button": "presentation",
@@ -239,7 +240,8 @@
             "dropdown.select": "atomic",
             "dialogs.dialog": "atomic",
             "display.datePicker": "atomic",
-            "datatables.paginator": "atomic"
+            "datatables.paginator": "atomic",
+            "common.numberInput": "atomic"
         },
         "capabilities": [
             "slot.render",
