@@ -35,10 +35,14 @@ The MUI, PrimeReact 11, and PrimeReact 10 adapters must keep resolving exactly a
 Stable atomic slots are a separate, optional extension of `CratisPresentationUiLibrary`:
 
 - `cratisAtomicSlotIds` lists the atomic slots whose contracts are stable. The first release listed
-  only `datatables.paginator`; `common.tooltip`, `dropdown.select`, and `display.datePicker` were appended next. New ids are only ever appended.
+  only `datatables.paginator`; `common.tooltip`, `dropdown.select`, and `display.datePicker` were appended next,
+  then `dialogs.dialog`. New ids are only ever appended.
 - `CratisAtomicSlots` maps each id to its exact public props type, `CratisAtomicSlotDeclaration`
   requires `atomic` mode, `native` or `emulated` fidelity, and a component, and
-  `CratisAtomicSlotMap` makes every entry optional.
+  `CratisAtomicSlotMap` makes every entry optional. Amended by
+  [ADR 0008](0008-adapter-owned-dialog-shell.md): the `dialogs.dialog` contract is the public
+  `DialogProps` plus a Components-owned `host` prop, because the dialog shares its stack, result
+  flow and overlay host with Components.
 - `CratisPresentationUiLibrary.atomicSlots` is optional. `profileSlots` and `slots` keep meaning
   the nine presentation slots, so no existing manifest, validator, or adapter changes.
 - `definePresentationUiLibrary()` validates and freezes `atomicSlots` when it is present and leaves

@@ -165,8 +165,9 @@ Do not render a second interactive semantic root inside the first, forward one u
 independent state machines, or stack a vendor focus owner around a built-in focus owner. One user
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
-All four concrete adapters declare only the nine presentation slots. Their conformance reports
-cover those declared controls, not the atomic slots or any composite workflow.
+All four concrete adapters declare the nine presentation slots, and Designsystemet also declares
+the `dialogs.dialog` atomic slot. Their conformance reports cover those declared controls, not the
+other atomic slots or any composite workflow.
 
 ## Stable atomic slots
 
@@ -256,8 +257,25 @@ adapters keep the built-in select.
 Render the popover in the overlay container from `unstable_useOverlayEnvironment()`. No concrete
 adapter implements this slot yet: a faithful implementation has to reproduce the segmented input
 and the calendar part model, which the Designsystemet, MUI (without MUI X), and PrimeReact date
-controls do not provide without re-implementing the built-in picker. All four adapters keep the built-in date picker. The dialog atomic
-slot is not stable yet.
+controls do not provide without re-implementing the built-in picker. All four adapters keep the
+built-in date picker.
+
+### `dialogs.dialog`
+
+| Contract | Value |
+| --- | --- |
+| Props | `CratisDialogSlotProps`: the public `DialogProps` plus a Components-owned `host` prop of type `CratisDialogHost` |
+| Ref | None; the dialog does not forward a ref |
+| Parts | `DialogParts`: the adapter renders `root`, `header`, `title`, `subtitle` and `close`; `host.content`, `host.headerActions` and `host.footer` already carry `content`, `busy-scope`, `header-actions`, `footer`, `confirm` and `cancel`; a native `<dialog>` root leaves `backdrop` and `positioner` to the browser top layer |
+| Behavior | The adapter owns the modal shell: focus trap, Escape, outside press, scroll lock and focus restoration. It calls `host.dismiss()` for every user dismissal allowed by `host.dismissal` |
+| Components keeps | The dialog stack and z-index, the `DialogResult` flow, the typed footer, the header actions, busy and validity state, initial focus and the live region |
+| Overlays | Pass an element inside the modal shell to `host.registerOverlayHost`; while the dialog is open, descendant dropdowns, date pickers and tooltips portal into it |
+| Fallback | The built-in `Dialog` implementation |
+| Conformance | The `dialogs.dialog` profile, rendered through the public `Dialog` so the adapter receives its host: parts, pass-through, state coverage, server rendering, hydration, and one `onClose` call from the close button |
+
+[ADR 0008](../decisions/0008-adapter-owned-dialog-shell.md) records why the dialog takes a host.
+Designsystemet implements this slot with its `Dialog` as a native modal `<dialog>`. MUI,
+PrimeReact 11 and PrimeReact 10 keep the built-in dialog.
 
 ## Fallback
 
