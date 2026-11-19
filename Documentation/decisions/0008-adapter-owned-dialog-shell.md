@@ -64,7 +64,9 @@ While the dialog is open, Components gives its descendants an overlay environmen
 is the registered element, so a descendant dropdown or tooltip portals inside the dialog and stays
 usable in the top layer. The registration belongs to one open session of one dialog: a ref from a
 previous session or a closed dialog is ignored, and a closed dialog provides no container. Until the
-adapter registers an element, descendants keep the surrounding environment.
+adapter registers an element, descendants keep the surrounding environment. Components also
+publishes the dialog as its descendants' overlay host, so `unstable_useOverlayHost` reports the
+host's `id`, its effective open state and a tooltip z-index above the dialog.
 
 A dialog nested in another adapter dialog receives `visible` as false until its parent has opened,
 and again as soon as its parent hides. Native modals therefore open parent-first and close
