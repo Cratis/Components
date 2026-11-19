@@ -178,6 +178,8 @@
     "applyBeforeExecute": "export declare function applyBeforeExecute<TCommand>(onBeforeExecute: BeforeExecuteCallback<TCommand>, currentValues: TCommand): TCommand | Promise<TCommand>;"
   },
   "./CommandForm": {
+    "AutoCommandFields": "export declare function AutoCommandFields<TCommand extends object = object>(props: AutoCommandFieldsProps<TCommand>): React.ReactElement;",
+    "AutoCommandFieldsProps": "export interface AutoCommandFieldsProps<TCommand extends object> { exclude?: (keyof TCommand)[]; currentValues?: Partial<TCommand>; }",
     "AutoCommandForm": "export declare function AutoCommandForm<TCommand extends object = object, TResponse = object>(props: AutoCommandFormProps<TCommand, TResponse>): React.ReactElement;",
     "AutoCommandFormProps": "export interface AutoCommandFormProps<TCommand extends object, TResponse = object> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> { exclude?: (keyof TCommand)[]; footer?: React.ReactNode; }",
     "CalendarField": "CalendarField: (<TCommand = unknown>(props: import(\"@cratis/arc.react/commands\").CommandFormFieldComponentProps<CalendarFieldComponentProps, TCommand>) => React.ReactElement) & import(\"@cratis/arc.react/commands\").CommandFormMarked",
@@ -224,6 +226,8 @@
     "resolveFieldTypeProvider": "export declare function resolveFieldTypeProvider(propertyDescriptor: PropertyDescriptor): FieldTypeProvider | undefined;"
   },
   "./CommandForm/fields": {
+    "AutoCommandFields": "export declare function AutoCommandFields<TCommand extends object = object>(props: AutoCommandFieldsProps<TCommand>): React.ReactElement;",
+    "AutoCommandFieldsProps": "export interface AutoCommandFieldsProps<TCommand extends object> { exclude?: (keyof TCommand)[]; currentValues?: Partial<TCommand>; }",
     "AutoCommandForm": "export declare function AutoCommandForm<TCommand extends object = object, TResponse = object>(props: AutoCommandFormProps<TCommand, TResponse>): React.ReactElement;",
     "AutoCommandFormProps": "export interface AutoCommandFormProps<TCommand extends object, TResponse = object> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> { exclude?: (keyof TCommand)[]; footer?: React.ReactNode; }",
     "CalendarField": "CalendarField: (<TCommand = unknown>(props: import(\"@cratis/arc.react/commands\").CommandFormFieldComponentProps<CalendarFieldComponentProps, TCommand>) => React.ReactElement) & import(\"@cratis/arc.react/commands\").CommandFormMarked",

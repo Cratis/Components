@@ -6,3 +6,4 @@ export * from './fields';
 export * from './FieldTypeProvider';
 export * from './fieldTypeProviderRegistry';
 export * from './AutoCommandForm';
+export * from './AutoCommandFields';

@@ -18,6 +18,7 @@ import {
     isCommandFormField,
     markAsCommandFormColumn,
 } from '../CommandForm/commandFormMarkers';
+import { CommandOverlayContext } from '../CommandForm/commandOverlayContext';
 
 /**
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
@@ -375,18 +376,20 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
 
     return (
         <CommandForm<TCommand, TResponse> {...commandFormProps}>
-            <CommandDialogWrapper<TCommand, TResponse>
-                {...dialogProps}
-                onSuccess={props.onSuccess}
-                onValidationFailure={props.onValidationFailure}
-                onFailed={props.onFailed}
-                onException={props.onException}
-                onUnauthorized={props.onUnauthorized}
-                onBeforeExecute={onBeforeExecute}
-                confirmBeforeExecute={confirmBeforeExecute}
-            >
-                {children}
-            </CommandDialogWrapper>
+            <CommandOverlayContext.Provider value={commandFormProps.currentValues}>
+                <CommandDialogWrapper<TCommand, TResponse>
+                    {...dialogProps}
+                    onSuccess={props.onSuccess}
+                    onValidationFailure={props.onValidationFailure}
+                    onFailed={props.onFailed}
+                    onException={props.onException}
+                    onUnauthorized={props.onUnauthorized}
+                    onBeforeExecute={onBeforeExecute}
+                    confirmBeforeExecute={confirmBeforeExecute}
+                >
+                    {children}
+                </CommandDialogWrapper>
+            </CommandOverlayContext.Provider>
         </CommandForm>
     );
 };
