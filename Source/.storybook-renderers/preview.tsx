@@ -34,6 +34,19 @@ const allBodyClasses: string[] = Object.values(appearanceModes).flatMap((mode) =
 );
 let docsSiteAppearance: Appearance | undefined;
 
+const legacyAppearanceFallbacks: Readonly<Record<string, Appearance>> = {
+    'designsystemet-light': 'baseline-light',
+    'designsystemet-dark': 'baseline-dark',
+};
+
+export const resolveAppearance = (appearance: string | undefined): Appearance => {
+    if (appearance === undefined) return 'baseline-dark';
+    if (Object.hasOwn(appearanceModes, appearance)) return appearance as Appearance;
+    return Object.hasOwn(legacyAppearanceFallbacks, appearance)
+        ? legacyAppearanceFallbacks[appearance]
+        : 'baseline-dark';
+};
+
 const applyAppearance = (appearance: Appearance) => {
     const mode = appearanceModes[appearance];
     document.documentElement.classList.toggle(darkSelector, mode.dark);
@@ -70,10 +83,9 @@ export const globalTypes = {
 export const decorators = [
     (
         Story: React.ComponentType,
-        context: { readonly globals: { readonly appearance?: Appearance } },
+        context: { readonly globals: { readonly appearance?: string } },
     ) => {
-        const appearance =
-            docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
+        const appearance = docsSiteAppearance ?? resolveAppearance(context.globals.appearance);
         applyAppearance(appearance);
         return (
             <RendererPreviewProvider appearance={appearance}>
