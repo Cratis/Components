@@ -38,13 +38,14 @@ export const useDialogFocus = ({ visible, isBusy, initialFocus, refusedMessage }
 
     useEffect(() => {
         if (!visible) return;
-        const target =
+        // The title is a heading, so it is made programmatically focusable before it takes focus.
+        const focusTarget =
             initialFocus === DialogInitialFocus.Confirm
-                ? confirmRef.current
+                ? () => confirmRef.current?.focus()
                 : initialFocus === DialogInitialFocus.Cancel
-                  ? cancelRef.current
-                  : titleRef.current;
-        const frame = requestAnimationFrame(() => target?.focus());
+                  ? () => cancelRef.current?.focus()
+                  : () => focusTitle(titleRef.current);
+        const frame = requestAnimationFrame(focusTarget);
         return () => cancelAnimationFrame(frame);
     }, [initialFocus, visible]);
 
