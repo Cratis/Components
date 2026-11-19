@@ -51,7 +51,9 @@ import {
     type CratisPresentationSlotId,
     type CratisPresentationUiLibrary,
 } from '@cratis/components/renderer';
+import { MuiDialogSlot } from './dialog.js';
 import { MuiNumberInputSlot } from './numberInput.js';
+import { MuiPaginatorSlot } from './paginator.js';
 import { MuiTooltipSlot } from './tooltip.js';
 
 const capabilities = Object.freeze([
@@ -1019,6 +1021,16 @@ const atomicSlots = Object.freeze({
         mode: 'atomic',
         fidelity: 'native',
         render: MuiNumberInputSlot,
+    }),
+    'dialogs.dialog': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: MuiDialogSlot,
+    }),
+    'datatables.paginator': Object.freeze({
+        mode: 'atomic',
+        fidelity: 'native',
+        render: MuiPaginatorSlot,
     }),
 });
 

@@ -166,7 +166,7 @@ independent state machines, or stack a vendor focus owner around a built-in focu
 interaction must produce one semantic value change and have one keyboard/focus owner.
 
 All four concrete adapters declare the nine presentation slots. The MUI adapter also declares the
-`common.tooltip` and `common.numberInput` atomic slots, and Designsystemet also declares the
+`common.tooltip`, `common.numberInput`, `datatables.paginator` and `dialogs.dialog` atomic slots, and Designsystemet also declares the
 `dialogs.dialog`, `common.numberInput`, `datatables.paginator` and `common.tooltip` atomic slots.
 Their conformance reports cover the declared controls, not the other atomic slots or any composite
 workflow.
