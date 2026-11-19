@@ -23,6 +23,9 @@ const UNMAPPED = [
     '--cratis-z-index-toast',
 ];
 
+// Arc reads these (not --cratis-*) for validation and exception text; theme.css is not loaded with the bridge.
+const ARC_ERROR_PAIR = ['--color-error', '--color-error-bg'];
+
 const BRIDGE_SELECTORS = [
     ':root',
     '[data-color-scheme]',
@@ -79,8 +82,8 @@ describe('when bridging designsystemet tokens', () => {
         expect(bridgeProperties.filter((prop) => UNMAPPED.includes(prop))).to.deep.equal([]);
     });
 
-    it('should_declare_only_cratis_tokens', () => {
-        expect(bridgeProperties.filter((prop) => !prop.startsWith('--cratis-'))).to.deep.equal([]);
+    it('should_declare_only_cratis_tokens_and_the_arc_error_pair', () => {
+        expect(bridgeProperties.filter((prop) => !prop.startsWith('--cratis-') && !ARC_ERROR_PAIR.includes(prop))).to.deep.equal([]);
     });
 
     it('should_redeclare_on_every_element_designsystemet_redeclares_on', () => {

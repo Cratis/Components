@@ -48,6 +48,8 @@
     --cratis-primary-300: var(--ds-color-accent-border-subtle);
     --cratis-primary-400: var(--ds-color-accent-border-default);
     --cratis-primary-600: var(--ds-color-accent-base-hover);
+    /* Text-on-surface form of the action colour (secondary dialog buttons): the base colour is 4.4:1 on the dark surface. */
+    --cratis-action-foreground: var(--ds-color-accent-text-default);
     --cratis-action-background-hover: var(--ds-color-accent-base-hover);
     --cratis-action-background-active: var(--ds-color-accent-base-active);
     --cratis-highlight-bg: var(--ds-color-accent-surface-tinted);
@@ -69,6 +71,11 @@
     --cratis-warning-text: var(--ds-color-warning-text-default);
     --cratis-danger-background: var(--ds-color-danger-surface-tinted);
     --cratis-danger-text: var(--ds-color-danger-text-default);
+
+    /* Arc draws validation and exception text in var(--color-error) on var(--color-error-bg); theme.css is
+       not imported with this bridge, so without these the #c00 on #fee fallbacks fail contrast on dark. */
+    --color-error: var(--ds-color-danger-text-default);
+    --color-error-bg: var(--ds-color-danger-surface-tinted);
 
     --cratis-border-radius: var(--ds-border-radius-md);
     --cratis-corner-sm: var(--ds-border-radius-sm);

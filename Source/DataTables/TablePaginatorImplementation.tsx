@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { useLayoutEffect, useRef } from 'react';
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
@@ -30,6 +31,19 @@ export const TablePaginatorImplementation = ({
     const icon = useCratisIcon();
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
+    const rootRef = useRef<HTMLDivElement>(null);
+    const focusedControl = useRef<HTMLElement | null>(null);
+
+    // Paging to either end disables the control that was just activated, which would drop keyboard
+    // focus to the page body. Keep it inside the paginator, on the nearest enabled control.
+    useLayoutEffect(() => {
+        const control = focusedControl.current;
+        if (!control || document.activeElement !== control || !(control as HTMLButtonElement).disabled) return;
+        const buttons = [...(rootRef.current?.querySelectorAll('button') ?? [])];
+        const index = buttons.indexOf(control as HTMLButtonElement);
+        const candidates = isLast ? buttons.slice(0, index).reverse() : buttons.slice(index + 1);
+        candidates.find((button) => !button.disabled)?.focus();
+    }, [isFirst, isLast]);
     const rangeReport = paginatorRange(
         page,
         pageSize,
@@ -53,6 +67,11 @@ export const TablePaginatorImplementation = ({
     return (
         <div
             {...pt?.root}
+            ref={rootRef}
+            onFocus={(event) => {
+                focusedControl.current = event.target;
+                pt?.root?.onFocus?.(event);
+            }}
             role='navigation'
             aria-label={labels.navigation}
             data-cratis-part='root'
