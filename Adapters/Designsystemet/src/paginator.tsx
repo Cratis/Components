@@ -28,27 +28,42 @@ const rangeReport = ({ page, pageSize, totalItems, ariaLabels }: TablePaginatorP
     return (ariaLabels?.range ?? format)(page * pageSize + 1, Math.min((page + 1) * pageSize, totalItems), totalItems);
 };
 
+const defaultLabels = {
+    navigation: 'Pagination',
+    first: 'First page',
+    previous: 'Previous page',
+    next: 'Next page',
+    last: 'Last page',
+    pages: 'Pages',
+    page: (number: number) => `Page ${number}`,
+};
+
 const useLabels = ({ ariaLabels }: TablePaginatorProps) => {
     const messages = useCratisComponentsConfig().messages?.paginator;
+    const resolve = <K extends keyof typeof defaultLabels>(key: K) =>
+        (ariaLabels?.[key] ?? messages?.[key] ?? defaultLabels[key]) as (typeof defaultLabels)[K];
     return {
-        navigation: ariaLabels?.navigation ?? messages?.navigation ?? 'Pagination',
-        first: ariaLabels?.first ?? messages?.first ?? 'First page',
-        previous: ariaLabels?.previous ?? messages?.previous ?? 'Previous page',
-        next: ariaLabels?.next ?? messages?.next ?? 'Next page',
-        last: ariaLabels?.last ?? messages?.last ?? 'Last page',
-        page: ariaLabels?.page ?? messages?.page ?? ((number: number) => `Page ${number}`),
-        pages: ariaLabels?.pages ?? messages?.pages ?? 'Pages',
+        navigation: resolve('navigation'),
+        first: resolve('first'),
+        previous: resolve('previous'),
+        next: resolve('next'),
+        last: resolve('last'),
+        page: resolve('page'),
+        pages: resolve('pages'),
         range: messages?.range ?? defaultRange,
     };
 };
 
 // Paging to either end disables the control that was just activated, which would drop keyboard
 // focus to the page body. Keep it inside the paginator, on the nearest enabled control.
+const lostFocus = (control: HTMLElement | null): control is HTMLElement =>
+    control !== null && document.activeElement === control && (control as HTMLButtonElement).disabled;
+
 const useFocusKeeper = (rootRef: RefObject<HTMLDivElement | null>, isFirst: boolean, isLast: boolean) => {
     const focusedControl = useRef<HTMLElement | null>(null);
     useLayoutEffect(() => {
         const control = focusedControl.current;
-        if (!control || document.activeElement !== control || !(control as HTMLButtonElement).disabled) return;
+        if (!lostFocus(control)) return;
         const buttons = [...(rootRef.current?.querySelectorAll('button') ?? [])];
         const index = buttons.indexOf(control as HTMLButtonElement);
         const candidates = isLast ? buttons.slice(0, index).reverse() : buttons.slice(index + 1);
@@ -93,6 +108,63 @@ const Control = ({ name, label, parts, disabled, onActivate, children }: Control
     </Pagination.Button>
 );
 
+type Parts = TablePaginatorProps['pt'];
+
+const EllipsisItem = ({ pt }: { readonly pt: Parts }) => (
+    <Pagination.Item>
+        <span
+            {...pt?.ellipsis}
+            aria-hidden='true'
+            className={classNames('cratis-designsystemet-paginator__ellipsis', pt?.ellipsis?.className)}
+            data-cratis-part='ellipsis'
+        >
+            …
+        </span>
+    </Pagination.Item>
+);
+
+interface PageItemProps {
+    readonly number: number;
+    readonly current: boolean;
+    readonly label: string;
+    readonly pt: Parts;
+    readonly onSelect: () => void;
+}
+
+const PageItem = ({ number, current, label, pt, onSelect }: PageItemProps) => (
+    <Pagination.Item>
+        <Pagination.Button
+            variant='tertiary'
+            {...pt?.page}
+            type='button'
+            aria-label={label}
+            aria-current={current ? 'page' : undefined}
+            style={current ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
+            className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
+            data-selected={current || undefined}
+            data-cratis-part='page'
+            onClick={onSelect}
+        >
+            {number}
+        </Pagination.Button>
+    </Pagination.Item>
+);
+
+const RangeReport = ({ text, pt }: { readonly text: string | undefined; readonly pt: Parts }) =>
+    text ? (
+        <span {...pt?.range} className={classNames('cratis-table-paginator-range', pt?.range?.className)} data-cratis-part='range'>
+            {text}
+        </span>
+    ) : null;
+
+const PageInfo = ({ page, pageCount, pt }: { readonly page: number; readonly pageCount: number; readonly pt: Parts }) => (
+    <Pagination.Item>
+        <span {...pt?.info} className={classNames('cratis-table-paginator-info', pt?.info?.className)} data-cratis-part='info'>
+            {page + 1} / {Math.max(pageCount, 1)}
+        </span>
+    </Pagination.Item>
+);
+
 const PageList = ({
     page,
     pageCount,
@@ -104,33 +176,16 @@ const PageList = ({
     const options = typeof pageLinks === 'object' ? pageLinks : undefined;
     return paginatorPages(page, pageCount, options?.siblings, options?.boundaries).map((item) =>
         item.kind === 'ellipsis' ? (
-            <Pagination.Item key={item.key}>
-                <span
-                    {...pt?.ellipsis}
-                    aria-hidden='true'
-                    className={classNames('cratis-designsystemet-paginator__ellipsis', pt?.ellipsis?.className)}
-                    data-cratis-part='ellipsis'
-                >
-                    …
-                </span>
-            </Pagination.Item>
+            <EllipsisItem key={item.key} pt={pt} />
         ) : (
-            <Pagination.Item key={item.page}>
-                <Pagination.Button
-                    variant='tertiary'
-                    {...pt?.page}
-                    type='button'
-                    aria-label={pageLabel(item.page + 1)}
-                    aria-current={item.page === page ? 'page' : undefined}
-                    style={item.page === page ? { ...currentPageStyle, ...pt?.page?.style } : pt?.page?.style}
-                    className={classNames('cratis-designsystemet-paginator__page', pt?.page?.className)}
-                    data-selected={item.page === page || undefined}
-                    data-cratis-part='page'
-                    onClick={() => onPageChange(item.page)}
-                >
-                    {item.page + 1}
-                </Pagination.Button>
-            </Pagination.Item>
+            <PageItem
+                key={item.page}
+                number={item.page + 1}
+                current={item.page === page}
+                label={pageLabel(item.page + 1)}
+                pt={pt}
+                onSelect={() => onPageChange(item.page)}
+            />
         ),
     );
 };
@@ -170,30 +225,14 @@ export const DesignsystemetPaginatorSlot = (props: TablePaginatorProps) => {
                 data-cratis-part='root'
                 data-cratis-component='TablePaginator'
             >
-                {range && (
-                    <span
-                        {...pt?.range}
-                        className={classNames('cratis-table-paginator-range', pt?.range?.className)}
-                        data-cratis-part='range'
-                    >
-                        {range}
-                    </span>
-                )}
+                <RangeReport text={range} pt={pt} />
                 {control('first', isFirst, 0, <span aria-hidden='true'>«</span>)}
                 <Pagination.List {...(pageLinks ? pagesPart(pt?.pages, labels.pages) : undefined)}>
                     <Pagination.Item>{control('previous', isFirst, page - 1, labels.previous)}</Pagination.Item>
                     {pageLinks ? (
                         <PageList {...props} pageLabel={labels.page} />
                     ) : (
-                        <Pagination.Item>
-                            <span
-                                {...pt?.info}
-                                className={classNames('cratis-table-paginator-info', pt?.info?.className)}
-                                data-cratis-part='info'
-                            >
-                                {page + 1} / {Math.max(pageCount, 1)}
-                            </span>
-                        </Pagination.Item>
+                        <PageInfo page={page} pageCount={pageCount} pt={pt} />
                     )}
                     <Pagination.Item>{control('next', isLast, page + 1, labels.next)}</Pagination.Item>
                 </Pagination.List>
