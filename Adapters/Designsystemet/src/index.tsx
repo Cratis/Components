@@ -19,6 +19,7 @@ import {
     DesignsystemetSwitchSlot,
 } from './choice.js';
 import { DesignsystemetDialogSlot } from './dialog.js';
+import { DesignsystemetTooltipSlot } from './tooltip.js';
 import { DesignsystemetPaginatorSlot } from './paginator.js';
 import { DesignsystemetProgressSlot, DesignsystemetSurfaceSlot } from './display.js';
 import {
@@ -59,6 +60,7 @@ const slots = Object.freeze({
 const atomicSlots = Object.freeze({
     'dialogs.dialog': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetDialogSlot }),
     'common.numberInput': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetNumberInputSlot }),
+    'common.tooltip': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetTooltipSlot }),
     'datatables.paginator': Object.freeze({ mode: 'atomic', fidelity: 'native', render: DesignsystemetPaginatorSlot }),
 }) satisfies CratisAtomicSlotMap;
 

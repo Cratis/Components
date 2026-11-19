@@ -71,6 +71,7 @@ describe('when using the Designsystemet stable presentation profile', () => {
             ...stablePresentationSlots,
             'dialogs.dialog',
             'common.numberInput',
+            'common.tooltip',
             'datatables.paginator',
         ]);
     });

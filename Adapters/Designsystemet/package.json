@@ -67,6 +67,7 @@
             "common.surface",
             "dialogs.dialog",
             "common.numberInput",
+            "common.tooltip",
             "datatables.paginator"
         ],
         "modes": {
@@ -81,6 +82,7 @@
             "common.surface": "presentation",
             "dialogs.dialog": "atomic",
             "common.numberInput": "atomic",
+            "common.tooltip": "atomic",
             "datatables.paginator": "atomic"
         },
         "capabilities": [
