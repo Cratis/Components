@@ -167,11 +167,17 @@ try {
         }
     }
 
-    const declarationFiles = [...fileNames].filter((file) => file.endsWith('.d.ts'));
-    if (declarationFiles.length !== 1) {
-        throw new Error(
-            `Expected one public declaration file, found ${declarationFiles.length}.`,
-        );
+    // Internal module declarations ship alongside `dist/index.d.ts` but are unreachable through
+    // the package `exports` map, which exposes only the root entry.
+    if (JSON.stringify(Object.keys(packageJson.exports)) !== JSON.stringify(['./package.json', '.'])) {
+        throw new Error('Only the root entry may be exported; internal modules must stay private.');
+    }
+    const declarationNames = [...fileNames]
+        .filter((file) => file.endsWith('.d.ts'))
+        .map((file) => path.basename(file))
+        .sort();
+    if (JSON.stringify(declarationNames) !== JSON.stringify(['index.d.ts', 'tooltip.d.ts'])) {
+        throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }
     const declarations = readFileSync(
         path.join(unpackedPackage, 'dist/index.d.ts'),
