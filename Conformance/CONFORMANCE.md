@@ -15,6 +15,7 @@ The automated families are:
 - bounded native form/callback behavior and one interactive semantic root per declared ownership selector;
 - internal React-boundary normalization fixtures (props, styles, refs, events, cleanup, StrictMode);
 - DOM-free deterministic server rendering, slot-local output distinction, hydration, and bounded overlay absence/presence;
+- keyboard, focus, and dismissal behavior (`behavior.<slot>.keyboard|focus|dismissal`) for the declared stable atomic slots that provide an interaction profile;
 - axe WCAG A/AA scans plus a real slot rendered inside bounded RTL, forced-color-adjust, and reduced-transition DOM hosts;
 - a separate packed-package gate covering every emitted declaration, runtime entry loading, and strict Bundler/NodeNext consumer compilation.
 
@@ -46,6 +47,7 @@ general evidence boundary or the limitations below.
 
 ## Explicit limitations
 
+- keyboard, focus, and dismissal checks run in jsdom; focus-trap containment, top-layer stacking, modal inertness, and dialog focus return to the opener are browser-carried evidence, not established by this API.
 - axe is automated DOM analysis and cannot replace manual keyboard, screen-reader, magnification,
   voice-control, or other assistive-technology review.
 - jsdom does not establish behavior across browser engines, devices, touch/pointer combinations, or

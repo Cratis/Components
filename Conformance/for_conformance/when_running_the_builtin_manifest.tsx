@@ -25,8 +25,8 @@ describe('when running the built-in renderer manifest', () => {
 
         expect(failures).to.deep.equal([]);
         expect(report.passed).to.equal(true);
-        expect(report.summary.total).to.equal(158);
-        expect(report.summary.passed).to.equal(158);
+        expect(report.summary.total).to.equal(171);
+        expect(report.summary.passed).to.equal(171);
         expect(report.summary.skipped).to.equal(0);
         expect(
             report.checks.find((check) => check.id === 'manifest.immutable')?.status,

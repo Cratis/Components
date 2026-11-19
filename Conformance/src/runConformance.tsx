@@ -66,7 +66,7 @@ const limitations = Object.freeze([
     {
         id: 'jsdom-not-browser-matrix',
         message:
-            'The API exercises DOM, forms, hydration-shaped markup, direction, and media-query inputs; it does not replace the repository Storybook browser/axe gate or a browser matrix.',
+            'The API exercises DOM, forms, hydration-shaped markup, direction, and media-query inputs; it does not replace the repository Storybook browser/axe gate or a browser matrix. Focus-trap containment, top-layer stacking, and modal inertness are browser-only.',
     },
     {
         id: 'visual-modes-not-screenshots',
@@ -123,6 +123,57 @@ const mount = async (
 const unmount = async (fixture: MountedFixture) => {
     await act(async () => fixture.root.unmount());
     fixture.container.remove();
+};
+
+const interactionMessages = {
+    keyboard: 'The slot is operable from the keyboard.',
+    focus: 'The slot manages focus as its contract requires.',
+    dismissal: 'The slot dismisses on Escape.',
+} as const;
+
+/**
+ * Drives a fresh fixture of a stable atomic slot with dispatched keyboard and focus events and adds
+ * one check per concern the slot reports: `behavior.<slot>.keyboard`, `.focus` and `.dismissal`.
+ */
+const checkInteractions = async (
+    checks: ConformanceCheck[],
+    document: Document,
+    { declaration, profile }: { declaration: unstable_SlotDeclaration<unstable_SlotId>; profile: SlotProfile },
+    options: ConformanceOptions,
+) => {
+    let fixture: MountedFixture | undefined;
+    try {
+        fixture = await mount(
+            document,
+            declaration,
+            profile.createProps(),
+            profile.refCapable,
+            options.wrapper,
+        );
+        const mounted = fixture;
+        const interacted =
+            (await act(async () => profile.interact?.(document, mounted.container))) ?? {};
+        const observed = { ...interacted, ...(await interacted.settled?.()) };
+        for (const concern of ['keyboard', 'focus', 'dismissal'] as const) {
+            const passed = observed[concern];
+            if (passed === undefined) continue;
+            addCheck(
+                checks,
+                ConformanceFamily.Behavior,
+                `behavior.${profile.slotId}.${concern}`,
+                passed,
+                passed
+                    ? interactionMessages[concern]
+                    : `${interactionMessages[concern]} It did not respond as required.`,
+                profile.slotId,
+                { concern, passed, ...observed.detail },
+            );
+        }
+    } catch (error) {
+        addError(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}.interaction`, error, profile.slotId);
+    } finally {
+        if (fixture) await unmount(fixture);
+    }
 };
 
 const markerForPart = (part: string) =>
@@ -700,6 +751,10 @@ const checkSlot = async (
         } finally {
             if (stateFixture) await unmount(stateFixture);
         }
+    }
+
+    if (profile.interact) {
+        await checkInteractions(checks, document, { declaration: typedDeclaration, profile }, options);
     }
 
     const expectedStateAssociations = stateAssociationsOf(

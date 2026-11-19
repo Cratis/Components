@@ -79,3 +79,8 @@ export const runAtomicSlotConformance = (
 export const failedCheckIds = (
     report: Awaited<ReturnType<typeof runAtomicSlotConformance>>,
 ) => report.checks.filter((check) => check.status === 'failed').map((check) => check.id);
+
+/** Ids of the passed checks in a conformance report. */
+export const passedCheckIds = (
+    report: Awaited<ReturnType<typeof runAtomicSlotConformance>>,
+) => report.checks.filter((check) => check.status === 'passed').map((check) => check.id);

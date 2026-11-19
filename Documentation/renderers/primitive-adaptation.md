@@ -197,7 +197,9 @@ An atomic implementation owns the whole interaction for its control: keyboard, f
 callbacks. An omitted atomic slot, or a library without `atomicSlots`, keeps the built-in
 Components implementation. List each implemented atomic slot in the package `cratis.slots`
 metadata with mode `atomic` in `cratis.modes`; `@cratis/components.conformance` runs the slot's
-profile for it.
+profile for it. The [atomic slot contracts](atomic-slot-contracts.md) page is generated from those
+profiles and lists each slot's props type, root element, parts, ref, and what Components keeps versus
+what the adapter owns.
 
 ### `datatables.paginator`
 

@@ -15,6 +15,7 @@ import {
 import { unstable_cratisBuiltIn } from '@cratis/components/renderer/builtin';
 import { describe, it } from 'vitest';
 import { runConformance } from '../src/index.js';
+import { atomicSlots as publishedPaginator } from '../for_slot_contracts/snippets/paginator.js';
 
 type PaginatorProps = CratisAtomicSlots['datatables.paginator'];
 
@@ -77,6 +78,16 @@ const run = (library: CratisPresentationUiLibrary) =>
 const failedIds = (report: Awaited<ReturnType<typeof run>>) =>
     report.checks.filter((check) => check.status === 'failed').map((check) => check.id);
 
+// An adapter paginator whose controls swallow every key press, so only a pointer can page.
+const KeyboardSuppressed = (props: PaginatorProps) => {
+    const Published = publishedPaginator['datatables.paginator'].render;
+    return (
+        <div onKeyDownCapture={(event) => event.preventDefault()}>
+            <Published {...props} />
+        </div>
+    );
+};
+
 describe('when running a stable atomic paginator', () => {
     it('should exercise and pass a conforming adapter paginator', async () => {
         const report = await run(libraryWithPaginator(BuiltInPaginator));
@@ -94,6 +105,28 @@ describe('when running a stable atomic paginator', () => {
 
         const report = await run(libraryWithPaginator(Silent));
 
-        expect(failedIds(report)).to.deep.equal(['behavior.datatables.paginator']);
+        expect(failedIds(report)).to.include('behavior.datatables.paginator');
+    }, 30_000);
+
+    it('should pass a paginator of native buttons that page from the keyboard', async () => {
+        const report = await run(libraryWithPaginator(publishedPaginator['datatables.paginator'].render));
+
+        expect(failedIds(report).filter((id) => id.startsWith('behavior.'))).to.deep.equal([]);
+    }, 30_000);
+
+    it('should report a paginator whose controls cannot be activated from the keyboard', async () => {
+        const report = await run(libraryWithPaginator(KeyboardSuppressed));
+
+        expect(failedIds(report)).to.include('behavior.datatables.paginator.keyboard');
+    }, 30_000);
+
+    it('should check keyboard and focus behavior of the conforming paginator', async () => {
+        const report = await run(libraryWithPaginator(BuiltInPaginator));
+        const passed = report.checks.filter((check) => check.status === 'passed').map((check) => check.id);
+
+        expect(passed).to.include.members([
+            'behavior.datatables.paginator.keyboard',
+            'behavior.datatables.paginator.focus',
+        ]);
     }, 30_000);
 });
