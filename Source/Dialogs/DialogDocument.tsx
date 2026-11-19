@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Dialog as AriaDialog } from 'react-aria-components/Dialog';
+import { useMemo } from 'react';
 import type React from 'react';
 import { classNames } from '../ClassNames/classNames';
-import { DialogStackContext } from '../renderer/DialogStackContext';
+import { DialogStackContext, OverlayHostContext } from '../renderer/DialogStackContext';
 import { DialogFooter, type DialogFooterProps } from './DialogFooter';
 import { DialogHeader, type DialogHeaderProps } from './DialogHeader';
 import type { DialogParts } from './Dialog';
@@ -79,6 +80,8 @@ export interface DialogDocumentProps {
     /** The footer, or null when the dialog has no footer. */
     footer: DialogFooterProps | null;
     stackZIndex: string;
+    /** Identity of this dialog instance, published to descendants as their overlay host. */
+    hostId: string;
     visible: boolean;
     contentStyle: React.CSSProperties | undefined;
     announcement: Announcement | null;
@@ -90,24 +93,30 @@ export const DialogDocument = ({
     header,
     footer,
     stackZIndex,
+    hostId,
     visible,
     contentStyle,
     announcement,
     children,
-}: DialogDocumentProps) => (
-    <DialogStackContext.Provider value={stackZIndex}>
-        <AriaDialog
-            className='cratis-dialog__document'
-            aria-describedby={header.hasSubtitle ? header.subtitleId : undefined}
-        >
-            <>
-                <DialogHeader {...header} />
-                <DialogContent visible={visible} isBusy={header.isBusy} contentStyle={contentStyle} pt={header.pt}>
-                    {children}
-                </DialogContent>
-                {footer && <DialogFooter {...footer} />}
-                <LiveRegion announcement={announcement} />
-            </>
-        </AriaDialog>
-    </DialogStackContext.Provider>
-);
+}: DialogDocumentProps) => {
+    const host = useMemo(() => ({ id: hostId, open: visible, stackZIndex }), [hostId, visible, stackZIndex]);
+    return (
+        <DialogStackContext.Provider value={stackZIndex}>
+            <OverlayHostContext.Provider value={host}>
+                <AriaDialog
+                    className='cratis-dialog__document'
+                    aria-describedby={header.hasSubtitle ? header.subtitleId : undefined}
+                >
+                    <>
+                        <DialogHeader {...header} />
+                        <DialogContent visible={visible} isBusy={header.isBusy} contentStyle={contentStyle} pt={header.pt}>
+                            {children}
+                        </DialogContent>
+                        {footer && <DialogFooter {...footer} />}
+                        <LiveRegion announcement={announcement} />
+                    </>
+                </AriaDialog>
+            </OverlayHostContext.Provider>
+        </DialogStackContext.Provider>
+    );
+};

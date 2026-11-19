@@ -19,6 +19,7 @@ export type ComponentMarkerCoverage =
 
 export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCoverage>> = {
     ActionMenubar: { marked: ['Common/ActionMenubar.tsx'] },
+    AutoCommandFields: { exempt: 'Renders only the generated host fields in a fragment, with no root element of its own.' },
     AutoCommandForm: { pending: true },
     Avatar: { marked: ['Display/Avatar.tsx'] },
     Badge: { marked: ['Display/Badge.tsx'] },

@@ -178,6 +178,8 @@
     "applyBeforeExecute": "export declare function applyBeforeExecute<TCommand>(onBeforeExecute: BeforeExecuteCallback<TCommand>, currentValues: TCommand): TCommand | Promise<TCommand>;"
   },
   "./CommandForm": {
+    "AutoCommandFields": "export declare function AutoCommandFields<TCommand extends object = object>(props: AutoCommandFieldsProps<TCommand>): React.ReactElement;",
+    "AutoCommandFieldsProps": "export interface AutoCommandFieldsProps<TCommand extends object> { exclude?: (keyof TCommand)[]; currentValues?: Partial<TCommand>; }",
     "AutoCommandForm": "export declare function AutoCommandForm<TCommand extends object = object, TResponse = object>(props: AutoCommandFormProps<TCommand, TResponse>): React.ReactElement;",
     "AutoCommandFormProps": "export interface AutoCommandFormProps<TCommand extends object, TResponse = object> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> { exclude?: (keyof TCommand)[]; footer?: React.ReactNode; }",
     "CalendarField": "CalendarField: (<TCommand = unknown>(props: import(\"@cratis/arc.react/commands\").CommandFormFieldComponentProps<CalendarFieldComponentProps, TCommand>) => React.ReactElement) & import(\"@cratis/arc.react/commands\").CommandFormMarked",
@@ -224,6 +226,8 @@
     "resolveFieldTypeProvider": "export declare function resolveFieldTypeProvider(propertyDescriptor: PropertyDescriptor): FieldTypeProvider | undefined;"
   },
   "./CommandForm/fields": {
+    "AutoCommandFields": "export declare function AutoCommandFields<TCommand extends object = object>(props: AutoCommandFieldsProps<TCommand>): React.ReactElement;",
+    "AutoCommandFieldsProps": "export interface AutoCommandFieldsProps<TCommand extends object> { exclude?: (keyof TCommand)[]; currentValues?: Partial<TCommand>; }",
     "AutoCommandForm": "export declare function AutoCommandForm<TCommand extends object = object, TResponse = object>(props: AutoCommandFormProps<TCommand, TResponse>): React.ReactElement;",
     "AutoCommandFormProps": "export interface AutoCommandFormProps<TCommand extends object, TResponse = object> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> { exclude?: (keyof TCommand)[]; footer?: React.ReactNode; }",
     "CalendarField": "CalendarField: (<TCommand = unknown>(props: import(\"@cratis/arc.react/commands\").CommandFormFieldComponentProps<CalendarFieldComponentProps, TCommand>) => React.ReactElement) & import(\"@cratis/arc.react/commands\").CommandFormMarked",
@@ -791,6 +795,7 @@
     "unstable_CratisOverlayEnvironment": "export type unstable_CratisOverlayEnvironment = CratisOverlayEnvironment;",
     "unstable_CratisSlots": "export interface unstable_CratisSlots extends Record<never, never> { } | interface unstable_CratisSlots { 'common.button': ButtonProps; 'common.iconButton': IconButtonProps; 'common.textInput': TextInputProps; 'common.textArea': TextAreaProps; 'common.checkbox': CheckboxProps; 'common.radio': RadioProps; 'common.switch': SwitchProps; 'common.progress': ProgressBarProps; 'common.surface': SurfaceProps; 'common.tooltip': TooltipProps; 'dropdown.select': DropdownProps<unknown>; 'dialogs.dialog': CratisDialogSlotProps; 'display.datePicker': DatePickerInputProps; 'datatables.paginator': TablePaginatorProps; }",
     "unstable_Fidelity": "export type unstable_Fidelity = 'native' | 'emulated' | 'unsupported';",
+    "unstable_OverlayHost": "export interface unstable_OverlayHost { readonly id: string; readonly open: boolean; readonly tooltipZIndex: string; }",
     "unstable_RendererScope": "unstable_RendererScope: (props: unstable_RendererScopeProps) => string | number | bigint | boolean | import(\"react\").JSX.Element | Iterable<ReactNode> | Promise<string | number | bigint | boolean | Iterable<ReactNode> | import(\"react\").ReactElement<unknown, string | import(\"react\").JSXElementConstructor<any>> | import(\"react\").ReactPortal | null | undefined> | null | undefined",
     "unstable_RendererScopeProps": "export interface unstable_RendererScopeProps { readonly use: unstable_UiLibrary | readonly unstable_UiLibrary[]; readonly only?: readonly unstable_SlotId[]; readonly children: ReactNode; }",
     "unstable_RendererSetup": "export type unstable_RendererSetup = CratisRendererSetup;",
@@ -806,6 +811,7 @@
     "unstable_defineUiLibrary": "unstable_defineUiLibrary: <const T extends unstable_UiLibrary>(library: T) => T",
     "unstable_useCapability": "unstable_useCapability: (capability: unstable_CapabilityId) => boolean",
     "unstable_useOverlayEnvironment": "unstable_useOverlayEnvironment: () => unstable_CratisOverlayEnvironment",
+    "unstable_useOverlayHost": "unstable_useOverlayHost: () => unstable_OverlayHost",
     "unstable_useRendererId": "unstable_useRendererId: () => string"
   },
   "./renderer/builtin": {

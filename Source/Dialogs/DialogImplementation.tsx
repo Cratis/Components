@@ -54,6 +54,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
     const { messages, dialogHeaderActions } = useCratisComponentsConfig();
     const dialogId = useId();
     const subtitleId = useId();
+    const hostId = useId();
     const labels = resolveDialogLabels(props, messages?.dialog);
     const icon = useCratisIcon();
     const isBrowser = useIsBrowser();
@@ -81,6 +82,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
     const dialogDocument = (
         <DialogDocument
             stackZIndex={resolvedZIndex ?? DIALOG_ZINDEX_TOKEN}
+            hostId={hostId}
             visible={visible}
             contentStyle={props.contentStyle}
             announcement={announcement}

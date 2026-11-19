@@ -38,9 +38,9 @@ Components that execute commands or run queries also need Arc's `<Arc>` provider
 `@cratis/arc.react` around this tree; neither the adapter nor `CratisComponentsProvider` replaces it.
 
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
-ProgressBar, and Surface. It deliberately excludes MUI X and does not implement the five atomic
-interaction slots; `common.tooltip` and `dialogs.dialog` among them are not implemented yet, so the
-built-in tooltip and dialog are used.
+ProgressBar, and Surface. It also implements the stable atomic `common.tooltip` slot with the MUI tooltip,
+which is bound to the overlay host it opened in. It deliberately excludes MUI X and the dialog,
+dropdown, date picker, and paginator atomic slots, which use the built-in implementations.
 
 ## Theme integration
 

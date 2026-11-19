@@ -118,8 +118,9 @@ simultaneously, the application must:
 - keep theme CSS and portal CSS available in every chosen container.
 
 The nine-slot adapters do not include dialog, dropdown, date-picker, tooltip, or paginator atomic
-slots. No adapter implements the tooltip, select, or date-picker atomic slots yet either, and only
-Designsystemet implements the dialog. Those controls use the built-in implementation by default.
+slots, except where a stable adapter declares one through `atomicSlots`: only the MUI adapter
+implements the tooltip, only Designsystemet implements the dialog, and no adapter implements the
+select or date-picker atomic slots yet. Those controls use the built-in implementation by default.
 Replacing their interactions requires an adapter that explicitly implements the corresponding atomic
 slot contract. A stable presentation adapter can implement the paginator, the tooltip, the select,
 the date picker, or the dialog through its optional `atomicSlots` map; see

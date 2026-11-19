@@ -15,5 +15,22 @@ import { createContext, useContext } from 'react';
  */
 export const DialogStackContext = createContext<string | null>(null);
 
+/**
+ * The overlay host an overlay-producing descendant opened in. Unlike {@link DialogStackContext}, it
+ * carries the host's identity and whether it is still open, so a descendant can tell a closed host
+ * from an open one even though both resolve to the same z-index token.
+ */
+export interface OverlayHostState {
+    /** Unique per host instance, so a reused stacking tier can never alias two hosts. */
+    readonly id: string;
+    /** False from the moment the host starts closing, while its children are still mounted. */
+    readonly open: boolean;
+    /** The host's resolved z-index, as a CSS expression. */
+    readonly stackZIndex: string;
+}
+
+/** The nearest ancestor overlay host, or `null` when rendered outside any host. */
+export const OverlayHostContext = createContext<OverlayHostState | null>(null);
+
 /** Reads the nearest ancestor dialog's resolved z-index. `null` when not nested in a dialog. */
 export const useNearestDialogZIndex = (): string | null => useContext(DialogStackContext);
