@@ -65,7 +65,8 @@
             "common.switch",
             "common.progress",
             "common.surface",
-            "dialogs.dialog"
+            "dialogs.dialog",
+            "common.numberInput"
         ],
         "modes": {
             "common.button": "presentation",
@@ -77,7 +78,8 @@
             "common.switch": "presentation",
             "common.progress": "presentation",
             "common.surface": "presentation",
-            "dialogs.dialog": "atomic"
+            "dialogs.dialog": "atomic",
+            "common.numberInput": "atomic"
         },
         "capabilities": [
             "slot.render",

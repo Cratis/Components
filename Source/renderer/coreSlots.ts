@@ -6,6 +6,7 @@ import { ButtonImplementation } from '../Common/ButtonImplementation';
 import { CheckboxImplementation } from '../Common/CheckboxImplementation';
 import { DatePickerInputImplementation } from '../Common/DatePickerInputImplementation';
 import { IconButtonImplementation } from '../Common/IconButtonImplementation';
+import { NumericInputImplementation } from '../Common/NumericInputImplementation';
 import { RadioImplementation } from '../Common/RadioImplementation';
 import { SurfaceImplementation } from '../Common/SurfaceImplementation';
 import { SwitchImplementation } from '../Common/SwitchImplementation';
@@ -51,4 +52,5 @@ export const unstable_coreSlots = Object.freeze({
     'dialogs.dialog': nativeDeclaration<CratisDialogSlotProps>('atomic', DialogImplementation),
     'display.datePicker': nativeDeclaration('atomic', DatePickerInputImplementation),
     'datatables.paginator': nativeDeclaration('atomic', TablePaginatorImplementation),
+    'common.numberInput': nativeDeclaration('atomic', NumericInputImplementation),
 }) satisfies unstable_SlotMap;

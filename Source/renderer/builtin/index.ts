@@ -25,6 +25,7 @@ const profileSlots = Object.freeze([
     'dialogs.dialog',
     'display.datePicker',
     'datatables.paginator',
+    'common.numberInput',
 ] satisfies readonly unstable_SlotId[]);
 
 const capabilities = Object.freeze([

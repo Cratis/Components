@@ -4,6 +4,7 @@
 import type { ComponentType } from 'react';
 import { CheckboxField } from '../../fields/CheckboxField';
 import { InputTextField } from '../../fields/InputTextField';
+import { NumberField } from '../../fields/NumberField';
 import { RadioButtonField } from '../../fields/RadioButtonField';
 import { RadioGroupField } from '../../fields/RadioGroupField';
 import { TextAreaField } from '../../fields/TextAreaField';
@@ -47,6 +48,8 @@ export const fieldCases: FieldCase[] = [
         },
     },
     { name: 'invalid text', component: InputTextField, props: { value: 'x', invalid: true, errors: ['Bad value', 'Worse'], title: 'Name' } },
+    { name: 'number', component: NumberField, props: { value: 5, title: 'Count', placeholder: 'How many', min: 0, max: 10, step: 1 } },
+    { name: 'number with parts', component: NumberField, props: { value: 0, invalid: true, errors: ['Too low'], className: 'consumer', pt: { root: { className: 'r' }, input: { className: 'i', id: 'num-id', disabled: true, readOnly: true, 'aria-label': 'Counted', 'aria-describedby': 'hint' } } } },
     { name: 'textarea', component: TextAreaField, props: { value: 'Long', rows: 3, cols: 20, title: 'Notes' } },
     { name: 'textarea defaults', component: TextAreaField, props: { value: '', className: 'consumer', pt: { root: { className: 'part' } } } },
     { name: 'checkbox', component: CheckboxField, props: { value: true, label: 'Agree', title: 'Agree', className: 'consumer' } },

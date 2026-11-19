@@ -11,7 +11,7 @@ or production conformance.
 The automated families are:
 
 - package metadata schema constraints, runtime consistency, and capability over-declaration;
-- all fourteen ABI v1 slot declarations, stable parts/states, pt markers, and exact native roots;
+- all fifteen ABI v1 slot declarations, stable parts/states, pt markers, and exact native roots;
 - bounded native form/callback behavior and one interactive semantic root per declared ownership selector;
 - internal React-boundary normalization fixtures (props, styles, refs, events, cleanup, StrictMode);
 - DOM-free deterministic server rendering, slot-local output distinction, hydration, and bounded overlay absence/presence;
@@ -58,7 +58,7 @@ general evidence boundary or the limitations below.
   internal focus trap, dismissal listener, or scroll lock.
 - slot-local SSR output checks do not establish concurrent-request isolation across processes or
   application server runtimes.
-- renderer-vendor focus, collection, and overlay behavior outside the fourteen public slots is not
+- renderer-vendor focus, collection, and overlay behavior outside the fifteen public slots is not
   exercised.
 - adapter package licensing, security, performance, and upstream support policy remain the adapter
   author's responsibility.

@@ -257,7 +257,7 @@ export const overDeclaredCapabilities = (
             capability === 'machine.binding' ||
             capability === 'paging.server'
         )
-            problems.push(`${capability} has no evidence family in this 14-slot harness`);
+            problems.push(`${capability} has no evidence family in this 15-slot harness`);
     }
     if (library.capabilities.includes('slot.render')) {
         for (const slot of slots) {

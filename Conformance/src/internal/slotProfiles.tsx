@@ -6,6 +6,7 @@ import type { ButtonProps } from '@cratis/components/Common';
 import type { CheckboxProps } from '@cratis/components/Common';
 import type { DatePickerInputProps } from '@cratis/components/Common';
 import type { IconButtonProps } from '@cratis/components/Common';
+import type { NumericInputProps } from '@cratis/components/Common';
 import type { RadioProps } from '@cratis/components/Common';
 import type { SurfaceProps } from '@cratis/components/Common';
 import type { SwitchProps } from '@cratis/components/Common';
@@ -31,7 +32,31 @@ const click = (container: ParentNode, selector: string) => {
     element?.click();
 };
 
-/** Creates fresh public-prop fixtures for all fourteen ABI v1 slots. */
+const numberInputSlotId = 'common.numberInput';
+
+const recordNumberChanges = (evidence: Map<string, Readonly<Record<string, unknown>>>) => {
+    let callbacks = 0;
+    const onChange: NumericInputProps['onChange'] = (value, meta) => {
+        callbacks += 1;
+        evidence.set(numberInputSlotId, {
+            callbacks,
+            value,
+            source: meta?.source,
+            nativeEvent: meta?.nativeEvent instanceof Event,
+        });
+    };
+    return onChange;
+};
+
+const typeNumber = (input: HTMLInputElement | null, value: string) => {
+    if (!input) {
+        return;
+    }
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+};
+
+/** Creates fresh public-prop fixtures for all fifteen ABI v1 slots. */
 export const createSlotProfiles = (
     evidence: Map<string, Readonly<Record<string, unknown>>>,
 ): readonly SlotProfile[] => [
@@ -154,6 +179,34 @@ export const createSlotProfiles = (
             return (
                 evidence.get('common.textInput') ?? { callbacks: 0, value: input?.value }
             );
+        },
+    },
+    {
+        slotId: numberInputSlotId,
+        partsKey: 'NumericInput',
+        ptKeys: ['root'],
+        nativeSelector: 'input[type="number"]',
+        nativeTag: 'INPUT',
+        refCapable: true,
+        ownershipSelectors: ['input[type="number"]'],
+        createProps: () =>
+            recordProps({
+                name: 'quantity',
+                value: 3,
+                'aria-label': 'Sample quantity',
+                onChange: recordNumberChanges(evidence),
+            } satisfies NumericInputProps),
+        createStateProps: () =>
+            recordProps({
+                value: 4,
+                disabled: true,
+                invalid: true,
+                readOnly: true,
+            } satisfies NumericInputProps),
+        exercise: async (_document, container) => {
+            const input = container.querySelector<HTMLInputElement>('input[type="number"]');
+            typeNumber(input, '7');
+            return evidence.get(numberInputSlotId) ?? { callbacks: 0, value: input?.value };
         },
     },
     {

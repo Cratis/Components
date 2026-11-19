@@ -144,6 +144,7 @@ declare const AtomicDatePicker: ComponentType<CratisAtomicSlots['display.datePic
 declare const AtomicDialog: ComponentType<CratisAtomicSlots['dialogs.dialog']>;
 // An adapter dialog reads the Components-owned host next to the public dialog props.
 const dialogHostZIndex = (props: CratisAtomicSlots['dialogs.dialog']): string => props.host.zIndex;
+declare const AtomicNumericInput: ComponentType<CratisAtomicSlots['common.numberInput']>;
 declare const AtomicTooltip: ComponentType<CratisAtomicSlots['common.tooltip']>;
 
 const atomicSlots: CratisAtomicSlotMap = {
@@ -152,6 +153,7 @@ const atomicSlots: CratisAtomicSlotMap = {
     'dropdown.select': { mode: 'atomic', fidelity: 'native', render: AtomicDropdown },
     'display.datePicker': { mode: 'atomic', fidelity: 'native', render: AtomicDatePicker },
     'dialogs.dialog': { mode: 'atomic', fidelity: 'native', render: AtomicDialog },
+    'common.numberInput': { mode: 'atomic', fidelity: 'native', render: AtomicNumericInput },
 };
 const libraryWithAtomicSlots: CratisPresentationUiLibrary = definePresentationUiLibrary({
     ...library,

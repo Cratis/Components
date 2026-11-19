@@ -4,6 +4,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
 import { DatePickerInputImplementation } from '../../Common/DatePickerInputImplementation';
+import { NumericInputImplementation } from '../../Common/NumericInputImplementation';
 import { TooltipImplementation } from '../../Common/TooltipImplementation';
 import { TablePaginatorImplementation } from '../../DataTables/TablePaginatorImplementation';
 import { DialogImplementation } from '../../Dialogs/DialogImplementation';
@@ -28,6 +29,7 @@ const atomicSlots = [
     'dialogs.dialog',
     'display.datePicker',
     'datatables.paginator',
+    'common.numberInput',
 ] as const;
 
 describe('when defining the private Core slot inventory', () => {
@@ -54,7 +56,7 @@ describe('when defining the private Core slot inventory', () => {
         }
     });
 
-    it('should point all five atomic declarations at non-facade Core implementations', () => {
+    it('should point all six atomic declarations at non-facade Core implementations', () => {
         expect(unstable_coreSlots['common.tooltip']?.render).to.equal(
             TooltipImplementation,
         );
@@ -69,6 +71,9 @@ describe('when defining the private Core slot inventory', () => {
         );
         expect(unstable_coreSlots['datatables.paginator']?.render).to.equal(
             TablePaginatorImplementation,
+        );
+        expect(unstable_coreSlots['common.numberInput']?.render).to.equal(
+            NumericInputImplementation,
         );
     });
 });

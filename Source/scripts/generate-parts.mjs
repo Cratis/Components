@@ -273,6 +273,12 @@ export const partDefinitions = {
         ptFiles: ['Common/TextInput.tsx'],
         ptKeys: ['root'],
     },
+    NumericInput: {
+        parts: ['root'],
+        sources: ['Common/NumericInputImplementation.tsx'],
+        ptFiles: ['Common/NumericInput.tsx'],
+        ptKeys: ['root'],
+    },
     TextArea: {
         parts: ['root'],
         sources: ['Common/TextAreaImplementation.tsx'],
@@ -1043,6 +1049,9 @@ export const partStateDefinitions = {
         label: [],
     },
     TextInput: {
+        root: ['disabled', 'invalid', 'readonly'],
+    },
+    NumericInput: {
         root: ['disabled', 'invalid', 'readonly'],
     },
     TextArea: {

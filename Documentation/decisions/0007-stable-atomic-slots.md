@@ -36,7 +36,7 @@ Stable atomic slots are a separate, optional extension of `CratisPresentationUiL
 
 - `cratisAtomicSlotIds` lists the atomic slots whose contracts are stable. The first release listed
   only `datatables.paginator`; `common.tooltip`, `dropdown.select`, and `display.datePicker` were appended next,
-  then `dialogs.dialog`. New ids are only ever appended.
+  then `dialogs.dialog` and `common.numberInput`. New ids are only ever appended.
 - `CratisAtomicSlots` maps each id to its exact public props type, `CratisAtomicSlotDeclaration`
   requires `atomic` mode, `native` or `emulated` fidelity, and a component, and
   `CratisAtomicSlotMap` makes every entry optional. Amended by

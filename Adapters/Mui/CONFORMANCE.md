@@ -4,7 +4,7 @@
 # MUI adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. Repository evidence runs
-`@cratis/components.conformance` against the nine declared slots and the atomic `common.tooltip` slot, and requires every applicable check
+`@cratis/components.conformance` against the nine declared slots and the atomic `common.tooltip` and `common.numberInput` slots, and requires every applicable check
 to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:

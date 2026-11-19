@@ -125,7 +125,7 @@ The certified MUI, PrimeReact 11, and PrimeReact 10 manifests implement the stab
 TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. It never means full-catalog
 replacement.
 
-Pass one stable presentation manifest to `library`. The broader fourteen-slot renderer system,
+Pass one stable presentation manifest to `library`. The broader fifteen-slot renderer system,
 ordered manifest composition, scopes/islands, atomic slots, lazy loading, and public adapter
 discovery are outside that profile's compatibility promise. Some `unstable_` contracts are
 available to repository and adapter authors.
