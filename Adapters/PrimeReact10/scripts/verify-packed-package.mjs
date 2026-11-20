@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import {
     mkdirSync,
     mkdtempSync,
+    readdirSync,
     readFileSync,
     rmSync,
     symlinkSync,
@@ -186,7 +187,13 @@ try {
         throw new Error('Packed static metadata does not preserve the MIT policy.');
     }
 
-    const runtime = readFileSync(path.join(unpackedPackage, 'dist/index.js'), 'utf8');
+    // The runtime is split into per-slot modules, so the retained-import and bundling checks cover every emitted module.
+    const runtimeDirectory = path.join(unpackedPackage, 'dist');
+    const runtime = readdirSync(runtimeDirectory)
+        .filter((file) => file.endsWith('.js'))
+        .sort()
+        .map((file) => readFileSync(path.join(runtimeDirectory, file), 'utf8'))
+        .join('\n');
     for (const requiredImport of [
         'primereact/api/api.cjs.js',
         'primereact/button/button.cjs.js',
@@ -229,7 +236,21 @@ try {
         .sort();
     if (
         JSON.stringify(declarationNames) !==
-        JSON.stringify(['index.d.ts', 'paginator.d.ts', 'paginatorLabels.d.ts'])
+        JSON.stringify([
+            'button.d.ts',
+            'buttonAppearance.d.ts',
+            'choice.d.ts',
+            'choiceControls.d.ts',
+            'choiceState.d.ts',
+            'choiceTypes.d.ts',
+            'index.d.ts',
+            'paginator.d.ts',
+            'paginatorLabels.d.ts',
+            'progress.d.ts',
+            'shared.d.ts',
+            'surface.d.ts',
+            'textFields.d.ts',
+        ])
     ) {
         throw new Error(`Unexpected declaration files: ${declarationNames.join(', ')}.`);
     }
