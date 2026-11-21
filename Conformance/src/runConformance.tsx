@@ -131,6 +131,30 @@ const interactionMessages = {
     dismissal: 'The slot dismisses on Escape.',
 } as const;
 
+const recordInteractions = (
+    checks: ConformanceCheck[],
+    profile: SlotProfile,
+    observed: Awaited<ReturnType<NonNullable<SlotProfile['interact']>>>,
+) => {
+    for (const concern of ['keyboard', 'focus', 'dismissal'] as const) {
+        const passed = observed[concern];
+        if (passed === undefined) continue;
+        addCheck(
+            checks,
+            ConformanceFamily.Behavior,
+            `behavior.${profile.slotId}.${concern}`,
+            {
+                passed,
+                message: passed
+                    ? interactionMessages[concern]
+                    : `${interactionMessages[concern]} It did not respond as required.`,
+                slotId: profile.slotId,
+                evidence: { concern, passed, ...observed.detail },
+            },
+        );
+    }
+};
+
 /**
  * Drives a fresh fixture of a stable atomic slot with dispatched keyboard and focus events and adds
  * one check per concern the slot reports: `behavior.<slot>.keyboard`, `.focus` and `.dismissal`.
@@ -154,23 +178,7 @@ const checkInteractions = async (
         const interacted =
             (await act(async () => profile.interact?.(document, mounted.container))) ?? {};
         const observed = { ...interacted, ...(await interacted.settled?.()) };
-        for (const concern of ['keyboard', 'focus', 'dismissal'] as const) {
-            const passed = observed[concern];
-            if (passed === undefined) continue;
-            addCheck(
-                checks,
-                ConformanceFamily.Behavior,
-                `behavior.${profile.slotId}.${concern}`,
-                {
-                    passed,
-                    message: passed
-                        ? interactionMessages[concern]
-                        : `${interactionMessages[concern]} It did not respond as required.`,
-                    slotId: profile.slotId,
-                    evidence: { concern, passed, ...observed.detail },
-                },
-            );
-        }
+        recordInteractions(checks, profile, observed);
     } catch (error) {
         addError(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}.interaction`, { error, slotId: profile.slotId });
     } finally {
@@ -317,7 +325,7 @@ const isImmutableLibrary = (library: unstable_UiLibrary) =>
         (declaration) => declaration === undefined || Object.isFrozen(declaration),
     );
 
-const checkManifest = (
+const checkMetadata = (
     checks: ConformanceCheck[],
     library: unstable_UiLibrary,
     options: ConformanceOptions,
@@ -364,6 +372,14 @@ const checkManifest = (
         );
     }
 
+};
+
+const checkManifest = (
+    checks: ConformanceCheck[],
+    library: unstable_UiLibrary,
+    options: ConformanceOptions,
+) => {
+    checkMetadata(checks, library, options);
     const overDeclarations = overDeclaredCapabilities(library);
     addCheck(
         checks,
@@ -858,49 +874,55 @@ const checkStateCoverage = (
     );
 };
 
-const checkServerRendering = (
+const checkSlotServerRendering = (
     checks: ConformanceCheck[],
-    library: unstable_UiLibrary,
-    profiles: readonly SlotProfile[],
-    wrapper: ConformanceOptions['wrapper'],
+    { library, profile, wrapper }: {
+        library: unstable_UiLibrary;
+        profile: SlotProfile;
+        wrapper: ConformanceOptions['wrapper'];
+    },
+    outputs: Map<unstable_SlotId, string>,
 ) => {
-    const outputs = new Map<unstable_SlotId, string>();
-    for (const profile of profiles) {
-        const declaration = library.slots[profile.slotId];
-        if (!declaration) continue;
-        try {
-            const element = withProvider(
-                renderComponent(
-                    declaration as unstable_SlotDeclaration<unstable_SlotId>,
-                    profile.createProps(),
-                ),
-                wrapper,
-            );
-            const first = renderToString(element);
-            const second = renderToString(element);
-            outputs.set(profile.slotId, first);
-            addCheck(
-                checks,
-                ConformanceFamily.ServerRendering,
-                `ssr.${profile.slotId}`,
-                {
-                    passed: first === second,
-                    message: first === second
-                        ? 'Server render is DOM-free and deterministic.'
-                        : 'Repeated server renders differ.',
-                    slotId: profile.slotId,
-                    evidence: { bytes: first.length },
-                },
-            );
-        } catch (error) {
-            addError(
-                checks,
-                ConformanceFamily.ServerRendering,
-                `ssr.${profile.slotId}`,
-                { error, slotId: profile.slotId },
-            );
-        }
+    const declaration = library.slots[profile.slotId];
+    if (!declaration) return;
+    try {
+        const element = withProvider(
+            renderComponent(
+                declaration as unstable_SlotDeclaration<unstable_SlotId>,
+                profile.createProps(),
+            ),
+            wrapper,
+        );
+        const first = renderToString(element);
+        const second = renderToString(element);
+        outputs.set(profile.slotId, first);
+        addCheck(
+            checks,
+            ConformanceFamily.ServerRendering,
+            `ssr.${profile.slotId}`,
+            {
+                passed: first === second,
+                message: first === second
+                    ? 'Server render is DOM-free and deterministic.'
+                    : 'Repeated server renders differ.',
+                slotId: profile.slotId,
+                evidence: { bytes: first.length },
+            },
+        );
+    } catch (error) {
+        addError(
+            checks,
+            ConformanceFamily.ServerRendering,
+            `ssr.${profile.slotId}`,
+            { error, slotId: profile.slotId },
+        );
     }
+};
+
+const checkServerOverlays = (
+    checks: ConformanceCheck[],
+    outputs: ReadonlyMap<unstable_SlotId, string>,
+) => {
     const tooltipOutput = outputs.get('common.tooltip');
     const dialogOutput = outputs.get('dialogs.dialog');
     const overlayPassed =
@@ -922,6 +944,12 @@ const checkServerRendering = (
             },
         },
     );
+};
+
+const checkServerOutputIsolation = (
+    checks: ConformanceCheck[],
+    outputs: ReadonlyMap<unstable_SlotId, string>,
+) => {
     const distinctOutputs = new Set(outputs.values()).size === outputs.size;
     addCheck(
         checks,
@@ -935,6 +963,20 @@ const checkServerRendering = (
             evidence: { slots: [...outputs.keys()] },
         },
     );
+};
+
+const checkServerRendering = (
+    checks: ConformanceCheck[],
+    library: unstable_UiLibrary,
+    profiles: readonly SlotProfile[],
+    wrapper: ConformanceOptions['wrapper'],
+) => {
+    const outputs = new Map<unstable_SlotId, string>();
+    for (const profile of profiles) {
+        checkSlotServerRendering(checks, { library, profile, wrapper }, outputs);
+    }
+    checkServerOverlays(checks, outputs);
+    checkServerOutputIsolation(checks, outputs);
 };
 
 const checkHydration = async (
@@ -995,6 +1037,34 @@ const checkHydration = async (
     );
 };
 
+const recordEnvironmentalEvidence = (
+    checks: ConformanceCheck[],
+    profile: SlotProfile,
+    native: Element | null,
+    host: HTMLElement,
+) => {
+    const inputs = {
+        rtl: Boolean(native) && native?.closest('[dir="rtl"]') === host,
+        forcedColors: Boolean(native) && host.style.forcedColorAdjust === 'auto',
+        'motion.reduced': Boolean(native) && host.style.transitionDuration === '0s',
+    } as const;
+    for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
+        addCheck(
+            checks,
+            ConformanceFamily.Accessibility,
+            `a11y.environment.${mode}`,
+            {
+                passed: inputs[mode],
+                message: inputs[mode]
+                    ? `The ${profile.slotId} fixture rendered inside the bounded ${mode} DOM host input.`
+                    : `The ${profile.slotId} fixture did not preserve the bounded ${mode} DOM host input.`,
+                slotId: profile.slotId,
+                evidence: { selector: profile.nativeSelector },
+            },
+        );
+    }
+};
+
 const checkEnvironmentalEvidence = async (
     checks: ConformanceCheck[],
     document: Document,
@@ -1036,26 +1106,7 @@ const checkEnvironmentalEvidence = async (
             host,
         );
         const native = fixture.container.querySelector(profile.nativeSelector);
-        const inputs = {
-            rtl: Boolean(native) && native?.closest('[dir="rtl"]') === host,
-            forcedColors: Boolean(native) && host.style.forcedColorAdjust === 'auto',
-            'motion.reduced': Boolean(native) && host.style.transitionDuration === '0s',
-        } as const;
-        for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
-            addCheck(
-                checks,
-                ConformanceFamily.Accessibility,
-                `a11y.environment.${mode}`,
-                {
-                    passed: inputs[mode],
-                    message: inputs[mode]
-                        ? `The ${profile.slotId} fixture rendered inside the bounded ${mode} DOM host input.`
-                        : `The ${profile.slotId} fixture did not preserve the bounded ${mode} DOM host input.`,
-                    slotId: profile.slotId,
-                    evidence: { selector: profile.nativeSelector },
-                },
-            );
-        }
+        recordEnvironmentalEvidence(checks, profile, native, host);
     } catch (error) {
         for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
             addError(
