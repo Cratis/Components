@@ -169,7 +169,7 @@ test('Git exit, spawn, signal, timeout, overflow and partial-output failures nev
 
 for (const mode of ['true', 'false']) {
     test(`aggregate accepts only the complete intentional ${mode} truth-table row`, () => {
-        assert.match(aggregate(needsFixture(mode)), /^Verified 11 jobs:/);
+        assert.match(aggregate(needsFixture(mode)), /^Verified 12 jobs:/);
     });
     for (const job of expensiveJobs) {
         test(`aggregate ${mode} rejects every inconsistent or missing result for ${job}`, () => {
@@ -291,11 +291,12 @@ test('workflow has unfiltered ordinary PRs and preserves the original push filte
 `);
 });
 
-test('every one of the 11 expensive job groups is guarded and directly required by Build', () => {
-    assert.equal(expensiveJobs.length, 11);
+test('every one of the 12 expensive job groups is guarded and directly required by Build', () => {
+    assert.equal(expensiveJobs.length, 12);
     assert.deepEqual(Object.keys(jobs).sort(), ['changes', 'build', ...expensiveJobs].sort());
     for (const job of expensiveJobs) {
-        assert.match(jobs[job], /^        needs: \[changes\]$/m);
+        const dependencies = job === 'storybook' ? 'changes, storybook-build' : 'changes';
+        assert.ok(jobs[job].includes(`        needs: [${dependencies}]\n`), job);
         assert.match(jobs[job], /^        if: needs.changes.outputs.relevant == 'true'$/m);
     }
     const needs = jobs.build.match(/        needs:\n((?:            - [a-z-]+\n)+)/)?.[1];
@@ -390,7 +391,7 @@ test('the local Source ci:static chain remains identical to the visible CI phase
 });
 
 test('Storybook exposes each preflight phase once before the composed build', () => {
-    const steps = workflowSteps(jobs.storybook);
+    const steps = workflowSteps(jobs['storybook-build']);
     const packages = steps.findIndex(step => step.name === 'Build packages the composed Storybook imports');
     const build = steps.findIndex(step => step.name === 'Build composed renderer Storybook');
     assert.ok(packages >= 0 && build > packages);
@@ -400,7 +401,91 @@ test('Storybook exposes each preflight phase once before the composed build', ()
     for (const step of preflight) {
         assert.match(step.body, /^              working-directory: Storybook$/m, step.name);
     }
-    assert.doesNotMatch(jobs.storybook, /^              run: .*ci:preflight/m);
+    assert.doesNotMatch(jobs['storybook-build'], /^              run: .*ci:preflight/m);
+});
+
+test('Storybook builds packages, previews and verified indexes once before publishing output', () => {
+    const steps = workflowSteps(jobs['storybook-build']);
+    const install = steps.findIndex(step => step.name === 'Yarn install');
+    assert.ok(install >= 0);
+    assert.deepEqual(steps.slice(install + 1).map(step => step.name), [
+        'Build packages the composed Storybook imports', ...storybookPreflightNames,
+        'Build composed renderer Storybook', 'Verify every renderer Storybook index and build attestation',
+        'Archive prepared Storybook output', 'Upload prepared Storybook output',
+    ]);
+    const packages = steps[install + 1].body;
+    assert.match(packages, /^                  export NODE_OPTIONS="--max-old-space-size=4096"$/m);
+    assert.deepEqual([...packages.matchAll(/^                  yarn workspace (.+) run build$/gm)]
+        .map(match => match[1]), [
+        '@cratis/components.conformance', '@cratis/components.mui', '@cratis/components.primereact',
+        '@cratis/components.primereact10', '@cratis/components.designsystemet',
+    ]);
+    const build = steps.findIndex(step => step.name === 'Build composed renderer Storybook');
+    assertStepCommands(steps.slice(build, build + 2), [
+        'Build composed renderer Storybook', 'Verify every renderer Storybook index and build attestation',
+    ], ['yarn workspace @cratis/components build-storybook', 'yarn verify-storybook-index']);
+    assert.match(steps[build + 1].body, /^              working-directory: Source$/m);
+    assert.equal(workflow.split('run: yarn workspace @cratis/components build-storybook').length - 1, 1);
+    for (const step of steps) {
+        assert.doesNotMatch(step.body, /^              (?:if|continue-on-error):/m, step.name);
+    }
+});
+
+test('Storybook shares only explicit prepared outputs in a required same-run SHA-named artifact', () => {
+    const producer = workflowSteps(jobs['storybook-build']);
+    const archive = producer.find(step => step.name === 'Archive prepared Storybook output');
+    assert.equal(archive.body.trim(), `run: |
+                  tar -czf "$RUNNER_TEMP/storybook-build.tar.gz" \\
+                    Source/storybook-static Source/dist Conformance/dist \\
+                    Adapters/Mui/dist Adapters/PrimeReact/dist \\
+                    Adapters/PrimeReact10/dist Adapters/Designsystemet/dist`);
+    const upload = producer.find(step => step.name === 'Upload prepared Storybook output');
+    assert.equal(upload.body.trim(), `uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: storybook-build-\${{ github.sha }}
+                  path: \${{ runner.temp }}/storybook-build.tar.gz
+                  if-no-files-found: error
+                  compression-level: 0
+                  retention-days: 1`);
+    const consumer = workflowSteps(jobs.storybook);
+    const download = consumer.find(step => step.name === 'Download prepared Storybook output');
+    assert.equal(download.body.trim(), `uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+              with:
+                  name: storybook-build-\${{ github.sha }}
+                  path: \${{ runner.temp }}/storybook-build`);
+    const restore = consumer.find(step => step.name === 'Restore prepared Storybook output');
+    assert.equal(restore.body.trim(), 'run: tar -xzf "$RUNNER_TEMP/storybook-build/storybook-build.tar.gz"');
+    for (const job of ['storybook-build', 'storybook']) {
+        assert.match(jobs[job], /^        permissions:\n            contents: read$/m);
+        assert.match(jobs[job], /^        runs-on: ubuntu-latest$/m);
+        assert.doesNotMatch(jobs[job], /continue-on-error|always\(\)|!cancelled\(\)/);
+    }
+});
+
+test('Storybook consumers install, restore and run the unchanged three-shard browser partition without builds', () => {
+    const steps = workflowSteps(jobs.storybook);
+    assert.deepEqual(steps.map(step => step.name), [
+        'Checkout code', 'Setup node', 'Restore Yarn package cache', 'Yarn install',
+        'Download prepared Storybook output', 'Restore prepared Storybook output',
+        'Cache Playwright browsers', 'Install Storybook browser', 'Test assigned Storybook units',
+    ]);
+    assert.match(jobs.storybook, /^        name: Storybook \(shard \$\{\{ matrix.shard \}\}\/3\)$/m);
+    assert.match(jobs.storybook, /strategy:\n            fail-fast: false\n            matrix:\n                shard: \[1, 2, 3\]/);
+    assert.match(jobs.storybook, /^        timeout-minutes: 25$/m);
+    assert.doesNotMatch(jobs.storybook, /^\s+(?:run: )?yarn (?:workspace \S+ (?:run )?)?(?:build(?:-storybook)?|prepare|typecheck|ci:preflight|verify-inventory|verify-isolation|verify-storybook-index)\b/m);
+    const browser = steps.find(step => step.name === 'Install Storybook browser');
+    assert.match(browser.body, /^              timeout-minutes: 15$/m);
+    assert.match(browser.body, /set -euo pipefail\n                  for attempt in 1 2 3 4; do/);
+    assert.match(browser.body, /if yarn playwright install --with-deps chromium; then exit 0; fi/);
+    assert.match(browser.body, /\[ "\$attempt" -lt 4 \] && sleep \$\(\(attempt \* 20\)\)/);
+    assert.match(browser.body, /exit 1\n/);
+    assertStepCommands(steps.slice(-1), ['Test assigned Storybook units'], [
+        'node scripts/run-story-matrix.mjs --shard ${{ matrix.shard }}/3',
+    ]);
+    assert.match(steps.at(-1).body, /^              working-directory: Storybook$/m);
+    for (const step of steps) {
+        assert.doesNotMatch(step.body, /^              (?:if|continue-on-error):/m, step.name);
+    }
 });
 
 test('the local Storybook preflight chain remains identical to the visible CI phases', () => {

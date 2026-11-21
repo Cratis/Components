@@ -238,10 +238,18 @@ building, and each verification. Locally, export `NODE_OPTIONS="--max-old-space-
 and time each script in that chain from the repository root with
 `time yarn workspace @cratis/components run <script>`; do not also run `ci:static` in that sequence.
 
-Each "Storybook (shard N/3)" job exposes the four preflight steps from "Verify renderer
-Storybook inventory" through "Verify renderer Storybook peer isolation" before "Build composed
-renderer Storybook". After building the packages that Storybook imports, reproduce the preflight
-from `Storybook/` with `time yarn verify-inventory`, `time yarn typecheck`, `time yarn test`, and
+The "Build Storybook" job builds the packages that Storybook imports, then exposes the four
+preflight steps from "Verify renderer Storybook inventory" through "Verify renderer Storybook peer
+isolation" before "Build composed renderer Storybook" and index/attestation verification. It uploads
+one SHA-named artifact for this workflow run, retained for one day, containing only
+`Source/storybook-static` and the prepared Source, Conformance, Mui, PrimeReact, PrimeReact10, and
+Designsystemet `dist` directories. Each "Storybook (shard N/3)" job installs its own dependencies,
+restores that artifact, and runs its unchanged assigned story, manager, and viewport units; missing
+output fails rather than rebuilding. The matrix runner still checks peer isolation and indexes in
+each shard, and `Build` requires both the producer and all three consumers.
+
+Locally, after building the packages that Storybook imports, reproduce the preflight from
+`Storybook/` with `time yarn verify-inventory`, `time yarn typecheck`, `time yarn test`, and
 `time yarn verify-isolation`, in that order. "Install Storybook browser" and "Test assigned
 Storybook units" remain separate steps for browser provisioning and story-test timings.
 
