@@ -14,6 +14,11 @@ export interface ToastCommandResultOptions {
     unauthorizedTitle?: string;
     /** Title when the command failed validation. Defaults to `'Validation failed'`. */
     validationTitle?: string;
+    /**
+     * Description when the command failed validation. Defaults to non-empty validation messages joined with `\n`.
+     * A string is used verbatim. A function receives the validation results; return `undefined` or an empty string for a title-only toast.
+     */
+    validationDescription?: string | ((validationResults: ICommandResult['validationResults']) => string | undefined);
     /** Title when the command threw. Defaults to `'Something went wrong'`. */
     exceptionTitle?: string;
     /** When false, no toast is shown on success. Defaults to `true`. */
@@ -27,7 +32,7 @@ export interface ToastCommandResultOptions {
  *
  * - **success** → a success toast (suppress with `showSuccess: false`);
  * - **not authorized** → a warning toast;
- * - **invalid** → an error toast listing the per-field validation messages;
+ * - **invalid** → an error toast listing the per-field validation messages (customize or suppress with `validationDescription`);
  * - **exceptions** → a generic error toast (stack traces are never shown to
  *   users — log `result.exceptionMessages` yourself).
  *
@@ -55,6 +60,7 @@ export function toastCommandResult<TResponse = object>(
         successDescription,
         unauthorizedTitle = 'Not authorized',
         validationTitle = 'Validation failed',
+        validationDescription,
         exceptionTitle = 'Something went wrong',
         showSuccess = true,
     } = options;
@@ -72,11 +78,8 @@ export function toastCommandResult<TResponse = object>(
     }
 
     if (!result.isValid) {
-        const description = result.validationResults
-            .map((validationResult) => validationResult.message)
-            .filter(Boolean)
-            .join('\n');
-        toast.error({ title: validationTitle, description: description || undefined });
+        const description = getValidationDescription(result.validationResults, validationDescription);
+        toast.error({ title: validationTitle, description });
         return false;
     }
 
@@ -86,4 +89,18 @@ export function toastCommandResult<TResponse = object>(
     }
 
     return false;
+}
+
+function getValidationDescription(
+    validationResults: ICommandResult['validationResults'],
+    validationDescription: ToastCommandResultOptions['validationDescription'],
+): string | undefined {
+    if (typeof validationDescription === 'function') {
+        return validationDescription(validationResults) || undefined;
+    }
+
+    return validationDescription ?? (validationResults
+        .map((validationResult) => validationResult.message)
+        .filter(Boolean)
+        .join('\n') || undefined);
 }
