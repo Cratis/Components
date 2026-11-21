@@ -13,6 +13,7 @@ import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import type { DialogSliceLocation } from '../configuration/DialogSliceLocation';
 import type { DialogInitialFocus } from './DialogInitialFocus';
+import type { DialogRefusalFeedback } from './DialogRefusalFeedback';
 import { DialogImplementation } from './DialogImplementation';
 import { DialogSlotHost } from './DialogSlotHost';
 
@@ -99,6 +100,12 @@ export interface DialogProps {
      * dialog from a plain one. Defaults to `false`.
      */
     isCommandDialog?: boolean;
+    /**
+     * Read when a confirm is refused, to replace the generic announcement and focus target with
+     * feedback about this refusal. Used by `CommandDialog` to announce validation failures and focus
+     * the first invalid field. Returning `undefined` keeps the default behavior.
+     */
+    refusalFeedback?: () => DialogRefusalFeedback | undefined;
     /**
      * Glyph for the header close button. Names this one dialog and wins over the provider's
      * `icons.close`; defaults to a multiplication sign when neither is set.

@@ -161,6 +161,36 @@ export const pressEscape = async () => {
 };
 
 /**
+ * The text in the dialog's polite live region.
+ * @returns The announced text, or an empty string when nothing is announced.
+ */
+export const liveRegionText = (): string =>
+    document.querySelector('.cratis-dialog__live-region')?.textContent ?? '';
+
+const nextFrame = () =>
+    act(async () => {
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    });
+
+/**
+ * Lets the dialog's initial-focus frame run. The confirm button can already hold focus through
+ * `autoFocus` while that frame is still pending, and a late frame would otherwise take focus back
+ * from whatever a spec moved it to afterwards.
+ */
+export const initialFocusSettled = nextFrame;
+
+/**
+ * Waits until a refused confirm has been announced. The confirm callback settles over several
+ * promise turns and the dialog moves focus and announces only after it has. Counts frames, not
+ * milliseconds, so CPU contention cannot make a spec observe the dialog before then.
+ */
+export const refusalAnnounced = async () => {
+    for (let frame = 0; frame < 10 && liveRegionText() === ''; frame++) {
+        await nextFrame();
+    }
+};
+
+/**
  * Clicks a button by its visible label.
  * @param label - The label of the button to click.
  */

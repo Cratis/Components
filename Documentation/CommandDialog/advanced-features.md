@@ -66,6 +66,23 @@ On failure, the dialog awaits callbacks in this order, skipping any that do not 
 
 A validation failure therefore calls `onFailed` before `onValidationFailure`, not `onSuccess`. After the failure callbacks finish, the dialog applies the result to the form so matching fields show the server's validation messages. It does not automatically close on failure. See [Dialog Callbacks](index.md#dialog-callbacks) for the close decision and [Confirm before executing](index.md#confirm-before-executing) for guard failures before a command runs.
 
+### Announcing validation failures
+
+When a submit is refused with validation results, the dialog announces a summary in its polite live region and moves focus to the first invalid field: the first element in the dialog body marked `aria-invalid="true"`, or the first focusable element inside it. The default English text is `There is 1 problem. <message>` for one result and `There are <count> problems. First: <message>` for more. If no field is marked invalid, focus returns to the confirm button.
+
+Pass `validationAnnouncement` to supply your own text, for example to localize it. It receives every validation result:
+
+```tsx
+<CommandDialog<RegisterAuthor>
+    command={RegisterAuthor}
+    title="Register author"
+    validationAnnouncement={(results) => t('fieldsNeedAttention', { count: results.length })}>
+    <InputTextField value={c => c.name} title="Name" />
+</CommandDialog>
+```
+
+`onValidationFailure` is still called before the announcement. A refusal without validation results keeps the generic `messages.dialog.refused` announcement and returns focus to the confirm button.
+
 ### Response Type Inference
 
 The response type parameter defaults to `object` when omitted; specify it explicitly to use response properties in `onSuccess`:
