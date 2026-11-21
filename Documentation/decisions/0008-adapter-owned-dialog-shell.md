@@ -1,7 +1,7 @@
 ---
 id: '0008'
 title: Adapter-owned dialog shell
-description: The stable dialogs.dialog atomic slot lets an adapter own the modal shell while Components keeps the dialog stack, result flow, actions and the descendants' overlay container, passed through a host prop.
+description: The stable dialogs.dialog atomic slot lets an adapter own the modal shell while Components keeps the dialog stack, result flow, actions and overlay container.
 status: accepted
 stage: implemented
 class: contract
