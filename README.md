@@ -231,6 +231,20 @@ build). CI additionally checks packed exports, public types under TypeScript 6 a
 production tree shaking, and external consumer/package-manager matrices; `yarn ci` does not
 replace those jobs.
 
+For phase timings in the JavaScript Build workflow, open the `source` job's 13 steps from
+"Generate parts" through "Verify API surface". They run the unchanged `Source/package.json`
+`ci:static` chain in order, with separate durations for lint, story typechecking, artifact
+building, and each verification. Locally, export `NODE_OPTIONS="--max-old-space-size=4096"`
+and time each script in that chain from the repository root with
+`time yarn workspace @cratis/components run <script>`; do not also run `ci:static` in that sequence.
+
+Each "Storybook (shard N/3)" job exposes the four preflight steps from "Verify renderer
+Storybook inventory" through "Verify renderer Storybook peer isolation" before "Build composed
+renderer Storybook". After building the packages that Storybook imports, reproduce the preflight
+from `Storybook/` with `time yarn verify-inventory`, `time yarn typecheck`, `time yarn test`, and
+`time yarn verify-isolation`, in that order. "Install Storybook browser" and "Test assigned
+Storybook units" remain separate steps for browser provisioning and story-test timings.
+
 For root and package README changes, verify the exact files explicitly:
 
 ```bash

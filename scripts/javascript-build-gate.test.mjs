@@ -338,6 +338,77 @@ test('published-artifact runs every packed-artifact check from one build per leg
     assert.doesNotMatch(block, /continue-on-error/);
 });
 
+const sourceStaticScripts = [
+    'generate-parts', 'verify-parts-manifest', 'verify-api-docs', 'clean', 'lint:ci', 'build',
+    'typecheck-stories', 'g:build', 'verify-renderer-contracts', 'verify-package-graph-report',
+    'verify-packed-css', 'verify-source-maps', 'verify-api-surface',
+];
+const sourceStaticNames = [
+    'Generate parts', 'Verify parts manifest', 'Verify public API documentation', 'Clean Source output',
+    'Lint Source', 'Build Source', 'Typecheck stories', 'Build published Source artifact',
+    'Verify renderer contracts', 'Report package graph', 'Verify packed CSS', 'Verify source maps',
+    'Verify API surface',
+];
+const storybookPreflightScripts = ['verify-inventory', 'typecheck', 'test', 'verify-isolation'];
+const storybookPreflightNames = [
+    'Verify renderer Storybook inventory', 'Typecheck renderer Storybook',
+    'Test renderer Storybook preflight specs', 'Verify renderer Storybook peer isolation',
+];
+
+function workflowSteps(block) {
+    return [...block.matchAll(/^            - name: (.+)\n([\s\S]*?)(?=^            - name: |$(?![\s\S]))/gm)]
+        .map(([, name, body]) => ({ name, body }));
+}
+
+function assertStepCommands(steps, names, commands) {
+    assert.deepEqual(steps.map(step => step.name), names);
+    assert.deepEqual(steps.map(step => step.body.match(/^              run: (.+)$/m)?.[1]), commands);
+    for (const step of steps) {
+        assert.doesNotMatch(step.body, /^              (?:if|continue-on-error):/m, step.name);
+        assert.equal([...step.body.matchAll(/^              run:/gm)].length, 1, step.name);
+    }
+}
+
+test('Source exposes every ci:static phase once in order with the same heap limit', () => {
+    const steps = workflowSteps(jobs.source);
+    const install = steps.findIndex(step => step.name === 'Yarn install');
+    const report = steps.findIndex(step => step.name === 'Report public API changes against the latest release');
+    assert.ok(install >= 0 && report > install);
+    assert.equal(report, steps.length - 1);
+    assert.equal(sourceStaticScripts.length, 13);
+    assertStepCommands(steps.slice(install + 1, report), sourceStaticNames,
+        sourceStaticScripts.map(script => `yarn workspace @cratis/components run ${script}`));
+    assert.match(steps[report].body, /^              run: yarn workspace @cratis\/components run report-api-compatibility$/m);
+    assert.match(jobs.source, /^        env:\n            NODE_OPTIONS: "--max-old-space-size=4096"$/m);
+    assert.equal(jobs.source.split('NODE_OPTIONS').length - 1, 1);
+    assert.doesNotMatch(jobs.source, /^              (?:working-directory:|run: .*ci:static)/m);
+});
+
+test('the local Source ci:static chain remains identical to the visible CI phases', () => {
+    const sourcePackage = JSON.parse(readFileSync(new URL('../Source/package.json', import.meta.url), 'utf8'));
+    assert.equal(sourcePackage.scripts['ci:static'], sourceStaticScripts.map(script => `yarn ${script}`).join(' && '));
+});
+
+test('Storybook exposes each preflight phase once before the composed build', () => {
+    const steps = workflowSteps(jobs.storybook);
+    const packages = steps.findIndex(step => step.name === 'Build packages the composed Storybook imports');
+    const build = steps.findIndex(step => step.name === 'Build composed renderer Storybook');
+    assert.ok(packages >= 0 && build > packages);
+    const preflight = steps.slice(packages + 1, build);
+    assert.equal(storybookPreflightScripts.length, 4);
+    assertStepCommands(preflight, storybookPreflightNames, storybookPreflightScripts.map(script => `yarn ${script}`));
+    for (const step of preflight) {
+        assert.match(step.body, /^              working-directory: Storybook$/m, step.name);
+    }
+    assert.doesNotMatch(jobs.storybook, /^              run: .*ci:preflight/m);
+});
+
+test('the local Storybook preflight chain remains identical to the visible CI phases', () => {
+    const storybookPackage = JSON.parse(readFileSync(new URL('../Storybook/package.json', import.meta.url), 'utf8'));
+    assert.equal(storybookPackage.scripts['ci:preflight'],
+        storybookPreflightScripts.map(script => `yarn ${script}`).join(' && '));
+});
+
 test('the Yarn package cache is restore-only with exactly one saver', () => {
     const restore = 'uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9';
     const key = "key: ${{ runner.os }}-yarn-cache-v3-${{ hashFiles('yarn.lock', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}";
