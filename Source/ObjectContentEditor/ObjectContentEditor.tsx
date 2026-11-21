@@ -660,6 +660,7 @@ export const ObjectContentEditor = ({
 
     return (
         <div
+            data-cratis-component='ObjectContentEditor'
             className={className ? `order-content ${className}` : 'order-content'}
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >

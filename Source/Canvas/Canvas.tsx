@@ -166,6 +166,7 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     return (
         <div
             ref={containerRef}
+            data-cratis-component='Canvas'
             className={`${CANVAS_SURFACE_CLASS} cratis:relative cratis:overflow-hidden${className ? ` ${className}` : ''}`}
             style={{ cursor: 'default', ...style }}
             onPointerDown={handlePointerDown}

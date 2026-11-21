@@ -66,6 +66,18 @@ On failure, the dialog awaits callbacks in this order, skipping any that do not 
 
 A validation failure therefore calls `onFailed` before `onValidationFailure`, not `onSuccess`. After the failure callbacks finish, the dialog applies the result to the form so matching fields show the server's validation messages. It does not automatically close on failure. See [Dialog Callbacks](index.md#dialog-callbacks) for the close decision and [Confirm before executing](index.md#confirm-before-executing) for guard failures before a command runs.
 
+### When a result callback rejects
+
+The busy state ends as soon as the command settles, before any result callback runs. The busy-state disabling is therefore lifted (normal validity rules still apply to confirm) while `onSuccess`, `onFailed` and the other result callbacks are awaited, so a slow callback should show its own progress if it needs to.
+
+The command has already run by then, and a callback cannot undo it. If a callback throws or returns a rejected promise, the dialog stops at that point:
+
+- Later callbacks in the same sequence do not run. A rejected `onFailed` skips `onException`, `onUnauthorized` and `onValidationFailure`; a rejected `onSuccess` skips `onConfirm` and the `onClose` fallback.
+- After a failed command, the result is not applied to the form, so server validation messages do not appear on the fields.
+- The dialog does not close automatically and does not announce a refusal. It stays open with its current values.
+
+The command's outcome is unchanged: a successful command stays successful even when `onSuccess` rejects. Catch errors inside your callbacks when the rest of the sequence must still run, and report them in your own UI.
+
 ### Announcing validation failures
 
 When a submit is refused with validation results, the dialog announces a summary in its polite live region and moves focus to the first invalid field: the first element in the dialog body marked `aria-invalid="true"`, or the first focusable element inside it. The default English text is `There is 1 problem. <message>` for one result and `There are <count> problems. First: <message>` for more. If no field is marked invalid, focus returns to the confirm button.
