@@ -76,7 +76,7 @@ export const EmojiPicker = ({ ownEmoji, onPick, labels }: EmojiPickerProps) => {
         labels?.categories?.[key] ?? DEFAULT_CATEGORY_LABELS[key];
 
     return (
-        <div ref={rootRef} className='emoji-picker' role='group' aria-label={labels?.allEmojis ?? 'All emojis'}>
+        <div ref={rootRef} className='emoji-picker' data-cratis-component='EmojiPicker' role='group' aria-label={labels?.allEmojis ?? 'All emojis'}>
             <Tabs selectedKey={category} onSelectionChange={(key) => setCategory(key as EmojiCategoryKey)} className='emoji-picker__categories'>
                 <TabList className='emoji-picker__tabs' aria-label={labels?.emojiCategories ?? 'Emoji categories'}>
                     {EMOJI_CATALOG.map((section) => (

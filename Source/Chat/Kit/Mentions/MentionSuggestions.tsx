@@ -46,7 +46,7 @@ export const MentionSuggestions = ({
     id,
     'aria-label': ariaLabel = 'Mention suggestions',
 }: MentionSuggestionsProps) => (
-    <div id={id} className='mention-suggestions' role='listbox' aria-label={ariaLabel}>
+    <div id={id} className='mention-suggestions' data-cratis-component='MentionSuggestions' role='listbox' aria-label={ariaLabel}>
         {candidates.map((candidate, index) => (
             <button
                 key={candidate.id}

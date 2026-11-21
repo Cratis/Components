@@ -36,7 +36,7 @@ export const TypingIndicator = ({
     }
 
     return (
-        <div className='chat-typing' aria-live='polite'>
+        <div className='chat-typing' data-cratis-component='TypingIndicator' aria-live='polite'>
             <div className='chat-typing__authors'>
                 {authors.map((author) => (
                     <PersonAvatarCircle

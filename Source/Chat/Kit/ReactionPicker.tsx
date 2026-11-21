@@ -95,7 +95,7 @@ export const ReactionPicker = ({
 
     return (
         <FocusScope restoreFocus autoFocus>
-            <div ref={rootRef} className='reaction-picker' onKeyDown={onKeyDown}>
+            <div ref={rootRef} className='reaction-picker' data-cratis-component='ReactionPicker' onKeyDown={onKeyDown}>
                 <div className='reaction-picker__quick'>
                     <EmojiOptions
                         emojis={quickEmojis}

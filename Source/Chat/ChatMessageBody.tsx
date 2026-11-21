@@ -23,7 +23,7 @@ export interface ChatMessageBodyProps {
  * apart and the host's own CSS can hang further behavior off them.
  */
 export const ChatMessageBody = ({ body, mentions }: ChatMessageBodyProps) => (
-    <p className='cratis-chat-message__body'>
+    <p className='cratis-chat-message__body' data-cratis-component='ChatMessageBody'>
         {mentionSegments(body, mentions ?? []).map((segment, index) =>
             segment.mention ? (
                 <span

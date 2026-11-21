@@ -20,6 +20,6 @@ describe('when no topic actions are offered', () => {
     afterEach(async () => { await unmount(list); });
 
     it('should retain the existing topic markup', () => {
-        list.container.innerHTML.should.equal('<div class="cratis-chat-topics"><ul class="cratis-chat-topics__list"><li><button type="button" class="cratis-chat-topics__topic"><span class="cratis-chat-topics__details"><span class="cratis-chat-topics__name">Example topic</span></span></button></li></ul></div>');
+        list.container.innerHTML.should.equal('<div class="cratis-chat-topics" data-cratis-component="ChatTopicList"><ul class="cratis-chat-topics__list"><li><button type="button" class="cratis-chat-topics__topic"><span class="cratis-chat-topics__details"><span class="cratis-chat-topics__name">Example topic</span></span></button></li></ul></div>');
     });
 });

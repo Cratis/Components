@@ -88,7 +88,7 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
     });
 
     return (
-        <div className='chat-failed-reply' aria-live='polite'>
+        <div className='chat-failed-reply' data-cratis-component='FailedReply' aria-live='polite'>
             <div className='chat-failed-reply__line'>
                 <FaTriangleExclamation
                     className='chat-failed-reply__icon'
