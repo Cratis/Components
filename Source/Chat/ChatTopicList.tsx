@@ -145,7 +145,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
     const showMessage = topics.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized;
 
     return (
-        <div className={`cratis-chat-topics${className ? ` ${className}` : ''}`} aria-busy={status === ChatStatus.Loading && topics.length > 0 || undefined}>
+        <div className={`cratis-chat-topics${className ? ` ${className}` : ''}`} data-cratis-component='ChatTopicList' aria-busy={status === ChatStatus.Loading && topics.length > 0 || undefined}>
             {onStart && <ChatTopicStartButton label={labels?.newTopic} disabled={status === ChatStatus.Unauthorized} onStart={onStart} />}
             {showMessage && <ChatTopicEmptyMessage status={status} labels={labels} />}
             <ul ref={listRef} className='cratis-chat-topics__list'>

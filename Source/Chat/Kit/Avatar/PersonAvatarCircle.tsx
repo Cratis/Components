@@ -96,6 +96,7 @@ export const PersonAvatarCircle = ({
 
     return (
         <span
+            data-cratis-component='PersonAvatarCircle'
             className={
                 className ? `person-avatar-circle ${className}` : 'person-avatar-circle'
             }

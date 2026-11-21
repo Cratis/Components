@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type RefObject } from 'react';
 import type { Guid } from '@cratis/fundamentals';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Avatar';
@@ -74,6 +74,92 @@ export interface ChatMessageBubbleProps {
     labels?: ChatMessageBubbleLabels;
 }
 
+const renderBubbleAuthor = (
+    message: ChatMessage,
+    buildAvatarUrl: ChatMessageBubbleProps['buildAvatarUrl'],
+) => (
+    <div className='chat-bubble-author'>
+        <PersonAvatarCircle
+            userId={message.authorId}
+            name={message.authorName}
+            hasAvatar={message.hasAvatar}
+            size={22}
+            ownerType={message.authorKind === ChatAuthorKind.Agent ? 'Agents' : 'Users'}
+            buildAvatarUrl={buildAvatarUrl}
+        />
+        <span className='chat-bubble-name'>{message.authorName}</span>
+    </div>
+);
+
+const reactionButtonLabel = (
+    ownReaction: ReturnType<typeof findOwnReaction>,
+    labels: ChatMessageBubbleLabels | undefined,
+) => ownReaction
+    ? (labels?.yourReaction ?? 'You reacted with {emoji}').replace('{emoji}', ownReaction.emoji)
+    : (labels?.addReaction ?? 'Add a quick reaction');
+
+const renderQuickReplyAction = (
+    message: ChatMessage,
+    onQuickReply: NonNullable<ChatMessageBubbleProps['onQuickReply']>,
+    labels: ChatMessageBubbleLabels | undefined,
+) => (
+    <button
+        type='button'
+        className='chat-bubble-action'
+        title={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', message.authorName)}
+        aria-label={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', message.authorName)}
+        onClick={() => onQuickReply(message.authorName)}
+    >
+        <FaReply aria-hidden='true' />
+    </button>
+);
+
+const renderActAction = (
+    message: ChatMessage,
+    onAct: NonNullable<ChatMessageBubbleProps['onAct']>,
+    labels: ChatMessageBubbleLabels | undefined,
+) => (
+    <button
+        type='button'
+        className='chat-bubble-action'
+        title={labels?.convertToAction ?? 'Turn into an action'}
+        aria-label={labels?.convertToAction ?? 'Turn into an action'}
+        onClick={() => onAct(message.id)}
+    >
+        <FaBolt aria-hidden='true' />
+    </button>
+);
+
+interface BubbleActionsProps extends Pick<ChatMessageBubbleProps, 'message' | 'onQuickReply' | 'onAct' | 'labels'> {
+    supportsReactions: boolean;
+    ownReaction: ReturnType<typeof findOwnReaction>;
+    reactionButtonRef: RefObject<HTMLButtonElement | null>;
+    pickerOpen: boolean;
+    onTogglePicker: () => void;
+}
+
+const renderBubbleActions = ({
+    message, onQuickReply, onAct, labels, supportsReactions, ownReaction, reactionButtonRef, pickerOpen, onTogglePicker,
+}: BubbleActionsProps) => (
+    <div className='chat-bubble-actions'>
+        {supportsReactions && (
+            <button
+                ref={reactionButtonRef}
+                type='button'
+                className={`chat-bubble-action${ownReaction ? ' chat-bubble-action--own-reaction' : ''}`}
+                title={reactionButtonLabel(ownReaction, labels)}
+                aria-label={reactionButtonLabel(ownReaction, labels)}
+                aria-expanded={pickerOpen}
+                onClick={onTogglePicker}
+            >
+                {ownReaction ? ownReaction.emoji : '☺'}
+            </button>
+        )}
+        {onQuickReply && renderQuickReplyAction(message, onQuickReply, labels)}
+        {onAct && renderActAction(message, onAct, labels)}
+    </div>
+);
+
 /**
  * One message in a conversation, with the optional quick-reaction and quick-reply affordances a
  * conversation may offer. The affordances are opt-in via {@link ChatMessageBubbleProps.currentUserId} —
@@ -108,92 +194,24 @@ export const ChatMessageBubble = ({
     };
 
     return (
-        <div className={`chat-bubble${showAuthor ? '' : ' chat-bubble--continuation'}`}>
-            {showAuthor && (
-                <div className='chat-bubble-author'>
-                    <PersonAvatarCircle
-                        userId={message.authorId}
-                        name={message.authorName}
-                        hasAvatar={message.hasAvatar}
-                        size={22}
-                        ownerType={
-                            message.authorKind === ChatAuthorKind.Agent
-                                ? 'Agents'
-                                : 'Users'
-                        }
-                        buildAvatarUrl={buildAvatarUrl}
-                    />
-                    <span className='chat-bubble-name'>{message.authorName}</span>
-                </div>
-            )}
+        <div className={`chat-bubble${showAuthor ? '' : ' chat-bubble--continuation'}`} data-cratis-component='ChatMessageBubble'>
+            {showAuthor && renderBubbleAuthor(message, buildAvatarUrl)}
             <div className='chat-bubble-body'>
                 <div
                     className={`chat-bubble-panel${showActionsRow ? ' chat-bubble-panel--with-actions' : ''}`}
                 >
                     <p className='chat-bubble-text'>{message.text}</p>
-                    {showActionsRow && (
-                        <div className='chat-bubble-actions'>
-                            {supportsReactions && (
-                                <button
-                                    ref={reactionButtonRef}
-                                    type='button'
-                                    className={`chat-bubble-action${ownReaction ? ' chat-bubble-action--own-reaction' : ''}`}
-                                    title={
-                                        ownReaction
-                                            ? (
-                                                  labels?.yourReaction ??
-                                                  'You reacted with {emoji}'
-                                              ).replace('{emoji}', ownReaction.emoji)
-                                            : (labels?.addReaction ??
-                                              'Add a quick reaction')
-                                    }
-                                    aria-label={
-                                        ownReaction
-                                            ? (
-                                                  labels?.yourReaction ??
-                                                  'You reacted with {emoji}'
-                                              ).replace('{emoji}', ownReaction.emoji)
-                                            : (labels?.addReaction ??
-                                              'Add a quick reaction')
-                                    }
-                                    aria-expanded={pickerOpen}
-                                    onClick={() => setPickerOpen((previous) => !previous)}
-                                >
-                                    {ownReaction ? ownReaction.emoji : '☺'}
-                                </button>
-                            )}
-                            {onQuickReply && (
-                                <button
-                                    type='button'
-                                    className='chat-bubble-action'
-                                    title={(
-                                        labels?.quickReplyTo ?? 'Reply to {name}'
-                                    ).replace('{name}', message.authorName)}
-                                    aria-label={(
-                                        labels?.quickReplyTo ?? 'Reply to {name}'
-                                    ).replace('{name}', message.authorName)}
-                                    onClick={() => onQuickReply(message.authorName)}
-                                >
-                                    <FaReply aria-hidden='true' />
-                                </button>
-                            )}
-                            {onAct && (
-                                <button
-                                    type='button'
-                                    className='chat-bubble-action'
-                                    title={
-                                        labels?.convertToAction ?? 'Turn into an action'
-                                    }
-                                    aria-label={
-                                        labels?.convertToAction ?? 'Turn into an action'
-                                    }
-                                    onClick={() => onAct(message.id)}
-                                >
-                                    <FaBolt aria-hidden='true' />
-                                </button>
-                            )}
-                        </div>
-                    )}
+                    {showActionsRow && renderBubbleActions({
+                        message,
+                        onQuickReply,
+                        onAct,
+                        labels,
+                        supportsReactions,
+                        ownReaction,
+                        reactionButtonRef,
+                        pickerOpen,
+                        onTogglePicker: () => setPickerOpen((previous) => !previous),
+                    })}
                 </div>
                 {showTimestamp && (
                     <span className='chat-bubble-time'>{formattedTimestamp}</span>

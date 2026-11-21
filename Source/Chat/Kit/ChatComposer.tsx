@@ -290,7 +290,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
         };
 
         return (
-            <div className='chat-composer'>
+            <div className='chat-composer' data-cratis-component='ChatComposer'>
                 {isSuggesting && (
                     <MentionSuggestions
                         candidates={suggestions}

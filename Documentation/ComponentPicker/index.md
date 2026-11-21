@@ -17,6 +17,8 @@ The picker recognizes a component by `data-cratis-component="<Name>"` on its roo
 
 `data-cratis-part` identifies a part inside the component, such as `label`, `title` or `close`; `data-cratis-component` identifies the component itself. Some public components do not yet have their own marker. For an unmarked element, the picker selects its nearest marked ancestor, if one exists. The package's identity specs track marker coverage and require new public components to be accounted for.
 
+Chat composer, conversation, message body, message bubble, topic list, emoji picker, failed reply, mention suggestions, reactions, avatar, typing indicator, and property-type glyph roots expose their own markers. `ChatSidebarForObservableQueries` and `GlyphMenu` remain unmarked: the former delegates through a fragment, and the latter combines a trigger with portal content.
+
 ## Pick a component
 
 Render your screen under [CratisComponentsProvider](../Common/cratis-components-provider.md), then use `useComponentPicker()` to start and stop picking. Render the returned `picker` once under that provider and call `start()` when the user asks to select something:

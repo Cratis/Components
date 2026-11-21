@@ -103,7 +103,7 @@ export const MessageReactions = ({ reactions }: MessageReactionsProps) => {
     if (reactions.length === 0) return null;
 
     return (
-        <div className='message-reactions'>
+        <div className='message-reactions' data-cratis-component='MessageReactions'>
             {reactions.map((reaction) => (
                 <ReactionBadge key={reaction.emoji} reaction={reaction} />
             ))}

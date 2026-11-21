@@ -53,5 +53,5 @@ export interface PropertyTypeGlyphProps {
  * next to it, so it is hidden from assistive technology.
  */
 export const PropertyTypeGlyph = ({ type }: PropertyTypeGlyphProps) => (
-    <span className='cratis-schema-editor__badge-glyph' data-property-type={type} aria-hidden='true'>{glyphs[type]}</span>
+    <span className='cratis-schema-editor__badge-glyph' data-cratis-component='PropertyTypeGlyph' data-property-type={type} aria-hidden='true'>{glyphs[type]}</span>
 );

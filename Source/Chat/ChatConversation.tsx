@@ -220,6 +220,126 @@ const typingLabel = (
     return labels?.typingSeveral ?? 'Several people are typing';
 };
 
+const conversationStatusLabel = (
+    status: ChatStatus,
+    labels: ChatConversationLabels | undefined,
+) => {
+    switch (status) {
+        case ChatStatus.Loading:
+            return <span key={status} role='status'>{labels?.loading ?? 'Loading messages…'}</span>;
+        case ChatStatus.Failed:
+            return <span key={status} role='alert'>{labels?.failed ?? 'Could not load messages.'}</span>;
+        case ChatStatus.Unauthorized:
+            return <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these messages.'}</span>;
+        default:
+            return labels?.empty ?? 'No messages yet. Say hello!';
+    }
+};
+
+const renderConversationStatus = (
+    messageCount: number,
+    status: ChatStatus,
+    labels: ChatConversationLabels | undefined,
+) => {
+    if (messageCount > 0 && status !== ChatStatus.Failed && status !== ChatStatus.Unauthorized) return null;
+    return (
+        <p className='cratis-chat-conversation__empty'>
+            {conversationStatusLabel(status, labels)}
+        </p>
+    );
+};
+
+interface ConversationMessageProps<TMessage extends ChatMessage> extends Pick<ChatConversationProps<TMessage>,
+    'renderAvatar' | 'renderAuthorName' | 'renderMessageExtra' | 'buildAvatarUrl' | 'labels'> {
+    message: TMessage;
+    author: ChatAuthor;
+    info: MessageRenderInfo;
+    availableActions: ChatMessageAction<TMessage>[];
+    quickReply: boolean;
+    onQuickReply: (name: string) => void;
+}
+
+const renderMessageAuthor = (
+    message: ChatMessage,
+    author: ChatAuthor,
+    { renderAvatar, renderAuthorName, buildAvatarUrl }: Pick<ChatConversationProps, 'renderAvatar' | 'renderAuthorName' | 'buildAvatarUrl'>,
+) => (
+    <div className='cratis-chat-message__author'>
+        {renderAvatar ? (
+            renderAvatar(message.authorId, author)
+        ) : (
+            <PersonAvatarCircle
+                userId={chatIdentifierString(message.authorId)}
+                name={author.name}
+                hasAvatar={author.hasAvatar ?? false}
+                size={22}
+                ownerType={author.kind === ChatAuthorKind.Agent ? 'Agents' : 'Users'}
+                version={author.avatarVersion}
+                buildAvatarUrl={buildAvatarUrl}
+            />
+        )}
+        <span className='cratis-chat-message__author-name'>
+            {renderAuthorName ? renderAuthorName(message.authorId, author) : author.name}
+        </span>
+    </div>
+);
+
+const renderMessageActions = <TMessage extends ChatMessage>({
+    message, author, availableActions, quickReply, labels, onQuickReply,
+}: Pick<ConversationMessageProps<TMessage>, 'message' | 'author' | 'availableActions' | 'quickReply' | 'labels' | 'onQuickReply'>) => (
+    <div className='cratis-chat-message__actions'>
+        {quickReply && (
+            <button
+                type='button'
+                className='cratis-chat-message__action'
+                title={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', author.name)}
+                aria-label={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', author.name)}
+                onClick={() => onQuickReply(author.name)}
+            >
+                <ReplyIcon />
+            </button>
+        )}
+        {availableActions.map((action) => (
+            <button
+                key={action.id}
+                type='button'
+                className='cratis-chat-message__action'
+                title={action.label}
+                aria-label={action.label}
+                onClick={() => action.onInvoke(message)}
+            >
+                {typeof action.icon === 'string' ? <i className={action.icon} aria-hidden='true' /> : action.icon}
+            </button>
+        ))}
+    </div>
+);
+
+const renderConversationMessage = <TMessage extends ChatMessage>(props: ConversationMessageProps<TMessage>) => {
+    const { message, author, info: { showAuthor, showTimestamp }, availableActions, quickReply, renderMessageExtra, labels } = props;
+    const showActionsRow = quickReply || availableActions.length > 0;
+
+    return (
+        <div
+            key={chatIdentifierString(message.id)}
+            className={`cratis-chat-message${showAuthor ? '' : ' cratis-chat-message--continuation'}`}
+        >
+            {showAuthor && renderMessageAuthor(message, author, props)}
+            <div className='cratis-chat-message__content'>
+                <div className={`cratis-chat-message__panel${showActionsRow ? ' cratis-chat-message__panel--with-actions' : ''}`}>
+                    <ChatMessageBody body={message.body} mentions={message.mentions} />
+                    {showActionsRow && renderMessageActions(props)}
+                </div>
+                {renderMessageExtra?.(message)}
+                {showTimestamp && (
+                    <span className='cratis-chat-message__time'>
+                        {relativeTimestamp(timestampOf(message), new Date(), labels?.timestamps)}
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+};
+
 /**
  * One conversation — its messages and the composer to add to them. Host-agnostic by design: it
  * renders whatever message array it is given (hand it a live query's data and it stays current),
@@ -277,128 +397,27 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     const quickReplyTo = (name: string) => composerRef.current?.prefill(`@${name} `);
 
     return (
-        <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`}>
+        <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`} data-cratis-component='ChatConversation'>
             <div className='cratis-chat-conversation__messages' aria-busy={status === ChatStatus.Loading && messages.length > 0 || undefined}>
-                {(messages.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
-                    <p className='cratis-chat-conversation__empty'>
-                        {status === ChatStatus.Loading ? (
-                            <span key={status} role='status'>{labels?.loading ?? 'Loading messages…'}</span>
-                        ) : status === ChatStatus.Failed ? (
-                            <span key={status} role='alert'>{labels?.failed ?? 'Could not load messages.'}</span>
-                        ) : status === ChatStatus.Unauthorized ? (
-                            <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these messages.'}</span>
-                        ) : (
-                            labels?.empty ?? 'No messages yet. Say hello!'
-                        )}
-                    </p>
-                )}
+                {renderConversationStatus(messages.length, status, labels)}
                 {status !== ChatStatus.Unauthorized && messages.map((message, index) => {
                     const author = authorFor(message.authorId);
-                    const { showAuthor, showTimestamp } = renderInfo[index];
                     const availableActions = (actions ?? []).filter(
                         (action) => action.isAvailable?.(message) ?? true,
                     );
-                    const showActionsRow = quickReply || availableActions.length > 0;
-
-                    return (
-                        <div
-                            key={chatIdentifierString(message.id)}
-                            className={`cratis-chat-message${showAuthor ? '' : ' cratis-chat-message--continuation'}`}
-                        >
-                            {showAuthor && (
-                                <div className='cratis-chat-message__author'>
-                                    {renderAvatar ? (
-                                        renderAvatar(message.authorId, author)
-                                    ) : (
-                                        <PersonAvatarCircle
-                                            userId={chatIdentifierString(
-                                                message.authorId,
-                                            )}
-                                            name={author.name}
-                                            hasAvatar={author.hasAvatar ?? false}
-                                            size={22}
-                                            ownerType={
-                                                author.kind === ChatAuthorKind.Agent
-                                                    ? 'Agents'
-                                                    : 'Users'
-                                            }
-                                            version={author.avatarVersion}
-                                            buildAvatarUrl={buildAvatarUrl}
-                                        />
-                                    )}
-                                    <span className='cratis-chat-message__author-name'>
-                                        {renderAuthorName
-                                            ? renderAuthorName(message.authorId, author)
-                                            : author.name}
-                                    </span>
-                                </div>
-                            )}
-                            <div className='cratis-chat-message__content'>
-                                <div
-                                    className={`cratis-chat-message__panel${showActionsRow ? ' cratis-chat-message__panel--with-actions' : ''}`}
-                                >
-                                    <ChatMessageBody
-                                        body={message.body}
-                                        mentions={message.mentions}
-                                    />
-                                    {showActionsRow && (
-                                        <div className='cratis-chat-message__actions'>
-                                            {quickReply && (
-                                                <button
-                                                    type='button'
-                                                    className='cratis-chat-message__action'
-                                                    title={(
-                                                        labels?.quickReplyTo ??
-                                                        'Reply to {name}'
-                                                    ).replace('{name}', author.name)}
-                                                    aria-label={(
-                                                        labels?.quickReplyTo ??
-                                                        'Reply to {name}'
-                                                    ).replace('{name}', author.name)}
-                                                    onClick={() =>
-                                                        quickReplyTo(author.name)
-                                                    }
-                                                >
-                                                    <ReplyIcon />
-                                                </button>
-                                            )}
-                                            {availableActions.map((action) => (
-                                                <button
-                                                    key={action.id}
-                                                    type='button'
-                                                    className='cratis-chat-message__action'
-                                                    title={action.label}
-                                                    aria-label={action.label}
-                                                    onClick={() =>
-                                                        action.onInvoke(message)
-                                                    }
-                                                >
-                                                    {typeof action.icon === 'string' ? (
-                                                        <i
-                                                            className={action.icon}
-                                                            aria-hidden='true'
-                                                        />
-                                                    ) : (
-                                                        action.icon
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {renderMessageExtra?.(message)}
-                                {showTimestamp && (
-                                    <span className='cratis-chat-message__time'>
-                                        {relativeTimestamp(
-                                            timestampOf(message),
-                                            new Date(),
-                                            labels?.timestamps,
-                                        )}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    );
+                    return renderConversationMessage({
+                        message,
+                        author,
+                        info: renderInfo[index],
+                        availableActions,
+                        quickReply,
+                        onQuickReply: quickReplyTo,
+                        renderAvatar,
+                        renderAuthorName,
+                        renderMessageExtra,
+                        buildAvatarUrl,
+                        labels,
+                    });
                 })}
                 {status !== ChatStatus.Unauthorized && (
                     <TypingIndicator
