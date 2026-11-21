@@ -1,7 +1,7 @@
 ---
 id: '0007'
 title: Stable atomic slots
-description: A stable presentation adapter can implement selected atomic slots through an optional atomicSlots map, without changing the nine-slot profile or the renderer ABI.
+description: A stable presentation adapter can implement selected atomic slots through an optional atomicSlots map, leaving the nine-slot profile and renderer ABI unchanged.
 status: accepted
 stage: implemented
 class: contract
