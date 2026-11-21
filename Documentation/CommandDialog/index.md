@@ -360,7 +360,7 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 - The header close and secondary buttons are disabled and the primary button shows a loading spinner. The primary button stays focusable but is `aria-disabled` and ignores activation, so focus stays inside the dialog while the command runs.
 - The form fields are disabled and inert, so values cannot change while the command runs.
 - Escape and backdrop dismissal are ignored while work is in flight.
-- Once execution completes (success or failure), the buttons return to their normal state.
+- Once execution completes (success or failure), the buttons return to their normal state. This happens before the result callbacks run; see [When a result callback rejects](advanced-features.md#when-a-result-callback-rejects).
 - After a refused submit the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). When the command result carries validation results, the live region instead announces how many problems there are and the first message, and focus moves to the first invalid field. See [Announcing validation failures](advanced-features.md#announcing-validation-failures). A successful submit follows the [dialog callback close decision](#dialog-callbacks).
 
 ## Context
