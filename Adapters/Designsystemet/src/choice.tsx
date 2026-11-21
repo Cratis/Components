@@ -12,6 +12,7 @@ import {
     type ForwardedRef,
     type HTMLAttributes,
     type InputHTMLAttributes,
+    type MouseEvent,
 } from 'react';
 import { Field as DsField, Input as DsInput, Label as DsLabel } from '@digdir/designsystemet-react';
 import type {
@@ -129,6 +130,105 @@ const VisualPart = ({
     );
 };
 
+const resolveChoiceInvalid = (props: ChoiceProps, inputPart: InputHTMLAttributes<HTMLInputElement> | undefined) => {
+    const ariaInvalid = props['aria-invalid'] ?? inputPart?.['aria-invalid'] ?? (props.invalid || undefined);
+    return {
+        ariaInvalid,
+        invalid: Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true',
+    };
+};
+
+const resolveChoiceInputState = (props: ChoiceProps, inputPart: InputHTMLAttributes<HTMLInputElement> | undefined) => ({
+    checked: props.checked ?? inputPart?.checked,
+    defaultChecked: props.defaultChecked ?? inputPart?.defaultChecked,
+    disabled: props.disabled ?? inputPart?.disabled,
+    readOnly: props.readOnly ?? inputPart?.readOnly,
+});
+
+const useChoiceInput = (props: ChoiceProps, forwardedRef: ForwardedRef<HTMLInputElement>, kind: ChoiceKind) => {
+    const generatedId = useId();
+    const parts = props.pt as ChoiceParts | undefined;
+    const inputPart = parts?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
+    const inputState = resolveChoiceInputState(props, inputPart);
+    const { ariaInvalid, invalid } = resolveChoiceInvalid(props, inputPart);
+    const state = useNativeCheckedState(inputState.checked, inputState.defaultChecked, forwardedRef, kind === 'radio');
+    return {
+        parts,
+        inputPart,
+        inputId: props.id ?? inputPart?.id ?? generatedId,
+        inputState,
+        ariaInvalid,
+        state,
+        attributes: stateAttributes(inputState.disabled, invalid, inputState.readOnly, state.selected),
+    };
+};
+
+const choiceSemantics = (kind: ChoiceKind, role: ChoiceProps['role']) => ({
+    type: kind === 'radio' ? 'radio' : 'checkbox',
+    role: kind === 'switch' ? 'switch' : role,
+} as const);
+
+const choiceAriaReadOnly = (kind: ChoiceKind, readOnly: boolean | undefined) =>
+    kind === 'radio' ? undefined : readOnly || undefined;
+
+const createChoiceChangeHandler = ({
+    partOnChange,
+    onChange,
+    readOnly,
+    kind,
+    synchronize,
+}: {
+    readonly partOnChange: InputHTMLAttributes<HTMLInputElement>['onChange'];
+    readonly onChange: ChoiceProps['onChange'];
+    readonly readOnly: boolean | undefined;
+    readonly kind: ChoiceKind;
+    readonly synchronize: (checked: boolean) => void;
+}) => (event: ChangeEvent<HTMLInputElement>) => {
+    partOnChange?.(event);
+    if (readOnly || (kind === 'radio' && !event.currentTarget.checked)) return;
+    synchronize(event.currentTarget.checked);
+    onChange?.(event.currentTarget.checked, {
+        source: 'user',
+        nativeEvent: event.nativeEvent,
+    });
+};
+
+const createChoiceClickHandler = (
+    partOnClick: InputHTMLAttributes<HTMLInputElement>['onClick'],
+    onClick: ChoiceProps['onClick'],
+    readOnly: boolean | undefined,
+) => (event: MouseEvent<HTMLInputElement>) => {
+    partOnClick?.(event);
+    onClick?.(event);
+    if (readOnly) event.preventDefault();
+};
+
+const ChoiceLabel = ({
+    label,
+    parts,
+    inputId,
+    attributes,
+}: {
+    readonly label: ChoiceProps['label'];
+    readonly parts: ChoiceParts | undefined;
+    readonly inputId: string;
+    readonly attributes: DataAttributes;
+}) => {
+    const labelPart = parts?.label as HTMLAttributes<HTMLLabelElement> | undefined;
+    return label !== undefined && (
+        <DsLabel
+            {...labelPart}
+            htmlFor={inputId}
+            weight='regular'
+            className={classNames('cratis-designsystemet-choice__label', labelPart?.className)}
+            data-cratis-part='label'
+            {...attributes}
+        >
+            {label}
+        </DsLabel>
+    );
+};
+
 const DesignsystemetChoice = ({
     kind,
     props,
@@ -138,18 +238,8 @@ const DesignsystemetChoice = ({
     readonly props: ChoiceProps;
     readonly forwardedRef: ForwardedRef<HTMLInputElement>;
 }) => {
-    const generatedId = useId();
-    const parts = props.pt as ChoiceParts | undefined;
-    const inputPart = parts?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
-    const checked = props.checked ?? inputPart?.checked;
-    const defaultChecked = props.defaultChecked ?? inputPart?.defaultChecked;
-    const disabled = props.disabled ?? inputPart?.disabled;
-    const readOnly = props.readOnly ?? inputPart?.readOnly;
-    const ariaInvalid =
-        props['aria-invalid'] ?? inputPart?.['aria-invalid'] ?? (props.invalid || undefined);
-    const invalid = Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true';
-    const state = useNativeCheckedState(checked, defaultChecked, forwardedRef, kind === 'radio');
-    const attributes = stateAttributes(disabled, invalid, readOnly, state.selected);
+    const { parts, inputPart, inputId, inputState, ariaInvalid, state, attributes } = useChoiceInput(props, forwardedRef, kind);
+    const { checked, defaultChecked, disabled, readOnly } = inputState;
     const {
         label,
         readOnly: _readOnly,
@@ -163,7 +253,7 @@ const DesignsystemetChoice = ({
         disabled: _disabled,
         onClick,
         'aria-invalid': _ariaInvalid,
-        id,
+        id: _id,
         ...nativeProps
     } = props;
     const {
@@ -177,17 +267,9 @@ const DesignsystemetChoice = ({
         disabled: _partDisabled,
         ...inputPartRest
     } = inputPart ?? {};
-    const inputId = id ?? inputPart?.id ?? generatedId;
-    const labelPart = parts?.label as HTMLAttributes<HTMLLabelElement> | undefined;
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        partOnChange?.(event);
-        if (readOnly || (kind === 'radio' && !event.currentTarget.checked)) return;
-        state.synchronize(event.currentTarget.checked);
-        onChange?.(event.currentTarget.checked, {
-            source: 'user',
-            nativeEvent: event.nativeEvent,
-        });
-    };
+    const handleChange = createChoiceChangeHandler({
+        partOnChange, onChange, readOnly, kind, synchronize: state.synchronize,
+    });
     return (
         <DsField
             {...(parts?.root as HTMLAttributes<HTMLElement>)}
@@ -201,38 +283,22 @@ const DesignsystemetChoice = ({
                 {...nativeProps}
                 id={inputId}
                 ref={state.ref}
-                type={kind === 'radio' ? 'radio' : 'checkbox'}
-                role={kind === 'switch' ? 'switch' : nativeProps.role}
+                {...choiceSemantics(kind, nativeProps.role)}
                 checked={checked}
                 defaultChecked={defaultChecked}
                 disabled={disabled}
                 readOnly={readOnly}
                 aria-invalid={ariaInvalid}
-                aria-readonly={kind === 'radio' ? undefined : readOnly || undefined}
+                aria-readonly={choiceAriaReadOnly(kind, readOnly)}
                 className={classNames('cratis-designsystemet-choice__input', inputClassName)}
                 style={inputStyle}
                 data-cratis-part='input'
                 {...attributes}
                 onChange={handleChange}
-                onClick={(event) => {
-                    partOnClick?.(event);
-                    onClick?.(event);
-                    if (readOnly) event.preventDefault();
-                }}
+                onClick={createChoiceClickHandler(partOnClick, onClick, readOnly)}
             />
             <VisualPart kind={kind} parts={parts} attributes={attributes} />
-            {label !== undefined && (
-                <DsLabel
-                    {...labelPart}
-                    htmlFor={inputId}
-                    weight='regular'
-                    className={classNames('cratis-designsystemet-choice__label', labelPart?.className)}
-                    data-cratis-part='label'
-                    {...attributes}
-                >
-                    {label}
-                </DsLabel>
-            )}
+            <ChoiceLabel label={label} parts={parts} inputId={inputId} attributes={attributes} />
         </DsField>
     );
 };

@@ -161,16 +161,18 @@ const checkInteractions = async (
                 checks,
                 ConformanceFamily.Behavior,
                 `behavior.${profile.slotId}.${concern}`,
-                passed,
-                passed
-                    ? interactionMessages[concern]
-                    : `${interactionMessages[concern]} It did not respond as required.`,
-                profile.slotId,
-                { concern, passed, ...observed.detail },
+                {
+                    passed,
+                    message: passed
+                        ? interactionMessages[concern]
+                        : `${interactionMessages[concern]} It did not respond as required.`,
+                    slotId: profile.slotId,
+                    evidence: { concern, passed, ...observed.detail },
+                },
             );
         }
     } catch (error) {
-        addError(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}.interaction`, error, profile.slotId);
+        addError(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}.interaction`, { error, slotId: profile.slotId });
     } finally {
         if (fixture) await unmount(fixture);
     }
@@ -179,13 +181,17 @@ const checkInteractions = async (
 const markerForPart = (part: string) =>
     part.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`);
 
+const collectElementStates = (element: HTMLElement, observed: Set<string>) => {
+    const part = element.getAttribute('data-cratis-part');
+    if (!part) return;
+    for (const state of cratisCanonicalPartStates) {
+        if (element.hasAttribute(`data-${state}`)) observed.add(`${part}.${state}`);
+    }
+};
+
 const collectRenderedStates = (root: ParentNode, observed: Set<string>) => {
     for (const element of root.querySelectorAll<HTMLElement>('[data-cratis-part]')) {
-        const part = element.getAttribute('data-cratis-part');
-        if (!part) continue;
-        for (const state of cratisCanonicalPartStates) {
-            if (element.hasAttribute(`data-${state}`)) observed.add(`${part}.${state}`);
-        }
+        collectElementStates(element, observed);
     }
 };
 
@@ -222,14 +228,18 @@ const variantPassThrough = (profile: SlotProfile, variantPt: unknown) => {
     return merged;
 };
 
+interface CheckResult {
+    readonly passed: boolean;
+    readonly message: string;
+    readonly slotId?: unstable_SlotId;
+    readonly evidence?: Readonly<Record<string, unknown>>;
+}
+
 const addCheck = (
     checks: ConformanceCheck[],
     family: ConformanceFamily,
     id: string,
-    passed: boolean,
-    message: string,
-    slotId?: unstable_SlotId,
-    evidence?: Readonly<Record<string, unknown>>,
+    { passed, message, slotId, evidence }: CheckResult,
 ) =>
     checks.push({
         id,
@@ -244,23 +254,21 @@ const addError = (
     checks: ConformanceCheck[],
     family: ConformanceFamily,
     id: string,
-    error: unknown,
-    slotId?: unstable_SlotId,
+    { error, slotId }: { error: unknown; slotId?: unstable_SlotId },
 ) =>
-    addCheck(
-        checks,
-        family,
-        id,
-        false,
-        error instanceof Error ? error.message : String(error),
+    addCheck(checks, family, id, {
+        passed: false,
+        message: error instanceof Error ? error.message : String(error),
         slotId,
-    );
+    });
 
 const skipRequested = (
     checks: ConformanceCheck[],
-    options: ConformanceOptions,
-    library: unstable_UiLibrary,
-    declaration: unstable_SlotDeclaration<unstable_SlotId>,
+    { options, library, declaration }: {
+        options: ConformanceOptions;
+        library: unstable_UiLibrary;
+        declaration: unstable_SlotDeclaration<unstable_SlotId>;
+    },
     checkId: string,
     slotId: unstable_SlotId,
 ) => {
@@ -281,9 +289,11 @@ const skipRequested = (
             checks,
             ConformanceFamily.Manifest,
             `skip.${checkId}.undeclared`,
-            false,
-            `Skip '${checkId}' has no unsupported/emulated fidelity or absent declared capability.`,
-            slotId,
+            {
+                passed: false,
+                message: `Skip '${checkId}' has no unsupported/emulated fidelity or absent declared capability.`,
+                slotId,
+            },
         );
         return false;
     }
@@ -298,6 +308,15 @@ const skipRequested = (
     return true;
 };
 
+const isImmutableLibrary = (library: unstable_UiLibrary) =>
+    Object.isFrozen(library) &&
+    Object.isFrozen(library.capabilities) &&
+    Object.isFrozen(library.profileSlots) &&
+    Object.isFrozen(library.slots) &&
+    Object.values(library.slots).every(
+        (declaration) => declaration === undefined || Object.isFrozen(declaration),
+    );
+
 const checkManifest = (
     checks: ConformanceCheck[],
     library: unstable_UiLibrary,
@@ -309,12 +328,13 @@ const checkManifest = (
             checks,
             ConformanceFamily.Manifest,
             'manifest.schema',
-            schemaProblems.length === 0,
-            schemaProblems.length === 0
-                ? 'Static package metadata satisfies the public adapter-schema constraints exercised by this runner.'
-                : schemaProblems.join('; '),
-            undefined,
-            { problems: schemaProblems },
+            {
+                passed: schemaProblems.length === 0,
+                message: schemaProblems.length === 0
+                    ? 'Static package metadata satisfies the public adapter-schema constraints exercised by this runner.'
+                    : schemaProblems.join('; '),
+                evidence: { problems: schemaProblems },
+            },
         );
         const consistencyProblems = compareMetadata(
             options.metadata,
@@ -324,20 +344,23 @@ const checkManifest = (
             checks,
             ConformanceFamily.Manifest,
             'manifest.runtimeConsistency',
-            consistencyProblems.length === 0,
-            consistencyProblems.length === 0
-                ? 'Static package metadata and runtime manifest agree.'
-                : consistencyProblems.join('; '),
-            undefined,
-            { problems: consistencyProblems },
+            {
+                passed: consistencyProblems.length === 0,
+                message: consistencyProblems.length === 0
+                    ? 'Static package metadata and runtime manifest agree.'
+                    : consistencyProblems.join('; '),
+                evidence: { problems: consistencyProblems },
+            },
         );
     } else {
         addCheck(
             checks,
             ConformanceFamily.Manifest,
             'manifest.schema',
-            false,
-            'No package.json#cratis metadata was supplied; static/runtime consistency cannot be established.',
+            {
+                passed: false,
+                message: 'No package.json#cratis metadata was supplied; static/runtime consistency cannot be established.',
+            },
         );
     }
 
@@ -346,32 +369,39 @@ const checkManifest = (
         checks,
         ConformanceFamily.Manifest,
         'manifest.noOverDeclaration',
-        overDeclarations.length === 0,
-        overDeclarations.length === 0
-            ? 'Every declared capability has bounded evidence and a supporting slot.'
-            : overDeclarations.join('; '),
-        undefined,
-        { problems: overDeclarations },
+        {
+            passed: overDeclarations.length === 0,
+            message: overDeclarations.length === 0
+                ? 'Every declared capability has bounded evidence and a supporting slot.'
+                : overDeclarations.join('; '),
+            evidence: { problems: overDeclarations },
+        },
     );
 
-    const immutable =
-        Object.isFrozen(library) &&
-        Object.isFrozen(library.capabilities) &&
-        Object.isFrozen(library.profileSlots) &&
-        Object.isFrozen(library.slots) &&
-        Object.values(library.slots).every(
-            (declaration) => declaration === undefined || Object.isFrozen(declaration),
-        );
+    const immutable = isImmutableLibrary(library);
     addCheck(
         checks,
         ConformanceFamily.Manifest,
         'manifest.immutable',
-        immutable,
-        immutable
-            ? 'The runtime manifest, capability/profile arrays, slot map, and declarations are immutable.'
-            : 'The runtime manifest contains a mutable public container or slot declaration.',
+        {
+            passed: immutable,
+            message: immutable
+                ? 'The runtime manifest, capability/profile arrays, slot map, and declarations are immutable.'
+                : 'The runtime manifest contains a mutable public container or slot declaration.',
+        },
     );
 };
+
+const normalizedPropsMatch = (
+    normalized: ReturnType<typeof normalizeReactProps>,
+    style: ReturnType<typeof normalizeStyle>,
+) =>
+    normalized.className === 'sample' &&
+    normalized.htmlFor === 'field' &&
+    normalized.strokeWidth === 2 &&
+    normalized.fillRule === 'evenodd' &&
+    style.color === 'red' &&
+    (style as Readonly<Record<string, unknown>>)['--sample-color'] === 'blue';
 
 const checkNormalization = (checks: ConformanceCheck[], document: Document) => {
     const normalized = normalizeReactProps({
@@ -406,12 +436,7 @@ const checkNormalization = (checks: ConformanceCheck[], document: Document) => {
     cleanup();
     document.dispatchEvent(new Event('click'));
     const passed =
-        normalized.className === 'sample' &&
-        normalized.htmlFor === 'field' &&
-        normalized.strokeWidth === 2 &&
-        normalized.fillRule === 'evenodd' &&
-        style.color === 'red' &&
-        (style as Readonly<Record<string, unknown>>)['--sample-color'] === 'blue' &&
+        normalizedPropsMatch(normalized, style) &&
         refObject.current === target &&
         callbackRef === target &&
         order.join(',') === 'pt' &&
@@ -420,12 +445,13 @@ const checkNormalization = (checks: ConformanceCheck[], document: Document) => {
         checks,
         ConformanceFamily.ReactNormalization,
         'reactNormalization.publicBoundary',
-        passed,
-        passed
-            ? 'React className/htmlFor/style/CSS-variable/SVG casing, ref merge, handler order, preventDefault, and idempotent listener cleanup are normalized.'
-            : 'React boundary normalization fixture failed.',
-        undefined,
-        { normalized, order, listenerCalls },
+        {
+            passed,
+            message: passed
+                ? 'React className/htmlFor/style/CSS-variable/SVG casing, ref merge, handler order, preventDefault, and idempotent listener cleanup are normalized.'
+                : 'React boundary normalization fixture failed.',
+            evidence: { normalized, order, listenerCalls },
+        },
     );
 };
 
@@ -450,12 +476,14 @@ const checkPartCoverage = (
         checks,
         ConformanceFamily.Contract,
         `${contractId}.parts`,
-        missingParts.length === 0,
-        missingParts.length === 0
-            ? 'Every documented stable DOM part was observed.'
-            : `Missing parts: ${missingParts.join(', ')}.`,
-        profile.slotId,
-        { expectedParts, foundParts: [...foundParts].sort() },
+        {
+            passed: missingParts.length === 0,
+            message: missingParts.length === 0
+                ? 'Every documented stable DOM part was observed.'
+                : `Missing parts: ${missingParts.join(', ')}.`,
+            slotId: profile.slotId,
+            evidence: { expectedParts, foundParts: [...foundParts].sort() },
+        },
     );
 
     const missingPassThrough = profile.ptKeys
@@ -470,51 +498,246 @@ const checkPartCoverage = (
         checks,
         ConformanceFamily.Contract,
         `${contractId}.pt`,
-        missingPassThrough.length === 0,
-        missingPassThrough.length === 0
-            ? 'Every typed pt key reached its intended real part.'
-            : `pt did not reach: ${missingPassThrough.join(', ')}.`,
-        profile.slotId,
-        { ptKeys: profile.ptKeys },
+        {
+            passed: missingPassThrough.length === 0,
+            message: missingPassThrough.length === 0
+                ? 'Every typed pt key reached its intended real part.'
+                : `pt did not reach: ${missingPassThrough.join(', ')}.`,
+            slotId: profile.slotId,
+            evidence: { ptKeys: profile.ptKeys },
+        },
     );
 };
 
+interface SlotCheckContext {
+    readonly checks: ConformanceCheck[];
+    readonly declaration: unstable_SlotDeclaration<unstable_SlotId>;
+    readonly options: ConformanceOptions;
+    readonly document: Document;
+    readonly profile: SlotProfile;
+}
+
+interface SlotEnvironment {
+    readonly library: unstable_UiLibrary;
+    readonly options: ConformanceOptions;
+    readonly document: Document;
+}
+
 const checkSlot = async (
     checks: ConformanceCheck[],
-    library: unstable_UiLibrary,
-    options: ConformanceOptions,
-    document: Document,
+    { library, options, document }: SlotEnvironment,
     profile: SlotProfile,
 ) => {
     const declaration = library.slots[profile.slotId];
     if (!declaration) {
-        addCheck(
-            checks,
-            ConformanceFamily.Contract,
-            `contract.${profile.slotId}.declaration`,
-            false,
-            'Promised slot has no runtime declaration.',
-            profile.slotId,
-        );
+        addCheck(checks, ConformanceFamily.Contract, `contract.${profile.slotId}.declaration`, {
+            passed: false,
+            message: 'Promised slot has no runtime declaration.',
+            slotId: profile.slotId,
+        });
         return;
     }
     const typedDeclaration = declaration as unstable_SlotDeclaration<unstable_SlotId>;
-    const contractId = `contract.${profile.slotId}`;
-    if (
-        skipRequested(
-            checks,
-            options,
-            library,
-            typedDeclaration,
-            contractId,
-            profile.slotId,
-        )
-    )
-        return;
+    if (skipRequested(
+        checks,
+        { options, library, declaration: typedDeclaration },
+        `contract.${profile.slotId}`,
+        profile.slotId,
+    )) return;
 
+    const context = { checks, declaration: typedDeclaration, options, document, profile };
+    const observedStateAssociations = new Set<string>();
+    const platformOwnedParts = await checkMountedSlot(context, observedStateAssociations);
+    await checkStateFixture(context, observedStateAssociations);
+    if (profile.interact) {
+        await checkInteractions(checks, document, { declaration: typedDeclaration, profile }, options);
+    }
+    checkStateCoverage(context, observedStateAssociations, platformOwnedParts);
+};
+
+const checkNativeElement = (
+    { checks, profile }: SlotCheckContext,
+    nativeRoot: ReturnType<typeof findNativeRoot>,
+    fixture: MountedFixture,
+) => {
+    const native = nativeRoot.element;
+    const exactElement = nativeRoot.tagMatches &&
+        (!profile.refCapable || fixture.ref.current === native);
+    addCheck(checks, ConformanceFamily.Contract, `contract.${profile.slotId}.elementRef`, {
+        passed: exactElement,
+        message: exactElement
+            ? 'The contract resolves to the exact real native element and forwarded ref.'
+            : 'The native element or forwarded ref does not match the slot contract.',
+        slotId: profile.slotId,
+        evidence: {
+            selector: profile.nativeSelector,
+            tag: native?.tagName,
+            refMatches: fixture.ref.current === native,
+        },
+    });
+};
+
+const checkCanonicalStates = ({ checks, profile }: SlotCheckContext) => {
+    const partStates = cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>;
+    const canonical = new Set<string>(cratisCanonicalPartStates);
+    const unexpectedStates = Object.entries(partStates).flatMap(([part, states]) =>
+        states.filter((state) => !canonical.has(state)).map((state) => `${part}.${state}`),
+    );
+    addCheck(checks, ConformanceFamily.Contract, `contract.${profile.slotId}.states`, {
+        passed: unexpectedStates.length === 0,
+        message: unexpectedStates.length === 0
+            ? 'The public part-state manifest uses only exact canonical state names for this slot.'
+            : `Unexpected canonical states: ${unexpectedStates.join(', ')}.`,
+        slotId: profile.slotId,
+    });
+};
+
+const checkOwnership = ({ checks, declaration, document, profile }: SlotCheckContext) => {
+    const ownerCounts = profile.ownershipSelectors.map(
+        (selector) => document.querySelectorAll(selector).length,
+    );
+    const ownershipPassed = ownerCounts.every((count) => count === 1);
+    addCheck(checks, ConformanceFamily.BehaviorOwnership, `ownership.${profile.slotId}`, {
+        passed: ownershipPassed,
+        message: ownershipPassed
+            ? `${declaration.mode} tree exposes exactly one declared interactive semantic root for each bounded selector.`
+            : `Expected one interactive semantic root for each selector; observed ${ownerCounts.join(', ')}.`,
+        slotId: profile.slotId,
+        evidence: { mode: declaration.mode, selectors: profile.ownershipSelectors, ownerCounts },
+    });
+};
+
+type NamedControl = ReturnType<HTMLFormControlsCollection['namedItem']>;
+
+const controlValue = (control: NamedControl) =>
+    control && 'value' in control ? String(control.value) : undefined;
+
+const controlChecked = (control: NamedControl) =>
+    control && 'checked' in control ? Boolean(control.checked) : undefined;
+
+const collectFormEvidence = async (
+    fixture: MountedFixture,
+    baseProps: Readonly<Record<string, unknown>>,
+) => {
+    const namedControl = fixture.form.elements.namedItem(
+        typeof baseProps.name === 'string' ? baseProps.name : '',
+    );
+    const formData = Object.fromEntries(new FormData(fixture.form).entries());
+    const nativeValue = controlValue(namedControl);
+    await act(async () => {
+        fixture.form.reset();
+        await Promise.resolve();
+    });
+    const resetValue = controlValue(namedControl);
+    const resetChecked = controlChecked(namedControl);
+    const resetMatches =
+        (typeof baseProps.defaultValue !== 'string' || resetValue === baseProps.defaultValue) &&
+        (typeof baseProps.defaultChecked !== 'boolean' || resetChecked === baseProps.defaultChecked);
+    return {
+        namedControl,
+        evidence: {
+            formData,
+            name: namedControl && 'name' in namedControl ? namedControl.name : undefined,
+            nativeValue,
+            resetValue,
+            resetChecked,
+            resetMatches,
+        },
+    };
+};
+
+const behaviorMatches = (
+    baseProps: Readonly<Record<string, unknown>>,
+    callbackCount: number | undefined,
+    submitEvents: number,
+    { namedControl, evidence }: Awaited<ReturnType<typeof collectFormEvidence>>,
+) =>
+    (callbackCount === undefined || callbackCount === 1) &&
+    (baseProps.type !== 'submit' || submitEvents === 1) &&
+    (typeof baseProps.name !== 'string' || namedControl !== null) &&
+    evidence.resetMatches;
+
+const checkBehavior = async (
+    { checks, document, profile }: SlotCheckContext,
+    fixture: MountedFixture,
+    baseProps: Readonly<Record<string, unknown>>,
+) => {
+    let submitEvents = 0;
+    fixture.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitEvents += 1;
+    });
+    const exercisedEvidence: Readonly<Record<string, unknown>> = profile.exercise
+        ? ((await act(async () => profile.exercise?.(document, fixture.container, fixture.ref))) ?? {})
+        : {};
+    const form = await collectFormEvidence(fixture, baseProps);
+    const behaviorEvidence: Readonly<Record<string, unknown>> = {
+        ...exercisedEvidence,
+        submitEvents,
+        ...form.evidence,
+    };
+    const callbackCount = typeof behaviorEvidence.callbacks === 'number'
+        ? behaviorEvidence.callbacks
+        : undefined;
+    const behaviorPassed = behaviorMatches(baseProps, callbackCount, submitEvents, form);
+    addCheck(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}`, {
+        passed: behaviorPassed,
+        message: behaviorPassed
+            ? 'Bounded public-prop behavior produced native semantics and at most one ordered callback.'
+            : `Expected one callback, observed ${String(callbackCount)}.`,
+        slotId: profile.slotId,
+        evidence: behaviorEvidence,
+    });
+};
+
+const checkAccessibility = async (
+    { checks, options, profile }: SlotCheckContext,
+    fixture: MountedFixture,
+) => {
+    if (options.axe === false) return;
+    const axeResult = await axe.run(fixture.container, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+    });
+    addCheck(checks, ConformanceFamily.Accessibility, `a11y.${profile.slotId}.axe`, {
+        passed: axeResult.violations.length === 0,
+        message: axeResult.violations.length === 0
+            ? 'axe found no WCAG A/AA violations in the bounded fixture.'
+            : `axe violations: ${axeResult.violations.map((violation) => violation.id).join(', ')}.`,
+        slotId: profile.slotId,
+        evidence: { violations: axeResult.violations.map((violation) => violation.id) },
+    });
+};
+
+const mountPartVariants = async (
+    { document, declaration, profile, options }: SlotCheckContext,
+    variantFixtures: MountedFixture[],
+    observedStateAssociations: Set<string>,
+) => {
+    for (const variant of profile.createPartVariants?.() ?? []) {
+        const variantFixture = await mount(
+            document,
+            declaration,
+            { ...variant, pt: variantPassThrough(profile, variant.pt) },
+            profile.refCapable,
+            options.wrapper,
+        );
+        variantFixtures.push(variantFixture);
+        if (profile.activate) {
+            await act(async () => profile.activate?.(document, variantFixture.container));
+        }
+        collectRenderedStates(document, observedStateAssociations);
+    }
+};
+
+const checkMountedSlot = async (
+    context: SlotCheckContext,
+    observedStateAssociations: Set<string>,
+) => {
+    const { checks, declaration: typedDeclaration, options, document, profile } = context;
+    const contractId = `contract.${profile.slotId}`;
     let fixture: MountedFixture | undefined;
     const variantFixtures: MountedFixture[] = [];
-    const observedStateAssociations = new Set<string>();
     let platformOwnedParts: readonly string[] = [];
     try {
         const baseProps: Readonly<Record<string, unknown>> = {
@@ -535,22 +758,7 @@ const checkSlot = async (
                 profile.activate?.(document, fixture?.container ?? document.body),
             );
         collectRenderedStates(document, observedStateAssociations);
-        for (const variant of profile.createPartVariants?.() ?? []) {
-            const variantFixture = await mount(
-                document,
-                typedDeclaration,
-                { ...variant, pt: variantPassThrough(profile, variant.pt) },
-                profile.refCapable,
-                options.wrapper,
-            );
-            variantFixtures.push(variantFixture);
-            if (profile.activate) {
-                await act(async () =>
-                    profile.activate?.(document, variantFixture.container),
-                );
-            }
-            collectRenderedStates(document, observedStateAssociations);
-        }
+        await mountPartVariants(context, variantFixtures, observedStateAssociations);
 
         const nativeRoot = findNativeRoot(profile, document, fixture.container);
         platformOwnedParts = nativeRoot.platformOwnedParts;
@@ -560,161 +768,26 @@ const checkSlot = async (
         for (const variantFixture of variantFixtures) await unmount(variantFixture);
         variantFixtures.length = 0;
 
-        const native = nativeRoot.element;
-        const exactElement =
-            nativeRoot.tagMatches &&
-            (!profile.refCapable || fixture.ref.current === native);
-        addCheck(
-            checks,
-            ConformanceFamily.Contract,
-            `${contractId}.elementRef`,
-            exactElement,
-            exactElement
-                ? 'The contract resolves to the exact real native element and forwarded ref.'
-                : 'The native element or forwarded ref does not match the slot contract.',
-            profile.slotId,
-            {
-                selector: profile.nativeSelector,
-                tag: native?.tagName,
-                refMatches: fixture.ref.current === native,
-            },
-        );
+        checkNativeElement(context, nativeRoot, fixture);
+        checkCanonicalStates(context);
+        checkOwnership(context);
 
-        const partStates = cratisPartStates[profile.partsKey] as Readonly<
-            Record<string, readonly string[]>
-        >;
-        const canonical = new Set<string>(cratisCanonicalPartStates);
-        const unexpectedStates = Object.entries(partStates).flatMap(([part, states]) =>
-            states
-                .filter((state) => !canonical.has(state))
-                .map((state) => `${part}.${state}`),
-        );
-        addCheck(
-            checks,
-            ConformanceFamily.Contract,
-            `${contractId}.states`,
-            unexpectedStates.length === 0,
-            unexpectedStates.length === 0
-                ? 'The public part-state manifest uses only exact canonical state names for this slot.'
-                : `Unexpected canonical states: ${unexpectedStates.join(', ')}.`,
-            profile.slotId,
-        );
-
-        const ownerCounts = profile.ownershipSelectors.map(
-            (selector) => document.querySelectorAll(selector).length,
-        );
-        const ownershipPassed = ownerCounts.every((count) => count === 1);
-        addCheck(
-            checks,
-            ConformanceFamily.BehaviorOwnership,
-            `ownership.${profile.slotId}`,
-            ownershipPassed,
-            ownershipPassed
-                ? `${typedDeclaration.mode} tree exposes exactly one declared interactive semantic root for each bounded selector.`
-                : `Expected one interactive semantic root for each selector; observed ${ownerCounts.join(', ')}.`,
-            profile.slotId,
-            {
-                mode: typedDeclaration.mode,
-                selectors: profile.ownershipSelectors,
-                ownerCounts,
-            },
-        );
-
-        let submitEvents = 0;
-        fixture.form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            submitEvents += 1;
-        });
-        const exercisedEvidence: Readonly<Record<string, unknown>> = profile.exercise
-            ? ((await act(async () =>
-                  profile.exercise?.(
-                      document,
-                      fixture?.container ?? document.body,
-                      fixture?.ref ?? createRef<Element>(),
-                  ),
-              )) ?? {})
-            : {};
-        const namedControl = fixture.form.elements.namedItem(
-            typeof baseProps.name === 'string' ? baseProps.name : '',
-        );
-        const formData = Object.fromEntries(new FormData(fixture.form).entries());
-        const nativeValue =
-            namedControl && 'value' in namedControl
-                ? String(namedControl.value)
-                : undefined;
-        await act(async () => {
-            fixture?.form.reset();
-            await Promise.resolve();
-        });
-        const resetValue =
-            namedControl && 'value' in namedControl
-                ? String(namedControl.value)
-                : undefined;
-        const resetChecked =
-            namedControl && 'checked' in namedControl
-                ? Boolean(namedControl.checked)
-                : undefined;
-        const resetMatches =
-            (typeof baseProps.defaultValue !== 'string' ||
-                resetValue === baseProps.defaultValue) &&
-            (typeof baseProps.defaultChecked !== 'boolean' ||
-                resetChecked === baseProps.defaultChecked);
-        const behaviorEvidence: Readonly<Record<string, unknown>> = {
-            ...exercisedEvidence,
-            submitEvents,
-            formData,
-            name: namedControl && 'name' in namedControl ? namedControl.name : undefined,
-            nativeValue,
-            resetValue,
-            resetChecked,
-            resetMatches,
-        };
-        const callbackCount =
-            typeof behaviorEvidence.callbacks === 'number'
-                ? behaviorEvidence.callbacks
-                : undefined;
-        const submitExpected = baseProps.type === 'submit';
-        const behaviorPassed =
-            (callbackCount === undefined || callbackCount === 1) &&
-            (!submitExpected || submitEvents === 1) &&
-            (typeof baseProps.name !== 'string' || namedControl !== null) &&
-            resetMatches;
-        addCheck(
-            checks,
-            ConformanceFamily.Behavior,
-            `behavior.${profile.slotId}`,
-            behaviorPassed,
-            behaviorPassed
-                ? 'Bounded public-prop behavior produced native semantics and at most one ordered callback.'
-                : `Expected one callback, observed ${String(callbackCount)}.`,
-            profile.slotId,
-            behaviorEvidence,
-        );
-
-        if (options.axe !== false) {
-            const axeResult = await axe.run(fixture.container, {
-                runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] },
-                rules: { 'color-contrast': { enabled: false } },
-            });
-            addCheck(
-                checks,
-                ConformanceFamily.Accessibility,
-                `a11y.${profile.slotId}.axe`,
-                axeResult.violations.length === 0,
-                axeResult.violations.length === 0
-                    ? 'axe found no WCAG A/AA violations in the bounded fixture.'
-                    : `axe violations: ${axeResult.violations.map((violation) => violation.id).join(', ')}.`,
-                profile.slotId,
-                { violations: axeResult.violations.map((violation) => violation.id) },
-            );
-        }
+        await checkBehavior(context, fixture, baseProps);
+        await checkAccessibility(context, fixture);
     } catch (error) {
-        addError(checks, ConformanceFamily.Contract, contractId, error, profile.slotId);
+        addError(checks, ConformanceFamily.Contract, contractId, { error, slotId: profile.slotId });
     } finally {
         if (fixture) await unmount(fixture);
         for (const variantFixture of variantFixtures) await unmount(variantFixture);
     }
 
+    return platformOwnedParts;
+};
+
+const checkStateFixture = async (
+    { checks, declaration: typedDeclaration, options, document, profile }: SlotCheckContext,
+    observedStateAssociations: Set<string>,
+) => {
     if (profile.createStateProps) {
         let stateFixture: MountedFixture | undefined;
         try {
@@ -734,29 +807,32 @@ const checkSlot = async (
                 checks,
                 ConformanceFamily.Behavior,
                 `behavior.${profile.slotId}.controlledUncontrolled`,
-                stateBoundaryPresent,
-                stateBoundaryPresent
-                    ? 'Controlled/stateful and uncontrolled/default fixture forms both render through the same public slot declaration.'
-                    : 'State fixture did not render a public part boundary.',
-                profile.slotId,
+                {
+                    passed: stateBoundaryPresent,
+                    message: stateBoundaryPresent
+                        ? 'Controlled/stateful and uncontrolled/default fixture forms both render through the same public slot declaration.'
+                        : 'State fixture did not render a public part boundary.',
+                    slotId: profile.slotId,
+                },
             );
         } catch (error) {
             addError(
                 checks,
                 ConformanceFamily.Behavior,
                 `behavior.${profile.slotId}.controlledUncontrolled`,
-                error,
-                profile.slotId,
+                { error, slotId: profile.slotId },
             );
         } finally {
             if (stateFixture) await unmount(stateFixture);
         }
     }
+};
 
-    if (profile.interact) {
-        await checkInteractions(checks, document, { declaration: typedDeclaration, profile }, options);
-    }
-
+const checkStateCoverage = (
+    { checks, profile }: SlotCheckContext,
+    observedStateAssociations: Set<string>,
+    platformOwnedParts: readonly string[],
+) => {
     const expectedStateAssociations = stateAssociationsOf(
         cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>,
         platformOwnedParts,
@@ -768,14 +844,16 @@ const checkSlot = async (
         checks,
         ConformanceFamily.Contract,
         `contract.${profile.slotId}.stateCoverage`,
-        missingStateAssociations.length === 0,
-        missingStateAssociations.length === 0
-            ? 'Every canonical component/part state was observed in a bounded fixture.'
-            : `Canonical states not observed: ${missingStateAssociations.join(', ')}.`,
-        profile.slotId,
         {
-            expectedStateAssociations,
-            observedStateAssociations: [...observedStateAssociations].sort(),
+            passed: missingStateAssociations.length === 0,
+            message: missingStateAssociations.length === 0
+                ? 'Every canonical component/part state was observed in a bounded fixture.'
+                : `Canonical states not observed: ${missingStateAssociations.join(', ')}.`,
+            slotId: profile.slotId,
+            evidence: {
+                expectedStateAssociations,
+                observedStateAssociations: [...observedStateAssociations].sort(),
+            },
         },
     );
 };
@@ -805,20 +883,21 @@ const checkServerRendering = (
                 checks,
                 ConformanceFamily.ServerRendering,
                 `ssr.${profile.slotId}`,
-                first === second,
-                first === second
-                    ? 'Server render is DOM-free and deterministic.'
-                    : 'Repeated server renders differ.',
-                profile.slotId,
-                { bytes: first.length },
+                {
+                    passed: first === second,
+                    message: first === second
+                        ? 'Server render is DOM-free and deterministic.'
+                        : 'Repeated server renders differ.',
+                    slotId: profile.slotId,
+                    evidence: { bytes: first.length },
+                },
             );
         } catch (error) {
             addError(
                 checks,
                 ConformanceFamily.ServerRendering,
                 `ssr.${profile.slotId}`,
-                error,
-                profile.slotId,
+                { error, slotId: profile.slotId },
             );
         }
     }
@@ -832,14 +911,15 @@ const checkServerRendering = (
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.overlayAbsentPresent',
-        overlayPassed,
-        overlayPassed
-            ? 'The closed tooltip omits its deferred popup while the explicitly present dialog renders during SSR.'
-            : 'SSR overlay absent/present semantics differ from the bounded fixtures.',
-        undefined,
         {
-            tooltipObserved: tooltipOutput !== undefined,
-            dialogObserved: dialogOutput !== undefined,
+            passed: overlayPassed,
+            message: overlayPassed
+                ? 'The closed tooltip omits its deferred popup while the explicitly present dialog renders during SSR.'
+                : 'SSR overlay absent/present semantics differ from the bounded fixtures.',
+            evidence: {
+                tooltipObserved: tooltipOutput !== undefined,
+                dialogObserved: dialogOutput !== undefined,
+            },
         },
     );
     const distinctOutputs = new Set(outputs.values()).size === outputs.size;
@@ -847,12 +927,13 @@ const checkServerRendering = (
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.slotOutputIsolation',
-        distinctOutputs,
-        distinctOutputs
-            ? 'Each exercised slot produced a distinct slot-local server-rendered output.'
-            : 'Two exercised slots collapsed to indistinguishable server-rendered output.',
-        undefined,
-        { slots: [...outputs.keys()] },
+        {
+            passed: distinctOutputs,
+            message: distinctOutputs
+                ? 'Each exercised slot produced a distinct slot-local server-rendered output.'
+                : 'Two exercised slots collapsed to indistinguishable server-rendered output.',
+            evidence: { slots: [...outputs.keys()] },
+        },
     );
 };
 
@@ -871,8 +952,7 @@ const checkHydration = async (
             checks,
             ConformanceFamily.ServerRendering,
             'ssr.hydration',
-            false,
-            'No renderable slot is available for hydration evidence.',
+            { passed: false, message: 'No renderable slot is available for hydration evidence.' },
         );
         return;
     }
@@ -904,12 +984,14 @@ const checkHydration = async (
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.hydration',
-        deterministic,
-        deterministic
-            ? 'Server markup hydrates deterministically with no recoverable mismatch.'
-            : `Hydration mismatches: ${recoverableErrors.join('; ')}.`,
-        profile.slotId,
-        { recoverableErrors },
+        {
+            passed: deterministic,
+            message: deterministic
+                ? 'Server markup hydrates deterministically with no recoverable mismatch.'
+                : `Hydration mismatches: ${recoverableErrors.join('; ')}.`,
+            slotId: profile.slotId,
+            evidence: { recoverableErrors },
+        },
     );
 };
 
@@ -929,8 +1011,10 @@ const checkEnvironmentalEvidence = async (
                 checks,
                 ConformanceFamily.Accessibility,
                 `a11y.environment.${mode}`,
-                false,
-                'No renderable slot is available for bounded environmental-host evidence.',
+                {
+                    passed: false,
+                    message: 'No renderable slot is available for bounded environmental-host evidence.',
+                },
             );
         }
         return;
@@ -962,12 +1046,14 @@ const checkEnvironmentalEvidence = async (
                 checks,
                 ConformanceFamily.Accessibility,
                 `a11y.environment.${mode}`,
-                inputs[mode],
-                inputs[mode]
-                    ? `The ${profile.slotId} fixture rendered inside the bounded ${mode} DOM host input.`
-                    : `The ${profile.slotId} fixture did not preserve the bounded ${mode} DOM host input.`,
-                profile.slotId,
-                { selector: profile.nativeSelector },
+                {
+                    passed: inputs[mode],
+                    message: inputs[mode]
+                        ? `The ${profile.slotId} fixture rendered inside the bounded ${mode} DOM host input.`
+                        : `The ${profile.slotId} fixture did not preserve the bounded ${mode} DOM host input.`,
+                    slotId: profile.slotId,
+                    evidence: { selector: profile.nativeSelector },
+                },
             );
         }
     } catch (error) {
@@ -976,8 +1062,7 @@ const checkEnvironmentalEvidence = async (
                 checks,
                 ConformanceFamily.Accessibility,
                 `a11y.environment.${mode}`,
-                error,
-                profile.slotId,
+                { error, slotId: profile.slotId },
             );
         }
     } finally {
@@ -1013,7 +1098,7 @@ export const runConformance = async (
             exercised.slotIds.includes(profile.slotId),
         );
         for (const profile of profiles)
-            await checkSlot(checks, exercised.library, options, document, profile);
+            await checkSlot(checks, { library: exercised.library, options, document }, profile);
         checkServerRendering(checks, exercised.library, profiles, options.wrapper);
         await checkHydration(
             checks,
@@ -1034,8 +1119,10 @@ export const runConformance = async (
             checks,
             ConformanceFamily.Contract,
             'runtime.domAvailable',
-            false,
-            'DOM checks require an explicit Document; SSR import remains safe.',
+            {
+                passed: false,
+                message: 'DOM checks require an explicit Document; SSR import remains safe.',
+            },
         );
     }
 
