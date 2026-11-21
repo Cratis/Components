@@ -36,18 +36,44 @@ const click = (container: ParentNode, selector: string) => {
 
 const numberInputSlotId = 'common.numberInput';
 
-const recordNumberChanges = (evidence: Map<string, Readonly<Record<string, unknown>>>) => {
+type Evidence = Map<string, Readonly<Record<string, unknown>>>;
+
+const recordCallbacks = <T extends unknown[]>(
+    evidence: Evidence,
+    slotId: SlotProfile['slotId'],
+    describe: (...values: T) => Readonly<Record<string, unknown>> = () => ({}),
+) => {
     let callbacks = 0;
-    const onChange: NumericInputProps['onChange'] = (value, meta) => {
+    return (...values: T) => {
         callbacks += 1;
-        evidence.set(numberInputSlotId, {
-            callbacks,
-            value,
-            source: meta?.source,
-            nativeEvent: meta?.nativeEvent instanceof Event,
-        });
+        evidence.set(slotId, { callbacks, ...describe(...values) });
     };
-    return onChange;
+};
+
+const recordChanges = <T,>(
+    evidence: Evidence,
+    slotId: SlotProfile['slotId'],
+    serialize: (value: T) => unknown = (value) => value,
+) => recordCallbacks(evidence, slotId, (
+    value: T,
+    meta?: { source: string; nativeEvent?: Event },
+) => ({
+    value: serialize(value),
+    source: meta?.source,
+    nativeEvent: meta?.nativeEvent instanceof Event,
+}));
+
+const changeText = (
+    container: ParentNode,
+    selector: string,
+    prototype: HTMLInputElement | HTMLTextAreaElement,
+) => {
+    const input = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
+    if (input) {
+        Object.getOwnPropertyDescriptor(prototype, 'value')?.set?.call(input, 'after');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    return input;
 };
 
 const typeNumber = (input: HTMLInputElement | null, value: string) => {
@@ -70,19 +96,12 @@ export const createSlotProfiles = (
         nativeTag: 'BUTTON',
         refCapable: true,
         ownershipSelectors: ['button'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
-                label: 'Save',
-                icon: createElement('span', null, '+'),
-                type: 'submit',
-                onClick: () => {
-                    callbacks += 1;
-                    evidence.set('common.button', { callbacks });
-                },
-            } satisfies ButtonProps;
-            return recordProps(props);
-        },
+        createProps: () => recordProps({
+            label: 'Save',
+            icon: createElement('span', null, '+'),
+            type: 'submit',
+            onClick: recordCallbacks(evidence, 'common.button'),
+        } satisfies ButtonProps),
         createStateProps: () =>
             recordProps({
                 label: 'Saving',
@@ -105,18 +124,11 @@ export const createSlotProfiles = (
         nativeTag: 'BUTTON',
         refCapable: true,
         ownershipSelectors: ['button'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
-                icon: createElement('span', null, '+'),
-                'aria-label': 'Add item',
-                onClick: () => {
-                    callbacks += 1;
-                    evidence.set('common.iconButton', { callbacks });
-                },
-            } satisfies IconButtonProps;
-            return recordProps(props);
-        },
+        createProps: () => recordProps({
+            icon: createElement('span', null, '+'),
+            'aria-label': 'Add item',
+            onClick: recordCallbacks(evidence, 'common.iconButton'),
+        } satisfies IconButtonProps),
         createStateProps: () =>
             recordProps({
                 icon: createElement('span', null, '+'),
@@ -144,24 +156,12 @@ export const createSlotProfiles = (
         nativeTag: 'INPUT',
         refCapable: true,
         ownershipSelectors: ['input[type="text"]'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
-                name: 'sample',
-                defaultValue: 'before',
-                'aria-label': 'Sample text',
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('common.textInput', {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
-            } satisfies TextInputProps;
-            return recordProps(props);
-        },
+        createProps: () => recordProps({
+            name: 'sample',
+            defaultValue: 'before',
+            'aria-label': 'Sample text',
+            onChange: recordChanges<string>(evidence, 'common.textInput'),
+        } satisfies TextInputProps),
         createStateProps: () =>
             recordProps({
                 defaultValue: 'state',
@@ -170,14 +170,7 @@ export const createSlotProfiles = (
                 readOnly: true,
             } satisfies TextInputProps),
         exercise: async (_document, container) => {
-            const input = container.querySelector<HTMLInputElement>('input[type="text"]');
-            if (input) {
-                Object.getOwnPropertyDescriptor(
-                    HTMLInputElement.prototype,
-                    'value',
-                )?.set?.call(input, 'after');
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            const input = changeText(container, 'input[type="text"]', HTMLInputElement.prototype);
             return (
                 evidence.get('common.textInput') ?? { callbacks: 0, value: input?.value }
             );
@@ -197,7 +190,7 @@ export const createSlotProfiles = (
                 name: 'quantity',
                 value: 3,
                 'aria-label': 'Sample quantity',
-                onChange: recordNumberChanges(evidence),
+                onChange: recordChanges<number | undefined>(evidence, numberInputSlotId),
             } satisfies NumericInputProps),
         createStateProps: () =>
             recordProps({
@@ -220,24 +213,12 @@ export const createSlotProfiles = (
         nativeTag: 'TEXTAREA',
         refCapable: true,
         ownershipSelectors: ['textarea'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
-                name: 'notes',
-                defaultValue: 'before',
-                'aria-label': 'Sample notes',
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('common.textArea', {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
-            } satisfies TextAreaProps;
-            return recordProps(props);
-        },
+        createProps: () => recordProps({
+            name: 'notes',
+            defaultValue: 'before',
+            'aria-label': 'Sample notes',
+            onChange: recordChanges<string>(evidence, 'common.textArea'),
+        } satisfies TextAreaProps),
         createStateProps: () =>
             recordProps({
                 defaultValue: 'state',
@@ -246,14 +227,7 @@ export const createSlotProfiles = (
                 readOnly: true,
             } satisfies TextAreaProps),
         exercise: async (_document, container) => {
-            const input = container.querySelector<HTMLTextAreaElement>('textarea');
-            if (input) {
-                Object.getOwnPropertyDescriptor(
-                    HTMLTextAreaElement.prototype,
-                    'value',
-                )?.set?.call(input, 'after');
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            const input = changeText(container, 'textarea', HTMLTextAreaElement.prototype);
             return (
                 evidence.get('common.textArea') ?? { callbacks: 0, value: input?.value }
             );
@@ -274,19 +248,7 @@ export const createSlotProfiles = (
                 isSwitch ? 'input[role="switch"]' : 'input[type="checkbox"]',
             ],
             createProps: () => {
-                let callbacks = 0;
-                const onChange = (
-                    value: boolean,
-                    meta?: { source: string; nativeEvent?: Event },
-                ) => {
-                    callbacks += 1;
-                    evidence.set(slotId, {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                };
+                const onChange = recordChanges<boolean>(evidence, slotId);
                 return isSwitch
                     ? recordProps({
                           label: 'Enabled',
@@ -334,25 +296,13 @@ export const createSlotProfiles = (
         nativeTag: 'INPUT',
         refCapable: true,
         ownershipSelectors: ['input[type="radio"]'],
-        createProps: () => {
-            let callbacks = 0;
-            const props = {
-                label: 'Daily',
-                name: 'frequency',
-                value: 'daily',
-                defaultChecked: false,
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('common.radio', {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
-            } satisfies RadioProps;
-            return recordProps(props);
-        },
+        createProps: () => recordProps({
+            label: 'Daily',
+            name: 'frequency',
+            value: 'daily',
+            defaultChecked: false,
+            onChange: recordChanges<boolean>(evidence, 'common.radio'),
+        } satisfies RadioProps),
         createStateProps: () =>
             recordProps({
                 label: 'Daily',
@@ -459,7 +409,6 @@ export const createSlotProfiles = (
         refCapable: false,
         ownershipSelectors: ['[data-cratis-part="trigger"]'],
         createProps: () => {
-            let callbacks = 0;
             const props = {
                 name: 'role',
                 value: null,
@@ -473,15 +422,7 @@ export const createSlotProfiles = (
                 optionValue: 'value',
                 showClear: true,
                 'aria-label': 'Role',
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('dropdown.select', {
-                        callbacks,
-                        value,
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
+                onChange: recordChanges<string | null>(evidence, 'dropdown.select'),
             } satisfies DropdownProps<string | null>;
             return recordProps(props);
         },
@@ -600,7 +541,6 @@ export const createSlotProfiles = (
         refCapable: false,
         ownershipSelectors: ['[role="dialog"], dialog'],
         createProps: () => {
-            let callbacks = 0;
             const props = {
                 title: 'Example dialog',
                 subtitle: 'Example subtitle',
@@ -608,10 +548,7 @@ export const createSlotProfiles = (
                 children: 'Dialog content',
                 buttons: 2,
                 dismissable: true,
-                onClose: () => {
-                    callbacks += 1;
-                    evidence.set('dialogs.dialog', { callbacks });
-                },
+                onClose: recordCallbacks(evidence, 'dialogs.dialog'),
             } satisfies DialogProps;
             return recordProps(props);
         },
@@ -659,21 +596,12 @@ export const createSlotProfiles = (
         refCapable: false,
         ownershipSelectors: ['[data-cratis-part="group"]'],
         createProps: () => {
-            let callbacks = 0;
             const props = {
                 value: null,
                 showButtonBar: true,
                 placeholder: 'Choose a date',
                 'aria-label': 'Delivery date',
-                onChange: (value, meta) => {
-                    callbacks += 1;
-                    evidence.set('display.datePicker', {
-                        callbacks,
-                        value: value?.toISOString(),
-                        source: meta?.source,
-                        nativeEvent: meta?.nativeEvent instanceof Event,
-                    });
-                },
+                onChange: recordChanges<Date | null>(evidence, 'display.datePicker', (value) => value?.toISOString()),
             } satisfies DatePickerInputProps;
             return recordProps(props);
         },
@@ -746,16 +674,12 @@ export const createSlotProfiles = (
         refCapable: false,
         ownershipSelectors: ['[role="navigation"]'],
         createProps: () => {
-            let callbacks = 0;
             const props = {
                 page: 1,
                 pageCount: 3,
                 totalItems: 30,
                 pageSize: 10,
-                onPageChange: (page) => {
-                    callbacks += 1;
-                    evidence.set('datatables.paginator', { callbacks, page });
-                },
+                onPageChange: recordCallbacks(evidence, 'datatables.paginator', (page: number) => ({ page })),
             } satisfies TablePaginatorProps;
             return recordProps(props);
         },
