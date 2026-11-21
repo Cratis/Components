@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DataTableParts } from './DataTableCore';
+import type { DataTableMobileLayoutProps } from './DataTableMobileLayoutProps';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
@@ -32,7 +33,7 @@ export interface DataTableForQueryProps<
     TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>,
     TDataType extends object,
     TArguments extends object,
-> {
+> extends DataTableMobileLayoutProps {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -267,6 +268,8 @@ export const DataTableForQuery = <
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
                     data={rows}
+                    mobileLayout={props.mobileLayout}
+                    mobileBreakpoint={props.mobileBreakpoint}
                     dataKey={props.dataKey}
                     emptyMessage={props.emptyMessage}
                     filteredEmptyMessage={props.filteredEmptyMessage}

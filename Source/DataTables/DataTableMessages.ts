@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 
 /** The table messages to show, after props and provider messages are applied. */
 export interface DataTableMessages {
+    resolvedSortAscending: string;
+    resolvedSortDescending: string;
     resolvedSelectionAriaLabel: string;
     resolvedSelectAllAriaLabel: string;
     resolvedGlobalSearchPlaceholder: string;

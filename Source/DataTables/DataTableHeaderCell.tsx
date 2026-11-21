@@ -5,16 +5,11 @@ import { cloneElement, type ReactElement, type ReactNode, type RefObject } from 
 import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 import { columnDescriptor } from './columnDescriptor';
 import type { ColumnProps } from './Column';
-import { ColumnFilterMenu } from './ColumnFilterMenu';
 import { classNames } from '../ClassNames/classNames';
-import type {
-    DataTableFilterConstraint,
-    DataTableFilterMeta,
-} from './DataTableFilterMeta';
+import type { DataTableFilterConstraint, DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableParts } from './DataTableParts';
 import type { DataTableSort } from './DataTableSort';
-import { DataTableSortDirection } from './DataTableSortDirection';
-import { firstConstraint } from './matchesFilterEntry';
+import { DataTableHeaderContent } from './DataTableHeaderContent';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -26,10 +21,7 @@ export interface DataTableHeaderCellProps {
     sort: DataTableSort | null;
     onSort: (sort: DataTableSort) => void;
     filters: DataTableFilterMeta;
-    updateFilter: (
-        field: string,
-        constraint: DataTableFilterConstraint | undefined,
-    ) => void;
+    updateFilter: (field: string, constraint: DataTableFilterConstraint | undefined) => void;
     resolvedSelectionAriaLabel: string;
     resolvedSelectAllAriaLabel: string;
     allFilteredRowsSelected: boolean;
@@ -39,119 +31,25 @@ export interface DataTableHeaderCellProps {
     sortDescendingIcon: ReactNode;
 }
 
-/** One column header: its label, sort control, filter menu, and select-all or selection label. */
-export const DataTableHeaderCell = ({
-    column: declaredColumn,
-    parts: pt,
-    sort,
-    onSort,
-    filters,
-    updateFilter,
-    resolvedSelectionAriaLabel,
-    resolvedSelectAllAriaLabel,
-    allFilteredRowsSelected,
-    selectAllRef,
-    toggleSelectAll,
-    sortAscendingIcon,
-    sortDescendingIcon,
-}: DataTableHeaderCellProps) => {
-    const [columnProps, marker] = useComponentPresentation(
-        columnDescriptor,
-        declaredColumn.props,
-        declaredColumn.props.field,
-    );
+/** One column header, retaining the semantic table wrapper around the shared controls. */
+export const DataTableHeaderCell = (props: DataTableHeaderCellProps) => {
+    const { column: declaredColumn, parts: pt, sort, resolvedSelectionAriaLabel } = props;
+    const [columnProps, marker] = useComponentPresentation(columnDescriptor, declaredColumn.props, declaredColumn.props.field);
     const column = columnProps === declaredColumn.props ? declaredColumn : cloneElement(declaredColumn, columnProps);
-    const field = column.props.filterField ?? column.props.field;
-    const ariaSort =
-        sort && sort.field === column.props.field ? sort.direction : undefined;
+    const ariaSort = sort && sort.field === column.props.field ? sort.direction : undefined;
     return (
         <th
             {...pt?.headerCell}
             scope='col'
-            aria-label={
-                column.props.selectionMode ? resolvedSelectionAriaLabel : undefined
-            }
+            aria-label={column.props.selectionMode ? resolvedSelectionAriaLabel : undefined}
             aria-sort={ariaSort}
-            style={{
-                ...pt?.headerCell?.style,
-                ...column.props.style,
-                ...column.props.headerStyle,
-            }}
-            className={classNames(
-                'cratis-datatable__header-cell',
-                pt?.headerCell?.className,
-                column.props.headerClassName,
-            )}
+            style={{ ...pt?.headerCell?.style, ...column.props.style, ...column.props.headerStyle }}
+            className={classNames('cratis-datatable__header-cell', pt?.headerCell?.className, column.props.headerClassName)}
             data-cratis-part='header-cell'
             {...marker}
             data-selected={Boolean(ariaSort) || undefined}
         >
-            <div
-                className='cratis-datatable-header-cell'
-                data-cratis-part='header-content'
-                data-selected={Boolean(ariaSort) || undefined}
-            >
-                {column.props.selectionMode === 'multiple' ? (
-                    <input
-                        type='checkbox'
-                        aria-label={resolvedSelectAllAriaLabel}
-                        data-cratis-part='select-all'
-                        checked={allFilteredRowsSelected}
-                        ref={selectAllRef}
-                        onChange={toggleSelectAll}
-                    />
-                ) : (
-                    column.props.selectionMode && (
-                        <span className='cratis-datatable__sr-only'>
-                            {resolvedSelectionAriaLabel}
-                        </span>
-                    )
-                )}
-                {column.props.sortable && column.props.field ? (
-                    <button
-                        type='button'
-                        className='cratis-datatable__sort'
-                        data-cratis-part='sort'
-                        data-pressed={Boolean(ariaSort) || undefined}
-                        onClick={() =>
-                            onSort({
-                                field: column.props.field as string,
-                                direction:
-                                    sort?.field === column.props.field &&
-                                    sort?.direction === DataTableSortDirection.Ascending
-                                        ? DataTableSortDirection.Descending
-                                        : DataTableSortDirection.Ascending,
-                            })
-                        }
-                    >
-                        <span>{column.props.header}</span>
-                        {ariaSort && (
-                            <span aria-hidden='true'>
-                                {ariaSort === 'ascending'
-                                    ? sortAscendingIcon
-                                    : sortDescendingIcon}
-                            </span>
-                        )}
-                    </button>
-                ) : (
-                    column.props.header
-                )}
-                {column.props.filter && field && (
-                    <ColumnFilterMenu
-                        field={field}
-                        dataType={column.props.dataType}
-                        placeholder={column.props.filterPlaceholder}
-                        showMatchModes={column.props.showFilterMatchModes}
-                        filterElement={column.props.filterElement}
-                        filterOptions={column.props.filterOptions}
-                        labels={column.props.filterLabels}
-                        pt={column.props.filterPt}
-                        constraint={firstConstraint(filters[field])}
-                        onApply={(constraint) => updateFilter(field, constraint)}
-                        onClear={() => updateFilter(field, undefined)}
-                    />
-                )}
-            </div>
+            <DataTableHeaderContent {...props} column={column} />
         </th>
     );
 };

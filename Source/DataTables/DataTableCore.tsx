@@ -19,8 +19,13 @@ import { DataTableTable } from './DataTableTable';
 import { useDataTableMessages } from './useDataTableMessages';
 import { useDataTableRows } from './useDataTableRows';
 import { useDataTableState } from './useDataTableState';
+import type { DataTableMobileLayoutProps } from './DataTableMobileLayoutProps';
+import { useMobileLayout } from './useMobileLayout';
+import { DataTableCards } from './DataTableCards';
+import { useDataTablePresentationFocus } from './useDataTablePresentationFocus';
 
 export type { DataTableParts } from './DataTableParts';
+export type { DataTableMobileLayoutProps } from './DataTableMobileLayoutProps';
 export type { DataTableRowClickEvent } from './DataTableRowClickEvent';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -35,7 +40,7 @@ const useColumns = (children: React.ReactNode): React.ReactElement<ColumnProps<a
     );
 
 /** Props for the semantic loaded-page DataTable renderer. */
-export interface DataTableCoreProps<TData extends object> {
+export interface DataTableCoreProps<TData extends object> extends DataTableMobileLayoutProps {
     /** Loaded page rows. */
     data: TData[];
     /** Declarative {@link Column} markers. */
@@ -142,6 +147,8 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
     const isBusy = status === DataTableStatus.Loading && data.length > 0;
     const columns = useColumns(props.children);
     const selectionGroupName = useId();
+    const useCards = useMobileLayout(props);
+    const presentationRoot = useDataTablePresentationFocus(useCards);
     const { filters, updateFilter, globalFilter, setGlobalFilter, sort, setSort } =
         useDataTableState(props);
     const rows = useDataTableRows<TData>({
@@ -155,6 +162,8 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
     return (
         <div
             {...pt?.root}
+            ref={presentationRoot}
+            tabIndex={pt?.root?.tabIndex ?? (props.mobileLayout === 'cards' ? -1 : undefined)}
             className={classNames(
                 'cratis-datatable',
                 scrollable ? 'cratis-datatable--scrollable' : undefined,
@@ -175,7 +184,22 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
                     onChange={setGlobalFilter}
                 />
             )}
-            <DataTableTable
+            {useCards ? (
+                <DataTableCards
+                    {...props}
+                    state={rows}
+                    columns={columns}
+                    parts={pt}
+                    messages={messages}
+                    status={status}
+                    isBusy={isBusy}
+                    sort={sort}
+                    onSort={setSort}
+                    filters={filters}
+                    updateFilter={updateFilter}
+                    selectionGroupName={selectionGroupName}
+                />
+            ) : <DataTableTable
                 parts={pt}
                 isBusy={isBusy}
                 scrollable={scrollable}
@@ -214,7 +238,7 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
                         />
                     )}
                 />
-            </DataTableTable>
+            </DataTableTable>}
         </div>
     );
 };

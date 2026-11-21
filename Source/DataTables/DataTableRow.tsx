@@ -1,26 +1,19 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactElement, ReactNode, SyntheticEvent } from 'react';
+import type { ReactElement, SyntheticEvent } from 'react';
 import type { ColumnProps } from './Column';
 import { classNames } from '../ClassNames/classNames';
 import type { DataTableParts } from './DataTableParts';
-import { valueAtPath } from './valueAtPath';
+import { dataTableCellContent } from './dataTableCellContent';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-const renderCellContent = (
-    column: ColumnProps<any>,
-    row: Record<string, unknown>,
-): ReactNode => {
-    if (column.body) return column.body(row);
-    const value = valueAtPath(row, column.field);
-    return value == null ? '' : String(value);
-};
 
 /** Props for {@link DataTableRow}. */
 export interface DataTableRowProps<TData> {
     row: TData;
+    /** Shared identity for focus transfer between presentations. */
+    rowKey?: string;
     columns: ReactElement<ColumnProps<any>>[];
     /** The table's part attributes. */
     parts?: DataTableParts;
@@ -38,6 +31,7 @@ export interface DataTableRowProps<TData> {
 /** One data row, activated by click, Enter or Space. */
 export const DataTableRow = <TData extends object>({
     row,
+    rowKey,
     columns,
     parts: pt,
     selectionMode,
@@ -60,6 +54,7 @@ export const DataTableRow = <TData extends object>({
             rowClassName?.(row),
         )}
         data-cratis-part='row'
+        data-datatable-row-key={rowKey}
         data-selected={isSelected || undefined}
         data-interactive={isInteractive || undefined}
         onClick={(event) => onActivate(event)}
@@ -109,7 +104,7 @@ export const DataTableRow = <TData extends object>({
                         checked={isSelected}
                     />
                 ) : (
-                    renderCellContent(column.props, row as Record<string, unknown>)
+                    dataTableCellContent(column.props, row)
                 )}
             </td>
         ))}

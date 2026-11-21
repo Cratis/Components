@@ -126,6 +126,19 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
     }
 }
 
+/** The same observable updates reach the current presentation without resubscribing on resize. */
+export const MobileCards: Story = {
+    render: () => (
+        <div style={{ height: '32rem' }}>
+            <DataTableForObservableQuery query={LiveTasksQuery} emptyMessage='No examples.' dataKey='id' mobileLayout='cards' globalFilterFields={['title']}>
+                <Column field='title' header={<strong>Example</strong>} sortable filter />
+                <Column field='status' header='Status' />
+                <Column<Task> header='Action' body={row => <a href={`#example-${row.id}`}>Open example</a>} />
+            </DataTableForObservableQuery>
+        </div>
+    ),
+};
+
 class LiveTasksQuery extends TasksQuery {
     override subscribe(
         callback: (result: QueryResult<Task>) => void,

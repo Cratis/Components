@@ -114,6 +114,10 @@ export interface CratisDataTableMessages {
     selectRow?: string;
     /** Accessible name for the select-all control in a multiple-selection header. */
     selectAllRows?: string;
+    /** Audible ascending sort direction in card controls. Defaults to 'Ascending'. */
+    sortAscending?: string;
+    /** Audible descending sort direction in card controls. Defaults to 'Descending'. */
+    sortDescending?: string;
     /** Placeholder for the loaded-page search input. */
     search?: string;
     /** Accessible name for the loaded-page search input. */

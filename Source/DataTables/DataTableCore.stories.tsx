@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { DataTableCore } from './DataTableCore';
+import { DataTableCore, type DataTableCoreProps } from './DataTableCore';
 import { Column } from './Column';
 import { DataTableStatus } from './DataTableStatus';
 
@@ -108,6 +108,41 @@ export const QueryStates: Story = {
         </div>
     ),
 };
+
+interface MobileProject {
+    id: string;
+    name: string;
+    details: { status: string };
+    notes?: string;
+}
+const mobileProjects: MobileProject[] = [
+    { id: 'example-1', name: 'Example Project', details: { status: 'Ready' }, notes: 'A long synthetic description that wraps within a narrow card without hiding the column label or the body action.' },
+    { id: 'example-2', name: 'Demo Project', details: { status: 'Draft' } },
+];
+const mobileArgs: DataTableCoreProps<MobileProject> = {
+    data: mobileProjects, dataKey: 'id', emptyMessage: 'No projects.', mobileLayout: 'cards',
+    selectionMode: 'multiple', globalFilterFields: ['name'],
+};
+const mobileColumns = <>
+    <Column field='name' header={<strong>Project</strong>} sortable filter />
+    <Column field='details.status' header='Status' />
+    <Column field='notes' header='Notes' />
+    <Column<MobileProject> header='Action' body={row => <a href={`#${row.id}`}>Open project</a>} />
+</>;
+
+/** Resize across 640px; search, selection and controls retain their state. */
+export const MobileCards: Story = {
+    render: function MobileCardsExample() {
+        const [selectedItems, setSelectedItems] = useState<MobileProject[]>([]);
+        return <DataTableCore {...mobileArgs} selectedItems={selectedItems} onSelectedItemsChange={setSelectedItems}>{mobileColumns}</DataTableCore>;
+    },
+};
+export const MobileLoading: Story = { render: () => <DataTableCore {...mobileArgs} data={[]} status={DataTableStatus.Loading}>{mobileColumns}</DataTableCore> };
+export const MobileRefetch: Story = { render: () => <DataTableCore {...mobileArgs} status={DataTableStatus.Loading}>{mobileColumns}</DataTableCore> };
+export const MobileFailed: Story = { render: () => <DataTableCore {...mobileArgs} status={DataTableStatus.Failed}>{mobileColumns}</DataTableCore> };
+export const MobileUnauthorized: Story = { render: () => <DataTableCore {...mobileArgs} status={DataTableStatus.Unauthorized}>{mobileColumns}</DataTableCore> };
+export const MobileEmpty: Story = { render: () => <DataTableCore {...mobileArgs} data={[]}>{mobileColumns}</DataTableCore> };
+export const MobileFilteredEmpty: Story = { render: () => <DataTableCore {...mobileArgs} globalFilter='Unmatched'>{mobileColumns}</DataTableCore> };
 
 export const Empty: Story = {
     render: () => (

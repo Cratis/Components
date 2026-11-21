@@ -310,11 +310,12 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // Measured when fields, dialogs and the table paginator took the focus outline hook and the type and corner tokens: raw 253522 (796 bytes over). Raw moves by the overage; blocks and gzip hold.
 // Measured when tabs, toggles, tags and breadcrumbs gained a forced-colors focus outline: raw 254040 (518 bytes over), one more declaration block. Raw and blocks move by the overage; gzip holds.
 // Measured when the Designsystemet bridge gained the secondary-button and Arc error mappings and the column sort buttons a forced-colors border and focus outline: raw 254357 (317 bytes over), two more declaration blocks. Raw and blocks move by the overage; gzip holds.
+// Measured when opt-in DataTable mobile cards joined: raw 256010 (1653 bytes over), 14 more declaration blocks. Raw and blocks move by the overage; gzip holds.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 254357,
+    rawBytes: 256010,
     gzipBytes: 38 * 1024,
-    declarationBlocks: 1391,
+    declarationBlocks: 1405,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -372,7 +373,7 @@ const areaStyleBudgets = new Map([
     ['styles.ObjectNavigationalBar.css', 5120], // measured 4576
     ['styles.PivotViewer.css', 7680], // measured 6840
     ['styles.renderer.builtin.css', 8704], // measured 7987
-    ['styles.SchemaEditor.css', 9216], // measured 8387 (7417 before the tree layout joined the table layout)
+    ['styles.SchemaEditor.css', 10240], // measured 9298 (9154 before the DataTable mobile card layout)
     ['styles.TimeMachine.css', 5120], // measured 4440
     ['styles.Toolbar.css', 8192], // measured 7758
 ]);

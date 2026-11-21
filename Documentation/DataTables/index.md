@@ -82,6 +82,35 @@ Here `onOpen` and the `order-overdue` class belong to your application. The tabl
 
 The status, message, filtering, sorting and `rowProcessing` props are described in [Components](#components) above.
 
+## Mobile cards
+
+Set `mobileLayout='cards'` to show each row as a labeled card when the **viewport** is narrower than 640 CSS pixels. At exactly 640 pixels and above, the semantic table remains. Without this prop the table stays a table at every width; `mobileBreakpoint` alone does not enable cards.
+
+```tsx
+import { Column, DataTableCore } from '@cratis/components/DataTables';
+
+const projects = [{ id: 'example-1', name: 'Example Project', details: { status: 'Ready' } }];
+
+export function ExampleProjects() {
+    return (
+        <DataTableCore data={projects} dataKey='id' emptyMessage='No projects.' mobileLayout='cards'>
+            <Column field='name' header='Project' sortable />
+            <Column field='details.status' header='Status' />
+        </DataTableCore>
+    );
+}
+```
+
+On a narrow viewport this renders a list of cards with “Project” and “Status” labels, using the same `Column.body` templates and nested fields as the table. A missing field renders a blank value. Use `mobileBreakpoint={768}` alongside `mobileLayout='cards'` for a different exclusive threshold; nonfinite or nonpositive values fall back to 640. The breakpoint measures the viewport, not the width of a containing panel. Server rendering and browsers without `matchMedia` use the table; hydration then checks the viewport.
+
+`DataTableForQuery` and `DataTableForObservableQuery` accept the same two props. Changing presentation does not reset sorting, filters, search, selection or pagination and does not rerun the query. Loaded-page processing stays loaded-page processing; `serverQuery` still sends those operations to the server before paging.
+
+Sortable and filterable columns have controls above the cards. Multiple selection has one select-all checkbox and one checkbox per card, even without a selection-marker column. Single selection uses a radio control. Click or press Enter/Space on an interactive card to activate it; links, buttons and editable content inside its body remain independent. When switching layouts removes the focused row or selection control, focus follows the same keyed row/control if available, otherwise the table root. Search and paginator focus are left alone.
+
+Card sorting announces the active direction with `messages.dataTable.sortAscending` and `sortDescending` on `CratisComponentsProvider` (defaults `Ascending` and `Descending`). Existing loading, failure, unauthorized and empty messages are also used outside table markup. Refetching keeps loaded cards visible and busy. The paginator remains unchanged, including its localized messages.
+
+Use the card-specific `pt` slots `cards`, `card`, `cardLabel`, `cardValue`, `cardControls` and `cardStatus`. Their `data-cratis-part` names are `cards`, `card`, `card-label`, `card-value`, `card-controls` and `card-status`. `pt.card` can add classes, styles and event handlers; preventing the click or key event cancels built-in activation. Existing row, cell and header slots still target the desktop table. Column body styles/classes and `rowClassName` also apply to cards. Width, wrapping and body-template layout remain under your control; long values wrap by default.
+
 ## Common Features
 
 All three table components share:

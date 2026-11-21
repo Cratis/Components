@@ -33,6 +33,7 @@ export const DataTableRows = <TData extends object>({
             <DataTableRow<TData>
                 key={state.rowKeys[loadedIndex]}
                 row={row}
+                rowKey={state.rowKeys[loadedIndex]}
                 selectionMode={selectionMode}
                 isSelected={selectionMode === 'single' && state.isSelectedRow(row, loadedIndex)}
                 isInteractive={state.isInteractive}

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DataTableParts } from './DataTableCore';
+import type { DataTableMobileLayoutProps } from './DataTableMobileLayoutProps';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
@@ -33,7 +34,7 @@ export interface DataTableForObservableQueryProps<
         | IObservableQueryFor<TDataType[], TArguments>,
     TDataType extends object,
     TArguments extends object,
-> {
+> extends DataTableMobileLayoutProps {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -305,6 +306,8 @@ export const DataTableForObservableQuery = <
             <div style={{ height: `${tableHeight}px`, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
                     data={rows}
+                    mobileLayout={props.mobileLayout}
+                    mobileBreakpoint={props.mobileBreakpoint}
                     dataKey={props.dataKey}
                     emptyMessage={props.emptyMessage}
                     filteredEmptyMessage={props.filteredEmptyMessage}

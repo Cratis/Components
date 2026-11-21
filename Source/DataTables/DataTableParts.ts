@@ -19,6 +19,18 @@ export interface DataTableParts {
     searchInput?: React.InputHTMLAttributes<HTMLInputElement>;
     /** Scroll container. */
     tableContainer?: HTMLAttributes<HTMLDivElement>;
+    /** Semantic card list. */
+    cards?: HTMLAttributes<HTMLUListElement>;
+    /** One row presented as a card. */
+    card?: HTMLAttributes<HTMLLIElement>;
+    /** Column label in a card. */
+    cardLabel?: HTMLAttributes<HTMLElement>;
+    /** Column value in a card. */
+    cardValue?: HTMLAttributes<HTMLElement>;
+    /** Sorting, filtering and select-all controls above cards. */
+    cardControls?: HTMLAttributes<HTMLDivElement>;
+    /** Non-table loading, failure or empty status. */
+    cardStatus?: HTMLAttributes<HTMLDivElement>;
     /** Semantic table element. */
     table?: TableHTMLAttributes<HTMLTableElement>;
     /** Table head. */
