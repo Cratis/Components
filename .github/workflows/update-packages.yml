@@ -1,14 +1,36 @@
+# Copyright (c) Cratis. All rights reserved.
+# Licensed under the MIT license. See LICENSE file in the project root for full license information.
 name: Update Packages
 
-# Scheduled runs are paused (#215). The shared workflow's default publication mode pushes dependency
-# updates straight to main, and those updates have to arrive as reviewed pull requests with the
-# package-manager and renderer checks. Run it manually only until the pull-request configuration
-# in #215 is in place.
+# Keep scheduled runs paused until a safe PR-only run has been verified.
+# Dependency PRs still require the renderer and package-manager checks before merge.
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Require automation App configuration
+        shell: bash
+        env:
+          APP_ID: ${{ vars.CRATIS_AUTOMATION_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
+        run: |
+          if [ -z "$APP_ID" ] || [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "::error::Dependency updates require CRATIS_AUTOMATION_APP_ID and AUTOMATION_APP_PRIVATE_KEY; fallback credentials are not allowed."
+            exit 1
+          fi
+
   update:
+    needs: preflight
     uses: Cratis/Workflows/.github/workflows/update-packages.yml@main
+    with:
+      publication-mode: pull-request
     secrets:
-      PAT_WORKFLOWS: ${{ secrets.PAT_WORKFLOWS }}
+      AUTOMATION_APP_PRIVATE_KEY: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
