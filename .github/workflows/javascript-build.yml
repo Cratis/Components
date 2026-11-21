@@ -93,6 +93,8 @@ jobs:
         if: needs.changes.outputs.relevant == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        env:
+            NODE_OPTIONS: "--max-old-space-size=4096"
 
         steps:
             - name: Checkout code
@@ -118,13 +120,45 @@ jobs:
             - name: Yarn install
               run: yarn install --immutable
 
-            - name: Build JS/TS (Source)
-              run: |
-                  export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn workspace @cratis/components run ci:static
+            # Keep this order identical to Source's ci:static script; separate steps expose each phase's duration.
+            - name: Generate parts
+              run: yarn workspace @cratis/components run generate-parts
 
-            # Source's ci:static script also checks public API TSDoc, the packed CSS budgets, and that the
-            # built declarations match the committed api-surface.json snapshot.
+            - name: Verify parts manifest
+              run: yarn workspace @cratis/components run verify-parts-manifest
+
+            - name: Verify public API documentation
+              run: yarn workspace @cratis/components run verify-api-docs
+
+            - name: Clean Source output
+              run: yarn workspace @cratis/components run clean
+
+            - name: Lint Source
+              run: yarn workspace @cratis/components run lint:ci
+
+            - name: Build Source
+              run: yarn workspace @cratis/components run build
+
+            - name: Typecheck stories
+              run: yarn workspace @cratis/components run typecheck-stories
+
+            - name: Build published Source artifact
+              run: yarn workspace @cratis/components run g:build
+
+            - name: Verify renderer contracts
+              run: yarn workspace @cratis/components run verify-renderer-contracts
+
+            - name: Report package graph
+              run: yarn workspace @cratis/components run verify-package-graph-report
+
+            - name: Verify packed CSS
+              run: yarn workspace @cratis/components run verify-packed-css
+
+            - name: Verify source maps
+              run: yarn workspace @cratis/components run verify-source-maps
+
+            - name: Verify API surface
+              run: yarn workspace @cratis/components run verify-api-surface
 
             # Informational: which exports this change removes, changes, or adds compared with the
             # latest published release. Release intent stays with the semver label and the reviewer.
@@ -409,9 +443,22 @@ jobs:
                   yarn workspace @cratis/components.primereact10 run build
                   yarn workspace @cratis/components.designsystemet run build
 
-            - name: Verify renderer Storybook type, inventory, specs, and peer isolation
+            # Keep this order identical to Storybook's ci:preflight script for comparable phase timings.
+            - name: Verify renderer Storybook inventory
               working-directory: Storybook
-              run: yarn ci:preflight
+              run: yarn verify-inventory
+
+            - name: Typecheck renderer Storybook
+              working-directory: Storybook
+              run: yarn typecheck
+
+            - name: Test renderer Storybook preflight specs
+              working-directory: Storybook
+              run: yarn test
+
+            - name: Verify renderer Storybook peer isolation
+              working-directory: Storybook
+              run: yarn verify-isolation
 
             - name: Build composed renderer Storybook
               run: yarn workspace @cratis/components build-storybook
