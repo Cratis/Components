@@ -54,7 +54,7 @@ export function ObjectNavigationalBar({
         : 'cratis-object-navigational-bar cratis:px-4 cratis:py-2 cratis:mb-2';
 
     return (
-        <div className={rootClassName}>
+        <div data-cratis-component='ObjectNavigationalBar' className={rootClassName}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Tooltip content={backLabel} position='top'>
                     <Button

@@ -71,7 +71,7 @@ export function PivotViewerContent<TItem extends object>({
     const { labels } = viewer;
 
     return (
-        <div className={viewerClassName} style={cssVariables}>
+        <div data-cratis-component='PivotViewer' className={viewerClassName} style={cssVariables}>
             <FilterPanelContainer
                 isOpen={view.filtersOpen && hasFilters}
                 filterLabel={labels?.filters}

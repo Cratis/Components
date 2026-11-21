@@ -17,7 +17,9 @@ The picker recognizes a component by `data-cratis-component="<Name>"` on its roo
 
 `data-cratis-part` identifies a part inside the component, such as `label`, `title` or `close`; `data-cratis-component` identifies the component itself. Some public components do not yet have their own marker. For an unmarked element, the picker selects its nearest marked ancestor, if one exists. The package's identity specs track marker coverage and require new public components to be accounted for.
 
-Chat composer, conversation, message body, message bubble, topic list, emoji picker, failed reply, mention suggestions, reactions, avatar, typing indicator, and property-type glyph roots expose their own markers. `ChatSidebarForObservableQueries` and `GlyphMenu` remain unmarked: the former delegates through a fragment, and the latter combines a trigger with portal content.
+Chat composer, conversation, message body, message bubble, topic list, emoji picker, failed reply, mention suggestions, reactions, avatar, typing indicator, and property-type glyph roots expose their own markers. Canvas, minimap, events view, object content editor, object navigation, pivot viewer, both schema editor layouts, and the portaled toaster region also expose markers on their existing roots.
+
+`ChatSidebarForObservableQueries` delegates identity to `ChatSidebar`. `ConfigurationEditor` renders the registered host editor or supplied fallback without its own root. `AutoCommandForm` uses the Arc form root, and `CanvasOverlay` portals caller-supplied children without a root of its own. `GlyphMenu` and `Region` remain pending because they render split roots; no wrapper is added solely for picker identity.
 
 ## Pick a component
 
