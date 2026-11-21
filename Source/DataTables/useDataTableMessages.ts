@@ -18,6 +18,8 @@ export const useDataTableMessages = (
     const { messages } = useCratisComponentsConfig();
     const dataTableMessages = messages?.dataTable;
     return {
+        resolvedSortAscending: dataTableMessages?.sortAscending ?? 'Ascending',
+        resolvedSortDescending: dataTableMessages?.sortDescending ?? 'Descending',
         resolvedSelectionAriaLabel:
             overrides.selectionAriaLabel ?? dataTableMessages?.selectRow ?? 'Select row',
         resolvedSelectAllAriaLabel:

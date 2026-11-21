@@ -65,6 +65,19 @@ class ProductsQuery extends QueryFor<Product, object> {
     }
 }
 
+/** Uses the paged synthetic query; resize below 640px to exercise cards and paginator together. */
+export const MobileCards: Story = {
+    render: () => (
+        <div style={{ height: '32rem' }}>
+            <DataTableForQuery query={ManyProductsQuery} emptyMessage='No examples.' dataKey='id' mobileLayout='cards' selectionMode='multiple' globalFilterFields={['name']}>
+                <Column field='name' header={<strong>Example</strong>} sortable filter />
+                <Column field='category' header='Category' />
+                <Column<Product> header='Action' body={row => <a href={`#example-${row.id}`}>Open example</a>} />
+            </DataTableForQuery>
+        </div>
+    ),
+};
+
 const manyProducts: Product[] = Array.from({ length: 24 }, (_, index) => ({
     id: index + 1,
     name: `Product ${index + 1}`,

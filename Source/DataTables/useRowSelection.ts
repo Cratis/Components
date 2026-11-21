@@ -89,11 +89,13 @@ export const useRowSelection = <TData extends object>({
         visibleRows.length > 0 && selectedVisibleCount === visibleRows.length;
     const someFilteredRowsSelected = selectedVisibleCount > 0 && !allFilteredRowsSelected;
     const selectAllRef = useRef<HTMLInputElement>(null);
+    // Layout changes replace the input without changing the partial-selection boolean.
+    // Reapply after every commit so a newly mounted select-all gets its mixed state too.
     useEffect(() => {
         if (selectAllRef.current) {
             selectAllRef.current.indeterminate = someFilteredRowsSelected;
         }
-    }, [someFilteredRowsSelected]);
+    });
 
     const toggleSelectAll = () => {
         if (allFilteredRowsSelected) {

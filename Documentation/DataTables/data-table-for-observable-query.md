@@ -51,6 +51,8 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 ### Optional Props
 
 - `children`: `Column` elements
+- `mobileLayout`: Set to `'cards'` to show labeled cards below the viewport breakpoint; omitted by default, preserving tables at every width
+- `mobileBreakpoint`: Exclusive viewport threshold in CSS pixels (default 640); only effective with `mobileLayout='cards'`. Nonfinite/nonpositive values use 640. See [Mobile cards](index.md#mobile-cards) for controls, selection, focus and card-specific parts. Live-result updates, selection reconciliation and paging keep their existing behavior.
 - `queryArguments`: Arguments for the query. The table resubscribes when any argument changes.
 - `filteredEmptyMessage`: Message shown instead of `emptyMessage` when a search or column filter is active and no rows are shown. Defaults to `messages.dataTable.filteredEmpty` (`No rows on this page match the search.`) or, with `serverQuery`, `messages.dataTable.filteredEmptyServer` (`No rows match the search.`)
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
