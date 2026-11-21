@@ -317,6 +317,7 @@ export const TreeSchemaEditor = ({
                 aria-label={ariaLabelledBy ? undefined : ariaLabel ?? labels.schema}
                 aria-labelledby={ariaLabelledBy}
                 className={['cratis-schema-editor', pt?.root?.className, className].filter(Boolean).join(' ')}
+                data-cratis-component='SchemaEditor'
                 data-cratis-part='root'
                 data-readonly={readOnly || undefined}
             >

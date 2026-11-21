@@ -164,6 +164,7 @@ export const Toaster = ({
         <div
             {...pt?.region}
             className={classNames('cratis-toaster', pt?.region?.className)}
+            data-cratis-component='Toaster'
             data-cratis-part='region'
             data-position={position}
             role='region'

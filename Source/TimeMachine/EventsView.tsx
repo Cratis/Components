@@ -72,6 +72,7 @@ export const EventsView = ({
 
     return (
         <div
+            data-cratis-component='EventsView'
             className='events-view-container'
             ref={containerRef}
             role='group'

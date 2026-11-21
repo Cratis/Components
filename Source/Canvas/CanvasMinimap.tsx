@@ -143,6 +143,7 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
 
         return (
             <div
+                data-cratis-component='CanvasMinimap'
                 className='canvas-minimap'
                 style={{
                     width: MINIMAP_WIDTH,
