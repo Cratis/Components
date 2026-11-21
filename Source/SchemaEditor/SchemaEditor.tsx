@@ -235,6 +235,7 @@ const TableSchemaEditor = ({
 
     return (
         <div
+            data-cratis-component='SchemaEditor'
             className={className ? `schema-editor ${className}` : 'schema-editor'}
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >
