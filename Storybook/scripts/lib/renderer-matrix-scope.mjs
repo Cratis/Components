@@ -9,17 +9,15 @@ const IGNORED_DIRECTORY_NAMES = new Set(['dist', 'node_modules', 'storybook-stat
 const SOURCE_FILE_PATTERN = /\.tsx?$/u;
 const SLOT_HOOK_PATTERN = /\bunstable_useSlot\s*\(/u;
 
-const collectFiles = (directory, predicate, results = []) => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-        if (IGNORED_DIRECTORY_NAMES.has(entry.name)) continue;
-        const entryPath = path.join(directory, entry.name);
-        if (entry.isDirectory()) {
-            collectFiles(entryPath, predicate, results);
-            continue;
-        }
-        if (entry.isFile() && predicate(entryPath)) results.push(entryPath);
-    }
-    return results;
+const collectFiles = (directory, predicate) =>
+    readdirSync(directory, { withFileTypes: true })
+        .filter(entry => !IGNORED_DIRECTORY_NAMES.has(entry.name))
+        .flatMap(entry => collectEntryFiles(directory, entry, predicate));
+
+const collectEntryFiles = (directory, entry, predicate) => {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return collectFiles(entryPath, predicate);
+    return entry.isFile() && predicate(entryPath) ? [entryPath] : [];
 };
 
 const isProductionModule = filePath =>
@@ -39,12 +37,8 @@ const isProductionModule = filePath =>
  */
 export const findSlotOwningModules = sourceRoot => {
     const candidates = collectFiles(sourceRoot, isProductionModule);
-    const owning = new Set();
-    for (const filePath of candidates) {
-        const contents = readFileSync(filePath, 'utf8');
-        if (SLOT_HOOK_PATTERN.test(contents)) owning.add(filePath);
-    }
-    return owning;
+    return new Set(candidates.filter(filePath =>
+        SLOT_HOOK_PATTERN.test(readFileSync(filePath, 'utf8'))));
 };
 
 const isTypeOnlyDeclaration = statement =>
@@ -90,15 +84,11 @@ const moduleReachesSlot = (file, slotOwningModules, memo, pending = new Set()) =
     }
     if (pending.has(file) || !existsSync(file)) return false;
     pending.add(file);
-    let reaches = false;
     const source = readFileSync(file, 'utf8');
-    for (const specifier of extractSpecifiers(source, file)) {
+    const reaches = extractSpecifiers(source, file).some(specifier => {
         const resolved = resolveRelativeModule(file, specifier);
-        if (resolved && moduleReachesSlot(resolved, slotOwningModules, memo, pending)) {
-            reaches = true;
-            break;
-        }
-    }
+        return resolved !== undefined && moduleReachesSlot(resolved, slotOwningModules, memo, pending);
+    });
     pending.delete(file);
     memo.set(file, reaches);
     return reaches;
