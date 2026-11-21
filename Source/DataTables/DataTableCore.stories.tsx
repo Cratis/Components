@@ -123,12 +123,12 @@ const mobileArgs: DataTableCoreProps<MobileProject> = {
     data: mobileProjects, dataKey: 'id', emptyMessage: 'No projects.', mobileLayout: 'cards',
     selectionMode: 'multiple', globalFilterFields: ['name'],
 };
-const mobileColumns = <>
-    <Column field='name' header={<strong>Project</strong>} sortable filter />
-    <Column field='details.status' header='Status' />
-    <Column field='notes' header='Notes' />
-    <Column<MobileProject> header='Action' body={row => <a href={`#${row.id}`}>Open project</a>} />
-</>;
+const mobileColumns = [
+    <Column key='name' field='name' header={<strong>Project</strong>} sortable filter />,
+    <Column key='status' field='details.status' header='Status' />,
+    <Column key='notes' field='notes' header='Notes' />,
+    <Column<MobileProject> key='action' header='Action' body={row => <a href={`#${row.id}`}>Open project</a>} />,
+];
 
 /** Resize across 640px; search, selection and controls retain their state. */
 export const MobileCards: Story = {
