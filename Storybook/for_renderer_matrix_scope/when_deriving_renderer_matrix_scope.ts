@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import expectedStorybook from '../scripts/storybook-inventory.json';
 import { computeRendererMatrixScope, findSlotOwningModules } from '../scripts/lib/renderer-matrix-scope.mjs';
 
@@ -195,5 +195,72 @@ describe('when deriving renderer matrix scope', () => {
         } finally {
             rmSync(root, { recursive: true, force: true });
         }
+    });
+});
+
+describe('when deriving renderer scope through cycles and missing imports', () => {
+    let root: string;
+    let result: ReturnType<typeof computeRendererMatrixScope>;
+
+    beforeEach(() => {
+        const fixtureDirectory = path.join(repositoryRoot, '.ai-work/506-b6');
+        mkdirSync(fixtureDirectory, { recursive: true });
+        root = mkdtempSync(path.join(fixtureDirectory, 'renderer-scope-'));
+        const fixtureSourceRoot = path.join(root, 'Source');
+        const fixtures = {
+            'Slot.tsx': "unstable_useSlot('common.button');\n",
+            'CycleA.tsx': "import './CycleB';\n",
+            'CycleB.tsx': "import './CycleA';\nimport './Slot';\n",
+            'ClosedA.tsx': "import './ClosedB';\n",
+            'ClosedB.tsx': "import './ClosedA';\n",
+            'Composite.tsx': "import 'external-package';\nimport './Missing';\nimport './nested';\n",
+            'nested/index.ts': "export { Slot } from '../Slot';\n",
+            'dist/Hidden.tsx': "unstable_useSlot('common.button');\n",
+            'node_modules/Hidden.tsx': "unstable_useSlot('common.button');\n",
+            'storybook-static/Hidden.tsx': "unstable_useSlot('common.button');\n",
+            'for_example/Hidden.tsx': "unstable_useSlot('common.button');\n",
+            'Example.stories.tsx': "unstable_useSlot('common.button');\n",
+            'Example.stories.ts': "unstable_useSlot('common.button');\n",
+            'notes.md': "unstable_useSlot('common.button');\n",
+        };
+        for (const [name, contents] of Object.entries(fixtures)) {
+            const file = path.join(fixtureSourceRoot, name);
+            mkdirSync(path.dirname(file), { recursive: true });
+            writeFileSync(file, contents);
+        }
+        const storyEntries = [
+            storyEntry('cycle--first', 'CycleA.tsx'),
+            storyEntry('cycle--second', 'CycleB.tsx'),
+            storyEntry('closed--first', 'ClosedA.tsx'),
+            storyEntry('closed--second', 'ClosedB.tsx'),
+            storyEntry('composite--default', 'Composite.tsx'),
+            storyEntry('missing--default', 'Missing.tsx'),
+            storyEntry('cycle--repeated', 'CycleA.tsx'),
+            storyEntry('closed--repeated', 'ClosedA.tsx'),
+        ];
+        result = computeRendererMatrixScope({ storyEntries, repositoryRoot: root, sourceRoot: fixtureSourceRoot });
+    });
+
+    afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+    it('should include only production TypeScript slot owners', () => {
+        [...result.slotOwningModules].should.deep.equal([path.join(root, 'Source/Slot.tsx')]);
+    });
+
+    it('should resolve index modules and reachable cycles without crediting closed cycles or missing modules', () => {
+        [...result.matrixStoryIds].should.deep.equal([
+            'cycle--first', 'cycle--second', 'composite--default', 'cycle--repeated',
+        ]);
+    });
+
+    it('should retain both positive and negative component membership for repeated stories', () => {
+        [...result.componentMatrixMembership].should.deep.equal([
+            ['./Source/CycleA.tsx', true],
+            ['./Source/CycleB.tsx', true],
+            ['./Source/ClosedA.tsx', false],
+            ['./Source/ClosedB.tsx', false],
+            ['./Source/Composite.tsx', true],
+            ['./Source/Missing.tsx', false],
+        ]);
     });
 });

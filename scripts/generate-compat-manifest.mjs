@@ -148,6 +148,37 @@ export function validateCompatibilityManifest(
     manifest,
     { rootDirectory = repositoryDirectory, matrix } = {},
 ) {
+    validatePublicationMetadata(manifest);
+    validatePublicPackageScope(manifest);
+
+    validateRepositoryPackages(manifest.packages ?? []);
+    validateToolingCompatibility(manifest.toolingCompatibility ?? {});
+    validateMaintenanceWindow(manifest.supportWindows?.components3);
+    validateCurrentWindow(manifest.supportWindows?.components4);
+    validateAdapterRanges(manifest.supportWindows?.components4);
+    validatePrivateEvidence(manifest.gaScope?.privateEvidence ?? [], rootDirectory);
+
+    const activeMatrix =
+        matrix ??
+        (rootDirectory
+            ? readJson(
+                  path.join(rootDirectory, 'scripts/renderer-adapter-matrix.json'),
+                  rootDirectory,
+              )
+            : undefined);
+    if (activeMatrix) {
+        validateVerifiedPeers(manifest.packages ?? [], activeMatrix);
+    }
+
+    if (
+        manifest.publicationEnabled &&
+        manifest.releaseStatus !== 'publication-authorized'
+    ) {
+        fail("Publication requires releaseStatus 'publication-authorized'.");
+    }
+}
+
+function validatePublicationMetadata(manifest) {
     if (manifest.schemaVersion !== 2) fail('Unsupported compatibility manifest schema.');
     if (typeof manifest.publicationEnabled !== 'boolean') {
         fail('publicationEnabled must be a boolean.');
@@ -157,7 +188,9 @@ export function validateCompatibilityManifest(
             "A non-publishing source manifest must have releaseStatus 'source-candidate'.",
         );
     }
+}
 
+function validatePublicPackageScope(manifest) {
     const scopedPackages = manifest.gaScope?.publicPackages ?? [];
     if (JSON.stringify(scopedPackages) !== JSON.stringify(packageOrder)) {
         fail(
@@ -167,81 +200,107 @@ export function validateCompatibilityManifest(
     if ((manifest.packages ?? []).length !== packageOrder.length) {
         fail(`Expected ${packageOrder.length} public package entries.`);
     }
+}
 
-    const repositoryVersion = (manifest.packages ?? []).find(
+function validateRepositoryPackages(packages) {
+    const repositoryVersion = packages.find(
         ({ name }) => name === '@cratis/components',
     )?.version;
     if (!repositoryVersion) fail('Core package version is missing.');
 
-    for (const entry of manifest.packages ?? []) {
-        const policy = packagePolicies.get(entry.name);
-        if (!policy) fail(`Unexpected public package '${entry.name}'.`);
-        if (entry.role !== policy.role || entry.releaseMajorRange !== policy.range) {
-            fail(`${entry.name} has invalid role or release-major policy metadata.`);
-        }
-        if (semver.valid(entry.version) !== entry.version) {
-            fail(`${entry.name} must declare a valid exact current version.`);
-        }
-        if (!semver.satisfies(entry.version, policy.range)) {
+    for (const entry of packages) {
+        validatePublicPackage(entry, repositoryVersion);
+    }
+}
+
+function validatePublicPackage(entry, repositoryVersion) {
+    const policy = packagePolicies.get(entry.name);
+    if (!policy) fail(`Unexpected public package '${entry.name}'.`);
+    if (entry.role !== policy.role || entry.releaseMajorRange !== policy.range) {
+        fail(`${entry.name} has invalid role or release-major policy metadata.`);
+    }
+    validatePackageVersion(entry, policy.range);
+    if (entry.private || entry.packageAccess !== 'public') {
+        fail(`${entry.name} must remain explicitly public-intent.`);
+    }
+    if (entry.version !== repositoryVersion) {
+        fail(
+            `${entry.name}@${entry.version} must match the repository release version ${repositoryVersion}.`,
+        );
+    }
+    if (entry.independentRelease !== false) {
+        fail(
+            `${entry.name} must participate in repository-wide versioning and must not declare cratisIndependentVersion.`,
+        );
+    }
+    validateUpstreamPeers(entry);
+}
+
+function validatePackageVersion(entry, range) {
+    if (semver.valid(entry.version) !== entry.version) {
+        fail(`${entry.name} must declare a valid exact current version.`);
+    }
+    if (!semver.satisfies(entry.version, range)) {
+        fail(
+            `${entry.name}@${entry.version} is outside supported release range '${range}'.`,
+        );
+    }
+}
+
+function validateUpstreamPeers(entry) {
+    for (const [upstreamName, upstreamRange] of Object.entries(entry.upstream ?? {})) {
+        if (entry.peerDependencies?.[upstreamName] !== upstreamRange) {
             fail(
-                `${entry.name}@${entry.version} is outside supported release range '${policy.range}'.`,
+                `${entry.name} upstream '${upstreamName}' must exactly match its peer range.`,
             );
-        }
-        if (entry.private || entry.packageAccess !== 'public') {
-            fail(`${entry.name} must remain explicitly public-intent.`);
-        }
-        if (entry.version !== repositoryVersion) {
-            fail(
-                `${entry.name}@${entry.version} must match the repository release version ${repositoryVersion}.`,
-            );
-        }
-        if (entry.independentRelease !== false) {
-            fail(
-                `${entry.name} must participate in repository-wide versioning and must not declare cratisIndependentVersion.`,
-            );
-        }
-        for (const [upstreamName, upstreamRange] of Object.entries(
-            entry.upstream ?? {},
-        )) {
-            if (entry.peerDependencies?.[upstreamName] !== upstreamRange) {
-                fail(
-                    `${entry.name} upstream '${upstreamName}' must exactly match its peer range.`,
-                );
-            }
         }
     }
+}
 
-    const tooling = manifest.toolingCompatibility ?? {};
-    if (
-        tooling.componentsCore !== '>=4 <5' ||
-        tooling.eslint !== '>=4 <5' ||
-        tooling.migrator !== '>=4 <5'
-    ) {
+function validateToolingCompatibility(tooling) {
+    if (!hasProperties(tooling, {
+        componentsCore: '>=4 <5',
+        eslint: '>=4 <5',
+        migrator: '>=4 <5',
+    })) {
         fail('Core 4 tooling compatibility must remain bounded to >=4 <5.');
     }
+}
 
-    const components3 = manifest.supportWindows?.components3;
-    const components4 = manifest.supportWindows?.components4;
+function validateMaintenanceWindow(components3) {
     if (
-        components3?.components !== '>=3 <4' ||
-        components3?.status !== 'maintenance-security-critical' ||
-        components3?.migrationTarget !== '>=4 <5' ||
-        components3?.tooling !== '>=4 <5' ||
+        !hasProperties(components3, {
+            components: '>=3 <4',
+            status: 'maintenance-security-critical',
+            migrationTarget: '>=4 <5',
+            tooling: '>=4 <5',
+        }) ||
         !components3.ownerDecisionPolicy?.includes('12 months after Components 4 GA')
     ) {
         fail('The Components 3 maintenance and migration support window is incomplete.');
     }
+}
+
+function validateCurrentWindow(components4) {
     if (
-        components4?.components !== '>=4 <5' ||
-        components4?.status !== 'current' ||
-        components4?.rendererAbi !== 1 ||
-        components4?.coreProfile !== 'core/v1' ||
-        components4?.adapterProfile !== 'stable-presentation/v1' ||
-        components4?.tooling?.eslint !== '>=4 <5' ||
-        components4?.tooling?.migrator !== '>=4 <5'
+        !hasProperties(components4, {
+            components: '>=4 <5',
+            status: 'current',
+            rendererAbi: 1,
+            coreProfile: 'core/v1',
+            adapterProfile: 'stable-presentation/v1',
+        }) ||
+        !hasProperties(components4?.tooling, { eslint: '>=4 <5', migrator: '>=4 <5' })
     ) {
         fail('The Components 4 compatibility window is incomplete.');
     }
+}
+
+function hasProperties(value, expected) {
+    return Object.entries(expected).every(([key, required]) => value?.[key] === required);
+}
+
+function validateAdapterRanges(components4) {
     const expectedAdapterRanges = Object.fromEntries(
         packageOrder
             .filter((name) =>
@@ -254,8 +313,9 @@ export function validateCompatibilityManifest(
     if (JSON.stringify(components4?.adapters) !== JSON.stringify(expectedAdapterRanges)) {
         fail('Components 4 must list the exact Conformance and adapter release ranges.');
     }
+}
 
-    const evidence = manifest.gaScope?.privateEvidence ?? [];
+function validatePrivateEvidence(evidence, rootDirectory) {
     if (
         JSON.stringify(evidence.map(({ id }) => id)) !==
         JSON.stringify(['plain', 'storybook'])
@@ -266,48 +326,31 @@ export function validateCompatibilityManifest(
         if (!item.private || item.published)
             fail(`Private evidence '${item.id}' cannot be published.`);
         const source = privateEvidence.find(({ id }) => id === item.id);
-        if (
-            rootDirectory &&
-            source &&
-            !fs.existsSync(path.join(rootDirectory, source.sourcePath))
-        ) {
-            fail(`Private evidence '${item.id}' is missing from the source repository.`);
+        if (rootDirectory && source) {
+            validateEvidenceSource(rootDirectory, source, item.id);
         }
     }
+}
 
-    const activeMatrix =
-        matrix ??
-        (rootDirectory
-            ? readJson(
-                  path.join(rootDirectory, 'scripts/renderer-adapter-matrix.json'),
-                  rootDirectory,
-              )
-            : undefined);
-    if (activeMatrix) {
-        for (const entry of manifest.packages ?? []) {
-            const adapterKey = adapterKeysByPackage.get(entry.name);
-            if (!adapterKey) continue;
-            const expected = {
-                minimum: sortObject(
-                    createFixture(activeMatrix, adapterKey, 'minimum').peers,
-                ),
-                current: sortObject(
-                    createFixture(activeMatrix, adapterKey, 'current').peers,
-                ),
-            };
-            if (JSON.stringify(entry.verifiedPeers) !== JSON.stringify(expected)) {
-                fail(
-                    `${entry.name} verified peers must be copied from renderer-adapter-matrix.json.`,
-                );
-            }
-        }
+function validateEvidenceSource(rootDirectory, source, id) {
+    if (!fs.existsSync(path.join(rootDirectory, source.sourcePath))) {
+        fail(`Private evidence '${id}' is missing from the source repository.`);
     }
+}
 
-    if (
-        manifest.publicationEnabled &&
-        manifest.releaseStatus !== 'publication-authorized'
-    ) {
-        fail("Publication requires releaseStatus 'publication-authorized'.");
+function validateVerifiedPeers(packages, matrix) {
+    for (const entry of packages) {
+        const adapterKey = adapterKeysByPackage.get(entry.name);
+        if (!adapterKey) continue;
+        const expected = {
+            minimum: sortObject(createFixture(matrix, adapterKey, 'minimum').peers),
+            current: sortObject(createFixture(matrix, adapterKey, 'current').peers),
+        };
+        if (JSON.stringify(entry.verifiedPeers) !== JSON.stringify(expected)) {
+            fail(
+                `${entry.name} verified peers must be copied from renderer-adapter-matrix.json.`,
+            );
+        }
     }
 }
 
@@ -358,26 +401,19 @@ function validatePackageSet(packages) {
 export function discoverWorkspaceManifestPaths(workspaces, rootDirectory) {
     if (!Array.isArray(workspaces))
         fail('Root package.json must declare a workspaces array.');
-    const manifestPaths = [];
-    for (const workspace of workspaces) {
-        if (workspace.endsWith('/*')) {
-            const parent = path.join(rootDirectory, workspace.slice(0, -2));
-            for (const entry of fs.readdirSync(parent, { withFileTypes: true })) {
-                if (!entry.isDirectory()) continue;
-                const relativeManifest = path.posix.join(
-                    workspace.slice(0, -2),
-                    entry.name,
-                    'package.json',
-                );
-                if (fs.existsSync(path.join(rootDirectory, relativeManifest))) {
-                    manifestPaths.push(relativeManifest);
-                }
-            }
-        } else {
-            manifestPaths.push(path.posix.join(workspace, 'package.json'));
-        }
-    }
-    return manifestPaths.sort();
+    return workspaces.flatMap((workspace) =>
+        workspace.endsWith('/*')
+            ? discoverChildManifestPaths(workspace.slice(0, -2), rootDirectory)
+            : [path.posix.join(workspace, 'package.json')],
+    ).sort();
+}
+
+function discoverChildManifestPaths(workspace, rootDirectory) {
+    const parent = path.join(rootDirectory, workspace);
+    return fs.readdirSync(parent, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => path.posix.join(workspace, entry.name, 'package.json'))
+        .filter((manifestPath) => fs.existsSync(path.join(rootDirectory, manifestPath)));
 }
 
 function parseAbiMajor(value) {

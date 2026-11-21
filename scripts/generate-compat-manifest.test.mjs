@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import {
     checkCompatibilityManifest,
     createCompatibilityManifest,
+    discoverWorkspaceManifestPaths,
     serializeCompatibilityManifest,
     validateCompatibilityManifest,
 } from './generate-compat-manifest.mjs';
@@ -167,6 +168,137 @@ test('publication authorization is explicit and reversible', () => {
     assert.doesNotThrow(() =>
         validateCompatibilityManifest(manifest, { rootDirectory: repositoryDirectory }),
     );
+});
+
+for (const { label, location, keys, message } of [
+    {
+        label: 'tooling compatibility',
+        location: ['toolingCompatibility'],
+        keys: ['componentsCore', 'eslint', 'migrator'],
+        message: 'Core 4 tooling compatibility must remain bounded to >=4 <5.',
+    },
+    {
+        label: 'maintenance support window',
+        location: ['supportWindows', 'components3'],
+        keys: ['components', 'status', 'migrationTarget', 'tooling', 'ownerDecisionPolicy'],
+        message: 'The Components 3 maintenance and migration support window is incomplete.',
+    },
+    {
+        label: 'current support window',
+        location: ['supportWindows', 'components4'],
+        keys: ['components', 'status', 'rendererAbi', 'coreProfile', 'adapterProfile'],
+        message: 'The Components 4 compatibility window is incomplete.',
+    },
+    {
+        label: 'current tooling support window',
+        location: ['supportWindows', 'components4', 'tooling'],
+        keys: ['eslint', 'migrator'],
+        message: 'The Components 4 compatibility window is incomplete.',
+    },
+]) {
+    for (const key of keys) {
+        test(`${label} rejects an invalid ${key} with its original message`, () => {
+            const manifest = createManifest();
+            const target = location.reduce((value, key) => value[key], manifest);
+            target[key] = 'unsupported';
+            assert.throws(
+                () => validateCompatibilityManifest(manifest, { rootDirectory: undefined }),
+                { message },
+            );
+        });
+    }
+}
+
+for (const [field, value, message] of [
+    ['schemaVersion', 0, 'Unsupported compatibility manifest schema.'],
+    ['publicationEnabled', 'true', 'publicationEnabled must be a boolean.'],
+    ['releaseStatus', 'unsupported', "Publication requires releaseStatus 'publication-authorized'."],
+]) {
+    test(`manifest metadata rejects an invalid ${field} with its original message`, () => {
+        const manifest = createManifest();
+        manifest[field] = value;
+        assert.throws(
+            () => validateCompatibilityManifest(manifest, { rootDirectory: undefined }),
+            { message },
+        );
+    });
+}
+
+for (const [field, value, detail] of [
+    ['role', 'unsupported', 'has invalid role or release-major policy metadata.'],
+    ['releaseMajorRange', '>=3 <4', 'has invalid role or release-major policy metadata.'],
+    ['version', 'not-a-version', 'must declare a valid exact current version.'],
+    ['private', true, 'must remain explicitly public-intent.'],
+    ['packageAccess', 'restricted', 'must remain explicitly public-intent.'],
+    ['independentRelease', true, 'must participate in repository-wide versioning and must not declare cratisIndependentVersion.'],
+]) {
+    test(`package metadata rejects an invalid ${field} with its original message`, () => {
+        const manifest = createManifest();
+        manifest.packages[0][field] = value;
+        assert.throws(
+            () => validateCompatibilityManifest(manifest, { rootDirectory: undefined }),
+            { message: `${manifest.packages[0].name} ${detail}` },
+        );
+    });
+}
+
+test('manifest validation reports earlier policy failures before later ones', () => {
+    const manifest = createManifest();
+    manifest.toolingCompatibility = {};
+    manifest.supportWindows = {};
+    manifest.gaScope.privateEvidence = [];
+    assert.throws(
+        () => validateCompatibilityManifest(manifest, { rootDirectory: undefined }),
+        { message: 'Core 4 tooling compatibility must remain bounded to >=4 <5.' },
+    );
+});
+
+test('private evidence remains unpublished and present in the source repository', () => {
+    const manifest = createManifest();
+    manifest.gaScope.privateEvidence[0].published = true;
+    assert.throws(
+        () => validateCompatibilityManifest(manifest),
+        { message: "Private evidence 'plain' cannot be published." },
+    );
+    manifest.gaScope.privateEvidence[0].published = false;
+    assert.throws(
+        () => validateCompatibilityManifest(manifest, {
+            rootDirectory: path.join(repositoryDirectory, 'package.json'),
+        }),
+        { message: "Private evidence 'plain' is missing from the source repository." },
+    );
+});
+
+test('upstream ranges must exactly match package peers', () => {
+    const manifest = createManifest();
+    const adapter = manifest.packages.find(({ name }) => name === '@cratis/components.mui');
+    adapter.peerDependencies['@mui/material'] = '*';
+    assert.throws(
+        () => validateCompatibilityManifest(manifest),
+        { message: "@cratis/components.mui upstream '@mui/material' must exactly match its peer range." },
+    );
+});
+
+test('workspace discovery sorts direct and wildcard manifests and skips non-workspaces', () => {
+    const fixtureDirectory = path.join(repositoryDirectory, '.ai-work/506-b6');
+    mkdirSync(fixtureDirectory, { recursive: true });
+    const root = mkdtempSync(path.join(fixtureDirectory, 'workspace-discovery-'));
+    try {
+        for (const directory of ['Adapters/Zeta', 'Adapters/Alpha', 'Adapters/Empty']) {
+            mkdirSync(path.join(root, directory), { recursive: true });
+        }
+        writeFileSync(path.join(root, 'Adapters/Zeta/package.json'), '{}');
+        writeFileSync(path.join(root, 'Adapters/Alpha/package.json'), '{}');
+        writeFileSync(path.join(root, 'Adapters/not-a-directory'), '{}');
+        assert.deepEqual(discoverWorkspaceManifestPaths(['Source', 'Adapters/*', 'Missing'], root), [
+            'Adapters/Alpha/package.json',
+            'Adapters/Zeta/package.json',
+            'Missing/package.json',
+            'Source/package.json',
+        ]);
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+    }
 });
 
 test('adapter proof cannot drift from the renderer matrix', () => {
