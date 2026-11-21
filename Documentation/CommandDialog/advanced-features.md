@@ -68,7 +68,7 @@ A validation failure therefore calls `onFailed` before `onValidationFailure`, no
 
 ### When a result callback rejects
 
-The busy state ends as soon as the command settles, before any result callback runs. The buttons and fields are therefore enabled again while `onSuccess`, `onFailed` and the other result callbacks are awaited, so a slow callback should show its own progress if it needs to.
+The busy state ends as soon as the command settles, before any result callback runs. The busy-state disabling is therefore lifted (normal validity rules still apply to confirm) while `onSuccess`, `onFailed` and the other result callbacks are awaited, so a slow callback should show its own progress if it needs to.
 
 The command has already run by then, and a callback cannot undo it. If a callback throws or returns a rejected promise, the dialog stops at that point:
 
