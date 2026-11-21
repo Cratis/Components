@@ -5,6 +5,7 @@ export * from './BusyIndicatorDialog';
 export * from './ConfirmationDialog';
 export * from './Dialog';
 export * from './DialogInitialFocus';
+export type { DialogRefusalFeedback } from './DialogRefusalFeedback';
 export type {
     CratisDialogDismissSource,
     CratisDialogHost,

@@ -7,3 +7,4 @@ export * from './CommandDialog';
 export * from './CommandStepper';
 export * from './StepperCommandDialog';
 export * from './StepperPanel';
+export type { CommandValidationResults, ValidationAnnouncement } from './validationFeedback';

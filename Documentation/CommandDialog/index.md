@@ -361,7 +361,7 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 - The form fields are disabled and inert, so values cannot change while the command runs.
 - Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
-- After a refused submit (validation failure or business rule) the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). A successful submit follows the [dialog callback close decision](#dialog-callbacks).
+- After a refused submit the dialog stays open, focus returns to the confirm button, and a polite live region announces `messages.dialog.refused` (default `'The action was not completed. Review the dialog and try again.'`). When the command result carries validation results, the live region instead announces how many problems there are and the first message, and focus moves to the first invalid field. See [Announcing validation failures](advanced-features.md#announcing-validation-failures). A successful submit follows the [dialog callback close decision](#dialog-callbacks).
 
 ## Context
 
