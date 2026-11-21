@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactElement, SyntheticEvent } from 'react';
+import type { KeyboardEvent, ReactElement, SyntheticEvent } from 'react';
 import type { ColumnProps } from './Column';
 import { classNames } from '../ClassNames/classNames';
 import type { DataTableParts } from './DataTableParts';
@@ -28,6 +28,82 @@ export interface DataTableRowProps<TData> {
     onToggleSelection: () => void;
 }
 
+const activateFromKeyboard = (
+    event: KeyboardEvent<HTMLTableRowElement>,
+    onActivate: DataTableRowProps<object>['onActivate'],
+) => {
+    if (event.target !== event.currentTarget || !['Enter', ' '].includes(event.key)) {
+        return;
+    }
+    event.preventDefault();
+    onActivate(event);
+};
+
+const rowTabIndex = (isInteractive: boolean, parts: DataTableParts | undefined) =>
+    isInteractive ? 0 : parts?.row?.tabIndex;
+
+interface RowCellProps<TData> extends Pick<DataTableRowProps<TData>,
+    'row' | 'isSelected' | 'isRowSelected' | 'resolvedSelectionAriaLabel' |
+    'selectionGroupName' | 'onToggleSelection'> {
+    column: DataTableRowProps<TData>['columns'][number];
+    parts?: DataTableParts;
+}
+
+const rowCellContent = <TData,>({
+    column,
+    row,
+    isSelected,
+    isRowSelected,
+    resolvedSelectionAriaLabel,
+    selectionGroupName,
+    onToggleSelection,
+}: RowCellProps<TData>) => {
+    if (column.props.selectionMode === 'multiple') {
+        return (
+            <input
+                type='checkbox'
+                aria-label={resolvedSelectionAriaLabel}
+                checked={isRowSelected}
+                onClick={(event) => event.stopPropagation()}
+                onChange={() => onToggleSelection()}
+            />
+        );
+    }
+    if (column.props.selectionMode) {
+        return (
+            <input
+                type='radio'
+                name={selectionGroupName}
+                readOnly
+                tabIndex={-1}
+                aria-label={resolvedSelectionAriaLabel}
+                checked={isSelected}
+            />
+        );
+    }
+    return dataTableCellContent(column.props, row);
+};
+
+const RowCell = <TData,>({ parts: pt, ...props }: RowCellProps<TData>) => (
+    <td
+        {...pt?.cell}
+        style={{
+            ...pt?.cell?.style,
+            ...props.column.props.style,
+            ...props.column.props.bodyStyle,
+        }}
+        className={classNames(
+            'cratis-datatable__cell',
+            pt?.cell?.className,
+            props.column.props.bodyClassName ?? props.column.props.className,
+        )}
+        data-cratis-part='cell'
+        data-selected={props.isSelected || undefined}
+    >
+        {rowCellContent(props)}
+    </td>
+);
+
 /** One data row, activated by click, Enter or Space. */
 export const DataTableRow = <TData extends object>({
     row,
@@ -46,7 +122,7 @@ export const DataTableRow = <TData extends object>({
 }: DataTableRowProps<TData>) => (
     <tr
         {...pt?.row}
-        tabIndex={isInteractive ? 0 : pt?.row?.tabIndex}
+        tabIndex={rowTabIndex(isInteractive, pt)}
         aria-selected={selectionMode === 'single' ? isSelected : undefined}
         className={classNames(
             'cratis-datatable__row',
@@ -58,55 +134,20 @@ export const DataTableRow = <TData extends object>({
         data-selected={isSelected || undefined}
         data-interactive={isInteractive || undefined}
         onClick={(event) => onActivate(event)}
-        onKeyDown={(event) => {
-            if (
-                event.target !== event.currentTarget ||
-                (event.key !== 'Enter' && event.key !== ' ')
-            ) {
-                return;
-            }
-            event.preventDefault();
-            onActivate(event);
-        }}
+        onKeyDown={(event) => activateFromKeyboard(event, onActivate)}
     >
         {columns.map((column, columnIndex) => (
-            <td
+            <RowCell
                 key={columnIndex}
-                {...pt?.cell}
-                style={{
-                    ...pt?.cell?.style,
-                    ...column.props.style,
-                    ...column.props.bodyStyle,
-                }}
-                className={classNames(
-                    'cratis-datatable__cell',
-                    pt?.cell?.className,
-                    column.props.bodyClassName ?? column.props.className,
-                )}
-                data-cratis-part='cell'
-                data-selected={isSelected || undefined}
-            >
-                {column.props.selectionMode === 'multiple' ? (
-                    <input
-                        type='checkbox'
-                        aria-label={resolvedSelectionAriaLabel}
-                        checked={isRowSelected}
-                        onClick={(event) => event.stopPropagation()}
-                        onChange={() => onToggleSelection()}
-                    />
-                ) : column.props.selectionMode ? (
-                    <input
-                        type='radio'
-                        name={selectionGroupName}
-                        readOnly
-                        tabIndex={-1}
-                        aria-label={resolvedSelectionAriaLabel}
-                        checked={isSelected}
-                    />
-                ) : (
-                    dataTableCellContent(column.props, row)
-                )}
-            </td>
+                column={column}
+                row={row}
+                parts={pt}
+                isSelected={isSelected}
+                isRowSelected={isRowSelected}
+                resolvedSelectionAriaLabel={resolvedSelectionAriaLabel}
+                selectionGroupName={selectionGroupName}
+                onToggleSelection={onToggleSelection}
+            />
         ))}
     </tr>
 );
