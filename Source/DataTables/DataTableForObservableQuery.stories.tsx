@@ -184,27 +184,20 @@ class LiveTasksQuery extends TasksQuery {
 
 // Status/priority render as theme-aware Tags with a severity, which stay
 // WCAG-legible on both light and dark surfaces (unlike fixed text colors).
-const getStatusSeverity = (status: string): TagSeverity => {
-    switch (status) {
-        case 'done':
-            return 'success';
-        case 'in-progress':
-            return 'info';
-        default:
-            return 'secondary';
-    }
-};
+const statusSeverities = new Map<string, TagSeverity>([
+    ['done', 'success'],
+    ['in-progress', 'info'],
+]);
+const prioritySeverities = new Map<string, TagSeverity>([
+    ['high', 'danger'],
+    ['medium', 'warn'],
+]);
 
-const getPrioritySeverity = (priority: string): TagSeverity => {
-    switch (priority) {
-        case 'high':
-            return 'danger';
-        case 'medium':
-            return 'warn';
-        default:
-            return 'secondary';
-    }
-};
+const getStatusSeverity = (status: string): TagSeverity =>
+    statusSeverities.get(status) ?? 'secondary';
+
+const getPrioritySeverity = (priority: string): TagSeverity =>
+    prioritySeverities.get(priority) ?? 'secondary';
 
 export const Default: Story = {
     render: () => (
