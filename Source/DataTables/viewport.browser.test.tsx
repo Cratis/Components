@@ -20,10 +20,11 @@ const rows = [
 const activated = vi.fn();
 const bodyAction = vi.fn();
 
-const Example = () => {
+const Example = ({ selectionMarker = true }: { selectionMarker?: boolean }) => {
     const [selectedItems, setSelectedItems] = useState<typeof rows>([]);
     return <DataTableCore data={rows} dataKey='id' mobileLayout='cards' emptyMessage='No rows' selectionMode='multiple'
         selectedItems={selectedItems} onSelectedItemsChange={setSelectedItems} onRowClick={activated} globalFilterFields={['name']}>
+        {selectionMarker && <Column selectionMode='multiple' />}
         <Column field='name' header='Project' sortable filter />
         <Column field='notes' header='Notes' />
         <Column header='Action' body={() => <button onClick={bodyAction}>Body action</button>} />
@@ -59,6 +60,21 @@ describe('DataTable viewport presentation', () => {
         await page.viewport(639, 800);
         await vi.waitFor(() => container.querySelectorAll('ul > li').length.should.equal(2));
         (document.activeElement as HTMLInputElement).checked.should.equal(true);
+    });
+    it('should fall back to the keyed row when desktop has no selection marker', async () => {
+        await page.viewport(640, 800);
+        await vi.waitFor(() => container.querySelectorAll('table tbody tr').length.should.equal(2));
+        root.render(<Example selectionMarker={false} />);
+        await vi.waitFor(() => container.querySelectorAll('table input[type="checkbox"]').length.should.equal(0));
+        await page.viewport(639, 800);
+        await vi.waitFor(() => container.querySelectorAll('ul > li').length.should.equal(2));
+        container.querySelector<HTMLInputElement>('li > input')!.focus();
+        await page.viewport(640, 800);
+        await vi.waitFor(() => container.querySelectorAll('table tbody tr').length.should.equal(2));
+        const desktopRowFocused = document.activeElement === container.querySelector('tbody tr');
+        await page.viewport(639, 800);
+        await vi.waitFor(() => container.querySelectorAll('ul > li').length.should.equal(2));
+        [desktopRowFocused, document.activeElement === container.querySelector('li')].should.deep.equal([true, true]);
     });
     it('should keep body actions independent from card activation', async () => {
         await page.getByRole('button', { name: 'Body action' }).first().click();

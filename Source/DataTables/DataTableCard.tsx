@@ -11,6 +11,7 @@ const interactiveDescendant = 'a, button, input, select, textarea, label, summar
 const hasInteractiveTarget = (event: MouseEvent<HTMLLIElement>) => {
     const target = event.target;
     if (!(target instanceof Element)) return false;
+    if (target.hasAttribute('data-cratis-card-selection')) return false;
     const interactive = target.closest(interactiveDescendant);
     return !!interactive && interactive !== event.currentTarget;
 };
@@ -29,12 +30,14 @@ const activateOnKey = <TData extends object>(event: KeyboardEvent<HTMLLIElement>
 };
 
 const CardSelection = <TData extends object>(props: DataTableRowProps<TData>) => {
-    const { selectionMode, selectionGroupName, resolvedSelectionAriaLabel, isSelected, isRowSelected, onToggleSelection, onActivate } = props;
+    const { selectionMode, selectionGroupName, resolvedSelectionAriaLabel, isSelected, isRowSelected, onToggleSelection } = props;
     if (!selectionMode) return null;
     const multiple = selectionMode === 'multiple';
     return <input type={multiple ? 'checkbox' : 'radio'} name={multiple ? undefined : selectionGroupName}
         aria-label={resolvedSelectionAriaLabel} checked={multiple ? isRowSelected : isSelected}
-        onChange={event => multiple ? onToggleSelection() : onActivate(event)} />;
+        readOnly={!multiple} tabIndex={multiple ? undefined : -1}
+        data-cratis-card-selection={multiple ? undefined : 'single'}
+        onChange={multiple ? onToggleSelection : undefined} />;
 };
 
 const CardFields = <TData extends object>({ columns, row, parts: pt }: DataTableRowProps<TData>) => (

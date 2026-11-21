@@ -131,6 +131,31 @@ export interface DataTableCoreProps<TData extends object> extends DataTableMobil
     unstyled?: boolean;
 }
 
+type DataTableRootProps = Pick<DataTableCoreProps<object>, 'children' | 'scrollable' | 'className' | 'style' | 'pt' | 'mobileLayout'> & {
+    elementRef: React.Ref<HTMLDivElement>;
+    isBusy: boolean;
+};
+
+const DataTableRoot = ({ children, scrollable, className, style, pt, mobileLayout, elementRef, isBusy }: DataTableRootProps) => (
+    <div
+        {...pt?.root}
+        ref={elementRef}
+        tabIndex={pt?.root?.tabIndex ?? (mobileLayout === 'cards' ? -1 : undefined)}
+        className={classNames(
+            'cratis-datatable',
+            scrollable ? 'cratis-datatable--scrollable' : undefined,
+            pt?.root?.className,
+            className,
+        )}
+        style={{ ...pt?.root?.style, ...style }}
+        data-cratis-part='root'
+        data-cratis-component='DataTableCore'
+        data-busy={isBusy || undefined}
+    >
+        {children}
+    </div>
+);
+
 /** A semantic, renderer-independent data table over one already-loaded page. */
 export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TData>) => {
     const {
@@ -139,8 +164,6 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
         rowProcessing = DataTableRowProcessing.Loaded,
         globalFilterFields,
         scrollable,
-        className,
-        style,
         pt,
     } = props;
     const messages = useDataTableMessages(props, rowProcessing === DataTableRowProcessing.None);
@@ -160,21 +183,7 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
     });
 
     return (
-        <div
-            {...pt?.root}
-            ref={presentationRoot}
-            tabIndex={pt?.root?.tabIndex ?? (props.mobileLayout === 'cards' ? -1 : undefined)}
-            className={classNames(
-                'cratis-datatable',
-                scrollable ? 'cratis-datatable--scrollable' : undefined,
-                pt?.root?.className,
-                className,
-            )}
-            style={{ ...pt?.root?.style, ...style }}
-            data-cratis-part='root'
-            data-cratis-component='DataTableCore'
-            data-busy={isBusy || undefined}
-        >
+        <DataTableRoot {...props} elementRef={presentationRoot} isBusy={isBusy}>
             {!!globalFilterFields?.length && (
                 <DataTableSearch
                     parts={pt}
@@ -239,6 +248,6 @@ export const DataTableCore = <TData extends object>(props: DataTableCoreProps<TD
                     )}
                 />
             </DataTableTable>}
-        </div>
+        </DataTableRoot>
     );
 };

@@ -95,6 +95,31 @@ describe('when rendering mobile cards', () => {
         await render({ selectionMode: 'single', selection: data[0] });
         container.querySelector<HTMLInputElement>('li > input')!.checked.should.equal(true);
     });
+    it('should retain select-all indeterminate state through a partial-selection layout roundtrip', async () => {
+        await act(async () => viewport.resize(640));
+        await act(async () => root.render(
+            <DataTableCore data={data} dataKey='id' emptyMessage='No rows' mobileLayout='cards' selectionMode='multiple' selectedItems={[data[0]]}>
+                <Column selectionMode='multiple' />
+                <Column field='name' header='Project' />
+            </DataTableCore>,
+        ));
+        const states = [container.querySelector<HTMLInputElement>('[data-cratis-part="select-all"]')!.indeterminate];
+        await act(async () => viewport.resize(639));
+        states.push(container.querySelector<HTMLInputElement>('[data-cratis-part="select-all"]')!.indeterminate);
+        await act(async () => viewport.resize(640));
+        states.push(container.querySelector<HTMLInputElement>('[data-cratis-part="select-all"]')!.indeterminate);
+        states.should.deep.equal([true, true, true]);
+    });
+    it('should activate an already-selected card when its radio is clicked', async () => {
+        await render({ selectionMode: 'single', selection: data[0] });
+        await act(async () => container.querySelector<HTMLInputElement>('li > input[type="radio"]')!.click());
+        activated.mock.calls.length.should.equal(1);
+    });
+    it('should keep the single-selection radio read-only and outside the tab order', async () => {
+        await render({ selectionMode: 'single', selection: data[0] });
+        const radio = container.querySelector<HTMLInputElement>('li > input[type="radio"]')!;
+        (radio.readOnly && radio.tabIndex === -1).should.equal(true);
+    });
     it('should preserve a focused keyed row across both presentation changes', async () => {
         await render({ selectionMode: 'single' });
         container.querySelector<HTMLElement>('li')!.focus();
