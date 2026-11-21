@@ -87,6 +87,7 @@ export const useDialogHost = (props: DialogProps) => {
         isBusy,
         initialFocus,
         refusedMessage: labels.refused,
+        refusalFeedback: props.refusalFeedback,
     });
     const handleClose = useDialogClose(props, onRefused);
 

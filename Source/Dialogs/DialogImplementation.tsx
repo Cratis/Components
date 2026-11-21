@@ -76,6 +76,7 @@ export const DialogImplementation = (incomingProps: DialogProps) => {
         isBusy,
         initialFocus: resolvedInitialFocus,
         refusedMessage: labels.refused,
+        refusalFeedback: props.refusalFeedback,
     });
     const handleClose = useDialogClose(props, onRefused);
 

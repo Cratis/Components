@@ -19,6 +19,11 @@ import {
     markAsCommandFormColumn,
 } from '../CommandForm/commandFormMarkers';
 import { CommandOverlayContext } from '../CommandForm/commandOverlayContext';
+import {
+    validationRefusalFeedback,
+    type CommandValidationResults,
+    type ValidationAnnouncement,
+} from './validationFeedback';
 
 /**
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
@@ -33,7 +38,7 @@ import { CommandOverlayContext } from '../CommandForm/commandOverlayContext';
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
     extends
         Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
-        Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'> {
+        Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog' | 'refusalFeedback'> {
     /**
      * A transformer invoked with the current command values immediately before
      * the command executes on confirm. It **must return** the values to run with
@@ -60,6 +65,14 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
 
     /**
+     * Builds the text announced in the dialog's live region when submit is blocked by
+     * validation results. Receives every validation result; use it to localize the
+     * announcement. Defaults to an English summary with the number of problems and the
+     * first message. Focus moves to the first invalid field either way.
+     */
+    validationAnnouncement?: ValidationAnnouncement;
+
+    /**
      * Form fields and arbitrary content for the dialog body. Children that are
      * `CommandFormField` instances are automatically wrapped so they bind to
      * the command instance.
@@ -68,8 +81,9 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
 }
 
 // Requiring each key here makes a newly added Dialog prop fail compilation until it is routed.
-type ForwardedDialogProps = Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'> &
-    Record<keyof Omit<DialogProps, 'children' | 'isBusy' | 'isCommandDialog'>, unknown>;
+type CommandDialogOwnedProps = 'children' | 'isBusy' | 'isCommandDialog' | 'refusalFeedback';
+type ForwardedDialogProps = Omit<DialogProps, CommandDialogOwnedProps> &
+    Record<keyof Omit<DialogProps, CommandDialogOwnedProps>, unknown>;
 
 const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     isValid,
@@ -82,9 +96,10 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onUnauthorized,
     onBeforeExecute,
     confirmBeforeExecute,
+    validationAnnouncement,
     children,
     ...dialogProps
-}: Omit<DialogProps, 'isBusy'> & {
+}: Omit<DialogProps, 'isBusy' | 'refusalFeedback'> & {
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
@@ -92,6 +107,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
+    validationAnnouncement?: ValidationAnnouncement;
 }) => {
     const {
         setCommandValues,
@@ -103,7 +119,13 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
         commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
     );
 
+    const bodyRef = React.useRef<HTMLDivElement>(null);
+    const refusedValidation = React.useRef<CommandValidationResults>([]);
+    const refusalFeedback = () =>
+        validationRefusalFeedback(refusedValidation.current, bodyRef.current, validationAnnouncement);
+
     const handleConfirm = async () => {
+        refusedValidation.current = [];
         const result = await submission.run();
         if (!result) return false;
 
@@ -115,6 +137,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
+                refusedValidation.current = result.validationResults ?? [];
             }
             if (submission.isMounted()) setCommandResult(result);
             return false;
@@ -174,8 +197,9 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             isValid={isDialogValid}
             isBusy={submission.isSubmitting}
             isCommandDialog
+            refusalFeedback={refusalFeedback}
         >
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <div ref={bodyRef} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}
             </div>
         </Dialog>
@@ -332,6 +356,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         onCancel,
         onBeforeExecute,
         confirmBeforeExecute,
+        validationAnnouncement,
         className,
         pt,
         ptOptions,
@@ -386,6 +411,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                     onUnauthorized={props.onUnauthorized}
                     onBeforeExecute={onBeforeExecute}
                     confirmBeforeExecute={confirmBeforeExecute}
+                    validationAnnouncement={validationAnnouncement}
                 >
                     {children}
                 </CommandDialogWrapper>
