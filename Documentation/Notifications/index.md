@@ -56,6 +56,28 @@ if (toastCommandResult(result, { successTitle: 'Author registered' })) {
 
 In this example, the panel closes only after success. Setting `showSuccess: false` suppresses the success notification without changing the return value. The helper checks success, authorization, validation, and exceptions in that order; it returns `false` without a toast if none of those branches matches.
 
+Set `validationDescription` to a string for fixed copy, or to a function that maps `result.validationResults` to your application's copy. Without this option, non-empty validation messages are joined with `\n`. This excerpt reuses `result` from above and maps known messages while leaving others unchanged:
+
+```ts
+const validationCopy: Record<string, string> = {
+    'Name is required': 'Enter a name to continue.',
+    'Email is invalid': 'Enter a valid email address.',
+};
+
+toastCommandResult(result, {
+    validationDescription: (validationResults) => validationResults
+        .map((validationResult) => validationCopy[validationResult.message] ?? validationResult.message)
+        .filter(Boolean)
+        .join('\n'),
+});
+```
+
+For a title-only validation toast, return `undefined` from the function. Returning an empty string also suppresses the description:
+
+```ts
+toastCommandResult(result, { validationDescription: () => undefined });
+```
+
 It needs a mounted toaster like any other toast. Exception details stay out of the notification; log `result.exceptionMessages` yourself if you need them.
 
 ## Accessible behavior
