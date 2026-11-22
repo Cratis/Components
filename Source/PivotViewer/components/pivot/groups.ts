@@ -5,6 +5,26 @@ import * as PIXI from 'pixi.js';
 import type { CardColors } from './constants';
 import type { GroupingResult, LayoutResult } from '../../engine/types';
 
+interface BackgroundRequest {
+    grouping: GroupingResult;
+    layout: LayoutResult;
+    zoomLevel: number;
+    cardColors: CardColors;
+}
+
+interface HighlightRequest {
+    grouping: GroupingResult;
+    layout: LayoutResult;
+    hoveredGroupIndex: number | null;
+    cardWidth: number;
+    zoomLevel: number;
+}
+
+interface WorldExtent {
+    startY: number;
+    worldHeight: number;
+}
+
 export function updateGroupBackgrounds(
     groupsContainer: PIXI.Container | null,
     container: HTMLDivElement | null,
@@ -21,39 +41,7 @@ export function updateGroupBackgrounds(
         return;
     }
 
-    // Derive a world-space height that always covers the visible viewport even when zoomed out.
-    const { baseWorldHeight, containerWorldHeight } = decorationHeight(container, layout, zoomLevel);
-    // Use larger buffer and extend further above the viewport to ensure full coverage
-    // when zoomed out and cards are positioned at the bottom
-    const bufferWorld = Math.max(500, baseWorldHeight * 0.5, containerWorldHeight);
-    const worldHeight = baseWorldHeight + bufferWorld * 3;
-    const startY = -bufferWorld * 2;
-
-    // Get existing background graphics (excluding highlight)
-    const backgroundGraphics = groupsContainer.children.filter(
-        (c) => c.label !== 'highlight',
-    ) as PIXI.Graphics[];
-    let bgIndex = 0;
-
-    // Instead of re-deriving bucket geometry from constants, compute bucket bounds
-    // directly from the positions stored in the layout so backgrounds align exactly.
-    for (let index = 0; index < grouping.groups.length; index++) {
-        const group = grouping.groups[index];
-        const bounds = backgroundBounds(group.ids, index, layout);
-        if (!isStripedGroup(index, bounds)) continue;
-
-        const bg = backgroundGraphicAt(groupsContainer, backgroundGraphics, bgIndex);
-        bg.rect(bounds.x, startY, bounds.width, worldHeight);
-        bg.fill(cardColors.base);
-        bg.alpha = 0.15;
-        bg.visible = true;
-        bgIndex++;
-    }
-
-    // Hide unused background graphics
-    for (let i = bgIndex; i < backgroundGraphics.length; i++) {
-        backgroundGraphics[i].visible = false;
-    }
+    drawBackgrounds(groupsContainer, container, { grouping, layout, zoomLevel, cardColors });
 }
 
 export function updateHighlight(
@@ -68,22 +56,64 @@ export function updateHighlight(
     if (!groupsContainer || !container) return;
     if (grouping.groups.length === 0) return;
 
+    drawHighlight(groupsContainer, container, { grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel });
+}
+
+function drawBackgrounds(groupsContainer: PIXI.Container, container: HTMLDivElement, request: BackgroundRequest) {
+    const { grouping, layout, cardColors } = request;
+    const extent = backgroundExtent(container, layout, request.zoomLevel);
+
+    // Get existing background graphics (excluding highlight)
+    const backgroundGraphics = groupsContainer.children.filter(
+        (c) => c.label !== 'highlight',
+    ) as PIXI.Graphics[];
+    let bgIndex = 0;
+
+    // Instead of re-deriving bucket geometry from constants, compute bucket bounds
+    // directly from the positions stored in the layout so backgrounds align exactly.
+    for (let index = 0; index < grouping.groups.length; index++) {
+        const bounds = backgroundBounds(grouping.groups[index].ids, index, layout);
+        if (!isStripedGroup(index, bounds)) continue;
+
+        paintBackground(backgroundGraphicAt(groupsContainer, backgroundGraphics, bgIndex), bounds, extent, cardColors);
+        bgIndex++;
+    }
+
+    // Hide unused background graphics
+    for (let i = bgIndex; i < backgroundGraphics.length; i++) {
+        backgroundGraphics[i].visible = false;
+    }
+}
+
+function backgroundExtent(container: HTMLDivElement, layout: LayoutResult, zoomLevel: number): WorldExtent {
+    // Derive a world-space height that always covers the visible viewport even when zoomed out.
+    const { baseWorldHeight, containerWorldHeight } = decorationHeight(container, layout, zoomLevel);
+    // Use larger buffer and extend further above the viewport to ensure full coverage
+    // when zoomed out and cards are positioned at the bottom
+    const bufferWorld = Math.max(500, baseWorldHeight * 0.5, containerWorldHeight);
+    return { worldHeight: baseWorldHeight + bufferWorld * 3, startY: -bufferWorld * 2 };
+}
+
+function paintBackground(background: PIXI.Graphics, bounds: GroupBounds, extent: WorldExtent, cardColors: CardColors) {
+    background.rect(bounds.x, extent.startY, bounds.width, extent.worldHeight);
+    background.fill(cardColors.base);
+    background.alpha = 0.15;
+    background.visible = true;
+}
+
+function drawHighlight(groupsContainer: PIXI.Container, container: HTMLDivElement, request: HighlightRequest) {
+    const { grouping, layout, cardWidth } = request;
     const highlight = highlightGraphic(groupsContainer);
     highlight.clear();
 
-    const hovered = hoveredGroup(grouping, hoveredGroupIndex);
-    if (!hovered) {
-        highlight.visible = false;
-        return;
-    }
-
-    const bounds = highlightBounds(hovered.group.ids, hovered.index, layout, cardWidth);
+    const hovered = hoveredGroup(grouping, request.hoveredGroupIndex);
+    const bounds = hovered && highlightBounds(hovered.group.ids, hovered.index, layout, cardWidth);
     if (!bounds) {
         highlight.visible = false;
         return;
     }
 
-    const { baseWorldHeight } = decorationHeight(container, layout, zoomLevel);
+    const { baseWorldHeight } = decorationHeight(container, layout, request.zoomLevel);
     const bufferWorld = Math.max(200, baseWorldHeight * 0.25);
     const worldHeight = baseWorldHeight + bufferWorld * 2;
     const startY = -bufferWorld;

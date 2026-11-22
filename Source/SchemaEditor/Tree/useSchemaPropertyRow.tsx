@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { useId, type MouseEvent } from 'react';
+import { useRowNameEditing } from './useRowNameEditing';
 import { useSchemaEditorContext, type SchemaEditorContextValue } from './SchemaEditorContext';
 import type { SchemaPropertyRowProps } from './SchemaPropertyRow';
 import type { SchemaPropertyRowState } from './SchemaPropertyRowState';
@@ -55,10 +56,6 @@ export const useSchemaPropertyRow = (props: SchemaPropertyRowProps) => {
     const context = useSchemaEditorContext();
     const { labels, parts, readOnly, operations } = context;
     const messageId = useId();
-    const nameInput = useRef<HTMLInputElement>(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [draftName, setDraftName] = useState(property.name);
-    const [problem, setProblem] = useState<string | undefined>(undefined);
 
     const rowContext: SchemaPropertyContext = { depth, siblings, properties: context.properties, readOnly };
     const rowState = context.getRowState?.(property, rowContext);
@@ -69,44 +66,13 @@ export const useSchemaPropertyRow = (props: SchemaPropertyRowProps) => {
     const typeName = propertyTypeName(property.type, labels);
     const nestedLabel = labels.nestedProperties(property.name);
 
-    useEffect(() => {
-        if (isEditing) nameInput.current?.select();
-    }, [isEditing]);
-
-    const startEditing = () => {
-        if (!allowed.canRename) return;
-        setDraftName(property.name);
-        setProblem(undefined);
-        setIsEditing(true);
-    };
-    const stopEditing = () => {
-        setIsEditing(false);
-        setProblem(undefined);
-    };
-    const commit = (): boolean => {
-        const name = draftName.trim();
-        if (name === property.name) {
-            stopEditing();
-            return true;
-        }
-        const message = describeName(name, props, context);
-        if (message) {
-            setProblem(message);
-            return false;
-        }
-        stopEditing();
-        operations.rename?.(property.id, name);
-        return true;
-    };
-    const handleEditKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            commit();
-        } else if (event.key === 'Escape') {
-            event.stopPropagation();
-            stopEditing();
-        }
-    };
+    const editing = useRowNameEditing({
+        propertyId: property.id,
+        propertyName: property.name,
+        canRename: allowed.canRename,
+        describeName: name => describeName(name, props, context),
+        rename: (id, name) => operations.rename?.(id, name),
+    });
     const handleRowClick = (event: MouseEvent<HTMLDivElement>) => selectRow(event, property.id, context);
 
     const defaultBadge = <PropertyTypeBadge property={property} labels={labels} part={parts?.badge} lockReason={lockReason} />;
@@ -116,8 +82,8 @@ export const useSchemaPropertyRow = (props: SchemaPropertyRowProps) => {
 
     return {
         ...props, context, rowContext, rowState, details, ...allowed, rowAttributes,
-        isSelected, isSelectable, isEditing, draftName, setDraftName, problem, setProblem, nameInput, messageId,
-        startEditing, stopEditing, commit, handleEditKeyDown, handleRowClick, typeBadge, typeName, nestedLabel,
+        isSelected, isSelectable, ...editing, messageId,
+        handleRowClick, typeBadge, typeName, nestedLabel,
     };
 };
 
