@@ -102,6 +102,59 @@ const followDrag = ({ container, target, dragStart, min, max, onChange, onReleas
     };
 };
 
+interface ActiveDragOptions {
+    target: RangeDragTarget | null;
+    dragStart: DragStart | null;
+    containerRef: React.RefObject<HTMLDivElement | null>;
+    min: number;
+    max: number;
+    onChange: ChangeHandler<NumericRange | null>;
+    onRelease: () => void;
+}
+
+/** Follows the active drag, if any. Returns the cleanup that stops following, or nothing when no drag is active. */
+const followActiveDrag = ({ target, dragStart, containerRef, min, max, onChange, onRelease }: ActiveDragOptions) => {
+    if (!target || !dragStart) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    return followDrag({ container, target, dragStart, min, max, onChange, onRelease });
+};
+
+const selectBucketRange = (
+    bucket: RenderedHistogramBucket,
+    event: React.MouseEvent<HTMLButtonElement>,
+    onChange: ChangeHandler<NumericRange | null>,
+) => {
+    onChange([bucket.start, bucket.end], {
+        source: 'user',
+        nativeEvent: event.nativeEvent,
+    });
+};
+
+interface KeyStepOptions {
+    event: React.KeyboardEvent<HTMLDivElement>;
+    handle: RangeHandle;
+    min: number;
+    max: number;
+    currentRange: NumericRange;
+    minimumGap: number;
+    keyboardStep: number;
+    onChange: ChangeHandler<NumericRange | null>;
+}
+
+/** Steps a handle for a key the slider understands, and leaves other keys alone. */
+const stepHandleWithKey = ({ event, handle, min, max, currentRange, minimumGap, keyboardStep, onChange }: KeyStepOptions) => {
+    if (keyboardStep <= 0) return;
+
+    const keyboard = { min, max, currentRange, minimumGap, keyboardStep };
+    const next = keyboardTarget(event.key, handle, keyboard);
+    if (next === undefined) return;
+
+    event.preventDefault();
+    onChange(steppedRange(handle, next, keyboard), { source: 'user', nativeEvent: event.nativeEvent });
+};
+
 interface HistogramBarOptions {
     bucket: RenderedHistogramBucket;
     index: number;
@@ -232,27 +285,18 @@ export function RangeHistogramFilter({
     };
 
     useEffect(() => {
-        if (!isDragging || !dragStart) return;
-        const container = containerRef.current;
-        if (!container) return;
-
         const handleMouseUp = () => {
             setIsDragging(null);
             setDragStart(null);
         };
 
-        return followDrag({ container, target: isDragging, dragStart, min, max, onChange, onRelease: handleMouseUp });
+        return followActiveDrag({ target: isDragging, dragStart, containerRef, min, max, onChange, onRelease: handleMouseUp });
     }, [isDragging, dragStart, min, max, onChange]);
 
     const handleBarClick = (
         bucket: RenderedHistogramBucket,
         event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-        onChange([bucket.start, bucket.end], {
-            source: 'user',
-            nativeEvent: event.nativeEvent,
-        });
-    };
+    ) => selectBucketRange(bucket, event, onChange);
 
     const rangeSpan = max - min;
     const minimumGap = rangeSpan * 0.01;
@@ -261,16 +305,7 @@ export function RangeHistogramFilter({
     const handleHandleKeyDown = (
         event: React.KeyboardEvent<HTMLDivElement>,
         handle: 'left' | 'right',
-    ) => {
-        if (keyboardStep <= 0) return;
-
-        const keyboard = { min, max, currentRange, minimumGap, keyboardStep };
-        const next = keyboardTarget(event.key, handle, keyboard);
-        if (next === undefined) return;
-
-        event.preventDefault();
-        onChange(steppedRange(handle, next, keyboard), { source: 'user', nativeEvent: event.nativeEvent });
-    };
+    ) => stepHandleWithKey({ event, handle, min, max, currentRange, minimumGap, keyboardStep, onChange });
 
     const leftPos = getPositionFromValue(currentRange[0]);
     const rightPos = getPositionFromValue(currentRange[1]);

@@ -63,6 +63,17 @@ export interface MarkdownWritingAreaProps
 
 const hasFiles = (event: DragEvent<HTMLTextAreaElement>) => Array.from(event.dataTransfer.types).includes('Files');
 
+const holdsOnlyShortcutModifier = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.altKey || event.shiftKey) return false;
+    return event.ctrlKey || event.metaKey;
+};
+
+/** The format a keyboard shortcut asks for, or nothing when the key is not a format shortcut. */
+const shortcutFormat = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.defaultPrevented || !holdsOnlyShortcutModifier(event)) return undefined;
+    return formatShortcuts.get(event.key.toLowerCase());
+};
+
 /**
  * The textarea of a {@link MarkdownEditor}, with its completion keys, formatting shortcuts, and file
  * paste and drop.
@@ -72,6 +83,7 @@ export const MarkdownWritingArea = (props: MarkdownWritingAreaProps) => {
     const disabled = props.disabled ?? false;
     const readOnly = props.readOnly ?? false;
     const invalid = props.invalid ?? false;
+    const editable = !disabled && !readOnly;
 
     const reportSelection = (event: SyntheticEvent<HTMLTextAreaElement>) =>
         props.onSelectionChange(event.currentTarget.selectionStart, event.currentTarget.selectionEnd);
@@ -83,9 +95,8 @@ export const MarkdownWritingArea = (props: MarkdownWritingAreaProps) => {
             props.onEdit(edit);
             return;
         }
-        if (event.defaultPrevented || event.altKey || event.shiftKey || !(event.ctrlKey || event.metaKey)) return;
-        const format = formatShortcuts.get(event.key.toLowerCase());
-        if (!format || disabled || readOnly) return;
+        const format = shortcutFormat(event);
+        if (!format || !editable) return;
         event.preventDefault();
         props.onFormat(format);
     };
