@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { FaKey, FaLock, FaXmark } from 'react-icons/fa6';
-import { GeneratedToggle } from './GeneratedToggle';
 import { PropertyTypeMenu } from './PropertyTypeMenu';
 import type { SchemaPropertyRowView } from './useSchemaPropertyRow';
 
@@ -24,7 +23,8 @@ export const renderSchemaPropertyType = (view: SchemaPropertyRowView) => {
     ) : typeBadge;
 };
 
-const renderRequired = ({ context, property }: SchemaPropertyRowView) => {
+/** Renders the required toggle or its locked marker. */
+export const renderSchemaPropertyRequired = ({ context, property }: SchemaPropertyRowView) => {
     const { labels, parts, operations, readOnly } = context;
     return context.isRequiredAllowed && operations.setRequired !== undefined && (
         <label
@@ -46,7 +46,8 @@ const renderRequired = ({ context, property }: SchemaPropertyRowView) => {
     );
 };
 
-const renderKey = ({ context: { labels, parts, operations }, property, canSetKey }: SchemaPropertyRowView) => canSetKey && (
+/** Renders the key toggle when the property can be a key. */
+export const renderSchemaPropertyKey = ({ context: { labels, parts, operations }, property, canSetKey }: SchemaPropertyRowView) => canSetKey && (
     <button
         {...parts?.key}
         type='button'
@@ -62,7 +63,8 @@ const renderKey = ({ context: { labels, parts, operations }, property, canSetKey
     </button>
 );
 
-const renderRemoval = ({ context: { labels, parts, operations }, property, isProtected, canRemove }: SchemaPropertyRowView) => isProtected ? (
+/** Renders the removal button or the protected marker. */
+export const renderSchemaPropertyRemoval = ({ context: { labels, parts, operations }, property, isProtected, canRemove }: SchemaPropertyRowView) => isProtected ? (
     <span
         {...parts?.protected}
         role='img'
@@ -87,21 +89,9 @@ const renderRemoval = ({ context: { labels, parts, operations }, property, isPro
     </button>
 );
 
-/** Preserves the required, key, generated, accessory and removal control order. */
-export const renderSchemaPropertyActions = (view: SchemaPropertyRowView) => {
-    const { context, property, rowContext } = view;
-    const { parts } = context;
-    return (
-        <>
-            {renderRequired(view)}
-            {renderKey(view)}
-            <GeneratedToggle property={property} rowContext={rowContext} />
-            {context.renderAccessory && (
-                <span {...parts?.accessory} className={`cratis-schema-editor__accessory ${parts?.accessory?.className ?? ''}`} data-cratis-part='accessory'>
-                    {context.renderAccessory(property, rowContext)}
-                </span>
-            )}
-            {renderRemoval(view)}
-        </>
-    );
-};
+/** Renders the host accessory slot. The row keeps each control as a direct child so generated ids stay stable. */
+export const renderSchemaPropertyAccessory = ({ context, property, rowContext }: SchemaPropertyRowView) => context.renderAccessory && (
+    <span {...context.parts?.accessory} className={`cratis-schema-editor__accessory ${context.parts?.accessory?.className ?? ''}`} data-cratis-part='accessory'>
+        {context.renderAccessory(property, rowContext)}
+    </span>
+);

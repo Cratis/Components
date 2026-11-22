@@ -3,7 +3,14 @@
 
 import type { Property } from './Property';
 import { renderSchemaPropertyName } from './SchemaPropertyRowName';
-import { renderSchemaPropertyActions, renderSchemaPropertyType } from './SchemaPropertyRowControls';
+import { GeneratedToggle } from './GeneratedToggle';
+import {
+    renderSchemaPropertyAccessory,
+    renderSchemaPropertyKey,
+    renderSchemaPropertyRemoval,
+    renderSchemaPropertyRequired,
+    renderSchemaPropertyType
+} from './SchemaPropertyRowControls';
 import { renderSchemaPropertyChildren } from './SchemaPropertyRowChildren';
 import { useSchemaPropertyRow } from './useSchemaPropertyRow';
 
@@ -48,7 +55,11 @@ export const SchemaPropertyRow = (props: SchemaPropertyRowProps) => {
                 )}
                 {renderSchemaPropertyName(view)}
                 {renderSchemaPropertyType(view)}
-                {renderSchemaPropertyActions(view)}
+                {renderSchemaPropertyRequired(view)}
+                {renderSchemaPropertyKey(view)}
+                <GeneratedToggle property={property} rowContext={rowContext} />
+                {renderSchemaPropertyAccessory(view)}
+                {renderSchemaPropertyRemoval(view)}
             </div>
             {details && (
                 <div {...parts?.details} className={`cratis-schema-editor__details ${parts?.details?.className ?? ''}`} data-cratis-part='details'>
