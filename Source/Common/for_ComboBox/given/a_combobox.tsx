@@ -55,6 +55,7 @@ export const mountComboBox = async (
         options: entries = roster,
         initialValue = null,
         action,
+        onChange,
         onInputChange,
         ...props
     } = options;
@@ -73,6 +74,7 @@ export const mountComboBox = async (
                     onChange={(next) => {
                         changes.push(next);
                         setValue(next);
+                        onChange?.(next);
                     }}
                     onInputChange={(text) => {
                         inputs.push(text);
