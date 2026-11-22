@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Severity tone of a {@link Message}. */
 export type MessageSeverity =
@@ -37,33 +39,34 @@ const severitySymbols: Record<MessageSeverity, string> = {
     contrast: 'ⓘ',
 };
 
+const messageDescriptor = describeComponent<MessageProps>('Message', [
+    { name: 'severity', label: 'Severity', type: 'enum', values: ['info', 'success', 'warn', 'error', 'secondary', 'contrast'] satisfies NonNullable<MessageProps['severity']>[], defaultValue: 'info' },
+]);
+
 /** A declarative inline status message. */
-export const Message = ({
-    severity = 'info',
-    text,
-    children,
-    className,
-    icon,
-    live = true,
-}: MessageProps) => (
-    <div
-        className={['cratis-message', className].filter(Boolean).join(' ')}
-        data-cratis-part='root'
-        data-cratis-component='Message'
-        data-severity={severity}
-        role={live ? (severity === 'error' ? 'alert' : 'status') : undefined}
-    >
-        {icon !== false && (
-            <span
-                className='cratis-message__icon'
-                data-cratis-part='icon'
-                aria-hidden='true'
-            >
-                {icon ?? severitySymbols[severity]}
+export const Message = (props: MessageProps) => {
+    const [presentation, marker] = useComponentPresentation(messageDescriptor, props);
+    const { severity = 'info', text, children, className, icon, live = true } = presentation;
+    return (
+        <div
+            {...marker}
+            className={['cratis-message', className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+            data-severity={severity}
+            role={live ? (severity === 'error' ? 'alert' : 'status') : undefined}
+        >
+            {icon !== false && (
+                <span
+                    className='cratis-message__icon'
+                    data-cratis-part='icon'
+                    aria-hidden='true'
+                >
+                    {icon ?? severitySymbols[severity]}
+                </span>
+            )}
+            <span className='cratis-message__text' data-cratis-part='text'>
+                {children ?? text}
             </span>
-        )}
-        <span className='cratis-message__text' data-cratis-part='text'>
-            {children ?? text}
-        </span>
-    </div>
-);
+        </div>
+    );
+};
