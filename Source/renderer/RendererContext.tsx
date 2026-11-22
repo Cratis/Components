@@ -22,17 +22,23 @@ import {
     type unstable_CratisOverlayEnvironment,
 } from './overlayEnvironment';
 import {
-    unstable_createRendererLayer,
     unstable_createResolvedSlotTable,
     unstable_diagnosticKey,
     unstable_emptyCoreRendererSlots,
     unstable_logDiagnostic,
     unstable_resolveLibraryInput,
     unstable_resolveSlot,
-    unstable_sameLibraryReferences,
-    unstable_validateUiLibrary,
     type unstable_RendererLayer,
 } from './resolve';
+import {
+    createSelectedLayer,
+    diagnoseSelectedLibraries,
+    resolveCoreSlots,
+    resolveOverlayEnvironment,
+    resolveProviderLibraryReferences,
+    resolveRendererSetup,
+    stackRendererLayers,
+} from './rendererRootState';
 import type {
     unstable_SlotDeclaration,
     unstable_SlotId,
@@ -69,25 +75,19 @@ export const unstable_RendererContext = createContext<
     unstable_RendererContextValue | undefined
 >(undefined);
 
-const emptyRendererSetup = Object.freeze({}) as unstable_RendererSetup;
+/** Stands in for a missing parent so every inherited field reads as undefined. */
+const noParentRendererState: Partial<unstable_RendererContextValue> = Object.freeze({});
 
-const freezeRendererSetup = (
-    setup: Readonly<Record<string, unknown>>,
-): unstable_RendererSetup =>
-    Object.freeze(
-        Object.fromEntries(
-            Object.entries(setup).filter(([, value]) => typeof value === 'boolean'),
-        ),
-    ) as unstable_RendererSetup;
-
-const nestedLibraryDiagnostic = (
-    library: unstable_UiLibrary,
-): unstable_AdapterDiagnostic => ({
-    code: unstable_adapterErrorCodes.nestedLibraries,
-    adapterId: library.id,
-    message: 'A nested CratisComponentsProvider selected a conflicting renderer library.',
-    remedy: 'Select renderer libraries once at the application provider and use RendererScope for local overrides.',
-});
+/** Reports each distinct diagnostic once for the lifetime of the root. */
+const useDiagnosticReporter = () => {
+    const reportedDiagnostics = useRef(new Set<string>());
+    return useCallback((diagnostic: unstable_AdapterDiagnostic) => {
+        const key = unstable_diagnosticKey(diagnostic);
+        if (reportedDiagnostics.current.has(key)) return;
+        reportedDiagnostics.current.add(key);
+        unstable_logDiagnostic(diagnostic);
+    }, []);
+};
 
 /** Internal root boundary. Renderer manifests remain outside Components configuration merging. */
 export const unstable_RendererRoot = ({
@@ -99,46 +99,20 @@ export const unstable_RendererRoot = ({
     coreSlots,
     children,
 }: unstable_RendererRootProps) => {
-    const parent = useContext(unstable_RendererContext);
+    const parent: Partial<unstable_RendererContextValue> =
+        useContext(unstable_RendererContext) ?? noParentRendererState;
     const selected = useMemo(() => unstable_resolveLibraryInput(library), [library]);
     const setup = useMemo(
-        () =>
-            rendererSetup
-                ? freezeRendererSetup(rendererSetup)
-                : (parent?.rendererSetup ?? emptyRendererSetup),
-        [parent?.rendererSetup, rendererSetup],
+        () => resolveRendererSetup(rendererSetup, parent.rendererSetup),
+        [parent.rendererSetup, rendererSetup],
     );
-    const layer = useMemo(
-        () =>
-            selected.library ? unstable_createRendererLayer(selected.library) : undefined,
-        [selected],
+    const layer = useMemo(() => createSelectedLayer(selected), [selected]);
+    const reportDiagnostic = useDiagnosticReporter();
+
+    const diagnostics = useMemo(
+        () => diagnoseSelectedLibraries(selected, parent.providerLibraryReferences),
+        [parent.providerLibraryReferences, selected],
     );
-    const reportedDiagnostics = useRef(new Set<string>());
-    const reportDiagnostic = useCallback((diagnostic: unstable_AdapterDiagnostic) => {
-        const key = unstable_diagnosticKey(diagnostic);
-        if (reportedDiagnostics.current.has(key)) return;
-        reportedDiagnostics.current.add(key);
-        unstable_logDiagnostic(diagnostic);
-    }, []);
-
-    const diagnostics = useMemo(() => {
-        if (!selected.library)
-            return Object.freeze([]) as readonly unstable_AdapterDiagnostic[];
-
-        const currentDiagnostics = selected.references.flatMap((reference) =>
-            unstable_validateUiLibrary(reference),
-        );
-        if (
-            parent?.providerLibraryReferences.length &&
-            !unstable_sameLibraryReferences(
-                parent.providerLibraryReferences,
-                selected.references,
-            )
-        ) {
-            currentDiagnostics.unshift(nestedLibraryDiagnostic(selected.library));
-        }
-        return Object.freeze(currentDiagnostics);
-    }, [parent?.providerLibraryReferences, selected]);
 
     useEffect(() => {
         if (libraryMode === 'degrade') {
@@ -147,16 +121,13 @@ export const unstable_RendererRoot = ({
     }, [diagnostics, libraryMode, reportDiagnostic]);
 
     const layers = useMemo(
-        () => Object.freeze([...(parent?.layers ?? []), ...(layer ? [layer] : [])]),
-        [layer, parent?.layers],
+        () => stackRendererLayers(parent.layers, layer),
+        [layer, parent.layers],
     );
     const slots = useMemo(() => unstable_createResolvedSlotTable(layers), [layers]);
     const resolvedCoreSlots = useMemo(
-        () =>
-            coreSlots
-                ? Object.freeze({ ...coreSlots })
-                : (parent?.coreSlots ?? unstable_emptyCoreRendererSlots),
-        [coreSlots, parent?.coreSlots],
+        () => resolveCoreSlots(coreSlots, parent.coreSlots),
+        [coreSlots, parent.coreSlots],
     );
     const value = useMemo<unstable_RendererContextValue>(
         () =>
@@ -165,24 +136,24 @@ export const unstable_RendererRoot = ({
                 slots,
                 libraryMode,
                 rendererFallback,
-                overlayEnvironment:
-                    overlayEnvironment ??
-                    parent?.overlayEnvironment ??
-                    unstable_defaultOverlayEnvironment,
+                overlayEnvironment: resolveOverlayEnvironment(
+                    overlayEnvironment,
+                    parent.overlayEnvironment,
+                ),
                 rendererSetup: setup,
                 coreSlots: resolvedCoreSlots,
-                providerLibraryReferences:
-                    selected.references.length > 0
-                        ? selected.references
-                        : (parent?.providerLibraryReferences ?? selected.references),
+                providerLibraryReferences: resolveProviderLibraryReferences(
+                    selected.references,
+                    parent.providerLibraryReferences,
+                ),
                 reportDiagnostic,
             }),
         [
             layers,
             libraryMode,
             overlayEnvironment,
-            parent?.overlayEnvironment,
-            parent?.providerLibraryReferences,
+            parent.overlayEnvironment,
+            parent.providerLibraryReferences,
             rendererFallback,
             reportDiagnostic,
             resolvedCoreSlots,
