@@ -29,7 +29,7 @@ describe('when composing ordered row part callbacks', () => {
             parts: undefined, dragging: false, dropPosition: undefined,
             onField: () => { calls.push('field'); }, onFieldBlur: () => { calls.push('leave'); },
             onMove: (_item, delta, control) => { calls.push(`${control}:${delta}`); },
-            onRemove: () => {}, onDragStart: () => {}, onDragOver: () => {}, onDrop: () => {}, onDragEnd: () => {},
+            onRemove: () => undefined, onDragStart: () => undefined, onDragOver: () => undefined, onDrop: () => undefined, onDragEnd: () => undefined,
         };
     });
     afterEach(() => mount.teardown());
