@@ -182,22 +182,24 @@ interface MessageRenderInfo {
     showTimestamp: boolean;
 }
 
+const hasSameAuthor = (left: ChatMessage, right: ChatMessage): boolean =>
+    chatIdentifierString(left.authorId) === chatIdentifierString(right.authorId);
+
+const startsAuthorGroup = (message: ChatMessage, previous: ChatMessage | undefined): boolean =>
+    !previous || !hasSameAuthor(previous, message);
+
+const endsTimestampGroup = (message: ChatMessage, next: ChatMessage | undefined): boolean =>
+    !next || !hasSameAuthor(next, message) || !sameMinute(timestampOf(message), timestampOf(next));
+
 const computeRenderInfo = (messages: ChatMessage[]): MessageRenderInfo[] =>
     messages.map((message, index) => {
         const previous = index > 0 ? messages[index - 1] : undefined;
         const next = index < messages.length - 1 ? messages[index + 1] : undefined;
 
-        const showAuthor =
-            !previous ||
-            chatIdentifierString(previous.authorId) !==
-                chatIdentifierString(message.authorId);
-        const showTimestamp =
-            !next ||
-            chatIdentifierString(next.authorId) !==
-                chatIdentifierString(message.authorId) ||
-            !sameMinute(timestampOf(message), timestampOf(next));
-
-        return { showAuthor, showTimestamp };
+        return {
+            showAuthor: startsAuthorGroup(message, previous),
+            showTimestamp: endsTimestampGroup(message, next),
+        };
     });
 
 /**
@@ -236,18 +238,36 @@ const conversationStatusLabel = (
     }
 };
 
+const showsStatusAlongsideMessages = (status: ChatStatus): boolean =>
+    status === ChatStatus.Failed || status === ChatStatus.Unauthorized;
+
 const renderConversationStatus = (
     messageCount: number,
     status: ChatStatus,
     labels: ChatConversationLabels | undefined,
 ) => {
-    if (messageCount > 0 && status !== ChatStatus.Failed && status !== ChatStatus.Unauthorized) return null;
+    if (messageCount > 0 && !showsStatusAlongsideMessages(status)) return null;
     return (
         <p className='cratis-chat-conversation__empty'>
             {conversationStatusLabel(status, labels)}
         </p>
     );
 };
+
+const authorFor = (
+    authorId: ChatIdentifier,
+    authorOf: ChatConversationProps['authorOf'],
+): ChatAuthor => authorOf?.(authorId) ?? {
+    name: chatIdentifierString(authorId),
+    kind: ChatAuthorKind.User,
+};
+
+const availableActionsFor = <TMessage extends ChatMessage>(
+    message: TMessage,
+    actions: ChatMessageAction<TMessage>[] | undefined,
+): ChatMessageAction<TMessage>[] => (actions ?? []).filter(
+    action => action.isAvailable?.(message) ?? true,
+);
 
 interface ConversationMessageProps<TMessage extends ChatMessage> extends Pick<ChatConversationProps<TMessage>,
     'renderAvatar' | 'renderAuthorName' | 'renderMessageExtra' | 'buildAvatarUrl' | 'labels'> {
@@ -375,12 +395,6 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [messages, typingAuthors.length]);
 
-    const authorFor = (authorId: ChatIdentifier): ChatAuthor =>
-        authorOf?.(authorId) ?? {
-            name: chatIdentifierString(authorId),
-            kind: ChatAuthorKind.User,
-        };
-
     const send = (text: string, mentioned: MentionCandidate[]) =>
         onSendMessage(
             text,
@@ -401,10 +415,8 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
             <div className='cratis-chat-conversation__messages' aria-busy={status === ChatStatus.Loading && messages.length > 0 || undefined}>
                 {renderConversationStatus(messages.length, status, labels)}
                 {status !== ChatStatus.Unauthorized && messages.map((message, index) => {
-                    const author = authorFor(message.authorId);
-                    const availableActions = (actions ?? []).filter(
-                        (action) => action.isAvailable?.(message) ?? true,
-                    );
+                    const author = authorFor(message.authorId, authorOf);
+                    const availableActions = availableActionsFor(message, actions);
                     return renderConversationMessage({
                         message,
                         author,

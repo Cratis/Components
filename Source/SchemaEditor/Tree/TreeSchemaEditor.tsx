@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { FaPlus } from 'react-icons/fa6';
 import type { ChangeHandler } from '../../types/ChangeHandler';
 import type { JsonSchema } from '../../types/JsonSchema';
@@ -177,6 +177,143 @@ function allowance(flag: TreeSchemaEditorProps['allowKeyProperty'], callback: un
     return allowed ? () => true : never;
 }
 
+const createOwnedOperations = (
+    latest: RefObject<Property[]>,
+    apply: (next: Property[]) => void,
+    { onPropertyRemoved, onPropertyRenamed }: Pick<TreeSchemaEditorProps, 'onPropertyRemoved' | 'onPropertyRenamed'>,
+): SchemaEditorOperations => ({
+    addChild: (parentId, type, concept) =>
+        apply(addChildProperty(latest.current, parentId, type, totalPropertyCount(latest.current), concept)),
+    remove: propertyId => {
+        const removed = findPropertyById(latest.current, propertyId);
+        apply(removeProperty(latest.current, propertyId));
+        if (removed) onPropertyRemoved?.(removed);
+    },
+    rename: (propertyId, name) => {
+        const previousName = findPropertyById(latest.current, propertyId)?.name;
+        const next = renameProperty(latest.current, propertyId, name);
+        apply(next);
+        const renamed = findPropertyById(next, propertyId);
+        if (renamed && previousName !== undefined) onPropertyRenamed?.(renamed, previousName);
+    },
+    changeType: (propertyId, type, concept) => apply(changePropertyType(latest.current, propertyId, type, concept)),
+    setKey: propertyId => apply(setKeyProperty(latest.current, propertyId)),
+    setGenerated: (propertyId, isGenerated) => apply(setGeneratedProperty(latest.current, propertyId, isGenerated)),
+    setRequired: (propertyId, isRequired) => apply(setRequiredProperty(latest.current, propertyId, isRequired)),
+});
+
+const useOwnedPropertyTree = (
+    { schema, onChange, onPropertiesChange, onPropertyRemoved, onPropertyRenamed }: Pick<TreeSchemaEditorProps,
+        'schema' | 'onChange' | 'onPropertiesChange' | 'onPropertyRemoved' | 'onPropertyRenamed'>,
+    isControlled: boolean,
+) => {
+    const [properties, setProperties] = useState<Property[]>(() => jsonSchemaToProperties(schema));
+    // The latest tree, kept synchronously so two edits in one event apply one after the other.
+    const latest = useRef(properties);
+    useEffect(() => { latest.current = properties; }, [properties]);
+
+    // A schema from outside replaces the tree only when it says something the editor does not already show:
+    // handing back what was reported, or the same schema again, must not throw away the property ids.
+    const incomingSchema = schema === undefined ? undefined : JSON.stringify(schema);
+    const [seenSchema, setSeenSchema] = useState(incomingSchema);
+    if (!isControlled && incomingSchema !== seenSchema) {
+        setSeenSchema(incomingSchema);
+        if (schema !== undefined && incomingSchema !== JSON.stringify(propertiesToJsonSchema(properties, schema))) {
+            setProperties(jsonSchemaToProperties(schema));
+        }
+    }
+
+    const apply = (next: Property[]) => {
+        latest.current = next;
+        setProperties(next);
+        onChange?.(propertiesToJsonSchema(next, schema), { source: 'user' });
+        onPropertiesChange?.(next);
+    };
+
+    return {
+        properties,
+        operations: createOwnedOperations(latest, apply, { onPropertyRemoved, onPropertyRenamed }),
+        addRoot: (type: PropertyType, concept?: string) =>
+            apply(addProperty(latest.current, type, totalPropertyCount(latest.current), concept)),
+    };
+};
+
+const renderEditorProperties = ({ properties, labels, parts: pt }: SchemaEditorContextValue) => (
+    properties.length === 0 ? (
+        <p {...pt?.empty} className={`cratis-schema-editor__empty ${pt?.empty?.className ?? ''}`} data-cratis-part='empty'>
+            {labels.emptyMessage}
+        </p>
+    ) : (
+        <ul {...pt?.list} className={`cratis-schema-editor__list ${pt?.list?.className ?? ''}`} data-cratis-part='list'>
+            {properties.map(property => (
+                <SchemaPropertyRow key={property.id} property={property} siblings={properties} depth={0} />
+            ))}
+        </ul>
+    )
+);
+
+const renderEditorActions = (
+    { labels, concepts, parts: pt, readOnly }: SchemaEditorContextValue,
+    footer: ReactNode,
+    addRoot: TreeSchemaEditorProps['onAddProperty'],
+) => (
+    (footer || (!readOnly && addRoot)) && (
+        <div className='cratis-schema-editor__actions'>
+            {!readOnly && addRoot && (
+                <PropertyTypeMenu
+                    labels={labels}
+                    concepts={concepts}
+                    triggerPart='add'
+                    triggerLabel={labels.addProperty}
+                    parts={pt}
+                    onSelect={addRoot}
+                >
+                    <FaPlus aria-hidden='true' />
+                    {labels.addProperty}
+                </PropertyTypeMenu>
+            )}
+            {footer && (
+                <div {...pt?.footer} className={`cratis-schema-editor__footer ${pt?.footer?.className ?? ''}`} data-cratis-part='footer'>
+                    {footer}
+                </div>
+            )}
+        </div>
+    )
+);
+
+const renderTreeEditor = (
+    contextValue: SchemaEditorContextValue,
+    { header, footer, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, className }: Pick<TreeSchemaEditorProps,
+        'header' | 'footer' | 'aria-label' | 'aria-labelledby' | 'className'>,
+    addRoot: TreeSchemaEditorProps['onAddProperty'],
+) => {
+    const { labels, parts: pt, readOnly } = contextValue;
+    return (
+        <SchemaEditorContext.Provider value={contextValue}>
+            <div
+                {...pt?.root}
+                role='group'
+                aria-label={ariaLabelledBy ? undefined : ariaLabel ?? labels.schema}
+                aria-labelledby={ariaLabelledBy}
+                className={['cratis-schema-editor', pt?.root?.className, className].filter(Boolean).join(' ')}
+                data-cratis-component='SchemaEditor'
+                data-cratis-part='root'
+                data-readonly={readOnly || undefined}
+            >
+                {header && (
+                    <div {...pt?.header} className={`cratis-schema-editor__header ${pt?.header?.className ?? ''}`} data-cratis-part='header'>
+                        {header}
+                    </div>
+                )}
+
+                {renderEditorProperties(contextValue)}
+
+                {renderEditorActions(contextValue, footer, addRoot)}
+            </div>
+        </SchemaEditorContext.Provider>
+    );
+};
+
 /**
  * The tree layout of the {@link SchemaEditor} (`layout='tree'`). Edits the properties of a JSON Schema as a tree: names, types, nested objects and lists of objects, and
  * optionally concepts, the key, and whether a property is required.
@@ -227,50 +364,8 @@ export const TreeSchemaEditor = ({
     const providedConcepts = useOptionalPropertyConcepts();
     const concepts = suppliedConcepts ?? providedConcepts;
     const isControlled = controlledProperties !== undefined;
-    const [ownedProperties, setOwnedProperties] = useState<Property[]>(() => jsonSchemaToProperties(schema));
-    // The latest tree, kept synchronously so two edits in one event apply one after the other.
-    const latest = useRef(ownedProperties);
-    useEffect(() => { latest.current = ownedProperties; }, [ownedProperties]);
-    const properties = isControlled ? controlledProperties : ownedProperties;
-
-    // A schema from outside replaces the tree only when it says something the editor does not already show:
-    // handing back what was reported, or the same schema again, must not throw away the property ids.
-    const incomingSchema = schema === undefined ? undefined : JSON.stringify(schema);
-    const [seenSchema, setSeenSchema] = useState(incomingSchema);
-    if (!isControlled && incomingSchema !== seenSchema) {
-        setSeenSchema(incomingSchema);
-        if (schema !== undefined && incomingSchema !== JSON.stringify(propertiesToJsonSchema(ownedProperties, schema))) {
-            setOwnedProperties(jsonSchemaToProperties(schema));
-        }
-    }
-
-    const apply = (next: Property[]) => {
-        latest.current = next;
-        setOwnedProperties(next);
-        onChange?.(propertiesToJsonSchema(next, schema), { source: 'user' });
-        onPropertiesChange?.(next);
-    };
-
-    const ownedOperations: SchemaEditorOperations = {
-        addChild: (parentId, type, concept) =>
-            apply(addChildProperty(latest.current, parentId, type, totalPropertyCount(latest.current), concept)),
-        remove: propertyId => {
-            const removed = findPropertyById(latest.current, propertyId);
-            apply(removeProperty(latest.current, propertyId));
-            if (removed) onPropertyRemoved?.(removed);
-        },
-        rename: (propertyId, name) => {
-            const previousName = findPropertyById(latest.current, propertyId)?.name;
-            const next = renameProperty(latest.current, propertyId, name);
-            apply(next);
-            const renamed = findPropertyById(next, propertyId);
-            if (renamed && previousName !== undefined) onPropertyRenamed?.(renamed, previousName);
-        },
-        changeType: (propertyId, type, concept) => apply(changePropertyType(latest.current, propertyId, type, concept)),
-        setKey: propertyId => apply(setKeyProperty(latest.current, propertyId)),
-        setGenerated: (propertyId, isGenerated) => apply(setGeneratedProperty(latest.current, propertyId, isGenerated)),
-        setRequired: (propertyId, isRequired) => apply(setRequiredProperty(latest.current, propertyId, isRequired)),
-    };
+    const owned = useOwnedPropertyTree({ schema, onChange, onPropertiesChange, onPropertyRemoved, onPropertyRenamed }, isControlled);
+    const properties = isControlled ? controlledProperties : owned.properties;
 
     const controlledOperations: SchemaEditorOperations = {
         addChild: onAddChildProperty,
@@ -282,11 +377,8 @@ export const TreeSchemaEditor = ({
         setRequired: onSetRequiredProperty,
     };
 
-    const operations = isControlled ? controlledOperations : ownedOperations;
-    const addRoot = isControlled
-        ? onAddProperty
-        : (type: PropertyType, concept?: string) =>
-            apply(addProperty(latest.current, type, totalPropertyCount(latest.current), concept));
+    const operations = isControlled ? controlledOperations : owned.operations;
+    const addRoot = isControlled ? onAddProperty : owned.addRoot;
 
     const contextValue: SchemaEditorContextValue = {
         labels,
@@ -309,59 +401,11 @@ export const TreeSchemaEditor = ({
         renderTypeBadge: renderPropertyTypeBadge,
     };
 
-    return (
-        <SchemaEditorContext.Provider value={contextValue}>
-            <div
-                {...pt?.root}
-                role='group'
-                aria-label={ariaLabelledBy ? undefined : ariaLabel ?? labels.schema}
-                aria-labelledby={ariaLabelledBy}
-                className={['cratis-schema-editor', pt?.root?.className, className].filter(Boolean).join(' ')}
-                data-cratis-component='SchemaEditor'
-                data-cratis-part='root'
-                data-readonly={readOnly || undefined}
-            >
-                {header && (
-                    <div {...pt?.header} className={`cratis-schema-editor__header ${pt?.header?.className ?? ''}`} data-cratis-part='header'>
-                        {header}
-                    </div>
-                )}
-
-                {properties.length === 0 ? (
-                    <p {...pt?.empty} className={`cratis-schema-editor__empty ${pt?.empty?.className ?? ''}`} data-cratis-part='empty'>
-                        {labels.emptyMessage}
-                    </p>
-                ) : (
-                    <ul {...pt?.list} className={`cratis-schema-editor__list ${pt?.list?.className ?? ''}`} data-cratis-part='list'>
-                        {properties.map(property => (
-                            <SchemaPropertyRow key={property.id} property={property} siblings={properties} depth={0} />
-                        ))}
-                    </ul>
-                )}
-
-                {(footer || (!readOnly && addRoot)) && (
-                    <div className='cratis-schema-editor__actions'>
-                        {!readOnly && addRoot && (
-                            <PropertyTypeMenu
-                                labels={labels}
-                                concepts={concepts}
-                                triggerPart='add'
-                                triggerLabel={labels.addProperty}
-                                parts={pt}
-                                onSelect={addRoot}
-                            >
-                                <FaPlus aria-hidden='true' />
-                                {labels.addProperty}
-                            </PropertyTypeMenu>
-                        )}
-                        {footer && (
-                            <div {...pt?.footer} className={`cratis-schema-editor__footer ${pt?.footer?.className ?? ''}`} data-cratis-part='footer'>
-                                {footer}
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-        </SchemaEditorContext.Provider>
-    );
+    return renderTreeEditor(contextValue, {
+        header,
+        footer,
+        'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledBy,
+        className,
+    }, addRoot);
 };

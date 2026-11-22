@@ -3,6 +3,8 @@
 
 import type { ReactNode } from 'react';
 import { useCratisIcon } from '../configuration/useCratisIcon';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Props for {@link Chip}. */
 export interface ChipProps {
@@ -20,21 +22,21 @@ export interface ChipProps {
     className?: string;
 }
 
+const chipDescriptor = describeComponent<ChipProps>('Chip', [
+    { name: 'label', label: 'Label', type: 'string' },
+    { name: 'removeAriaLabel', label: 'Remove accessible name', type: 'string', defaultValue: 'Remove' },
+]);
+
 /** A labeled, optionally removable chip. */
-export const Chip = ({
-    label,
-    icon,
-    removable,
-    onRemove,
-    removeAriaLabel = 'Remove',
-    className,
-}: ChipProps) => {
+export const Chip = (props: ChipProps) => {
+    const [presentation, marker] = useComponentPresentation(chipDescriptor, props);
+    const { label, icon, removable, onRemove, removeAriaLabel = 'Remove', className } = presentation;
     const resolveIcon = useCratisIcon();
     return (
         <span
             className={['cratis-chip', className].filter(Boolean).join(' ')}
             data-cratis-part='root'
-            data-cratis-component='Chip'
+            {...marker}
         >
             {icon && (
                 <span className='cratis-chip__icon' data-cratis-part='icon'>
