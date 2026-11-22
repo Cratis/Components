@@ -75,14 +75,14 @@ const baselines: Readonly<Record<string, DomBaseline>> = Object.freeze({
         controlSelector: 'input[role="switch"]',
     },
     progress: {
-        html: '<div class="cratis-progress-bar" data-cratis-part="root" data-cratis-component="ProgressBar" data-mode="determinate" data-busy="true" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"><span class="cratis-progress-bar__indicator" data-cratis-part="indicator" style="width:42%"><span class="cratis-progress-bar__label" data-cratis-part="label">42%</span></span></div>',
+        html: '<div data-cratis-component="ProgressBar" data-cratis-component-instance="_R_0_" class="cratis-progress-bar" data-cratis-part="root" data-mode="determinate" data-busy="true" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"><span class="cratis-progress-bar__indicator" data-cratis-part="indicator" style="width:42%"><span class="cratis-progress-bar__label" data-cratis-part="label">42%</span></span></div>',
         tags: { div: 1, span: 2 },
         parts: { indicator: 1, label: 1, root: 1 },
         roles: { progressbar: 1 },
         controlSelector: '[role="progressbar"]',
     },
     surface: {
-        html: '<article class="cratis-surface" data-cratis-part="root" data-cratis-component="Surface">Content</article>',
+        html: '<article data-cratis-component="Surface" data-cratis-component-instance="_R_0_" class="cratis-surface" data-cratis-part="root">Content</article>',
         tags: { article: 1 },
         parts: { root: 1 },
         roles: {},

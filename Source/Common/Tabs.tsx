@@ -11,6 +11,8 @@ import {
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { classNames } from '../ClassNames/classNames';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Attributes a consumer may hand to one {@link Tabs} part: class, style, title and data attributes. */
 export type TabsPartAttributes = Pick<
@@ -67,6 +69,10 @@ export interface TabsProps {
     pt?: TabsParts;
 }
 
+const tabsDescriptor = describeComponent<TabsProps>('Tabs', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
+
 /**
  * A tab set: a list of tabs, each optionally revealing a panel.
  *
@@ -78,59 +84,63 @@ export interface TabsProps {
  * element that is not there. When the choice drives a view rendered elsewhere it is a *value* rather
  * than a panel — reach for `ToggleGroup`, which says so to assistive technology.
  */
-export const Tabs = ({
-    tabs,
-    value,
-    onChange,
-    disabled = false,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    className,
-    pt,
-}: TabsProps) => (
-    <AriaTabs
-        {...pt?.root}
-        selectedKey={value}
-        onSelectionChange={(key: Key) => onChange(String(key))}
-        isDisabled={disabled}
-        className={classNames('cratis-tabs', pt?.root?.className, className)}
-        data-cratis-part='root'
-        data-cratis-component='Tabs'
-        data-disabled={disabled || undefined}
-    >
-        <AriaTabList
-            {...pt?.list}
-            aria-label={ariaLabel}
-            aria-labelledby={ariaLabelledBy}
-            className={classNames('cratis-tabs__list', pt?.list?.className)}
-            data-cratis-part='list'
+export const Tabs = (props: TabsProps) => {
+    const [presentation, marker] = useComponentPresentation(tabsDescriptor, props);
+    const {
+        tabs,
+        value,
+        onChange,
+        disabled = false,
+        'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledBy,
+        className,
+        pt,
+    } = presentation;
+    return (
+        <AriaTabs
+            {...pt?.root}
+            {...marker}
+            selectedKey={value}
+            onSelectionChange={(key: Key) => onChange(String(key))}
+            isDisabled={disabled}
+            className={classNames('cratis-tabs', pt?.root?.className, className)}
+            data-cratis-part='root'
+            data-disabled={disabled || undefined}
         >
-            {tabs.map((tab) => (
-                <AriaTab
-                    key={tab.id}
-                    {...pt?.tab}
-                    id={tab.id}
-                    isDisabled={tab.disabled}
-                    className={classNames('cratis-tabs__tab', pt?.tab?.className)}
-                    data-cratis-part='tab'
-                    data-selected={tab.id === value || undefined}
-                    data-disabled={disabled || tab.disabled || undefined}
-                >
-                    {tab.label}
-                </AriaTab>
-            ))}
-        </AriaTabList>
-        {tabs.map((tab) => (
-            <AriaTabPanel
-                key={tab.id}
-                {...pt?.panel}
-                id={tab.id}
-                className={classNames('cratis-tabs__panel', pt?.panel?.className)}
-                data-cratis-part='panel'
-                data-selected={tab.id === value || undefined}
+            <AriaTabList
+                {...pt?.list}
+                aria-label={ariaLabel}
+                aria-labelledby={ariaLabelledBy}
+                className={classNames('cratis-tabs__list', pt?.list?.className)}
+                data-cratis-part='list'
             >
-                {tab.content}
-            </AriaTabPanel>
-        ))}
-    </AriaTabs>
-);
+                {tabs.map((tab) => (
+                    <AriaTab
+                        key={tab.id}
+                        {...pt?.tab}
+                        id={tab.id}
+                        isDisabled={tab.disabled}
+                        className={classNames('cratis-tabs__tab', pt?.tab?.className)}
+                        data-cratis-part='tab'
+                        data-selected={tab.id === value || undefined}
+                        data-disabled={disabled || tab.disabled || undefined}
+                    >
+                        {tab.label}
+                    </AriaTab>
+                ))}
+            </AriaTabList>
+            {tabs.map((tab) => (
+                <AriaTabPanel
+                    key={tab.id}
+                    {...pt?.panel}
+                    id={tab.id}
+                    className={classNames('cratis-tabs__panel', pt?.panel?.className)}
+                    data-cratis-part='panel'
+                    data-selected={tab.id === value || undefined}
+                >
+                    {tab.content}
+                </AriaTabPanel>
+            ))}
+        </AriaTabs>
+    );
+};

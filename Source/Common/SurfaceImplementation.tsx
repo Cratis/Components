@@ -3,6 +3,12 @@
 
 import { forwardRef, type ForwardedRef } from 'react';
 import type { SurfaceProps } from './Surface';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+
+const surfaceDescriptor = describeComponent<SurfaceProps>('Surface', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
 
 const assignSurfaceRef = (ref: ForwardedRef<HTMLElement>, element: HTMLElement | null) => {
     if (typeof ref === 'function') ref(element);
@@ -11,14 +17,15 @@ const assignSurfaceRef = (ref: ForwardedRef<HTMLElement>, element: HTMLElement |
 
 /** Core implementation for the semantic-surface presentation slot. */
 export const SurfaceImplementation = forwardRef<HTMLElement, SurfaceProps>(
-    function SurfaceImplementation(
-        { as: Element = 'div', pt, className, style, ...nativeProps },
-        ref,
-    ) {
+    function SurfaceImplementation(props, ref) {
+        const [presentation, marker] = useComponentPresentation(surfaceDescriptor, props);
+        const { as: Element = 'div' } = props;
+        const { as: _as, pt, className, style, ...nativeProps } = presentation;
         return (
             <Element
                 {...pt?.root}
                 {...nativeProps}
+                {...marker}
                 ref={(element) => {
                     assignSurfaceRef(ref, element);
                 }}
@@ -27,7 +34,6 @@ export const SurfaceImplementation = forwardRef<HTMLElement, SurfaceProps>(
                     .join(' ')}
                 style={{ ...pt?.root?.style, ...style }}
                 data-cratis-part='root'
-                data-cratis-component='Surface'
             />
         );
     },
