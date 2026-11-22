@@ -41,7 +41,7 @@ describe('when nesting renderer roots', () => {
     it('should expose a frozen zero-config context with defaults', () => {
         const context = captureContext((probe) => <RendererRoot>{probe}</RendererRoot>);
 
-        Object.isFrozen(context).should.be.true;
+        Object.isFrozen(context).should.equal(true);
         context.layers.length.should.equal(0);
         context.libraryMode.should.equal('strict');
         context.rendererFallback.should.equal('core');
@@ -140,7 +140,7 @@ describe('when nesting renderer roots', () => {
             thrown = error;
         }
 
-        (thrown instanceof unstable_AdapterError).should.be.true;
+        (thrown instanceof unstable_AdapterError).should.equal(true);
         (thrown as unstable_AdapterError).code.should.equal(unstable_adapterErrorCodes.nestedLibraries);
     });
 });
