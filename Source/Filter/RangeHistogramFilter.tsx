@@ -6,6 +6,18 @@ import type { FilterValue, HistogramBucket } from './types';
 import { buildHistogram } from './utils';
 import type { RenderedHistogramBucket } from './utils';
 import type { ChangeHandler } from '../types/ChangeHandler';
+import {
+    draggedRange,
+    histogramBarClassName,
+    isPartiallyInRange,
+    keyboardTarget,
+    positionOfValue,
+    steppedRange,
+    toNumericValues,
+    type NumericRange,
+    type RangeDragTarget,
+    type RangeHandle,
+} from './rangeHistogramMath';
 
 /**
  * Props for {@link RangeHistogramFilter}.
@@ -51,6 +63,105 @@ export interface RangeHistogramFilterProps {
 const defaultFormatValue = (value: number) => {
     if (Number.isInteger(value)) return value.toString();
     return value.toFixed(1);
+};
+
+interface DragStart {
+    x: number;
+    range: NumericRange;
+}
+
+interface FollowDragOptions {
+    container: HTMLDivElement;
+    target: RangeDragTarget;
+    dragStart: DragStart;
+    min: number;
+    max: number;
+    onChange: ChangeHandler<NumericRange | null>;
+    onRelease: () => void;
+}
+
+/** Follows the mouse on the document until released. Returns the cleanup that stops following. */
+const followDrag = ({ container, target, dragStart, min, max, onChange, onRelease }: FollowDragOptions) => {
+    const rect = container.getBoundingClientRect();
+    const range = max - min;
+
+    const handleMouseMove = (e: MouseEvent) => {
+        const deltaX = e.clientX - dragStart.x;
+        const deltaPercent = (deltaX / rect.width) * 100;
+        const deltaValue = (deltaPercent / 100) * range;
+
+        onChange(draggedRange(target, dragStart.range, deltaValue, { min, max }), { source: 'user', nativeEvent: e });
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', onRelease);
+
+    return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', onRelease);
+    };
+};
+
+interface HistogramBarOptions {
+    bucket: RenderedHistogramBucket;
+    index: number;
+    currentRange: NumericRange;
+    rangeSelected: boolean;
+    formatValue: (value: number) => string;
+    itemsLabel: string;
+    onBarClick: (bucket: RenderedHistogramBucket, event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+const renderHistogramBar = ({ bucket, index, currentRange, rangeSelected, formatValue, itemsLabel, onBarClick }: HistogramBarOptions) => {
+    const heightPercent = (bucket.count / bucket.maxCount) * 100;
+    const isSelected = rangeSelected && isPartiallyInRange(bucket, currentRange);
+
+    return (
+        <button
+            key={index}
+            className={histogramBarClassName(bucket, currentRange)}
+            style={{ height: `${heightPercent}%` }}
+            onClick={(event) => onBarClick(bucket, event)}
+            title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} ${itemsLabel}`}
+            type='button'
+            data-selected={isSelected || undefined}
+        />
+    );
+};
+
+interface RangeHandleOptions {
+    handle: RangeHandle;
+    position: number;
+    ariaLabel: string;
+    valueMin: number;
+    valueMax: number;
+    valueNow: number;
+    formatValue: (value: number) => string;
+    selected: true | undefined;
+    pressed: true | undefined;
+    onMouseDown: (e: React.MouseEvent, handle: RangeHandle) => void;
+    onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>, handle: RangeHandle) => void;
+}
+
+const renderRangeHandle = (options: RangeHandleOptions) => {
+    const { handle, onMouseDown, onKeyDown } = options;
+    return (
+        <div
+            className={`pv-range-handle pv-range-handle-${handle}`}
+            style={{ left: `${options.position}%` }}
+            role='slider'
+            tabIndex={0}
+            aria-label={options.ariaLabel}
+            aria-valuemin={options.valueMin}
+            aria-valuemax={options.valueMax}
+            aria-valuenow={options.valueNow}
+            aria-valuetext={options.formatValue(options.valueNow)}
+            data-selected={options.selected}
+            data-pressed={options.pressed}
+            onMouseDown={(e) => onMouseDown(e, handle)}
+            onKeyDown={(event) => onKeyDown(event, handle)}
+        />
+    );
 };
 
 /**
@@ -100,30 +211,17 @@ export function RangeHistogramFilter({
         range: [number, number];
     } | null>(null);
 
-    const numericValues = useMemo(() => {
-        return (values ?? [])
-            .map((v) => {
-                if (typeof v === 'number') return v;
-                if (v instanceof Date) return v.getTime();
-                const parsed = Number(v);
-                return Number.isNaN(parsed) ? null : parsed;
-            })
-            .filter((v): v is number => v !== null);
-    }, [values]);
+    const numericValues = useMemo(() => toNumericValues(values), [values]);
 
     const histogram = useMemo(
         () => buildHistogram(numericValues, min, max, buckets, providedHistogram),
         [providedHistogram, numericValues, min, max, buckets],
     );
 
-    const currentRange = selectedRange ?? [min, max];
+    const currentRange: NumericRange = selectedRange ?? [min, max];
 
     const getPositionFromValue = useCallback(
-        (value: number) => {
-            const range = max - min;
-            if (range <= 0) return 0;
-            return ((value - min) / range) * 100;
-        },
+        (value: number) => positionOfValue(value, { min, max }),
         [min, max],
     );
 
@@ -134,61 +232,16 @@ export function RangeHistogramFilter({
     };
 
     useEffect(() => {
-        if (!isDragging || !dragStart || !containerRef.current) return;
-
+        if (!isDragging || !dragStart) return;
         const container = containerRef.current;
-        const rect = container.getBoundingClientRect();
-        const range = max - min;
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const deltaX = e.clientX - dragStart.x;
-            const deltaPercent = (deltaX / rect.width) * 100;
-            const deltaValue = (deltaPercent / 100) * range;
-
-            let newRange: [number, number] = [...dragStart.range];
-
-            if (isDragging === 'left') {
-                newRange[0] = Math.max(
-                    min,
-                    Math.min(dragStart.range[0] + deltaValue, newRange[1] - range * 0.01),
-                );
-            } else if (isDragging === 'right') {
-                newRange[1] = Math.min(
-                    max,
-                    Math.max(dragStart.range[1] + deltaValue, newRange[0] + range * 0.01),
-                );
-            } else if (isDragging === 'range') {
-                const rangeWidth = dragStart.range[1] - dragStart.range[0];
-                let newStart = dragStart.range[0] + deltaValue;
-                let newEnd = dragStart.range[1] + deltaValue;
-
-                if (newStart < min) {
-                    newStart = min;
-                    newEnd = min + rangeWidth;
-                }
-                if (newEnd > max) {
-                    newEnd = max;
-                    newStart = max - rangeWidth;
-                }
-
-                newRange = [newStart, newEnd];
-            }
-
-            onChange(newRange, { source: 'user', nativeEvent: e });
-        };
+        if (!container) return;
 
         const handleMouseUp = () => {
             setIsDragging(null);
             setDragStart(null);
         };
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
+        return followDrag({ container, target: isDragging, dragStart, min, max, onChange, onRelease: handleMouseUp });
     }, [isDragging, dragStart, min, max, onChange]);
 
     const handleBarClick = (
@@ -211,76 +264,35 @@ export function RangeHistogramFilter({
     ) => {
         if (keyboardStep <= 0) return;
 
-        let next: number | undefined;
-        const current = handle === 'left' ? currentRange[0] : currentRange[1];
-        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
-            next = current - keyboardStep;
-        } else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
-            next = current + keyboardStep;
-        } else if (event.key === 'Home') {
-            next = handle === 'left' ? min : currentRange[0] + minimumGap;
-        } else if (event.key === 'End') {
-            next = handle === 'left' ? currentRange[1] - minimumGap : max;
-        } else return;
+        const keyboard = { min, max, currentRange, minimumGap, keyboardStep };
+        const next = keyboardTarget(event.key, handle, keyboard);
+        if (next === undefined) return;
 
         event.preventDefault();
-        const rounded = Number(next.toFixed(10));
-        if (handle === 'left') {
-            onChange(
-                [
-                    Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
-                    currentRange[1],
-                ],
-                { source: 'user', nativeEvent: event.nativeEvent },
-            );
-        } else {
-            onChange(
-                [
-                    currentRange[0],
-                    Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
-                ],
-                { source: 'user', nativeEvent: event.nativeEvent },
-            );
-        }
+        onChange(steppedRange(handle, next, keyboard), { source: 'user', nativeEvent: event.nativeEvent });
     };
 
     const leftPos = getPositionFromValue(currentRange[0]);
     const rightPos = getPositionFromValue(currentRange[1]);
+    const rangeSelected = selectedRange !== null;
+    const selected = rangeSelected || undefined;
 
     return (
         <div
             className='pv-range-histogram'
             ref={containerRef}
-            data-selected={selectedRange !== null || undefined}
+            data-selected={selected}
             data-cratis-component='RangeHistogramFilter'
         >
             <div className='pv-histogram-bars'>
-                {histogram.map((bucket, i) => {
-                    const heightPercent = (bucket.count / bucket.maxCount) * 100;
-                    const isInRange =
-                        bucket.start >= currentRange[0] && bucket.end <= currentRange[1];
-                    const isPartiallyInRange =
-                        bucket.end > currentRange[0] && bucket.start < currentRange[1];
-                    const isSelected =
-                        selectedRange !== null && isPartiallyInRange;
-
-                    return (
-                        <button
-                            key={i}
-                            className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
-                            style={{ height: `${heightPercent}%` }}
-                            onClick={(event) => handleBarClick(bucket, event)}
-                            title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} ${itemsLabel}`}
-                            type='button'
-                            data-selected={isSelected || undefined}
-                        />
-                    );
-                })}
+                {histogram.map((bucket, index) =>
+                    renderHistogramBar({ bucket, index, currentRange, rangeSelected, formatValue, itemsLabel, onBarClick: handleBarClick }),
+                )}
             </div>
 
             <div
                 className='pv-range-slider'
-                data-selected={selectedRange !== null || undefined}
+                data-selected={selected}
             >
                 <div className='pv-range-track' />
                 <div
@@ -289,40 +301,36 @@ export function RangeHistogramFilter({
                         left: `${leftPos}%`,
                         width: `${rightPos - leftPos}%`,
                     }}
-                    data-selected={selectedRange !== null || undefined}
+                    data-selected={selected}
                     data-pressed={isDragging === 'range' || undefined}
                     onMouseDown={(e) => handleMouseDown(e, 'range')}
                 />
-                <div
-                    className='pv-range-handle pv-range-handle-left'
-                    style={{ left: `${leftPos}%` }}
-                    role='slider'
-                    tabIndex={0}
-                    aria-label={minimumAriaLabel}
-                    aria-valuemin={min}
-                    aria-valuemax={currentRange[1] - minimumGap}
-                    aria-valuenow={currentRange[0]}
-                    aria-valuetext={formatValue(currentRange[0])}
-                    data-selected={selectedRange !== null || undefined}
-                    data-pressed={isDragging === 'left' || undefined}
-                    onMouseDown={(e) => handleMouseDown(e, 'left')}
-                    onKeyDown={(event) => handleHandleKeyDown(event, 'left')}
-                />
-                <div
-                    className='pv-range-handle pv-range-handle-right'
-                    style={{ left: `${rightPos}%` }}
-                    role='slider'
-                    tabIndex={0}
-                    aria-label={maximumAriaLabel}
-                    aria-valuemin={currentRange[0] + minimumGap}
-                    aria-valuemax={max}
-                    aria-valuenow={currentRange[1]}
-                    aria-valuetext={formatValue(currentRange[1])}
-                    data-selected={selectedRange !== null || undefined}
-                    data-pressed={isDragging === 'right' || undefined}
-                    onMouseDown={(e) => handleMouseDown(e, 'right')}
-                    onKeyDown={(event) => handleHandleKeyDown(event, 'right')}
-                />
+                {renderRangeHandle({
+                    handle: 'left',
+                    position: leftPos,
+                    ariaLabel: minimumAriaLabel,
+                    valueMin: min,
+                    valueMax: currentRange[1] - minimumGap,
+                    valueNow: currentRange[0],
+                    formatValue,
+                    selected,
+                    pressed: isDragging === 'left' || undefined,
+                    onMouseDown: handleMouseDown,
+                    onKeyDown: handleHandleKeyDown,
+                })}
+                {renderRangeHandle({
+                    handle: 'right',
+                    position: rightPos,
+                    ariaLabel: maximumAriaLabel,
+                    valueMin: currentRange[0] + minimumGap,
+                    valueMax: max,
+                    valueNow: currentRange[1],
+                    formatValue,
+                    selected,
+                    pressed: isDragging === 'right' || undefined,
+                    onMouseDown: handleMouseDown,
+                    onKeyDown: handleHandleKeyDown,
+                })}
             </div>
 
             <div className='pv-range-labels'>
