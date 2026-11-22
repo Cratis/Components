@@ -27,6 +27,64 @@ export interface PivotStageOptions {
     onPanEndRef: RefObject<() => void>;
 }
 
+interface StageResizeOptions {
+    appRef: RefObject<PIXI.Application | null>;
+    canvasRef: RefObject<HTMLCanvasElement | null>;
+    parentContainerRef: RefObject<HTMLDivElement | null>;
+    pixiReady: boolean;
+    viewportWidth: number;
+    viewportHeight: number;
+}
+
+/** The application and the viewport it is sized to, once both exist and Pixi is ready. */
+const readyStage = (
+    app: PIXI.Application | null,
+    container: HTMLDivElement | null | undefined,
+    pixiReady: boolean,
+) => {
+    const missing = !container || !app;
+    if (missing || !pixiReady) return undefined;
+    return { app, container };
+};
+
+/** Keeps the canvas sized to the viewport: immediately, then debounced on observed size changes. */
+const useStageResize = ({
+    appRef,
+    canvasRef,
+    parentContainerRef,
+    pixiReady,
+    viewportWidth,
+    viewportHeight,
+}: StageResizeOptions) => {
+    useEffect(() => {
+        const stage = readyStage(appRef.current, parentContainerRef?.current, pixiReady);
+        if (!stage) return;
+        const { app, container } = stage;
+
+        let resizeTimeout: ReturnType<typeof setTimeout>;
+
+        // Size canvas to viewport dimensions from props
+        const handleResize = () => resizeStage(app, { viewportWidth, viewportHeight, parentContainerRef, canvasRef });
+
+        const debouncedResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 150);
+        };
+
+        // Initial resize (immediate)
+        handleResize();
+
+        // Watch for size changes (debounced)
+        const resizeObserver = new ResizeObserver(debouncedResize);
+        resizeObserver.observe(container);
+
+        return () => {
+            clearTimeout(resizeTimeout);
+            resizeObserver.disconnect();
+        };
+    }, [pixiReady, viewportWidth, viewportHeight, parentContainerRef]);
+};
+
 /**
  * Creates the Pixi application once, overlays its canvas on the scrollable viewport, forwards
  * background pointer input as panning, and keeps the canvas sized to the viewport.
@@ -99,34 +157,7 @@ export const usePivotStage = ({
         };
     }, [needsRenderRef, onPanEndRef, onPanMoveRef, onPanStartRef, parentContainerRef]); // Only initialize once - resizing handled by separate useEffect
 
-    // Handle canvas resize
-    useEffect(() => {
-        const app = appRef.current;
-        const container = parentContainerRef?.current;
-        if (!container || !app || !pixiReady) return;
-
-        let resizeTimeout: ReturnType<typeof setTimeout>;
-
-        // Size canvas to viewport dimensions from props
-        const handleResize = () => resizeStage(app, { viewportWidth, viewportHeight, parentContainerRef, canvasRef });
-
-        const debouncedResize = () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(handleResize, 150);
-        };
-
-        // Initial resize (immediate)
-        handleResize();
-
-        // Watch for size changes (debounced)
-        const resizeObserver = new ResizeObserver(debouncedResize);
-        resizeObserver.observe(container);
-
-        return () => {
-            clearTimeout(resizeTimeout);
-            resizeObserver.disconnect();
-        };
-    }, [pixiReady, viewportWidth, viewportHeight, parentContainerRef]);
+    useStageResize({ appRef, canvasRef, parentContainerRef, pixiReady, viewportWidth, viewportHeight });
 
     return {
         appRef,
