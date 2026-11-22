@@ -7,6 +7,10 @@ import type { PropertyControlState } from './usePropertyControl';
 import { parsePropertyNumber, displayPropertyValue } from './propertyControlValue';
 
 const join = (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' ');
+const invalidAttribute = (message: string | undefined) => message ? true : undefined;
+const numericValue = (value: unknown) => typeof value === 'number' ? String(value) : '';
+const textValue = (value: unknown) => typeof value === 'string' ? value : '';
+const optionalValue = (value: string) => value === '' ? undefined : value;
 
 const changeNumberDraft = (state: PropertyControlState, descriptor: NumberPropertyDescriptor, text: string) => {
     const { setDraft, setEntryMessage, value, commit, labels } = state;
@@ -29,8 +33,8 @@ const renderNumber = (state: PropertyControlState) => {
             min={descriptor.min}
             max={descriptor.max}
             step={descriptor.step}
-            value={draft ?? (typeof value === 'number' ? String(value) : '')}
-            aria-invalid={state.shownMessage ? true : undefined}
+            value={draft ?? numericValue(value)}
+            aria-invalid={invalidAttribute(state.shownMessage)}
             aria-describedby={state.describedBy}
             onChange={(event) => changeNumberDraft(state, descriptor, event.target.value)}
             onBlur={leave}
@@ -58,10 +62,10 @@ const renderChoice = (state: PropertyControlState) => {
         <select
             {...parts?.select}
             id={controlId}
-            value={typeof value === 'string' ? value : ''}
-            aria-invalid={shownMessage ? true : undefined}
+            value={textValue(value)}
+            aria-invalid={invalidAttribute(shownMessage)}
             aria-describedby={describedBy}
-            onChange={(event) => commit(event.target.value === '' ? undefined : event.target.value)}
+            onChange={(event) => commit(optionalValue(event.target.value))}
             className={join('cratis-property__input', parts?.select?.className)}
             data-cratis-part='select'
             data-invalid={shownMessage ? true : undefined}
@@ -105,12 +109,12 @@ const renderText = (state: PropertyControlState) => {
             id={state.controlId}
             type='text'
             placeholder={placeholder}
-            value={draft ?? (typeof value === 'string' ? value : '')}
-            aria-invalid={state.shownMessage ? true : undefined}
+            value={draft ?? textValue(value)}
+            aria-invalid={invalidAttribute(state.shownMessage)}
             aria-describedby={state.describedBy}
             onChange={(event) => {
                 setDraft(event.target.value);
-                commit(event.target.value === '' ? undefined : event.target.value);
+                commit(optionalValue(event.target.value));
             }}
             onBlur={leave}
             onKeyDown={(event) => handleTextKeyDown(event, state)}
@@ -120,6 +124,12 @@ const renderText = (state: PropertyControlState) => {
         />
     );
 };
+
+const inputRenderers = new Map<string, (state: PropertyControlState) => ReturnType<typeof renderNumber>>([
+    ['boolean', renderBoolean],
+    ['choice', renderChoice],
+    ['number', renderNumber],
+]);
 
 /** Renders the existing native control for the descriptor, or its locked value. */
 export const renderPropertyInput = (state: PropertyControlState) => {
@@ -131,12 +141,8 @@ export const renderPropertyInput = (state: PropertyControlState) => {
             </span>
         );
     }
-    switch (descriptor.kind) {
-        case 'boolean': return renderBoolean(state);
-        case 'choice': return renderChoice(state);
-        case 'number': return renderNumber(state);
-        default: return renderText(state);
-    }
+    const render = inputRenderers.get(descriptor.kind) ?? renderText;
+    return render(state);
 };
 
 /** Keeps the native label association only for editable controls. */
