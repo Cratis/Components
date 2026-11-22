@@ -16,6 +16,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { SwitchImplementation } from './SwitchImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Stable Cratis-owned parts for styling a {@link Switch}. */
 export interface SwitchParts {
@@ -55,6 +57,11 @@ export interface SwitchProps extends Omit<
     pt?: SwitchParts;
 }
 
+const switchDescriptor = describeComponent<SwitchProps>('Switch', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
 const coreSwitchDeclaration = Object.freeze({
     mode: 'presentation',
     fidelity: 'native',
@@ -67,5 +74,6 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
     ref,
 ) {
     const declaration = unstable_useSlot('common.switch', coreSwitchDeclaration);
-    return renderSlot(declaration, props, ref);
+    const [presented, marker] = useComponentPresentation(switchDescriptor, props, props.id ?? props.name);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });

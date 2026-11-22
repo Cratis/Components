@@ -144,6 +144,9 @@ Components with descriptors today:
 | `NumericInput` | `NumericInput` | `placeholder`, `aria-label` |
 | `NumberInput` | `NumberInput` | `placeholder`, `aria-label`, `showSteppers` |
 | `ToggleGroup` | `ToggleGroup` | `aria-label`, `invalid` |
+| `Checkbox` | `Checkbox` | `aria-label`, `invalid` |
+| `Switch` | `Switch` | `aria-label`, `invalid` |
+| `Radio` | `Radio` | `aria-label`, `invalid` |
 | `Tabs` | `Tabs` | `aria-label` |
 | `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
 | `Message` | `Message` | `severity` |
