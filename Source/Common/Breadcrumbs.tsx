@@ -10,6 +10,8 @@ import {
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { classNames } from '../ClassNames/classNames';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Attributes a consumer may hand to one {@link Breadcrumbs} part: class, style, title and data attributes. */
 export type BreadcrumbsPartAttributes = Pick<
@@ -61,6 +63,10 @@ export interface BreadcrumbsProps {
     pt?: BreadcrumbsParts;
 }
 
+const breadcrumbsDescriptor = describeComponent<BreadcrumbsProps>('Breadcrumbs', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
+
 /**
  * A breadcrumb trail.
  *
@@ -69,66 +75,64 @@ export interface BreadcrumbsProps {
  * a destination. The trail is an ordered list inside a navigation landmark, so it can be jumped to
  * and its length announced.
  */
-export const Breadcrumbs = ({
-    items,
-    separator = '/',
-    'aria-label': ariaLabel,
-    className,
-    pt,
-}: BreadcrumbsProps) => (
-    // React Aria renders the ordered list; the navigation landmark around it is ours, because a
-    // trail a screen-reader user cannot jump to is only a list of links.
-    <nav aria-label={ariaLabel}>
-        <AriaBreadcrumbs
-            {...pt?.root}
-            className={classNames('cratis-breadcrumbs', pt?.root?.className, className)}
-            data-cratis-part='root'
-            data-cratis-component='Breadcrumbs'
-        >
-        {items.map((item, index) => {
-            const current = index === items.length - 1;
-            return (
-                <AriaBreadcrumb
-                    key={`${index}-${String(item.href ?? '')}`}
-                    {...pt?.item}
-                    className={classNames('cratis-breadcrumbs__item', pt?.item?.className)}
-                    data-cratis-part='item'
-                    data-selected={current || undefined}
-                >
-                    {/*
-                      * Every segment is a link, including the current page: React Aria hands
-                      * aria-current="page" and the disabled state to the last one through its link
-                      * context, so a segment rendered as plain text would silently lose both.
-                      */}
-                    <AriaLink
-                        {...pt?.link}
-                        href={current ? undefined : item.href}
-                        onPress={current ? undefined : item.onNavigate}
-                        className={classNames(
-                            'cratis-breadcrumbs__link',
-                            pt?.link?.className,
-                        )}
-                        data-cratis-part='link'
-                        data-selected={current || undefined}
-                    >
-                        {item.label}
-                    </AriaLink>
-                    {!current && (
-                        <span
-                            {...pt?.separator}
-                            aria-hidden='true'
-                            className={classNames(
-                                'cratis-breadcrumbs__separator',
-                                pt?.separator?.className,
-                            )}
-                            data-cratis-part='separator'
+export const Breadcrumbs = (props: BreadcrumbsProps) => {
+    const [presentation, marker] = useComponentPresentation(breadcrumbsDescriptor, props);
+    const { items, separator = '/', 'aria-label': ariaLabel, className, pt } = presentation;
+    return (
+        // React Aria renders the ordered list; the navigation landmark around it is ours, because a
+        // trail a screen-reader user cannot jump to is only a list of links.
+        <nav aria-label={ariaLabel}>
+            <AriaBreadcrumbs
+                {...pt?.root}
+                {...marker}
+                className={classNames('cratis-breadcrumbs', pt?.root?.className, className)}
+                data-cratis-part='root'
+            >
+                {items.map((item, index) => {
+                    const current = index === items.length - 1;
+                    return (
+                        <AriaBreadcrumb
+                            key={`${index}-${String(item.href ?? '')}`}
+                            {...pt?.item}
+                            className={classNames('cratis-breadcrumbs__item', pt?.item?.className)}
+                            data-cratis-part='item'
+                            data-selected={current || undefined}
                         >
-                            {separator}
-                        </span>
-                    )}
-                </AriaBreadcrumb>
-                );
-            })}
-        </AriaBreadcrumbs>
-    </nav>
-);
+                            {/*
+                              * Every segment is a link, including the current page: React Aria hands
+                              * aria-current="page" and the disabled state to the last one through its link
+                              * context, so a segment rendered as plain text would silently lose both.
+                              */}
+                            <AriaLink
+                                {...pt?.link}
+                                href={current ? undefined : item.href}
+                                onPress={current ? undefined : item.onNavigate}
+                                className={classNames(
+                                    'cratis-breadcrumbs__link',
+                                    pt?.link?.className,
+                                )}
+                                data-cratis-part='link'
+                                data-selected={current || undefined}
+                            >
+                                {item.label}
+                            </AriaLink>
+                            {!current && (
+                                <span
+                                    {...pt?.separator}
+                                    aria-hidden='true'
+                                    className={classNames(
+                                        'cratis-breadcrumbs__separator',
+                                        pt?.separator?.className,
+                                    )}
+                                    data-cratis-part='separator'
+                                >
+                                    {separator}
+                                </span>
+                            )}
+                        </AriaBreadcrumb>
+                    );
+                })}
+            </AriaBreadcrumbs>
+        </nav>
+    );
+};

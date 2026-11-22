@@ -10,6 +10,8 @@ import {
     useRef,
     useState,
 } from 'react';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 import { useToolbarSlot } from './ToolbarSlot';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
@@ -171,6 +173,10 @@ export interface ToolbarGroupProps {
     pt?: ToolbarGroupParts;
 }
 
+const toolbarGroupDescriptor = describeComponent<ToolbarGroupProps>('ToolbarGroup', [
+    { name: 'orientation', label: 'Orientation', type: 'enum', values: ['vertical', 'horizontal'] satisfies NonNullable<ToolbarGroupProps['orientation']>[], defaultValue: 'vertical' },
+]);
+
 /**
  * A logical sub-grouping of toolbar items within a {@link Toolbar}.
  *
@@ -188,12 +194,9 @@ export interface ToolbarGroupProps {
  * </Toolbar>
  * ```
  */
-export const ToolbarGroup = ({
-    children,
-    slotName,
-    orientation = 'vertical',
-    pt,
-}: ToolbarGroupProps) => {
+export const ToolbarGroup = (props: ToolbarGroupProps) => {
+    const [presentation, marker] = useComponentPresentation(toolbarGroupDescriptor, props);
+    const { children, slotName, orientation = 'vertical', pt } = presentation;
     const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
 
     return (
@@ -201,7 +204,7 @@ export const ToolbarGroup = ({
             {...pt?.root}
             className={`toolbar-group cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl ${pt?.root?.className ?? ''}`}
             data-cratis-part='toolbar-group'
-            data-cratis-component='ToolbarGroup'
+            {...marker}
             data-orientation={orientation}
         >
             {children}

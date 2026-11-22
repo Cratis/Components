@@ -139,6 +139,11 @@ Components with descriptors today:
 | `Tag` | `Tag` | `severity`, `rounded` |
 | `Skeleton` | `Skeleton` | `width`, `height`, `borderRadius`, `circle` |
 | `ProgressSpinner` | `ProgressSpinner` | `aria-label` |
+| `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
+| `Message` | `Message` | `severity` |
+| `Toolbar` | `Toolbar` | `orientation`, `aria-label` |
+| `ToolbarGroup` | `ToolbarGroup` | `orientation` |
+| `ToolbarSeparator` | `ToolbarSeparator` | `orientation` |
 | `TextInput` | `TextInput` | `placeholder`, `invalid`, `disabled`, `readOnly`, `type` |
 | `TextArea` | `TextArea` | `placeholder`, `rows`, `invalid`, `disabled`, `readOnly` |
 | `Dialog` | `Dialog` | `title`, `placement`, `width`, `okLabel`, `cancelLabel` |

@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const sourceRoot = fileURLToPath(new URL('../', import.meta.url));
-const MINIMUM_DESCRIBED_COMPONENTS = 13;
+const MINIMUM_DESCRIBED_COMPONENTS = 18;
 
 const descriptorNames = (source: string): string[] =>
     [...source.matchAll(/describeComponent<\w+>\(\s*'(\w+)'/gu)].map((match) => match[1]);
@@ -27,7 +27,7 @@ describe('when checking presentation descriptor coverage', () => {
             .should.deep.equal(['Example']);
     });
 
-    it('should retain at least thirteen statically described component types', () => {
+    it('should retain at least eighteen statically described component types', () => {
         const described = new Set(descriptorsIn(sourceRoot));
         described.size.should.be.at.least(MINIMUM_DESCRIBED_COMPONENTS);
     });
