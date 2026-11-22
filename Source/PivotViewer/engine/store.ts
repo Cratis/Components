@@ -31,43 +31,52 @@ export function buildStore<TItem extends object>(
     }
 
     for (const [fieldName, extractor] of fieldExtractors) {
-        // Missing values do not determine a column's kind. Dates have already been
-        // converted to timestamps by the field extractors, so they are numeric here.
-        let firstPresentValue: FieldValue = null;
-        for (const item of items) {
-            const value = extractor(item);
-            if (value !== null && value !== undefined) {
-                firstPresentValue = value;
-                break;
-            }
-        }
-        const kind = inferKind(firstPresentValue);
-
-        if (kind === 'number') {
-            const values = new Float64Array(count);
-            for (let i = 0; i < count; i++) {
-                const val = extractor(items[i]);
-                values[i] = typeof val === 'number' ? val : NaN;
-            }
-            fields.set(fieldName, { kind: 'number', values });
-        } else if (kind === 'boolean') {
-            const values = new Uint8Array(count);
-            for (let i = 0; i < count; i++) {
-                const val = extractor(items[i]);
-                values[i] = val === null ? 2 : val === undefined ? 3 : val === true ? 1 : 0;
-            }
-            fields.set(fieldName, { kind: 'boolean', values });
-        } else {
-            const values: string[] = [];
-            for (let i = 0; i < count; i++) {
-                const val = extractor(items[i]);
-                values.push(stringifyValue(val));
-            }
-            fields.set(fieldName, { kind: 'string', values });
-        }
+        fields.set(fieldName, buildField(items, extractor, count));
     }
 
     return { count, ids, fields, items };
+}
+
+function inferFieldKind<TItem extends object>(items: TItem[], extractor: (item: TItem) => FieldValue) {
+    // Missing values do not determine a column's kind. Dates have already been
+    // converted to timestamps by the field extractors, so they are numeric here.
+    for (const item of items) {
+        const value = extractor(item);
+        if (value !== null && value !== undefined) return inferKind(value);
+    }
+    return inferKind(null);
+}
+
+function buildField<TItem extends object>(items: TItem[], extractor: (item: TItem) => FieldValue, count: number): Field {
+    const kind = inferFieldKind(items, extractor);
+    if (kind === 'number') return { kind, values: numberValues(items, extractor, count) };
+    if (kind === 'boolean') return { kind, values: booleanValues(items, extractor, count) };
+    const values: string[] = [];
+    for (let i = 0; i < count; i++) {
+        values.push(stringifyValue(extractor(items[i])));
+    }
+    return { kind, values };
+}
+
+function numberValues<TItem>(items: TItem[], extractor: (item: TItem) => FieldValue, count: number) {
+    const values = new Float64Array(count);
+    for (let i = 0; i < count; i++) {
+        const value = extractor(items[i]);
+        values[i] = typeof value === 'number' ? value : NaN;
+    }
+    return values;
+}
+
+function booleanValues<TItem>(items: TItem[], extractor: (item: TItem) => FieldValue, count: number) {
+    const values = new Uint8Array(count);
+    for (let i = 0; i < count; i++) values[i] = encodeBoolean(extractor(items[i]));
+    return values;
+}
+
+function encodeBoolean(value: FieldValue): number {
+    if (value === null) return 2;
+    if (value === undefined) return 3;
+    return value === true ? 1 : 0;
 }
 
 function inferKind(value: FieldValue): 'string' | 'number' | 'boolean' {
@@ -90,20 +99,7 @@ export function buildCategoricalIndex(field: Field): CategoricalIndex {
         throw new Error('Categorical index requires string or boolean field');
     }
 
-    const valueToIdsList = new Map<string, number[]>();
-
-    for (let i = 0; i < field.values.length; i++) {
-        const value = field.kind === 'boolean'
-            ? ['false', 'true', 'null', 'undefined'][field.values[i]]
-            : field.values[i];
-        let list = valueToIdsList.get(value);
-        if (!list) {
-            list = [];
-            valueToIdsList.set(value, list);
-        }
-        list.push(i);
-    }
-
+    const valueToIdsList = collectCategoricalIds(field);
     const valueToIds = new Map<string, Uint32Array>();
     const values: string[] = [];
 
@@ -122,6 +118,26 @@ export function buildCategoricalIndex(field: Field): CategoricalIndex {
     return { valueToIds, values };
 }
 
+function appendId(lists: Map<string, number[]>, value: string, id: number) {
+    let list = lists.get(value);
+    if (!list) {
+        list = [];
+        lists.set(value, list);
+    }
+    list.push(id);
+}
+
+function collectCategoricalIds(field: Exclude<Field, { kind: 'number' }>) {
+    const lists = new Map<string, number[]>();
+    for (let i = 0; i < field.values.length; i++) {
+        const value = field.kind === 'boolean'
+            ? ['false', 'true', 'null', 'undefined'][field.values[i]]
+            : field.values[i];
+        appendId(lists, value, i);
+    }
+    return lists;
+}
+
 /**
  * Build numeric index for a number field
  */
@@ -130,23 +146,7 @@ export function buildNumericIndex(field: Field): NumericIndex {
         throw new Error('Numeric index requires number field');
     }
 
-    const count = field.values.length;
-    const pairs: Array<{ value: number; id: number }> = [];
-
-    let min = Infinity;
-    let max = -Infinity;
-
-    for (let i = 0; i < count; i++) {
-        const value = field.values[i];
-        if (!isNaN(value)) {
-            pairs.push({ value, id: i });
-            if (value < min) min = value;
-            if (value > max) max = value;
-        }
-    }
-
-    pairs.sort((a, b) => a.value - b.value);
-
+    const { pairs, min, max } = numericEntries(field.values);
     const values = new Float64Array(pairs.length);
     const ids = new Uint32Array(pairs.length);
 
@@ -156,6 +156,22 @@ export function buildNumericIndex(field: Field): NumericIndex {
     }
 
     return { values, ids, min, max };
+}
+
+function numericEntries(values: Float64Array) {
+    const pairs: Array<{ value: number; id: number }> = [];
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 0; i < values.length; i++) {
+        const value = values[i];
+        if (!isNaN(value)) {
+            pairs.push({ value, id: i });
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
+    }
+    pairs.sort((a, b) => a.value - b.value);
+    return { pairs, min, max };
 }
 
 /**
@@ -242,36 +258,8 @@ export function applyFilters(
     const sets: Uint32Array[] = [];
 
     for (const filter of filters) {
-        if (filter.type === 'categorical' && filter.values && filter.values.size > 0) {
-            const index = indexes.categorical.get(filter.field);
-            if (!index) continue;
-
-            const arrays: Uint32Array[] = [];
-            for (const value of filter.values) {
-                const ids = index.valueToIds.get(value);
-                if (ids) {
-                    arrays.push(ids);
-                }
-            }
-
-            sets.push(arrays.length > 0 ? unionSorted(arrays) : new Uint32Array(0));
-        } else if (filter.type === 'numeric' && filter.range) {
-            const index = indexes.numeric.get(filter.field);
-            if (!index) continue;
-
-            const { min, max } = filter.range;
-            const result: number[] = [];
-
-            for (let i = 0; i < index.values.length; i++) {
-                const val = index.values[i];
-                if (val >= min && val <= max) {
-                    result.push(index.ids[i]);
-                }
-            }
-
-            result.sort((a, b) => a - b);
-            sets.push(new Uint32Array(result));
-        }
+        const ids = filterIds(indexes, filter);
+        if (ids) sets.push(ids);
     }
 
     if (sets.length === 0) {
@@ -290,6 +278,38 @@ export function applyFilters(
         visibleIds,
         count: visibleIds.length,
     };
+}
+
+function filterIds(indexes: PivotIndexes, filter: FilterSpec): Uint32Array | undefined {
+    if (filter.type === 'categorical') {
+        const index = indexes.categorical.get(filter.field);
+        return index ? categoricalFilterIds(index, filter.values) : undefined;
+    }
+    if (filter.type === 'numeric' && filter.range) {
+        const index = indexes.numeric.get(filter.field);
+        return index ? numericFilterIds(index, filter.range) : undefined;
+    }
+    return undefined;
+}
+
+function categoricalFilterIds(index: CategoricalIndex, values?: Set<string>): Uint32Array | undefined {
+    if (!values || values.size === 0) return undefined;
+    const arrays: Uint32Array[] = [];
+    for (const value of values) {
+        const ids = index.valueToIds.get(value);
+        if (ids) arrays.push(ids);
+    }
+    return unionSorted(arrays);
+}
+
+function numericFilterIds(index: NumericIndex, range: { min: number; max: number }): Uint32Array {
+    const result: number[] = [];
+    for (let i = 0; i < index.values.length; i++) {
+        const value = index.values[i];
+        if (value >= range.min && value <= range.max) result.push(index.ids[i]);
+    }
+    result.sort((a, b) => a - b);
+    return new Uint32Array(result);
 }
 
 /**
@@ -328,21 +348,7 @@ function groupByCategorical(
         return { groups: [] };
     }
 
-    const valueToIds = new Map<string, number[]>();
-
-    for (let i = 0; i < visibleIds.length; i++) {
-        const id = visibleIds[i];
-        if (field.kind === 'boolean' && field.values[id] >= 2) continue;
-        const value = field.kind === 'boolean' ? String(field.values[id] === 1) : field.values[id];
-
-        let list = valueToIds.get(value);
-        if (!list) {
-            list = [];
-            valueToIds.set(value, list);
-        }
-        list.push(id);
-    }
-
+    const valueToIds = visibleCategoricalIds(field, visibleIds);
     const groups: GroupResult[] = [];
     const sortedValues = index ? index.values : Array.from(valueToIds.keys()).sort();
 
@@ -363,6 +369,17 @@ function groupByCategorical(
     return { groups };
 }
 
+function visibleCategoricalIds(field: Exclude<Field, { kind: 'number' }>, visibleIds: Uint32Array) {
+    const lists = new Map<string, number[]>();
+    for (let i = 0; i < visibleIds.length; i++) {
+        const id = visibleIds[i];
+        if (field.kind === 'boolean' && field.values[id] >= 2) continue;
+        const value = field.kind === 'boolean' ? String(field.values[id] === 1) : field.values[id];
+        appendId(lists, value, id);
+    }
+    return lists;
+}
+
 function groupByNumeric(
     field: Field,
     visibleIds: Uint32Array,
@@ -372,84 +389,60 @@ function groupByNumeric(
         return { groups: [] };
     }
 
-    let min = Infinity;
-    let max = -Infinity;
+    const { min, max } = visibleNumericRange(field.values, visibleIds);
+    if (!isFinite(min) || !isFinite(max)) return { groups: [] };
 
-    for (let i = 0; i < visibleIds.length; i++) {
-        const value = field.values[visibleIds[i]];
-        if (!isNaN(value)) {
-            if (value < min) min = value;
-            if (value > max) max = value;
-        }
-    }
-
-    if (!isFinite(min) || !isFinite(max)) {
-        return { groups: [] };
-    }
-
-    // A degenerate range (every finite value identical) makes bucketSize zero, which
-    // would divide-by-zero into NaN bucket indices below and throw. All finite values
-    // equal min in that case, so collapse to a single bucket holding every one of them.
+    // Avoid dividing by zero for a constant column; retain every non-NaN visible ID.
     if (min === max) {
-        const ids: number[] = [];
-        for (let i = 0; i < visibleIds.length; i++) {
-            const id = visibleIds[i];
-            if (!isNaN(field.values[id])) {
-                ids.push(id);
-            }
-        }
-
-        return {
-            groups: [
-                {
-                    key: '0',
-                    label: `${min.toFixed(1)} - ${max.toFixed(1)}`,
-                    value: min,
-                    ids: new Uint32Array(ids),
-                    count: ids.length,
-                },
-            ],
-        };
+        const ids = visibleIds.filter(id => !isNaN(field.values[id]));
+        return { groups: [numericGroup('0', min, max, ids)] };
     }
 
     const bucketCount = Number.isFinite(buckets) ? Math.max(1, Math.floor(buckets)) : 10;
-    const range = max - min;
-    const bucketSize = range / bucketCount;
+    const bucketSize = (max - min) / bucketCount;
+    const bucketLists = bucketNumericIds(field.values, visibleIds, { min, bucketSize, bucketCount });
+    const groups: GroupResult[] = [];
+    for (let i = 0; i < bucketCount; i++) {
+        if (bucketLists[i].length === 0) continue;
+        groups.push(numericGroup(`${i}`, min + i * bucketSize, min + (i + 1) * bucketSize,
+            new Uint32Array(bucketLists[i])));
+    }
+    return { groups };
+}
 
-    const bucketLists: number[][] = Array.from({ length: bucketCount }, () => []);
+function visibleNumericRange(values: Float64Array, ids: Uint32Array) {
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 0; i < ids.length; i++) {
+        const value = values[ids[i]];
+        // NaN compares false in both directions, leaving the range unchanged.
+        if (value < min) min = value;
+        if (value > max) max = value;
+    }
+    return { min, max };
+}
 
-    for (let i = 0; i < visibleIds.length; i++) {
-        const id = visibleIds[i];
-        const value = field.values[id];
+function bucketNumericIds(
+    values: Float64Array,
+    ids: Uint32Array,
+    range: { min: number; bucketSize: number; bucketCount: number },
+) {
+    const { min, bucketSize, bucketCount } = range;
+    const lists: number[][] = Array.from({ length: bucketCount }, () => []);
+    for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const value = values[id];
         if (isNaN(value)) continue;
-
         let bucketIndex = Math.floor((value - min) / bucketSize);
         if (bucketIndex >= bucketCount) bucketIndex = bucketCount - 1;
         if (bucketIndex < 0) bucketIndex = 0;
-
-        bucketLists[bucketIndex].push(id);
+        lists[bucketIndex].push(id);
     }
+    return lists;
+}
 
-    const groups: GroupResult[] = [];
-
-    for (let i = 0; i < bucketCount; i++) {
-        const list = bucketLists[i];
-        if (list.length === 0) continue;
-
-        const bucketMin = min + i * bucketSize;
-        const bucketMax = min + (i + 1) * bucketSize;
-
-        const ids = new Uint32Array(list);
-        groups.push({
-            key: `${i}`,
-            label: `${bucketMin.toFixed(1)} - ${bucketMax.toFixed(1)}`,
-            value: bucketMin,
-            ids,
-            count: ids.length,
-        });
-    }
-
-    return { groups };
+function numericGroup(key: string, min: number, max: number, ids: Uint32Array): GroupResult {
+    return { key, label: `${min.toFixed(1)} - ${max.toFixed(1)}`, value: min, ids, count: ids.length };
 }
 
 /**
@@ -467,11 +460,7 @@ export function sortIds(
 
     if (field.kind === 'number') {
         const values = field.values;
-        sortedIds.sort((a, b) => {
-            if (Number.isNaN(values[a])) return Number.isNaN(values[b]) ? 0 : 1;
-            if (Number.isNaN(values[b])) return -1;
-            return values[a] - values[b];
-        });
+        sortedIds.sort((a, b) => compareNumbers(values[a], values[b]));
     } else if (field.kind === 'string') {
         const values = field.values;
         sortedIds.sort((a, b) => values[a].localeCompare(values[b]));
@@ -481,4 +470,10 @@ export function sortIds(
     }
 
     return sortedIds;
+}
+
+function compareNumbers(a: number, b: number) {
+    if (Number.isNaN(a)) return Number.isNaN(b) ? 0 : 1;
+    if (Number.isNaN(b)) return -1;
+    return a - b;
 }
