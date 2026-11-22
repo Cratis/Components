@@ -97,14 +97,14 @@ const handleTextKeyDown = (event: KeyboardEvent<HTMLInputElement>, state: Proper
 };
 
 const renderText = (state: PropertyControlState) => {
-    const { descriptor, value, draft, setDraft, parts, commit, leave } = state;
-    if (descriptor.kind !== 'text') return undefined;
+    const { value, draft, setDraft, parts, commit, leave } = state;
+    const placeholder = (state.descriptor as { placeholder?: string }).placeholder;
     return (
         <input
             {...parts?.input}
             id={state.controlId}
             type='text'
-            placeholder={descriptor.placeholder}
+            placeholder={placeholder}
             value={draft ?? (typeof value === 'string' ? value : '')}
             aria-invalid={state.shownMessage ? true : undefined}
             aria-describedby={state.describedBy}
