@@ -105,7 +105,14 @@ export const partDefinitions = {
             'description',
             'error',
         ],
-        sources: ['Common/NumberInput.tsx'],
+        sources: [
+            'Common/NumberInput.tsx',
+            'Common/renderNumberInputAdornment.tsx',
+            'Common/renderNumberInputControl.tsx',
+            'Common/renderNumberInputMessage.tsx',
+            'Common/renderNumberInputStep.tsx',
+        ],
+        ptFiles: ['Common/NumberInput.tsx'],
         ptKeys: [
             'root',
             'group',
