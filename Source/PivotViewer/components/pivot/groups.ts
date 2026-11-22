@@ -5,26 +5,6 @@ import * as PIXI from 'pixi.js';
 import type { CardColors } from './constants';
 import type { GroupingResult, LayoutResult } from '../../engine/types';
 
-type UpdateGroupBackgrounds = (
-    groupsContainer: PIXI.Container | null,
-    container: HTMLDivElement | null,
-    grouping: GroupingResult,
-    layout: LayoutResult,
-    zoomLevel: number,
-    cardColors: CardColors,
-    viewMode: string,
-) => void;
-
-type UpdateHighlight = (
-    groupsContainer: PIXI.Container | null,
-    container: HTMLDivElement | null,
-    grouping: GroupingResult,
-    layout: LayoutResult,
-    hoveredGroupIndex: number | null,
-    cardWidth: number,
-    zoomLevel: number,
-) => void;
-
 interface BackgroundRequest {
     grouping: GroupingResult;
     layout: LayoutResult;
@@ -45,9 +25,15 @@ interface WorldExtent {
     worldHeight: number;
 }
 
-export const updateGroupBackgrounds: UpdateGroupBackgrounds = (
-    ...[groupsContainer, container, grouping, layout, zoomLevel, cardColors, viewMode]
-) => {
+export function updateGroupBackgrounds(
+    groupsContainer: PIXI.Container | null,
+    container: HTMLDivElement | null,
+    grouping: GroupingResult,
+    layout: LayoutResult,
+    zoomLevel: number,
+    cardColors: CardColors,
+    viewMode: string,
+) {
     if (!groupsContainer) return;
 
     if (!container || !hasBackgroundGroups(grouping, viewMode)) {
@@ -56,16 +42,22 @@ export const updateGroupBackgrounds: UpdateGroupBackgrounds = (
     }
 
     drawBackgrounds(groupsContainer, container, { grouping, layout, zoomLevel, cardColors });
-};
+}
 
-export const updateHighlight: UpdateHighlight = (
-    ...[groupsContainer, container, grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel]
-) => {
+export function updateHighlight(
+    groupsContainer: PIXI.Container | null,
+    container: HTMLDivElement | null,
+    grouping: GroupingResult,
+    layout: LayoutResult,
+    hoveredGroupIndex: number | null,
+    cardWidth: number,
+    zoomLevel: number,
+) {
     if (!groupsContainer || !container) return;
     if (grouping.groups.length === 0) return;
 
     drawHighlight(groupsContainer, container, { grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel });
-};
+}
 
 function drawBackgrounds(groupsContainer: PIXI.Container, container: HTMLDivElement, request: BackgroundRequest) {
     const { grouping, layout, cardColors } = request;
