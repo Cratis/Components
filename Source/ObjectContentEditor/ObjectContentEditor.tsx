@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ChangeMeta } from '../types/ChangeMeta';
@@ -76,7 +76,7 @@ export const ObjectContentEditor = ({
     onChange,
     onValidationChange,
     className,
-}: ObjectContentEditorProps) => {
+}: ObjectContentEditorProps): React.JSX.Element => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
     const { validationErrors, validateChange } = useValidation({
         object, schema, editMode, navigationPath, onValidationChange,
