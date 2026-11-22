@@ -16,6 +16,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { CheckboxImplementation } from './CheckboxImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Stable Cratis-owned parts for styling a {@link Checkbox}. */
 export interface CheckboxParts {
@@ -55,6 +57,11 @@ export interface CheckboxProps extends Omit<
     pt?: CheckboxParts;
 }
 
+const checkboxDescriptor = describeComponent<CheckboxProps>('Checkbox', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
 const coreCheckboxDeclaration = Object.freeze({
     mode: 'presentation',
     fidelity: 'native',
@@ -68,6 +75,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'common.checkbox',
             coreCheckboxDeclaration,
         );
-        return renderSlot(declaration, props, ref);
+        const [presented, marker] = useComponentPresentation(checkboxDescriptor, props, props.id ?? props.name);
+        return renderSlot(declaration, { ...presented, ...marker }, ref);
     },
 );

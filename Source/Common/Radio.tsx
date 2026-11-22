@@ -16,6 +16,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { RadioImplementation } from './RadioImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Stable Cratis-owned parts for styling a {@link Radio}. */
 export interface RadioParts {
@@ -66,6 +68,11 @@ export interface RadioProps extends Omit<
     pt?: RadioParts;
 }
 
+const radioDescriptor = describeComponent<RadioProps>('Radio', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
 const coreRadioDeclaration = Object.freeze({
     mode: 'presentation',
     fidelity: 'native',
@@ -78,5 +85,6 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
     ref,
 ) {
     const declaration = unstable_useSlot('common.radio', coreRadioDeclaration);
-    return renderSlot(declaration, props, ref);
+    const [presented, marker] = useComponentPresentation(radioDescriptor, props, props.id ?? props.name);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });
