@@ -10,6 +10,7 @@ import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
 import type { DatePickerInputProps } from './DatePickerInput';
+import type { ComponentMarkerAttributes } from '../configuration/identity/ComponentMarkerAttributes';
 import { classNames } from '../ClassNames/classNames';
 import { DatePickerDateInput } from './DatePickerDateInput';
 import { DatePickerGroup, DatePickerPlaceholder } from './DatePickerGroup';
@@ -32,6 +33,10 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
     const { value, onChange, onBlur, showButtonBar, isNonModal = false, showIcon = true, showTime, hourFormat, style, pt } = props;
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const overlayEnvironment = unstable_useOverlayEnvironment();
+    const {
+        'data-cratis-component-id': componentId,
+        'data-cratis-component-instance': componentInstance,
+    } = props as DatePickerInputProps & Partial<ComponentMarkerAttributes>;
     const state = useDatePickerState(props);
     const { calendarId, triggerLabel, triggerAttributes } = useDatePickerAccessibility(props, state.datePickerMessages?.openCalendar);
     const { effectiveDisabled, effectiveReadOnly } = state;
@@ -59,6 +64,8 @@ export const DatePickerInputImplementation = (props: DatePickerInputProps) => {
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
             data-cratis-component='DatePickerInput'
+            data-cratis-component-id={componentId}
+            data-cratis-component-instance={componentInstance}
             {...rootStateAttributes(fieldState, isPickerOpen)}
             onBlur={onBlur}
         >
