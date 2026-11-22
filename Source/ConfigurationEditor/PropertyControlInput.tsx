@@ -7,10 +7,13 @@ import type { PropertyControlState } from './usePropertyControl';
 import { parsePropertyNumber, displayPropertyValue } from './propertyControlValue';
 
 const join = (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' ');
+const partClass = (base: string, part: { className?: string } | undefined) => join(base, part?.className);
 const invalidAttribute = (message: string | undefined) => message ? true : undefined;
 const numericValue = (value: unknown) => typeof value === 'number' ? String(value) : '';
 const textValue = (value: unknown) => typeof value === 'string' ? value : '';
 const optionalValue = (value: string) => value === '' ? undefined : value;
+const isUnlistedChoice = (value: unknown, known: boolean): value is string =>
+    typeof value === 'string' && value !== '' && !known;
 
 const changeNumberDraft = (state: PropertyControlState, descriptor: NumberPropertyDescriptor, text: string) => {
     const { setDraft, setEntryMessage, value, commit, labels } = state;
@@ -38,7 +41,7 @@ const renderNumber = (state: PropertyControlState) => {
             aria-describedby={state.describedBy}
             onChange={(event) => changeNumberDraft(state, descriptor, event.target.value)}
             onBlur={leave}
-            className={join('cratis-property__input', parts?.input?.className)}
+            className={partClass('cratis-property__input', parts?.input)}
             data-cratis-part='input'
             data-invalid={state.shownMessage ? true : undefined}
         />
@@ -47,7 +50,7 @@ const renderNumber = (state: PropertyControlState) => {
 
 const renderChoiceOptions = (descriptor: ChoicePropertyDescriptor, value: unknown, known: boolean) => (
     <>
-        {typeof value === 'string' && value !== '' && !known && <option value={value}>{value}</option>}
+        {isUnlistedChoice(value, known) && <option value={value}>{value}</option>}
         {descriptor.options.map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
         ))}
@@ -66,7 +69,7 @@ const renderChoice = (state: PropertyControlState) => {
             aria-invalid={invalidAttribute(shownMessage)}
             aria-describedby={describedBy}
             onChange={(event) => commit(optionalValue(event.target.value))}
-            className={join('cratis-property__input', parts?.select?.className)}
+            className={partClass('cratis-property__input', parts?.select)}
             data-cratis-part='select'
             data-invalid={shownMessage ? true : undefined}
         >
@@ -86,7 +89,7 @@ const renderBoolean = (state: PropertyControlState) => {
             checked={value === true}
             aria-describedby={describedBy}
             onChange={(event) => commit(event.target.checked)}
-            className={join('cratis-property__input', parts?.input?.className)}
+            className={partClass('cratis-property__input', parts?.input)}
             data-cratis-part='input'
         />
     );
@@ -118,7 +121,7 @@ const renderText = (state: PropertyControlState) => {
             }}
             onBlur={leave}
             onKeyDown={(event) => handleTextKeyDown(event, state)}
-            className={join('cratis-property__input', parts?.input?.className)}
+            className={partClass('cratis-property__input', parts?.input)}
             data-cratis-part='input'
             data-invalid={state.shownMessage ? true : undefined}
         />
@@ -136,7 +139,7 @@ export const renderPropertyInput = (state: PropertyControlState) => {
     const { locked, descriptor, value, labels, parts } = state;
     if (locked) {
         return (
-            <span {...parts?.value} className={join('cratis-property__value', parts?.value?.className)} data-cratis-part='value'>
+            <span {...parts?.value} className={partClass('cratis-property__value', parts?.value)} data-cratis-part='value'>
                 {displayPropertyValue(descriptor, value, labels)}
             </span>
         );
@@ -147,11 +150,11 @@ export const renderPropertyInput = (state: PropertyControlState) => {
 
 /** Keeps the native label association only for editable controls. */
 export const renderPropertyLabel = ({ locked, parts, descriptor, controlId }: PropertyControlState) => locked ? (
-    <span {...parts?.label} className={join('cratis-property__label', parts?.label?.className)} data-cratis-part='label'>
+    <span {...parts?.label} className={partClass('cratis-property__label', parts?.label)} data-cratis-part='label'>
         {descriptor.label}
     </span>
 ) : (
-    <label {...parts?.label} htmlFor={controlId} className={join('cratis-property__label', parts?.label?.className)} data-cratis-part='label'>
+    <label {...parts?.label} htmlFor={controlId} className={partClass('cratis-property__label', parts?.label)} data-cratis-part='label'>
         {descriptor.label}
     </label>
 );
@@ -160,12 +163,12 @@ export const renderPropertyLabel = ({ locked, parts, descriptor, controlId }: Pr
 export const renderPropertyMessages = ({ shownMessage, messageId, note, noteId, parts }: PropertyControlState) => (
     <>
         {shownMessage && (
-            <p {...parts?.message} id={messageId} role='alert' className={join('cratis-property__message', parts?.message?.className)} data-cratis-part='message' data-invalid>
+            <p {...parts?.message} id={messageId} role='alert' className={partClass('cratis-property__message', parts?.message)} data-cratis-part='message' data-invalid>
                 {shownMessage}
             </p>
         )}
         {note && (
-            <p {...parts?.message} id={noteId} className={join('cratis-property__message cratis-property__message--note', parts?.message?.className)} data-cratis-part='message'>
+            <p {...parts?.message} id={noteId} className={partClass('cratis-property__message cratis-property__message--note', parts?.message)} data-cratis-part='message'>
                 {note}
             </p>
         )}
