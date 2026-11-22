@@ -3,6 +3,8 @@
 
 import React, { type ReactElement } from 'react';
 import { NumericInput } from '../../../Common/NumericInput';
+import { NumberInput } from '../../../Common/NumberInput';
+import { ToggleGroup } from '../../../Common/ToggleGroup';
 import { Surface } from '../../../Common/Surface';
 import { Tabs } from '../../../Common/Tabs';
 import { ProgressBar } from '../../../Display/ProgressBar';
@@ -23,6 +25,37 @@ interface PresentationComponentCase {
 }
 
 export const atomicAndTabComponents: readonly PresentationComponentCase[] = [
+    {
+        component: 'NumberInput',
+        element: <NumberInput value={12} onChange={() => undefined} placeholder='Example number' aria-label='Example quantity' showSteppers />,
+        defaults: <NumberInput value={null} onChange={() => undefined} />,
+        properties: [
+            { name: 'placeholder', label: 'Placeholder', type: 'string' },
+            { name: 'aria-label', label: 'Accessible label', type: 'string' },
+            { name: 'showSteppers', label: 'Show steppers', type: 'boolean', defaultValue: true },
+        ],
+        current: { placeholder: 'Example number', 'aria-label': 'Example quantity', showSteppers: true },
+        preview: { placeholder: 'Preview number', 'aria-label': 'Preview quantity', showSteppers: false },
+        read: (element) => [element.querySelector('input')!.getAttribute('placeholder'), element.querySelector('input')!.getAttribute('aria-label'), element.querySelectorAll('button').length],
+        rendered: ['Example number', 'Example quantity', 2],
+        previewed: ['Preview number', 'Preview quantity', 0],
+        defaultRendered: [null, null, 2],
+    },
+    {
+        component: 'ToggleGroup',
+        element: <ToggleGroup options={[{ value: 'example', label: 'Example option' }]} value='example' onChange={() => undefined} aria-label='Example choices' invalid={false} />,
+        defaults: <ToggleGroup options={[]} value='' onChange={() => undefined} />,
+        properties: [
+            { name: 'aria-label', label: 'Accessible label', type: 'string' },
+            { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+        ],
+        current: { 'aria-label': 'Example choices', invalid: false },
+        preview: { 'aria-label': 'Preview choices', invalid: true },
+        read: (element) => [element.getAttribute('aria-label'), element.getAttribute('data-invalid')],
+        rendered: ['Example choices', null],
+        previewed: ['Preview choices', 'true'],
+        defaultRendered: [null, null],
+    },
     {
         component: 'ProgressBar',
         element: <ProgressBar value={40} showValue={true} aria-label='Example progress' />,
