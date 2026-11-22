@@ -139,6 +139,10 @@ Components with descriptors today:
 | `Tag` | `Tag` | `severity`, `rounded` |
 | `Skeleton` | `Skeleton` | `width`, `height`, `borderRadius`, `circle` |
 | `ProgressSpinner` | `ProgressSpinner` | `aria-label` |
+| `ProgressBar` | `ProgressBar` | `showValue`, `aria-label` |
+| `Surface` | `Surface` | `aria-label` |
+| `NumericInput` | `NumericInput` | `placeholder`, `aria-label` |
+| `Tabs` | `Tabs` | `aria-label` |
 | `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
 | `Message` | `Message` | `severity` |
 | `Toolbar` | `Toolbar` | `orientation`, `aria-label` |
@@ -151,6 +155,8 @@ Components with descriptors today:
 | Data table column header | `DataTableColumn` | `header`, `sortable`, `filter` |
 
 `DataPage` renders a `Page` and is marked `DataPage`; its title is the `Page` title property.
+
+The `Tabs` accessible label belongs to its tab list. Progress values, numeric input values and constraints, tab items, selected values, and callbacks are not exposed as editable presentation properties.
 
 ### Describe your own component
 
