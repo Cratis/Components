@@ -8,6 +8,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { SurfaceImplementation } from './SurfaceImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Native elements supported by {@link Surface}. */
 export type SurfaceElement = 'article' | 'div' | 'section';
@@ -29,6 +31,10 @@ export interface SurfaceProps extends HTMLAttributes<HTMLElement> {
     pt?: SurfaceParts;
 }
 
+const surfaceDescriptor = describeComponent<SurfaceProps>('Surface', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
+
 const coreSurfaceDeclaration = Object.freeze({
     mode: 'presentation',
     fidelity: 'native',
@@ -41,5 +47,6 @@ export const Surface = forwardRef<HTMLElement, SurfaceProps>(function Surface(
     ref,
 ) {
     const declaration = unstable_useSlot('common.surface', coreSurfaceDeclaration);
-    return renderSlot(declaration, props, ref);
+    const [presented, marker] = useComponentPresentation(surfaceDescriptor, props);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });

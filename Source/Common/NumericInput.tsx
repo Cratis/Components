@@ -9,6 +9,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { NumericInputImplementation } from './NumericInputImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Stable Cratis-owned parts for styling a {@link NumericInput}. */
 export interface NumericInputParts {
@@ -43,6 +45,11 @@ export interface NumericInputProps extends Omit<
     pt?: NumericInputParts;
 }
 
+const numericInputDescriptor = describeComponent<NumericInputProps>('NumericInput', [
+    { name: 'placeholder', label: 'Placeholder', type: 'string' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
+
 const coreNumericInputDeclaration = Object.freeze({
     mode: 'atomic',
     fidelity: 'native',
@@ -56,6 +63,11 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
             'common.numberInput',
             coreNumericInputDeclaration,
         );
-        return renderSlot(declaration, props, ref);
+        const [presented, marker] = useComponentPresentation(
+            numericInputDescriptor,
+            props,
+            props.id ?? props.name,
+        );
+        return renderSlot(declaration, { ...presented, ...marker }, ref);
     },
 );
