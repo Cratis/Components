@@ -9,6 +9,8 @@ import {
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { classNames } from '../ClassNames/classNames';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Attributes a consumer may hand to one {@link ToggleGroup} part: class, style, title and data attributes. */
 export type ToggleGroupPartAttributes = Pick<
@@ -75,6 +77,59 @@ export interface ToggleGroupProps {
     pt?: ToggleGroupParts;
 }
 
+const toggleGroupDescriptor = describeComponent<ToggleGroupProps>('ToggleGroup', [
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
+const renderToggleOptionContent = (option: ToggleGroupOption, pt: ToggleGroupProps['pt']) => (
+    <>
+        {option.icon !== undefined && (
+            <span
+                {...pt?.icon}
+                aria-hidden='true'
+                className={classNames('cratis-toggle-group__icon', pt?.icon?.className)}
+                data-cratis-part='icon'
+            >
+                {option.icon}
+            </span>
+        )}
+        <span
+            {...pt?.label}
+            className={classNames('cratis-toggle-group__label', pt?.label?.className)}
+            data-cratis-part='label'
+        >
+            {option.label}
+        </span>
+    </>
+);
+
+const renderToggleOption = (
+    option: ToggleGroupOption,
+    { value, disabled = false, invalid = false, pt }: ToggleGroupProps,
+    tabStop: string | undefined,
+) => (
+    <AriaToggleButton
+        key={option.value}
+        {...pt?.option}
+        id={option.value}
+        isDisabled={disabled || option.disabled}
+        excludeFromTabOrder={option.value !== tabStop}
+        className={classNames('cratis-toggle-group__option', pt?.option?.className)}
+        data-cratis-part='option'
+        data-selected={option.value === value || undefined}
+        data-disabled={disabled || option.disabled || undefined}
+        data-invalid={invalid || undefined}
+    >
+        {renderToggleOptionContent(option, pt)}
+    </AriaToggleButton>
+);
+
+const tabStopFor = ({ options, value }: ToggleGroupProps) => {
+    const enabled = options.filter((option) => !option.disabled);
+    return enabled.some((option) => option.value === value) ? value : enabled[0]?.value;
+};
+
 /**
  * A single-selection group of exclusive choices — a segmented control.
  *
@@ -86,29 +141,29 @@ export interface ToggleGroupProps {
  * keys move within it. The selected option carries the stop, or the first enabled option when the
  * value matches none.
  */
-export const ToggleGroup = ({
-    options,
-    value,
-    onChange,
-    disabled = false,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    'aria-describedby': ariaDescribedBy,
-    invalid = false,
-    className,
-    pt,
-}: ToggleGroupProps) => {
+export const ToggleGroup = (props: ToggleGroupProps) => {
+    const [presented, marker] = useComponentPresentation(toggleGroupDescriptor, props);
+    const {
+        options,
+        value,
+        onChange,
+        disabled = false,
+        'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledBy,
+        'aria-describedby': ariaDescribedBy,
+        invalid = false,
+        className,
+        pt,
+    } = presented;
     // A radio group is one tab stop: Tab reaches the group, the arrows move inside it. React Aria's
     // ToggleButtonGroup keeps every button tabbable, which is toolbar behaviour and would make a
     // four-option group cost four stops, so the stop is placed here instead.
-    const enabled = options.filter((option) => !option.disabled);
-    const tabStop = enabled.some((option) => option.value === value)
-        ? value
-        : enabled[0]?.value;
+    const tabStop = tabStopFor(presented);
 
     return (
         <AriaToggleButtonGroup
             {...pt?.root}
+            {...marker}
             selectionMode='single'
             disallowEmptySelection
             selectedKeys={[value]}
@@ -125,51 +180,10 @@ export const ToggleGroup = ({
             aria-describedby={ariaDescribedBy}
             className={classNames('cratis-toggle-group', pt?.root?.className, className)}
             data-cratis-part='root'
-            data-cratis-component='ToggleGroup'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
         >
-            {options.map((option) => (
-                <AriaToggleButton
-                    key={option.value}
-                    {...pt?.option}
-                    id={option.value}
-                    isDisabled={disabled || option.disabled}
-                    excludeFromTabOrder={option.value !== tabStop}
-                    className={classNames(
-                        'cratis-toggle-group__option',
-                        pt?.option?.className,
-                    )}
-                    data-cratis-part='option'
-                    data-selected={option.value === value || undefined}
-                    data-disabled={disabled || option.disabled || undefined}
-                    data-invalid={invalid || undefined}
-                >
-                    {option.icon !== undefined && (
-                        <span
-                            {...pt?.icon}
-                            aria-hidden='true'
-                            className={classNames(
-                                'cratis-toggle-group__icon',
-                                pt?.icon?.className,
-                            )}
-                            data-cratis-part='icon'
-                        >
-                            {option.icon}
-                        </span>
-                    )}
-                    <span
-                        {...pt?.label}
-                        className={classNames(
-                            'cratis-toggle-group__label',
-                            pt?.label?.className,
-                        )}
-                        data-cratis-part='label'
-                    >
-                        {option.label}
-                    </span>
-                </AriaToggleButton>
-            ))}
+            {options.map((option) => renderToggleOption(option, presented, tabStop))}
         </AriaToggleButtonGroup>
     );
 };

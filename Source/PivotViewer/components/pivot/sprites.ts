@@ -34,123 +34,11 @@ export function createCardSprite<TItem extends object>(
 ): CardSprite {
     if (spritePool.length > 0) {
         const sprite = spritePool.pop()!;
+        resetPooledSprite(sprite, id, x, y);
+        ensureGraphics(sprite);
+        restoreTextObjects(sprite, cardColors);
         if (sprite.container) {
-            sprite.container.visible = true;
-            sprite.container.alpha = 1;
-            sprite.container.position.set(x, y);
-        }
-        sprite.itemId = id;
-        sprite.targetX = x;
-        sprite.targetY = y;
-        sprite.currentX = x;
-        sprite.currentY = y;
-
-        // A recycled sprite must start a new hidden grace period if it leaves the viewport.
-        delete (sprite as CardSprite & { __lastHiddenAt?: number }).__lastHiddenAt;
-
-        // Reset animation state
-        delete sprite.animationStartTime;
-        delete sprite.animationDelay;
-        delete sprite.startX;
-        delete sprite.startY;
-
-        // Reset cache
-        sprite.lastSelectedId = null;
-        sprite.lastCardColors = undefined;
-        sprite.lastTitle = undefined;
-        sprite.lastLabels = undefined;
-        sprite.lastValues = undefined;
-
-        // Recreate graphics if it was destroyed
-        if (!sprite.graphics || sprite.graphics.destroyed) {
-            sprite.graphics = new PIXI.Graphics();
-            if (sprite.container) {
-                sprite.container.addChildAt(sprite.graphics, 0);
-            }
-        }
-
-        // Recreate text objects if they were destroyed
-        const offsetX = CARD_GAP / 2;
-        const offsetY = CARD_GAP / 2;
-
-        if (!sprite.titleText || sprite.titleText.destroyed) {
-            sprite.titleText = new PIXI.Text({
-                text: '',
-                style: {
-                    fontSize: 13,
-                    fill: cardColors.text,
-                    fontWeight: '600',
-                    lineHeight: 18,
-                    wordWrap: false,
-                },
-            });
-            sprite.titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
-            if (sprite.container) {
-                sprite.container.addChild(sprite.titleText);
-            }
-        }
-
-        if (!sprite.labelsText || sprite.labelsText.destroyed) {
-            sprite.labelsText = new PIXI.Text({
-                text: '',
-                style: {
-                    fontSize: 11,
-                    fill: cardColors.textSecondary,
-                    fontWeight: '400',
-                    lineHeight: 18,
-                },
-            });
-            sprite.labelsText.position.set(
-                offsetX + CARD_PADDING,
-                offsetY + CARD_PADDING + 40,
-            );
-            if (sprite.container) {
-                sprite.container.addChild(sprite.labelsText);
-            }
-        }
-
-        if (!sprite.valuesText || sprite.valuesText.destroyed) {
-            sprite.valuesText = new PIXI.Text({
-                text: '',
-                style: {
-                    fontSize: 11,
-                    fill: cardColors.text,
-                    fontWeight: '500',
-                    lineHeight: 18,
-                    wordWrap: false,
-                },
-            });
-            sprite.valuesText.position.set(
-                offsetX + CARD_PADDING + 65,
-                offsetY + CARD_PADDING + 40,
-            );
-            if (sprite.container) {
-                sprite.container.addChild(sprite.valuesText);
-            }
-        }
-
-        // Update event context
-        if (sprite.container) {
-            // SAFETY: Pixi containers permit application-owned metadata used by these event handlers.
-            (
-                sprite.container as unknown as {
-                    _eventContext: {
-                        items: TItem[];
-                        onCardClick: (
-                            item: TItem,
-                            e: MouseEvent,
-                            id: number | string,
-                        ) => void;
-                        id: number | string;
-                        cardRenderer: (item: TItem) => {
-                            title: string;
-                            labels?: string[];
-                            values?: string[];
-                        };
-                        resolveId: (item: TItem, index: number) => string | number;
-                    };
-                }
-            )._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
+            eventContainer<TItem>(sprite.container)._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
         }
 
         return sprite;
@@ -172,112 +60,21 @@ export function createCardSprite<TItem extends object>(
 
     // Container configured for pointer interactions; hitArea matches visible card.
 
-    // Store context for event handlers.
-    // SAFETY: Pixi containers permit application-owned metadata used by these event handlers.
-    (
-        container as unknown as {
-            _eventContext: {
-                items: TItem[];
-                onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void;
-                id: number | string;
-                cardRenderer: (item: TItem) => {
-                    title: string;
-                    labels?: string[];
-                    values?: string[];
-                };
-                resolveId: (item: TItem, index: number) => string | number;
-            };
-        }
-    )._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
+    eventContainer<TItem>(container)._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
 
     const graphics = new PIXI.Graphics();
 
-    const actualWidth = cardWidth - CARD_GAP;
-    const actualHeight = cardHeight - CARD_GAP;
-    const offsetX = CARD_GAP / 2;
-    const offsetY = CARD_GAP / 2;
-
-    const gradient = new PIXI.FillGradient({
-        type: 'linear',
-        start: { x: 0, y: offsetY },
-        end: { x: 0, y: offsetY + actualHeight },
-        colorStops: [
-            { offset: 0, color: cardColors.mid },
-            { offset: 1, color: cardColors.base },
-        ],
-    });
-
-    graphics.roundRect(offsetX, offsetY, actualWidth, actualHeight, CARD_RADIUS);
-    graphics.fill(gradient);
+    paintCard(graphics, { width: cardWidth, height: cardHeight }, cardColors);
 
     container.addChild(graphics);
 
-    const titleText = new PIXI.Text({
-        text: '',
-        style: {
-            fontSize: 13,
-            fill: cardColors.text,
-            fontWeight: '600',
-            lineHeight: 18,
-            wordWrap: false,
-        },
-    });
-    titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
+    const titleText = createTitleText(cardColors);
     container.addChild(titleText);
-
-    const labelsText = new PIXI.Text({
-        text: '',
-        style: {
-            fontSize: 11,
-            fill: cardColors.textSecondary,
-            fontWeight: '400',
-            lineHeight: 18,
-        },
-    });
-    labelsText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING + 40);
+    const labelsText = createLabelsText(cardColors);
     container.addChild(labelsText);
-
-    const valuesText = new PIXI.Text({
-        text: '',
-        style: {
-            fontSize: 11,
-            fill: cardColors.text,
-            fontWeight: '500',
-            lineHeight: 18,
-            wordWrap: false,
-        },
-    });
-    valuesText.position.set(offsetX + CARD_PADDING + 65, offsetY + CARD_PADDING + 40);
+    const valuesText = createValuesText(cardColors);
     container.addChild(valuesText);
-
-    container.on('click', (e: PIXI.FederatedPointerEvent) => {
-        e.stopPropagation();
-        // SAFETY: The context is assigned above before pointer handlers can run.
-        const ctx = (
-            container as unknown as {
-                _eventContext: {
-                    items: TItem[];
-                    onCardClick: (
-                        item: TItem,
-                        e: MouseEvent,
-                        id: number | string,
-                    ) => void;
-                    id: number | string;
-                };
-            }
-        )._eventContext;
-        const itemsArray = ctx.items;
-        const numericId = typeof ctx.id === 'number' ? ctx.id : Number(ctx.id);
-        const item = itemsArray[numericId];
-        if (item) {
-            ctx.onCardClick(item, e.nativeEvent as MouseEvent, ctx.id);
-        }
-    });
-
-    container.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
-        e.stopPropagation();
-        // onPanStart(e.nativeEvent as MouseEvent);
-    });
+    bindPointerEvents<TItem>(container);
 
     return {
         container,
@@ -355,114 +152,186 @@ export function updateCardContent<TItem extends object>(
 
     // Selection rendering depends on sprite.itemId matching selectedId
 
-    const colors = cardColors;
     const cardData = cardRenderer(item);
-    const rawTitle = cardData.title;
-    const labelsText = (cardData.labels || []).join('\n');
-    const rawValues = (cardData.values || []).join('\n');
-    const colorsChanged = sprite.lastCardColors !== colors;
+    const colorsChanged = sprite.lastCardColors !== cardColors;
 
     // Ensure text objects exist before using them
-    if (!sprite.titleText || sprite.titleText.destroyed) return;
-    if (!sprite.labelsText || sprite.labelsText.destroyed) return;
-    if (!sprite.valuesText || sprite.valuesText.destroyed) return;
+    if (!hasLiveText(sprite)) return;
 
-    // The title and the value column are drawn with word wrapping off, so without a budget they
-    // paint straight past the card and over its neighbour. Both start at a known inset, so the
-    // room each has is the card's inner width less where it begins.
-    const innerWidth = cardWidth - CARD_GAP - CARD_PADDING * 2;
-    const fitSource = `${rawTitle}\u0000${rawValues}`;
-    if (sprite.lastFittedSource !== fitSource || sprite.lastFittedWidth !== innerWidth) {
-        sprite.lastFittedSource = fitSource;
-        sprite.lastFittedWidth = innerWidth;
-        sprite.fittedTitle = ellipsizeLine(
-            rawTitle,
-            innerWidth,
-            candidate => measureWith(candidate, sprite.titleText.style));
-        sprite.fittedValues = ellipsizeBlock(
-            rawValues,
-            innerWidth - VALUES_INSET,
-            candidate => measureWith(candidate, sprite.valuesText.style));
-    }
-
-    const titleDisplay = sprite.fittedTitle ?? rawTitle;
-    const valuesText = sprite.fittedValues ?? rawValues;
-
-    if (sprite.lastTitle !== titleDisplay) {
-        sprite.titleText.text = titleDisplay;
-        sprite.lastTitle = titleDisplay;
-    }
-
-    if (sprite.lastLabels !== labelsText) {
-        sprite.labelsText.text = labelsText;
-        sprite.lastLabels = labelsText;
-    }
-
-    if (colorsChanged) updateCardTextColors(sprite, colors);
-
-    if (sprite.lastValues !== valuesText) {
-        sprite.valuesText.text = valuesText;
-        sprite.lastValues = valuesText;
-    }
-
-    sprite.titleText.visible = true;
-    sprite.labelsText.visible = true;
-    sprite.valuesText.visible = true;
+    updateTextContent(sprite, cardData, cardWidth, cardColors);
 
     const isSelected = sprite.itemId === selectedId;
 
     // Only redraw graphics if selection state or colors changed
-    if (sprite.lastSelectedId === selectedId && !colorsChanged && sprite.graphics) {
-        return;
-    }
+    if (!needsGraphicsRedraw(sprite, selectedId, colorsChanged)) return;
 
     sprite.lastSelectedId = selectedId;
     sprite.lastCardColors = cardColors;
 
-    // Ensure graphics exists before attempting to use it
-    if (!sprite.graphics || sprite.graphics.destroyed) {
-        sprite.graphics = new PIXI.Graphics();
-        if (sprite.container) {
-            sprite.container.addChildAt(sprite.graphics, 0);
-        }
-    } else {
-        sprite.graphics.clear();
+    prepareGraphics(sprite);
+    paintCard(sprite.graphics, { width: cardWidth, height: cardHeight }, cardColors, isSelected);
+}
+
+interface CardData {
+    title: string;
+    labels?: string[];
+    values?: string[];
+}
+
+interface SpriteEventContext<TItem> {
+    items: TItem[];
+    onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void;
+    id: number | string;
+    cardRenderer: (item: TItem) => CardData;
+    resolveId: (item: TItem, index: number) => string | number;
+}
+
+function eventContainer<TItem>(container: PIXI.Container) {
+    // SAFETY: Pixi containers permit application-owned metadata, assigned before binding handlers.
+    return container as PIXI.Container & { _eventContext: SpriteEventContext<TItem> };
+}
+
+function bindPointerEvents<TItem>(container: PIXI.Container) {
+    container.on('click', (e: PIXI.FederatedPointerEvent) => {
+        e.stopPropagation();
+        const context = eventContainer<TItem>(container)._eventContext;
+        const numericId = typeof context.id === 'number' ? context.id : Number(context.id);
+        const item = context.items[numericId];
+        if (item) context.onCardClick(item, e.nativeEvent as MouseEvent, context.id);
+    });
+    container.on('pointerdown', (e: PIXI.FederatedPointerEvent) => {
+        e.stopPropagation();
+        // onPanStart(e.nativeEvent as MouseEvent);
+    });
+}
+
+function resetPooledSprite(sprite: CardSprite, id: number | string, x: number, y: number) {
+    if (sprite.container) {
+        sprite.container.visible = true;
+        sprite.container.alpha = 1;
+        sprite.container.position.set(x, y);
     }
+    sprite.itemId = id;
+    sprite.targetX = sprite.currentX = x;
+    sprite.targetY = sprite.currentY = y;
+    // A recycled sprite must start a new hidden grace period if it leaves the viewport.
+    delete (sprite as CardSprite & { __lastHiddenAt?: number }).__lastHiddenAt;
+    delete sprite.animationStartTime;
+    delete sprite.animationDelay;
+    delete sprite.startX;
+    delete sprite.startY;
+    sprite.lastSelectedId = null;
+    sprite.lastCardColors = undefined;
+    sprite.lastTitle = undefined;
+    sprite.lastLabels = undefined;
+    sprite.lastValues = undefined;
+}
 
-    const actualWidth = cardWidth - CARD_GAP;
-    const actualHeight = cardHeight - CARD_GAP;
-    const offsetX = CARD_GAP / 2;
-    const offsetY = CARD_GAP / 2;
+function ensureGraphics(sprite: CardSprite) {
+    if (sprite.graphics && !sprite.graphics.destroyed) return;
+    sprite.graphics = new PIXI.Graphics();
+    if (sprite.container) sprite.container.addChildAt(sprite.graphics, 0);
+}
 
+function createTitleText(colors: CardColors) {
+    return textAt({ fontSize: 13, fill: colors.text, fontWeight: '600', lineHeight: 18, wordWrap: false }, 0, 0);
+}
+
+function createLabelsText(colors: CardColors) {
+    return textAt({ fontSize: 11, fill: colors.textSecondary, fontWeight: '400', lineHeight: 18 }, 0, 40);
+}
+
+function createValuesText(colors: CardColors) {
+    return textAt({ fontSize: 11, fill: colors.text, fontWeight: '500', lineHeight: 18, wordWrap: false }, VALUES_INSET, 40);
+}
+
+function textAt(style: PIXI.TextOptions['style'], x: number, y: number) {
+    const text = new PIXI.Text({ text: '', style });
+    text.position.set(CARD_GAP / 2 + CARD_PADDING + x, CARD_GAP / 2 + CARD_PADDING + y);
+    return text;
+}
+
+function restoreTextObjects(sprite: CardSprite, colors: CardColors) {
+    restoreTextObject(sprite, 'titleText', () => createTitleText(colors));
+    restoreTextObject(sprite, 'labelsText', () => createLabelsText(colors));
+    restoreTextObject(sprite, 'valuesText', () => createValuesText(colors));
+}
+
+function restoreTextObject(sprite: CardSprite, key: 'titleText' | 'labelsText' | 'valuesText', create: () => PIXI.Text) {
+    if (sprite[key] && !sprite[key].destroyed) return;
+    sprite[key] = create();
+    if (sprite.container) sprite.container.addChild(sprite[key]);
+}
+
+function hasLiveText(sprite: CardSprite) {
+    return [sprite.titleText, sprite.labelsText, sprite.valuesText].every(text => !!text && !text.destroyed);
+}
+
+function needsGraphicsRedraw(sprite: CardSprite, selectedId: number | string | null, colorsChanged: boolean) {
+    return sprite.lastSelectedId !== selectedId || colorsChanged || !sprite.graphics;
+}
+
+function prepareGraphics(sprite: CardSprite) {
+    if (!sprite.graphics || sprite.graphics.destroyed) ensureGraphics(sprite);
+    else sprite.graphics.clear();
+}
+
+function paintCard(
+    graphics: PIXI.Graphics,
+    size: { width: number; height: number },
+    colors: CardColors,
+    selected?: boolean,
+) {
+    const offset = CARD_GAP / 2;
+    const height = size.height - CARD_GAP;
     const gradient = new PIXI.FillGradient({
         type: 'linear',
-        start: { x: 0, y: offsetY },
-        end: { x: 0, y: offsetY + actualHeight },
-        colorStops: isSelected
-            ? [
-                  { offset: 0, color: colors.gradient },
-                  { offset: 1, color: colors.mid },
-              ]
-            : [
-                  { offset: 0, color: colors.mid },
-                  { offset: 1, color: colors.base },
-              ],
+        start: { x: 0, y: offset },
+        end: { x: 0, y: offset + height },
+        colorStops: selected
+            ? [{ offset: 0, color: colors.gradient }, { offset: 1, color: colors.mid }]
+            : [{ offset: 0, color: colors.mid }, { offset: 1, color: colors.base }],
     });
+    graphics.roundRect(offset, offset, size.width - CARD_GAP, height, CARD_RADIUS);
+    if (!graphics.destroyed) graphics.fill(gradient);
+    // Newly created sprites are filled before selection is first applied by updateCardContent.
+    if (selected === undefined || graphics.destroyed) return;
+    if (selected) graphics.stroke({ width: 2, color: colors.border });
+    else graphics.stroke({ width: 1, color: colors.border, alpha: 0.35 });
+}
 
-    sprite.graphics.roundRect(offsetX, offsetY, actualWidth, actualHeight, CARD_RADIUS);
+function fitCardText(sprite: CardSprite, title: string, values: string, innerWidth: number) {
+    // Text does not wrap: fit each column to the card's inner width less its inset.
+    const source = `${title}\u0000${values}`;
+    if (sprite.lastFittedSource === source && sprite.lastFittedWidth === innerWidth) return;
+    sprite.lastFittedSource = source;
+    sprite.lastFittedWidth = innerWidth;
+    sprite.fittedTitle = ellipsizeLine(title, innerWidth,
+        candidate => measureWith(candidate, sprite.titleText.style));
+    sprite.fittedValues = ellipsizeBlock(values, innerWidth - VALUES_INSET,
+        candidate => measureWith(candidate, sprite.valuesText.style));
+}
 
-    // Ensure graphics is still valid before filling
-    if (sprite.graphics && !sprite.graphics.destroyed) {
-        sprite.graphics.fill(gradient);
+function updateTextContent(sprite: CardSprite, data: CardData, width: number, colors: CardColors) {
+    const labels = (data.labels || []).join('\n');
+    const values = (data.values || []).join('\n');
+    fitCardText(sprite, data.title, values, width - CARD_GAP - CARD_PADDING * 2);
+    const titleDisplay = sprite.fittedTitle ?? data.title;
+    const valuesDisplay = sprite.fittedValues ?? values;
+    if (sprite.lastTitle !== titleDisplay) {
+        sprite.titleText.text = titleDisplay;
+        sprite.lastTitle = titleDisplay;
     }
-
-    if (isSelected) {
-        if (sprite.graphics && !sprite.graphics.destroyed) {
-            sprite.graphics.stroke({ width: 2, color: colors.border });
-        }
-    } else {
-        if (sprite.graphics && !sprite.graphics.destroyed) {
-            sprite.graphics.stroke({ width: 1, color: colors.border, alpha: 0.35 });
-        }
+    if (sprite.lastLabels !== labels) {
+        sprite.labelsText.text = labels;
+        sprite.lastLabels = labels;
     }
+    if (sprite.lastCardColors !== colors) updateCardTextColors(sprite, colors);
+    if (sprite.lastValues !== valuesDisplay) {
+        sprite.valuesText.text = valuesDisplay;
+        sprite.lastValues = valuesDisplay;
+    }
+    sprite.titleText.visible = true;
+    sprite.labelsText.visible = true;
+    sprite.valuesText.visible = true;
 }

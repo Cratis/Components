@@ -16,27 +16,13 @@ export function updateGroupBackgrounds(
 ) {
     if (!groupsContainer) return;
 
-    // keep parameter referenced to avoid unused param lint when callers pass zoomLevel
-    void zoomLevel;
-
-    if (!container || grouping.groups.length === 0 || viewMode === 'collection') {
-        // If we shouldn't show anything, hide all existing backgrounds
-        // We keep the highlight if it exists
-        for (const child of groupsContainer.children) {
-            if (child.label !== 'highlight') {
-                child.visible = false;
-            }
-        }
+    if (!container || !hasBackgroundGroups(grouping, viewMode)) {
+        hideBackgrounds(groupsContainer);
         return;
     }
 
     // Derive a world-space height that always covers the visible viewport even when zoomed out.
-    const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
-    const containerWorldHeight = Math.max(
-        (container.scrollHeight || container.clientHeight) * invScale,
-        container.clientHeight * invScale,
-    );
-    const baseWorldHeight = Math.max(layout.totalHeight || 0, containerWorldHeight);
+    const { baseWorldHeight, containerWorldHeight } = decorationHeight(container, layout, zoomLevel);
     // Use larger buffer and extend further above the viewport to ensure full coverage
     // when zoomed out and cards are positioned at the bottom
     const bufferWorld = Math.max(500, baseWorldHeight * 0.5, containerWorldHeight);
@@ -53,54 +39,15 @@ export function updateGroupBackgrounds(
     // directly from the positions stored in the layout so backgrounds align exactly.
     for (let index = 0; index < grouping.groups.length; index++) {
         const group = grouping.groups[index];
-        let minX = Infinity;
-        let maxX = -Infinity;
+        const bounds = backgroundBounds(group.ids, index, layout);
+        if (!isStripedGroup(index, bounds)) continue;
 
-        for (let j = 0; j < group.ids.length; j++) {
-            const id = group.ids[j];
-            const pos = layout.positions.get(id);
-            if (pos) {
-                minX = Math.min(minX, pos.x);
-                maxX = Math.max(maxX, pos.x);
-            }
-        }
-
-        if (minX === Infinity && (!layout.groupXs || layout.groupXs[index] === undefined)) continue;
-
-        // Prefer explicit bucket width and position from layout when available
-        const bucketWidths = layout.bucketWidths || [];
-        const groupXs = layout.groupXs || [];
-        const widthFromLayout = bucketWidths[index];
-        const xFromLayout = groupXs[index];
-
-        const width = widthFromLayout && widthFromLayout > 0 ? widthFromLayout : ((maxX - minX) || 0);
-        const x = xFromLayout !== undefined ? xFromLayout : minX;
-
-        if (index % 2 === 0 && width > 0) {
-            let bg: PIXI.Graphics;
-
-            if (bgIndex < backgroundGraphics.length) {
-                bg = backgroundGraphics[bgIndex];
-                bg.clear();
-            } else {
-                bg = new PIXI.Graphics();
-                // Insert before highlight if it exists, otherwise at end
-                const highlightIndex = groupsContainer.children.findIndex(
-                    (c) => c.label === 'highlight',
-                );
-                if (highlightIndex >= 0) {
-                    groupsContainer.addChildAt(bg, highlightIndex);
-                } else {
-                    groupsContainer.addChild(bg);
-                }
-            }
-
-            bg.rect(x, startY, width, worldHeight);
-            bg.fill(cardColors.base);
-            bg.alpha = 0.15;
-            bg.visible = true;
-            bgIndex++;
-        }
+        const bg = backgroundGraphicAt(groupsContainer, backgroundGraphics, bgIndex);
+        bg.rect(bounds.x, startY, bounds.width, worldHeight);
+        bg.fill(cardColors.base);
+        bg.alpha = 0.15;
+        bg.visible = true;
+        bgIndex++;
     }
 
     // Hide unused background graphics
@@ -118,78 +65,129 @@ export function updateHighlight(
     cardWidth: number,
     zoomLevel: number,
 ) {
-    if (!groupsContainer || !container || grouping.groups.length === 0) return;
+    if (!groupsContainer || !container) return;
+    if (grouping.groups.length === 0) return;
 
-    const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
-
-    let highlight = groupsContainer.children.find(
-        (child) => child.label === 'highlight',
-    ) as PIXI.Graphics;
-
-    if (!highlight) {
-        highlight = new PIXI.Graphics();
-        highlight.label = 'highlight';
-        groupsContainer.addChild(highlight);
-    }
-
+    const highlight = highlightGraphic(groupsContainer);
     highlight.clear();
 
-    if (hoveredGroupIndex === null || hoveredGroupIndex < 0) {
+    const hovered = hoveredGroup(grouping, hoveredGroupIndex);
+    if (!hovered) {
         highlight.visible = false;
         return;
     }
 
-    const group = grouping.groups[hoveredGroupIndex];
-    if (!group || group.ids.length === 0) {
+    const bounds = highlightBounds(hovered.group.ids, hovered.index, layout, cardWidth);
+    if (!bounds) {
         highlight.visible = false;
         return;
     }
 
-    // Use layout info if available
-    const bucketWidths = layout.bucketWidths || [];
-    const groupXs = layout.groupXs || [];
-    const widthFromLayout = bucketWidths[hoveredGroupIndex];
-    const xFromLayout = groupXs[hoveredGroupIndex];
-
-    let rectX: number;
-    let rectWidth: number;
-
-    if (widthFromLayout !== undefined && xFromLayout !== undefined) {
-        rectX = xFromLayout;
-        rectWidth = widthFromLayout;
-    } else {
-        // Fallback: derive from items bounding box
-        let minX = Infinity;
-        let maxX = -Infinity;
-
-        for (let j = 0; j < group.ids.length; j++) {
-            const id = group.ids[j];
-            const pos = layout.positions.get(id);
-            if (pos) {
-                minX = Math.min(minX, pos.x);
-                maxX = Math.max(maxX, pos.x + cardWidth);
-            }
-        }
-
-        if (minX === Infinity) {
-            highlight.visible = false;
-            return;
-        }
-        rectX = minX;
-        rectWidth = maxX - minX;
-    }
-
-    const containerWorldHeight = Math.max(
-        (container.scrollHeight || container.clientHeight) * invScale,
-        container.clientHeight * invScale,
-    );
-    const baseWorldHeight = Math.max(layout.totalHeight || 0, containerWorldHeight);
+    const { baseWorldHeight } = decorationHeight(container, layout, zoomLevel);
     const bufferWorld = Math.max(200, baseWorldHeight * 0.25);
     const worldHeight = baseWorldHeight + bufferWorld * 2;
     const startY = -bufferWorld;
 
-    highlight.rect(rectX, startY, rectWidth, worldHeight);
+    highlight.rect(bounds.x, startY, bounds.width, worldHeight);
     highlight.fill(0xffffff);
     highlight.alpha = 0.05;
     highlight.visible = true;
+}
+
+interface GroupBounds {
+    x: number;
+    width: number;
+}
+
+function hasBackgroundGroups(grouping: GroupingResult, viewMode: string) {
+    return grouping.groups.length !== 0 && viewMode !== 'collection';
+}
+
+function isStripedGroup(index: number, bounds: GroupBounds | undefined): bounds is GroupBounds {
+    if (!bounds) return false;
+    return index % 2 === 0 && bounds.width > 0;
+}
+
+function hoveredGroup(grouping: GroupingResult, index: number | null) {
+    if (index === null || index < 0) return undefined;
+    const group = grouping.groups[index];
+    if (!group || group.ids.length === 0) return undefined;
+    return { group, index };
+}
+
+function backgroundWidth(explicit: number | undefined, minX: number, maxX: number) {
+    return explicit && explicit > 0 ? explicit : ((maxX - minX) || 0);
+}
+
+function hideBackgrounds(container: PIXI.Container) {
+    for (const child of container.children) {
+        if (child.label !== 'highlight') child.visible = false;
+    }
+}
+
+function decorationHeight(container: HTMLDivElement, layout: LayoutResult, zoomLevel: number) {
+    const invScale = zoomLevel ? 1 / zoomLevel : 1;
+    const containerWorldHeight = Math.max(
+        (container.scrollHeight || container.clientHeight) * invScale,
+        container.clientHeight * invScale,
+    );
+    return { containerWorldHeight, baseWorldHeight: Math.max(layout.totalHeight || 0, containerWorldHeight) };
+}
+
+function itemBounds(ids: Uint32Array, layout: LayoutResult, cardWidth = 0) {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    for (let i = 0; i < ids.length; i++) {
+        const pos = layout.positions.get(ids[i]);
+        if (pos) {
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x + cardWidth);
+        }
+    }
+    return { minX, maxX };
+}
+
+function backgroundBounds(ids: Uint32Array, index: number, layout: LayoutResult) {
+    const { minX, maxX } = itemBounds(ids, layout);
+    const widthFromLayout = layout.bucketWidths?.[index];
+    const xFromLayout = layout.groupXs?.[index];
+    if (minX === Infinity && xFromLayout === undefined) return undefined;
+    return {
+        width: backgroundWidth(widthFromLayout, minX, maxX),
+        x: xFromLayout !== undefined ? xFromLayout : minX,
+    };
+}
+
+function highlightBounds(ids: Uint32Array, index: number, layout: LayoutResult, cardWidth: number) {
+    const widthFromLayout = layout.bucketWidths?.[index];
+    const xFromLayout = layout.groupXs?.[index];
+    if (widthFromLayout !== undefined && xFromLayout !== undefined) {
+        return { x: xFromLayout, width: widthFromLayout };
+    }
+    const { minX, maxX } = itemBounds(ids, layout, cardWidth);
+    return minX === Infinity ? undefined : { x: minX, width: maxX - minX };
+}
+
+function backgroundGraphicAt(container: PIXI.Container, backgrounds: PIXI.Graphics[], index: number) {
+    if (index < backgrounds.length) {
+        const background = backgrounds[index];
+        background.clear();
+        return background;
+    }
+    const background = new PIXI.Graphics();
+    // Insert before highlight if it exists, otherwise at end.
+    const highlightIndex = container.children.findIndex(child => child.label === 'highlight');
+    if (highlightIndex >= 0) container.addChildAt(background, highlightIndex);
+    else container.addChild(background);
+    return background;
+}
+
+function highlightGraphic(container: PIXI.Container) {
+    let highlight = container.children.find(child => child.label === 'highlight') as PIXI.Graphics;
+    if (!highlight) {
+        highlight = new PIXI.Graphics();
+        highlight.label = 'highlight';
+        container.addChild(highlight);
+    }
+    return highlight;
 }

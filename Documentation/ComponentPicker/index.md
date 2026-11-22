@@ -142,6 +142,8 @@ Components with descriptors today:
 | `ProgressBar` | `ProgressBar` | `showValue`, `aria-label` |
 | `Surface` | `Surface` | `aria-label` |
 | `NumericInput` | `NumericInput` | `placeholder`, `aria-label` |
+| `NumberInput` | `NumberInput` | `placeholder`, `aria-label`, `showSteppers` |
+| `ToggleGroup` | `ToggleGroup` | `aria-label`, `invalid` |
 | `Tabs` | `Tabs` | `aria-label` |
 | `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
 | `Message` | `Message` | `severity` |

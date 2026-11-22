@@ -14,6 +14,8 @@ import { semanticValue } from './numberInputValue';
 import { useNumberInputState } from './useNumberInputState';
 import { renderNumberInputControl } from './renderNumberInputControl';
 import { renderNumberInputDescription, renderNumberInputError } from './renderNumberInputMessage';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 export type { NumberInputParts } from './NumberInputParts';
 /** Props for {@link NumberInput}. */
@@ -80,20 +82,28 @@ export interface NumberInputProps {
 const numberInputPartsMatchManifest: ExactPartKeys<NumberInputParts, PartsOf<'NumberInput'>> = true;
 void numberInputPartsMatchManifest;
 
+const numberInputDescriptor = describeComponent<NumberInputProps>('NumberInput', [
+    { name: 'placeholder', label: 'Placeholder', type: 'string' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'showSteppers', label: 'Show steppers', type: 'boolean', defaultValue: true },
+]);
+
 /**
  * A controlled, locale-aware number input with a Components-owned public contract.
  * Parsing, incomplete edit text, range and step normalization, keyboard behavior, mobile input
  * mode, and localized formatting remain internal to this boundary.
  */
 export const NumberInput = (props: NumberInputProps) => {
-    const state = useNumberInputState(props);
+    const [presented, marker] = useComponentPresentation(numberInputDescriptor, props, props.id ?? props.name);
+    const state = useNumberInputState(presented);
     const {
         name, min, max, step, disabled = false, readOnly = false, required = false, invalid = false,
         'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, className, pt,
-    } = props;
+    } = presented;
     const field = (
         <AriaNumberField
             {...partAttributes(pt?.root)}
+            {...marker}
             id={state.inputId}
             name={state.normalizationPending ? undefined : name}
             value={state.controlledValue ?? Number.NaN}
@@ -116,7 +126,6 @@ export const NumberInput = (props: NumberInputProps) => {
             className={classNames('cratis-number-input', pt?.root?.className, className)}
             style={pt?.root?.style as CSSProperties | undefined}
             data-cratis-part='root'
-            data-cratis-component='NumberInput'
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}
@@ -126,9 +135,9 @@ export const NumberInput = (props: NumberInputProps) => {
                 state.latestValue.current = semanticValue(ariaState.numberValue);
                 return (
                     <>
-                        {renderNumberInputControl(props, state)}
-                        {renderNumberInputDescription(state.descriptionId, props)}
-                        {renderNumberInputError(state.errorId, props)}
+                        {renderNumberInputControl(presented, state)}
+                        {renderNumberInputDescription(state.descriptionId, presented)}
+                        {renderNumberInputError(state.errorId, presented)}
                     </>
                 );
             }}

@@ -2,17 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ProgressBarProps } from './ProgressBar';
-import { describeComponent } from '../configuration/identity/describeComponent';
-import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
-
-const progressBarDescriptor = describeComponent<ProgressBarProps>('ProgressBar', [
-    { name: 'showValue', label: 'Show value', type: 'boolean', defaultValue: true },
-    { name: 'aria-label', label: 'Accessible label', type: 'string', defaultValue: 'Progress' },
-]);
 
 /** Core implementation for the progress-bar presentation slot. */
 export const ProgressBarImplementation = (props: ProgressBarProps) => {
-    const [presentation, marker] = useComponentPresentation(progressBarDescriptor, props);
     const {
         value = 0,
         mode = 'determinate',
@@ -20,7 +12,8 @@ export const ProgressBarImplementation = (props: ProgressBarProps) => {
         'aria-label': ariaLabel = 'Progress',
         'aria-labelledby': ariaLabelledBy,
         className,
-    } = presentation;
+        ...marker
+    } = props;
     const boundedValue = Math.min(100, Math.max(0, value));
     const ariaValue = mode === 'determinate' ? boundedValue : undefined;
     const isBusy = mode === 'indeterminate' || boundedValue < 100;

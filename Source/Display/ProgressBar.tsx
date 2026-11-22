@@ -5,6 +5,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { ProgressBarImplementation } from './ProgressBarImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Props for {@link ProgressBar}. */
 export interface ProgressBarProps {
@@ -22,6 +24,11 @@ export interface ProgressBarProps {
     className?: string;
 }
 
+const progressBarDescriptor = describeComponent<ProgressBarProps>('ProgressBar', [
+    { name: 'showValue', label: 'Show value', type: 'boolean', defaultValue: true },
+    { name: 'aria-label', label: 'Accessible label', type: 'string', defaultValue: 'Progress' },
+]);
+
 const coreProgressBarDeclaration = Object.freeze({
     mode: 'presentation',
     fidelity: 'native',
@@ -34,5 +41,6 @@ export const ProgressBar = (props: ProgressBarProps) => {
         'common.progress',
         coreProgressBarDeclaration,
     );
-    return renderSlot(declaration, props);
+    const [presented, marker] = useComponentPresentation(progressBarDescriptor, props);
+    return renderSlot(declaration, { ...presented, ...marker });
 };
