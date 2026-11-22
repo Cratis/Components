@@ -1,13 +1,58 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useLayoutEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { useCratisIcon } from '../configuration/useCratisIcon';
-import type { TablePaginatorProps } from './TablePaginator';
+import type { TablePaginatorParts, TablePaginatorProps } from './TablePaginator';
 import { paginatorRange } from './paginatorRange';
+import { resolvePaginatorLabels, resolvePaginatorRangeFormat } from './paginatorLabels';
+import { usePaginatorFocus } from './usePaginatorFocus';
 import { TablePaginatorPages } from './TablePaginatorPages';
+
+const joinClassNames = (...classNames: (string | undefined)[]) => classNames.filter(Boolean).join(' ');
+
+const renderRange = (rangeReport: string | undefined, rangePart: TablePaginatorParts['range']) =>
+    rangeReport && (
+        <span
+            {...rangePart}
+            className={joinClassNames('cratis-table-paginator-range', rangePart?.className)}
+            data-cratis-part='range'
+        >
+            {rangeReport}
+        </span>
+    );
+
+const renderInfo = (page: number, pageCount: number, infoPart: TablePaginatorParts['info']) => (
+    <span
+        {...infoPart}
+        className={joinClassNames('cratis-table-paginator-info', infoPart?.className)}
+        data-cratis-part='info'
+    >
+        {page + 1} / {Math.max(pageCount, 1)}
+    </span>
+);
+
+interface PageButtonOptions {
+    disabled: boolean;
+    onClick: () => void;
+    label: string;
+    parts: TablePaginatorParts['first'];
+    glyph: ReactNode;
+}
+
+const renderPageButton = ({ disabled, onClick, label, parts, glyph }: PageButtonOptions) => (
+    <Button
+        variant='ghost'
+        disabled={disabled}
+        onClick={onClick}
+        aria-label={label}
+        pt={parts}
+    >
+        <span aria-hidden='true'>{glyph}</span>
+    </Button>
+);
 
 /**
  * A minimal first/previous/next/last paginator. The
@@ -31,84 +76,39 @@ export const TablePaginatorImplementation = ({
     const icon = useCratisIcon();
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
-    const rootRef = useRef<HTMLDivElement>(null);
-    const focusedControl = useRef<HTMLElement | null>(null);
-
-    // Paging to either end disables the control that was just activated, which would drop keyboard
-    // focus to the page body. Keep it inside the paginator, on the nearest enabled control.
-    useLayoutEffect(() => {
-        const control = focusedControl.current;
-        if (!control || document.activeElement !== control || !(control as HTMLButtonElement).disabled) return;
-        const buttons = [...(rootRef.current?.querySelectorAll('button') ?? [])];
-        const index = buttons.indexOf(control as HTMLButtonElement);
-        const candidates = isLast ? buttons.slice(0, index).reverse() : buttons.slice(index + 1);
-        candidates.find((button) => !button.disabled)?.focus();
-    }, [isFirst, isLast]);
+    const { rootRef, focusedControl } = usePaginatorFocus(isFirst, isLast);
     const rangeReport = paginatorRange(
         page,
         pageSize,
         totalItems,
-        ariaLabels?.range ?? paginatorMessages?.range,
+        resolvePaginatorRangeFormat(ariaLabels, paginatorMessages),
     );
-    const labels = {
-        navigation:
-            ariaLabels?.navigation ?? paginatorMessages?.navigation ?? 'Pagination',
-        first: ariaLabels?.first ?? paginatorMessages?.first ?? 'First page',
-        previous: ariaLabels?.previous ?? paginatorMessages?.previous ?? 'Previous page',
-        next: ariaLabels?.next ?? paginatorMessages?.next ?? 'Next page',
-        last: ariaLabels?.last ?? paginatorMessages?.last ?? 'Last page',
-        page:
-            ariaLabels?.page ??
-            paginatorMessages?.page ??
-            ((number: number) => `Page ${number}`),
-        pages: ariaLabels?.pages ?? paginatorMessages?.pages ?? 'Pages',
-    };
+    const labels = resolvePaginatorLabels(ariaLabels, paginatorMessages);
+    const rootPart = pt?.root;
 
     return (
         <div
-            {...pt?.root}
+            {...rootPart}
             ref={rootRef}
             onFocus={(event) => {
                 focusedControl.current = event.target;
-                pt?.root?.onFocus?.(event);
+                rootPart?.onFocus?.(event);
             }}
             role='navigation'
             aria-label={labels.navigation}
             data-cratis-part='root'
             data-cratis-component='TablePaginator'
-            className={['cratis-table-paginator', pt?.root?.className, className]
-                .filter(Boolean)
-                .join(' ')}
+            className={joinClassNames('cratis-table-paginator', rootPart?.className, className)}
         >
-            {rangeReport && (
-                <span
-                    {...pt?.range}
-                    className={['cratis-table-paginator-range', pt?.range?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='range'
-                >
-                    {rangeReport}
-                </span>
-            )}
-            <Button
-                variant='ghost'
-                disabled={isFirst}
-                onClick={() => onPageChange(0)}
-                aria-label={labels.first}
-                pt={pt?.first}
-            >
-                <span aria-hidden='true'>«</span>
-            </Button>
-            <Button
-                variant='ghost'
-                disabled={isFirst}
-                onClick={() => onPageChange(page - 1)}
-                aria-label={labels.previous}
-                pt={pt?.previous}
-            >
-                <span aria-hidden='true'>{icon('previous', '‹')}</span>
-            </Button>
+            {renderRange(rangeReport, pt?.range)}
+            {renderPageButton({ disabled: isFirst, onClick: () => onPageChange(0), label: labels.first, parts: pt?.first, glyph: '«' })}
+            {renderPageButton({
+                disabled: isFirst,
+                onClick: () => onPageChange(page - 1),
+                label: labels.previous,
+                parts: pt?.previous,
+                glyph: icon('previous', '‹'),
+            })}
             {pageLinks ? (
                 <TablePaginatorPages
                     page={page}
@@ -120,34 +120,22 @@ export const TablePaginatorImplementation = ({
                     pagesLabel={labels.pages}
                 />
             ) : (
-                <span
-                    {...pt?.info}
-                    className={['cratis-table-paginator-info', pt?.info?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='info'
-                >
-                    {page + 1} / {Math.max(pageCount, 1)}
-                </span>
+                renderInfo(page, pageCount, pt?.info)
             )}
-            <Button
-                variant='ghost'
-                disabled={isLast}
-                onClick={() => onPageChange(page + 1)}
-                aria-label={labels.next}
-                pt={pt?.next}
-            >
-                <span aria-hidden='true'>{icon('next', '›')}</span>
-            </Button>
-            <Button
-                variant='ghost'
-                disabled={isLast}
-                onClick={() => onPageChange(pageCount - 1)}
-                aria-label={labels.last}
-                pt={pt?.last}
-            >
-                <span aria-hidden='true'>»</span>
-            </Button>
+            {renderPageButton({
+                disabled: isLast,
+                onClick: () => onPageChange(page + 1),
+                label: labels.next,
+                parts: pt?.next,
+                glyph: icon('next', '›'),
+            })}
+            {renderPageButton({
+                disabled: isLast,
+                onClick: () => onPageChange(pageCount - 1),
+                label: labels.last,
+                parts: pt?.last,
+                glyph: '»',
+            })}
         </div>
     );
 };

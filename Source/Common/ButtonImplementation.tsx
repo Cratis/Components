@@ -2,52 +2,74 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { forwardRef, type ReactNode } from 'react';
-import type {
-    ButtonProps,
-    ButtonSeverity,
-    ButtonTone,
-} from './Button';
+import type { ButtonProps } from './Button';
+import type { TooltipProps } from './Tooltip';
+import { resolveButtonPresentation, warnForDeprecatedProps } from './buttonPresentation';
 import { TooltipImplementation } from './TooltipImplementation';
 
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
-const toneForSeverity: Record<ButtonSeverity, ButtonTone> = {
-    secondary: 'neutral',
-    info: 'accent',
-    help: 'accent',
-    success: 'positive',
-    warn: 'caution',
-    danger: 'critical',
-    contrast: 'neutral',
+const joinClassNames = (...classNames: (string | undefined)[]) => classNames.filter(Boolean).join(' ');
+
+type ButtonParts = NonNullable<ButtonProps['pt']>;
+
+const noButtonParts: ButtonParts = Object.freeze({});
+
+const renderSpinner = ({ spinner }: ButtonParts) => (
+    <span
+        {...spinner}
+        className={joinClassNames('cratis-button__spinner', spinner?.className)}
+        data-cratis-part='spinner'
+        aria-hidden='true'
+    />
+);
+
+const renderIconPart = (icon: ReactNode, { icon: iconPart }: ButtonParts) => (
+    <span
+        {...iconPart}
+        className={joinClassNames('cratis-button__icon', iconPart?.className)}
+        data-cratis-part='icon'
+        aria-hidden={iconPart?.['aria-hidden'] ?? true}
+    >
+        {renderIcon(icon)}
+    </span>
+);
+
+const renderLeading = (loading: boolean | undefined, icon: ReactNode, parts: ButtonParts) => {
+    if (loading) return renderSpinner(parts);
+    return icon ? renderIconPart(icon, parts) : null;
 };
 
-const severityForTone: Record<ButtonTone, ButtonSeverity> = {
-    neutral: 'secondary',
-    accent: 'info',
-    positive: 'success',
-    caution: 'warn',
-    critical: 'danger',
-};
+const buttonState = ({ disabled, loading, icon, label, children }: Pick<ButtonProps, 'disabled' | 'loading' | 'icon' | 'label' | 'children'>) => ({
+    effectiveDisabled: Boolean(disabled || loading),
+    iconOnly: Boolean(icon) && label === undefined && !children,
+});
 
-type DeprecatedButtonProp = 'severity' | 'text' | 'link' | 'outlined' | 'rounded';
-
-const warnedDeprecatedProps = new Set<DeprecatedButtonProp>();
-
-const warnForDeprecatedProp = (prop: DeprecatedButtonProp) => {
-    const environment = (
-        globalThis as typeof globalThis & {
-            process?: { env?: { NODE_ENV?: string } };
-        }
-    ).process?.env?.NODE_ENV;
-
-    if (environment === 'production' || warnedDeprecatedProps.has(prop)) return;
-
-    warnedDeprecatedProps.add(prop);
-    console.warn(
-        `Button prop "${prop}" is deprecated and will be removed in 5.0. Use variant, tone, or shape instead.`,
+const renderLabel = ({ label, children }: Pick<ButtonProps, 'label' | 'children'>, { label: labelPart }: ButtonParts) =>
+    (label !== undefined || children) && (
+        <span
+            {...labelPart}
+            className={joinClassNames('cratis-button__label', labelPart?.className)}
+            data-cratis-part='label'
+        >
+            {label}
+            {children}
+        </span>
     );
-};
+
+const withTooltip = (button: TooltipProps['children'], { tooltip, tooltipOptions }: Pick<ButtonProps, 'tooltip' | 'tooltipOptions'>) =>
+    tooltip ? (
+        <TooltipImplementation
+            content={tooltip}
+            position={tooltipOptions?.position}
+            className={tooltipOptions?.className}
+        >
+            {button}
+        </TooltipImplementation>
+    ) : (
+        button
+    );
 
 /** Core implementation for the button presentation slot. */
 export const ButtonImplementation = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -81,27 +103,17 @@ export const ButtonImplementation = forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ref,
     ) {
-        if (text !== undefined) warnForDeprecatedProp('text');
-        if (link !== undefined) warnForDeprecatedProp('link');
-        if (outlined !== undefined) warnForDeprecatedProp('outlined');
-        if (rounded !== undefined) warnForDeprecatedProp('rounded');
-        if (severity !== undefined) warnForDeprecatedProp('severity');
+        const presentationProps = { variant, tone, shape, text, link, outlined, rounded, severity };
+        warnForDeprecatedProps(presentationProps);
 
-        const selectedVariant =
-            variant ??
-            (link ? 'link' : text ? 'ghost' : outlined ? 'outline' : 'solid');
-        const selectedTone = tone ?? (severity ? toneForSeverity[severity] : undefined);
-        const selectedShape = shape ?? (rounded ? 'pill' : 'default');
-        const legacySeverity = tone ? severityForTone[tone] : severity;
-        const effectiveDisabled = Boolean(disabled || loading);
-        const iconOnly = Boolean(icon) && label === undefined && !children;
-        const rootClassName = ['cratis-button', pt?.root?.className, className]
-            .filter(Boolean)
-            .join(' ');
+        const presentation = resolveButtonPresentation(presentationProps);
+        const { effectiveDisabled, iconOnly } = buttonState({ disabled, loading, icon, label, children });
+        const parts = pt ?? noButtonParts;
+        const rootPart = parts.root;
 
         const button = (
             <button
-                {...pt?.root}
+                {...rootPart}
                 {...nativeProps}
                 ref={ref}
                 type={type}
@@ -109,69 +121,25 @@ export const ButtonImplementation = forwardRef<HTMLButtonElement, ButtonProps>(
                 autoFocus={autoFocus}
                 disabled={effectiveDisabled}
                 onClick={onClick}
-                className={rootClassName}
-                style={{ ...pt?.root?.style, ...style }}
+                className={joinClassNames('cratis-button', rootPart?.className, className)}
+                style={{ ...rootPart?.style, ...style }}
                 aria-label={ariaLabel}
                 aria-busy={loading || undefined}
                 data-cratis-part='root'
-                data-variant={selectedVariant}
-                data-tone={selectedTone}
-                data-severity={legacySeverity}
-                data-shape={selectedShape}
+                data-variant={presentation.variant}
+                data-tone={presentation.tone}
+                data-severity={presentation.severity}
+                data-shape={presentation.shape}
                 data-size={size}
                 data-disabled={effectiveDisabled || undefined}
                 data-loading={loading || undefined}
                 data-icon-only={iconOnly || undefined}
             >
-                {loading ? (
-                    <span
-                        {...pt?.spinner}
-                        className={[
-                            'cratis-button__spinner',
-                            pt?.spinner?.className,
-                        ]
-                            .filter(Boolean)
-                            .join(' ')}
-                        data-cratis-part='spinner'
-                        aria-hidden='true'
-                    />
-                ) : icon ? (
-                    <span
-                        {...pt?.icon}
-                        className={['cratis-button__icon', pt?.icon?.className]
-                            .filter(Boolean)
-                            .join(' ')}
-                        data-cratis-part='icon'
-                        aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
-                    >
-                        {renderIcon(icon)}
-                    </span>
-                ) : null}
-                {(label !== undefined || children) && (
-                    <span
-                        {...pt?.label}
-                        className={['cratis-button__label', pt?.label?.className]
-                            .filter(Boolean)
-                            .join(' ')}
-                        data-cratis-part='label'
-                    >
-                        {label}
-                        {children}
-                    </span>
-                )}
+                {renderLeading(loading, icon, parts)}
+                {renderLabel({ label, children }, parts)}
             </button>
         );
 
-        return tooltip ? (
-            <TooltipImplementation
-                content={tooltip}
-                position={tooltipOptions?.position}
-                className={tooltipOptions?.className}
-            >
-                {button}
-            </TooltipImplementation>
-        ) : (
-            button
-        );
+        return withTooltip(button, { tooltip, tooltipOptions });
     },
 );
