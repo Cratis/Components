@@ -43,7 +43,7 @@ const renderNumber = (state: PropertyControlState) => {
             onBlur={leave}
             className={partClass('cratis-property__input', parts?.input)}
             data-cratis-part='input'
-            data-invalid={invalidAttribute(state.shownMessage)}
+            data-invalid={state.shownMessage ? true : undefined}
         />
     );
 };
@@ -71,7 +71,7 @@ const renderChoice = (state: PropertyControlState) => {
             onChange={(event) => commit(optionalValue(event.target.value))}
             className={partClass('cratis-property__input', parts?.select)}
             data-cratis-part='select'
-            data-invalid={invalidAttribute(shownMessage)}
+            data-invalid={shownMessage ? true : undefined}
         >
             <option value=''>{state.labels.unset}</option>
             {renderChoiceOptions(descriptor, value, known)}
@@ -123,7 +123,7 @@ const renderText = (state: PropertyControlState) => {
             onKeyDown={(event) => handleTextKeyDown(event, state)}
             className={partClass('cratis-property__input', parts?.input)}
             data-cratis-part='input'
-            data-invalid={invalidAttribute(state.shownMessage)}
+            data-invalid={state.shownMessage ? true : undefined}
         />
     );
 };

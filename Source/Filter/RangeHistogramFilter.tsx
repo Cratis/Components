@@ -137,8 +137,8 @@ interface RangeHandleOptions {
     valueMax: number;
     valueNow: number;
     formatValue: (value: number) => string;
-    selected: true | undefined;
-    pressed: true | undefined;
+    selected: boolean;
+    pressed: boolean;
     onMouseDown: (e: React.MouseEvent, handle: RangeHandle) => void;
     onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>, handle: RangeHandle) => void;
 }
@@ -156,8 +156,8 @@ const renderRangeHandle = (options: RangeHandleOptions) => {
             aria-valuemax={options.valueMax}
             aria-valuenow={options.valueNow}
             aria-valuetext={options.formatValue(options.valueNow)}
-            data-selected={options.selected}
-            data-pressed={options.pressed}
+            data-selected={options.selected || undefined}
+            data-pressed={options.pressed || undefined}
             onMouseDown={(e) => onMouseDown(e, handle)}
             onKeyDown={(event) => onKeyDown(event, handle)}
         />
@@ -275,13 +275,12 @@ export function RangeHistogramFilter({
     const leftPos = getPositionFromValue(currentRange[0]);
     const rightPos = getPositionFromValue(currentRange[1]);
     const rangeSelected = selectedRange !== null;
-    const selected = rangeSelected || undefined;
 
     return (
         <div
             className='pv-range-histogram'
             ref={containerRef}
-            data-selected={selected}
+            data-selected={rangeSelected || undefined}
             data-cratis-component='RangeHistogramFilter'
         >
             <div className='pv-histogram-bars'>
@@ -292,7 +291,7 @@ export function RangeHistogramFilter({
 
             <div
                 className='pv-range-slider'
-                data-selected={selected}
+                data-selected={rangeSelected || undefined}
             >
                 <div className='pv-range-track' />
                 <div
@@ -301,7 +300,7 @@ export function RangeHistogramFilter({
                         left: `${leftPos}%`,
                         width: `${rightPos - leftPos}%`,
                     }}
-                    data-selected={selected}
+                    data-selected={rangeSelected || undefined}
                     data-pressed={isDragging === 'range' || undefined}
                     onMouseDown={(e) => handleMouseDown(e, 'range')}
                 />
@@ -313,8 +312,8 @@ export function RangeHistogramFilter({
                     valueMax: currentRange[1] - minimumGap,
                     valueNow: currentRange[0],
                     formatValue,
-                    selected,
-                    pressed: isDragging === 'left' || undefined,
+                    selected: rangeSelected,
+                    pressed: isDragging === 'left',
                     onMouseDown: handleMouseDown,
                     onKeyDown: handleHandleKeyDown,
                 })}
@@ -326,8 +325,8 @@ export function RangeHistogramFilter({
                     valueMax: max,
                     valueNow: currentRange[1],
                     formatValue,
-                    selected,
-                    pressed: isDragging === 'right' || undefined,
+                    selected: rangeSelected,
+                    pressed: isDragging === 'right',
                     onMouseDown: handleMouseDown,
                     onKeyDown: handleHandleKeyDown,
                 })}
