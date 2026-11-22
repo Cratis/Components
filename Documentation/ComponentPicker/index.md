@@ -133,6 +133,12 @@ Components with descriptors today:
 | --- | --- | --- |
 | `Button` | `Button` | `label`, `tooltip`, `variant`, `tone`, `shape`, `size` |
 | `IconButton` | `IconButton` | `tooltip`, `variant`, `tone`, `shape`, `size` |
+| `Badge` | `Badge` | `severity`, `size`, `shape` |
+| `Chip` | `Chip` | `label`, `removeAriaLabel` |
+| `Avatar` | `Avatar` | `label`, `alt`, `size` |
+| `Tag` | `Tag` | `severity`, `rounded` |
+| `Skeleton` | `Skeleton` | `width`, `height`, `borderRadius`, `circle` |
+| `ProgressSpinner` | `ProgressSpinner` | `aria-label` |
 | `TextInput` | `TextInput` | `placeholder`, `invalid`, `disabled`, `readOnly`, `type` |
 | `TextArea` | `TextArea` | `placeholder`, `rows`, `invalid`, `disabled`, `readOnly` |
 | `Dialog` | `Dialog` | `title`, `placement`, `width`, `okLabel`, `cancelLabel` |
