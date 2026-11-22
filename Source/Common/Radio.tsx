@@ -86,5 +86,5 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
 ) {
     const declaration = unstable_useSlot('common.radio', coreRadioDeclaration);
     const [presented, marker] = useComponentPresentation(radioDescriptor, props, props.id ?? props.name);
-        return renderSlot(declaration, { ...presented, ...marker }, ref);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });

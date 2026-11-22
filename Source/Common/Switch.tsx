@@ -75,5 +75,5 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
 ) {
     const declaration = unstable_useSlot('common.switch', coreSwitchDeclaration);
     const [presented, marker] = useComponentPresentation(switchDescriptor, props, props.id ?? props.name);
-        return renderSlot(declaration, { ...presented, ...marker }, ref);
+    return renderSlot(declaration, { ...presented, ...marker }, ref);
 });
