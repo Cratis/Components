@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import { DialogTrigger } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
 import { Popover } from 'react-aria-components/Popover';
@@ -92,6 +92,136 @@ export interface IconPickerProps {
     pt?: IconPickerParts;
 }
 
+const pickerFlags = ({ readOnly = false, disabled = false, invalid, validationMessage }: IconPickerProps) => ({
+    readOnly,
+    disabled,
+    editable: !disabled && !readOnly,
+    invalid: invalid ?? validationMessage !== undefined,
+});
+
+const overlayZIndex = (nearestDialogZIndex: string | null) =>
+    nearestDialogZIndex === null ? 'var(--cratis-z-index-overlay)' : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
+
+const findSelectedEntry = (icons: IconPickerCatalog['icons'], value: IconPickerProps['value']) => {
+    if (!value) return undefined;
+    const identity = iconPickerIdentity(value);
+    return icons.find(candidate => iconPickerIdentity(candidate) === identity);
+};
+
+const providerNameOf = (entry: IconPickerEntry | undefined, libraries: IconPickerCatalog['libraries']) =>
+    entry && libraries.length > 1
+        ? (libraries.find(library => library.id === entry.library)?.name ?? entry.library)
+        : undefined;
+
+interface SelectionOptions {
+    value: IconPickerProps['value'];
+    entry: IconPickerEntry | undefined;
+    catalog: IconPickerCatalog;
+    labels: Required<IconPickerLabels>;
+}
+
+/** Whether the selection is missing from a ready catalog, who provides it, and what to say when it is missing. */
+const describeSelection = ({ value, entry, catalog, labels }: SelectionOptions) => {
+    const status = catalog.status ?? 'ready';
+    const missing = value != null && entry === undefined && status === 'ready';
+    const providerName = providerNameOf(entry, catalog.libraries);
+    const missingMessage = missing && value ? labels.missingSelection(formatIconPickerIdentity(value)) : undefined;
+    return { missing, providerName, missingMessage };
+};
+
+interface MessagesOptions {
+    props: IconPickerProps;
+    missingMessage: string | undefined;
+    baseId: string;
+}
+
+/** The element id of the messages, whether there are any, and what describes the trigger. */
+const describeMessages = ({ props, missingMessage, baseId }: MessagesOptions) => {
+    const messageId = `${baseId}-message`;
+    const hasMessage = missingMessage !== undefined || props.validationMessage !== undefined;
+    const describedBy = [props['aria-describedby'], hasMessage ? messageId : undefined].filter(Boolean).join(' ') || undefined;
+    return { messageId, hasMessage, describedBy };
+};
+
+/** What the picker's trigger, overlay and messages render from. */
+interface PickerView {
+    props: IconPickerProps;
+    labels: Required<IconPickerLabels>;
+    flags: ReturnType<typeof pickerFlags>;
+    open: boolean;
+    baseId: string;
+    entry: IconPickerEntry | undefined;
+    selection: ReturnType<typeof describeSelection>;
+    messages: ReturnType<typeof describeMessages>;
+    isNarrow: boolean;
+    zIndex: ReturnType<typeof overlayZIndex>;
+}
+
+const renderTrigger = ({ props, labels, flags, open, baseId, entry, selection, messages }: PickerView) => (
+    <IconPickerTrigger
+        entry={entry}
+        fallbackName={props.value ? formatIconPickerIdentity(props.value) : labels.placeholder}
+        providerName={selection.providerName}
+        missing={selection.missing}
+        open={open}
+        disabled={flags.disabled}
+        readOnly={flags.readOnly}
+        invalid={flags.invalid}
+        id={props.id}
+        nameId={`${baseId}-name`}
+        label={props['aria-label'] ?? labels.trigger}
+        labelledBy={props['aria-labelledby']}
+        describedBy={messages.describedBy}
+        parts={props.pt}
+    />
+);
+
+const renderOverlay = ({ props, isNarrow, zIndex }: PickerView, popout: ReactNode) => {
+    const { placement = 'bottom start' } = props;
+    const popoverParts = props.pt?.popover;
+    return isNarrow ? (
+        <ModalOverlay isDismissable className='cratis-icon-picker__overlay' style={{ zIndex }}>
+            <Modal
+                {...popoverParts}
+                className={classNames('cratis-icon-picker__sheet', popoverParts?.className)}
+                data-cratis-part='popover'
+                data-open
+            >
+                {popout}
+            </Modal>
+        </ModalOverlay>
+    ) : (
+        <Popover
+            {...popoverParts}
+            placement={placement}
+            className={classNames('cratis-icon-picker__popover', popoverParts?.className)}
+            style={{ zIndex, ...popoverParts?.style }}
+            data-cratis-part='popover'
+            data-open
+        >
+            {popout}
+        </Popover>
+    );
+};
+
+const renderMessage = (props: IconPickerProps, message: string) => (
+    <p
+        {...props.pt?.message}
+        className={classNames('cratis-icon-picker__message', props.pt?.message?.className)}
+        data-cratis-part='message'
+    >
+        {message}
+    </p>
+);
+
+const renderMessages = ({ props, selection, messages }: PickerView) =>
+    messages.hasMessage && (
+        <div id={messages.messageId} className='cratis-icon-picker__messages'>
+            {selection.missingMessage !== undefined && renderMessage(props, selection.missingMessage)}
+            {props.validationMessage !== undefined && renderMessage(props, props.validationMessage)}
+        </div>
+    );
+
 /**
  * An icon property control: a closed trigger showing the selected glyph and name, which opens a
  * searchable, categorized popout of the host's icon catalog.
@@ -101,35 +231,23 @@ export interface IconPickerProps {
  * library for a selection it cannot find. On a narrow viewport the popout becomes a contained sheet.
  */
 export const IconPicker = (props: IconPickerProps) => {
-    const { value, onChange, catalog, allowed, readOnly = false, disabled = false, placement = 'bottom start' } = props;
+    const { value, onChange, catalog, allowed } = props;
+    const flags = pickerFlags(props);
+    const { readOnly, disabled, editable, invalid } = flags;
     const labels = { ...defaultIconPickerLabels, ...props.labels };
     const [open, setOpen] = useState(false);
     const baseId = useId();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const nearestDialogZIndex = useNearestDialogZIndex();
     const isNarrow = useNarrowViewport();
-    const editable = !disabled && !readOnly;
-    const invalid = props.invalid ?? props.validationMessage !== undefined;
-    const status = catalog.status ?? 'ready';
-    const zIndex =
-        nearestDialogZIndex === null ? 'var(--cratis-z-index-overlay)' : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
+    const zIndex = overlayZIndex(nearestDialogZIndex);
 
-    const entry = useMemo(() => {
-        if (!value) return undefined;
-        const identity = iconPickerIdentity(value);
-        return catalog.icons.find(candidate => iconPickerIdentity(candidate) === identity);
-    }, [catalog.icons, value]);
-    const missing = value != null && entry === undefined && status === 'ready';
-    const hasSeveralLibraries = catalog.libraries.length > 1;
-    const providerName =
-        entry && hasSeveralLibraries
-            ? (catalog.libraries.find(library => library.id === entry.library)?.name ?? entry.library)
-            : undefined;
-    const missingMessage = missing && value ? labels.missingSelection(formatIconPickerIdentity(value)) : undefined;
+    const entry = useMemo(() => findSelectedEntry(catalog.icons, value), [catalog.icons, value]);
+    const selection = describeSelection({ value, entry, catalog, labels });
+    const messages = describeMessages({ props, missingMessage: selection.missingMessage, baseId });
+    const view: PickerView = { props, labels, flags, open, baseId, entry, selection, messages, isNarrow, zIndex };
 
-    const messageId = `${baseId}-message`;
-    const hasMessage = missingMessage !== undefined || props.validationMessage !== undefined;
-    const describedBy = [props['aria-describedby'], hasMessage ? messageId : undefined].filter(Boolean).join(' ') || undefined;
+    const changeOpen = (next: boolean) => setOpen(next && editable);
 
     const choose = (picked: IconPickerEntry) => {
         if (!editable || !isIconPickerAllowed(picked, allowed)) return;
@@ -150,10 +268,12 @@ export const IconPicker = (props: IconPickerProps) => {
         />
     );
 
+    const rootParts = props.pt?.root;
+
     return (
         <div
-            {...props.pt?.root}
-            className={classNames('cratis-icon-picker', props.className, props.pt?.root?.className)}
+            {...rootParts}
+            className={classNames('cratis-icon-picker', props.className, rootParts?.className)}
             data-cratis-part='root'
             data-cratis-component='IconPicker'
             data-disabled={disabled || undefined}
@@ -162,70 +282,12 @@ export const IconPicker = (props: IconPickerProps) => {
             data-open={open || undefined}
         >
             <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
-                <DialogTrigger isOpen={open} onOpenChange={next => setOpen(next && editable)}>
-                    <IconPickerTrigger
-                        entry={entry}
-                        fallbackName={value ? formatIconPickerIdentity(value) : labels.placeholder}
-                        providerName={providerName}
-                        missing={missing}
-                        open={open}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                        invalid={invalid}
-                        id={props.id}
-                        nameId={`${baseId}-name`}
-                        label={props['aria-label'] ?? labels.trigger}
-                        labelledBy={props['aria-labelledby']}
-                        describedBy={describedBy}
-                        parts={props.pt}
-                    />
-                    {isNarrow ? (
-                        <ModalOverlay isDismissable className='cratis-icon-picker__overlay' style={{ zIndex }}>
-                            <Modal
-                                {...props.pt?.popover}
-                                className={classNames('cratis-icon-picker__sheet', props.pt?.popover?.className)}
-                                data-cratis-part='popover'
-                                data-open
-                            >
-                                {popout}
-                            </Modal>
-                        </ModalOverlay>
-                    ) : (
-                        <Popover
-                            {...props.pt?.popover}
-                            placement={placement}
-                            className={classNames('cratis-icon-picker__popover', props.pt?.popover?.className)}
-                            style={{ zIndex, ...props.pt?.popover?.style }}
-                            data-cratis-part='popover'
-                            data-open
-                        >
-                            {popout}
-                        </Popover>
-                    )}
+                <DialogTrigger isOpen={open} onOpenChange={changeOpen}>
+                    {renderTrigger(view)}
+                    {renderOverlay(view, popout)}
                 </DialogTrigger>
             </UNSAFE_PortalProvider>
-            {hasMessage && (
-                <div id={messageId} className='cratis-icon-picker__messages'>
-                    {missingMessage !== undefined && (
-                        <p
-                            {...props.pt?.message}
-                            className={classNames('cratis-icon-picker__message', props.pt?.message?.className)}
-                            data-cratis-part='message'
-                        >
-                            {missingMessage}
-                        </p>
-                    )}
-                    {props.validationMessage !== undefined && (
-                        <p
-                            {...props.pt?.message}
-                            className={classNames('cratis-icon-picker__message', props.pt?.message?.className)}
-                            data-cratis-part='message'
-                        >
-                            {props.validationMessage}
-                        </p>
-                    )}
-                </div>
-            )}
+            {renderMessages(view)}
         </div>
     );
 };
