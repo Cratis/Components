@@ -682,6 +682,9 @@ export const partDefinitions = {
         sources: [
             'ConfigurationEditor/OrderedItemEditor.tsx',
             'ConfigurationEditor/OrderedItemRow.tsx',
+            'ConfigurationEditor/OrderedItemRowControls.tsx',
+            'ConfigurationEditor/OrderedItemRowFields.tsx',
+            'ConfigurationEditor/OrderedItemEditorSections.tsx',
             'ConfigurationEditor/OrderedItemIconField.tsx',
             'ConfigurationEditor/OrderedItemDestinationField.tsx',
         ],

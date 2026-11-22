@@ -1,38 +1,22 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    useCallback,
-    useId,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-    type DragEvent,
-    type ReactNode,
-} from 'react';
+import type { ReactNode } from 'react';
 import type { IconPickerAllowed } from '../IconPicker/IconPickerAllowed';
 import type { IconPickerCatalog } from '../IconPicker/IconPickerCatalog';
 import type { IconPickerLabels } from '../IconPicker/IconPickerLabels';
-import { isIconPickerAllowed } from '../IconPicker/isIconPickerAllowed';
 import type { ConfigurationDestination } from './ConfigurationDestination';
 import type { ConfigurationIconReference } from './ConfigurationIconReference';
 import type { OrderedItem } from './OrderedItem';
 import type { OrderedItemCapabilities } from './OrderedItemCapabilities';
 import type { OrderedItemEditorParts } from './OrderedItemEditorParts';
-import type { OrderedItemField } from './OrderedItemField';
 import type { OrderedItemIconFieldProps } from './OrderedItemIconFieldProps';
 import type { OrderedItemLabels } from './OrderedItemLabels';
 import type { OrderedItemProposal } from './OrderedItemProposal';
 import type { OrderedItemValidation } from './OrderedItemValidation';
 import { OrderedItemRow } from './OrderedItemRow';
-import { moveOrderedItem } from './moveOrderedItem';
-import { resolveOrderedItemFieldAccess } from './resolveOrderedItemFieldAccess';
-import { resolveOrderedItemDropIndex } from './resolveOrderedItemDropIndex';
-import { resolveOrderedItemLabels } from './resolveOrderedItemLabels';
-import { hasOrderedItemValidation, validateOrderedItem } from './validateOrderedItem';
-
-const dragType = 'application/x-cratis-ordered-item';
+import { useOrderedItemEditor, type OrderedItemEditorState } from './useOrderedItemEditor';
+import { renderOrderedItemFixedSection, renderOrderedItemLocalSection, renderOrderedItemStatus } from './OrderedItemEditorSections';
 
 /** Props for the {@link OrderedItemEditor} component. */
 export interface OrderedItemEditorProps<TItem extends OrderedItem = OrderedItem> {
@@ -101,30 +85,74 @@ export interface OrderedItemEditorProps<TItem extends OrderedItem = OrderedItem>
     pt?: OrderedItemEditorParts;
 }
 
-interface PendingFocus {
-    itemId: string | undefined;
-    control: string;
-    announce: boolean;
-}
+const mergedValidation = <TItem extends OrderedItem>({ localValidation, validation }: OrderedItemEditorState<TItem>, item: TItem): OrderedItemValidation | undefined => {
+    const local = localValidation[item.id];
+    const supplied = validation?.[item.id];
+    return local || supplied ? { ...supplied, ...local } : undefined;
+};
 
-interface DragState {
-    id: string;
-    overId?: string;
-    position?: 'before' | 'after';
-}
+const rowValidation = <TItem extends OrderedItem>(state: OrderedItemEditorState<TItem>, item: TItem, locked: boolean) =>
+    locked ? state.validation?.[item.id] : mergedValidation(state, item);
 
-const sameIcon = (left: ConfigurationIconReference | undefined, right: ConfigurationIconReference | undefined) =>
-    left === right ||
-    (left !== undefined && right !== undefined && left.library === right.library && left.key === right.key && left.variant === right.variant);
+const dropPosition = <TItem extends OrderedItem>({ drag }: OrderedItemEditorState<TItem>, item: TItem) =>
+    drag?.overId === item.id && drag.id !== item.id ? drag.position : undefined;
 
-const withField = <TItem extends OrderedItem>(
-    item: TItem,
-    field: OrderedItemField,
-    value: string | ConfigurationIconReference | undefined,
-): TItem => {
-    const next = { ...item, [field]: value };
-    if (value === undefined) delete (next as Record<string, unknown>)[field];
-    return next;
+const rowRenderer = <TItem extends OrderedItem>(state: OrderedItemEditorState<TItem>) => (item: TItem, index: number, count: number, locked: boolean) => (
+    <OrderedItemRow
+        key={item.id}
+        item={item}
+        index={index}
+        count={count}
+        locked={locked}
+        capabilities={state.capabilities}
+        labels={state.labels}
+        destinations={state.destinations}
+        validation={rowValidation(state, item, locked)}
+        baseId={state.baseId}
+        parts={state.pt}
+        renderIconField={state.renderIconField}
+        isIconAvailable={state.isIconAvailable}
+        iconCatalog={state.iconCatalog}
+        allowedIcons={state.allowedIcons}
+        iconPickerLabels={state.iconPickerLabels}
+        dragging={state.drag?.id === item.id}
+        dropPosition={dropPosition(state, item)}
+        onField={state.handleField}
+        onFieldBlur={state.handleFieldBlur}
+        onMove={state.handleMove}
+        onRemove={state.handleRemove}
+        onDragStart={state.handleDragStart}
+        onDragOver={state.handleDragOver}
+        onDrop={state.handleDrop}
+        onDragEnd={() => state.setDrag(null)}
+    />
+);
+
+const accessibleName = <TItem extends OrderedItem>(state: OrderedItemEditorState<TItem>) =>
+    state['aria-labelledby'] ? undefined : state['aria-label'] ?? state.labels.localItems;
+
+const renderEditor = <TItem extends OrderedItem>(state: OrderedItemEditorState<TItem>) => {
+    const { pt, rootRef, pending, restoring, className, announcement } = state;
+    const sections = { ...state, renderRow: rowRenderer(state) };
+    return (
+        <div
+            {...pt?.root}
+            ref={rootRef}
+            role='group'
+            aria-label={accessibleName(state)}
+            aria-labelledby={state['aria-labelledby']}
+            className={['cratis-ordered-item-editor', pt?.root?.className, className].filter(Boolean).join(' ')}
+            onKeyDownCapture={() => { pending.current = null; }}
+            onPointerDownCapture={() => { pending.current = null; }}
+            onFocusCapture={() => { if (!restoring.current) pending.current = null; }}
+            data-cratis-part='root'
+            data-cratis-component='OrderedItemEditor'
+        >
+            {renderOrderedItemFixedSection(sections)}
+            {renderOrderedItemLocalSection(sections)}
+            {renderOrderedItemStatus(pt, announcement)}
+        </div>
+    );
 };
 
 /**
@@ -137,306 +165,7 @@ const withField = <TItem extends OrderedItem>(
  * difference never rests on opacity. Reordering works by dragging the handle, with the handle's
  * arrow keys, and with labeled move-up and move-down buttons; focus follows the item that moved.
  */
-export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>({
-    items,
-    fixedItems = [],
-    capabilities,
-    onChange,
-    destinations = [],
-    createItem,
-    renderIconField,
-    isIconAvailable,
-    iconCatalog,
-    allowedIcons,
-    iconPickerLabels,
-    validate,
-    validation,
-    labels: suppliedLabels,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    className,
-    pt,
-}: OrderedItemEditorProps<TItem>) => {
-    const labels = useMemo(() => resolveOrderedItemLabels(suppliedLabels), [suppliedLabels]);
-    const baseId = useId();
-    const rootRef = useRef<HTMLDivElement>(null);
-    const pending = useRef<PendingFocus | null>(null);
-    const restoring = useRef(false);
-    const [localValidation, setLocalValidation] = useState<Record<string, OrderedItemValidation>>({});
-    const [drag, setDrag] = useState<DragState | null>(null);
-    const [announcement, setAnnouncement] = useState('');
-
-    const canAdd =
-        capabilities.add &&
-        createItem !== undefined &&
-        (capabilities.maxItems === undefined || items.length < capabilities.maxItems);
-    const atMaximum = capabilities.add && capabilities.maxItems !== undefined && items.length >= capabilities.maxItems;
-
-    useLayoutEffect(() => {
-        const target = pending.current;
-        const root = rootRef.current;
-        if (!target || !root) return;
-        const row = target.itemId === undefined
-            ? root
-            : Array.from(root.querySelectorAll<HTMLElement>('[data-item-id]')).find((element) => element.dataset.itemId === target.itemId);
-        if (!row) return;
-        const control = Array.from(row.querySelectorAll<HTMLElement>('[data-control]')).find(
-            (element) => element.dataset.control === target.control,
-        );
-        const focusable = control ?? (target.itemId === undefined ? undefined : row);
-        if (!focusable) return;
-        restoring.current = true;
-        focusable.focus();
-        restoring.current = false;
-        pending.current = null;
-        if (target.announce && target.itemId !== undefined) {
-            const index = items.findIndex((item) => item.id === target.itemId);
-            if (index >= 0) setAnnouncement(labels.moved(items[index].label || labels.untitled, index + 1, items.length));
-        }
-    });
-
-    const move = useCallback((item: TItem, toIndex: number, control: string) => {
-        if (!capabilities.reorder) return;
-        const fromIndex = items.findIndex((candidate) => candidate.id === item.id);
-        if (fromIndex < 0 || toIndex < 0 || toIndex >= items.length || toIndex === fromIndex) return;
-        pending.current = { itemId: item.id, control, announce: true };
-        onChange({ kind: 'move', item: items[fromIndex], fromIndex, toIndex, items: moveOrderedItem(items, fromIndex, toIndex) });
-    }, [capabilities.reorder, items, onChange]);
-
-    const handleMove = (item: TItem, delta: -1 | 1, control: string) => {
-        const index = items.findIndex((candidate) => candidate.id === item.id);
-        if (index >= 0) move(item, index + delta, control);
-    };
-
-    const handleField = (item: TItem, field: OrderedItemField, value: string | ConfigurationIconReference | undefined) => {
-        if (resolveOrderedItemFieldAccess(capabilities, field) !== 'editable') return;
-        if (field === 'icon' && allowedIcons !== undefined && iconCatalog !== undefined && value !== undefined) {
-            const picked = value as ConfigurationIconReference;
-            const entry = iconCatalog.icons.find(
-                (candidate) => candidate.library === picked.library && candidate.key === picked.key && candidate.variant === picked.variant,
-            );
-            if (entry !== undefined && !isIconPickerAllowed(entry, allowedIcons)) return;
-        }
-        const index = items.findIndex((candidate) => candidate.id === item.id);
-        if (index < 0) return;
-        const previous = items[index];
-        const unchanged = field === 'icon'
-            ? sameIcon(previous.icon, value as ConfigurationIconReference | undefined)
-            : previous[field] === value;
-        if (unchanged) return;
-        const next = withField(previous, field, value);
-        const nextItems = items.map((candidate, position) => (position === index ? next : candidate));
-        const messages = validateOrderedItem(next, nextItems, capabilities, labels, validate);
-        if (hasOrderedItemValidation(messages)) {
-            setLocalValidation((current) => ({ ...current, [item.id]: messages }));
-            return;
-        }
-        setLocalValidation((current) => {
-            if (!(item.id in current)) return current;
-            const { [item.id]: _cleared, ...rest } = current;
-            return rest;
-        });
-        onChange({ kind: 'update', item: next, previous, field, items: nextItems });
-    };
-
-    const handleFieldBlur = (item: TItem) => {
-        setLocalValidation((current) => {
-            if (!(item.id in current)) return current;
-            const { [item.id]: _cleared, ...rest } = current;
-            return rest;
-        });
-    };
-
-    const handleRemove = (item: TItem) => {
-        if (!capabilities.remove) return;
-        const index = items.findIndex((candidate) => candidate.id === item.id);
-        if (index < 0) return;
-        const neighbor = items[index + 1] ?? items[index - 1];
-        pending.current = neighbor
-            ? { itemId: neighbor.id, control: 'remove', announce: false }
-            : { itemId: undefined, control: 'add', announce: false };
-        onChange({ kind: 'remove', item: items[index], index, items: items.filter((_, position) => position !== index) });
-    };
-
-    const handleAdd = () => {
-        if (!canAdd || !createItem) return;
-        const item = createItem();
-        pending.current = { itemId: item.id, control: 'label', announce: false };
-        onChange({ kind: 'add', item, index: items.length, items: [...items, item] });
-    };
-
-    const handleDragStart = (item: TItem, event: DragEvent<HTMLButtonElement>) => {
-        if (!capabilities.reorder) {
-            event.preventDefault();
-            return;
-        }
-        event.dataTransfer.setData(dragType, item.id);
-        event.dataTransfer.effectAllowed = 'move';
-        const row = event.currentTarget.closest('li');
-        if (row && typeof event.dataTransfer.setDragImage === 'function') event.dataTransfer.setDragImage(row, 0, 0);
-        setDrag({ id: item.id });
-    };
-
-    const handleDragOver = (item: TItem, event: DragEvent<HTMLLIElement>) => {
-        if (!drag) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        const rectangle = event.currentTarget.getBoundingClientRect();
-        const position = event.clientY < rectangle.top + rectangle.height / 2 ? 'before' : 'after';
-        setDrag((current) =>
-            current && (current.overId !== item.id || current.position !== position)
-                ? { ...current, overId: item.id, position }
-                : current,
-        );
-    };
-
-    const handleDrop = (item: TItem, event: DragEvent<HTMLLIElement>) => {
-        if (!drag) return;
-        event.preventDefault();
-        const rectangle = event.currentTarget.getBoundingClientRect();
-        const position = event.clientY < rectangle.top + rectangle.height / 2 ? 'before' : 'after';
-        const fromIndex = items.findIndex((candidate) => candidate.id === drag.id);
-        const overIndex = items.findIndex((candidate) => candidate.id === item.id);
-        setDrag(null);
-        if (fromIndex < 0 || overIndex < 0) return;
-        move(items[fromIndex], resolveOrderedItemDropIndex(fromIndex, overIndex, position), 'handle');
-    };
-
-    const restrictions = (
-        [
-            ['add', capabilities.add],
-            ['remove', capabilities.remove],
-            ['reorder', capabilities.reorder],
-            ['label', resolveOrderedItemFieldAccess(capabilities, 'label') === 'editable'],
-            ['icon', resolveOrderedItemFieldAccess(capabilities, 'icon') === 'editable'],
-            ['destination', resolveOrderedItemFieldAccess(capabilities, 'destination') === 'editable'],
-        ] as const
-    ).flatMap(([key, allowed]) => (!allowed && capabilities.reasons?.[key] ? [capabilities.reasons[key] as string] : []));
-
-    const mergedValidation = (item: TItem): OrderedItemValidation | undefined => {
-        const local = localValidation[item.id];
-        const supplied = validation?.[item.id];
-        return local || supplied ? { ...supplied, ...local } : undefined;
-    };
-
-    const renderRow = (item: TItem, index: number, count: number, locked: boolean) => (
-        <OrderedItemRow
-            key={item.id}
-            item={item}
-            index={index}
-            count={count}
-            locked={locked}
-            capabilities={capabilities}
-            labels={labels}
-            destinations={destinations}
-            validation={locked ? validation?.[item.id] : mergedValidation(item)}
-            baseId={baseId}
-            parts={pt}
-            renderIconField={renderIconField}
-            isIconAvailable={isIconAvailable}
-            iconCatalog={iconCatalog}
-            allowedIcons={allowedIcons}
-            iconPickerLabels={iconPickerLabels}
-            dragging={drag?.id === item.id}
-            dropPosition={drag?.overId === item.id && drag.id !== item.id ? drag.position : undefined}
-            onField={handleField}
-            onFieldBlur={handleFieldBlur}
-            onMove={handleMove}
-            onRemove={handleRemove}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragEnd={() => setDrag(null)}
-        />
-    );
-
-    const fixedTitleId = `${baseId}-fixed`;
-    const localTitleId = `${baseId}-local`;
-
-    return (
-        <div
-            {...pt?.root}
-            ref={rootRef}
-            role='group'
-            aria-label={ariaLabelledBy ? undefined : ariaLabel ?? labels.localItems}
-            aria-labelledby={ariaLabelledBy}
-            className={['cratis-ordered-item-editor', pt?.root?.className, className].filter(Boolean).join(' ')}
-            onKeyDownCapture={() => { pending.current = null; }}
-            onPointerDownCapture={() => { pending.current = null; }}
-            onFocusCapture={() => { if (!restoring.current) pending.current = null; }}
-            data-cratis-part='root'
-            data-cratis-component='OrderedItemEditor'
-        >
-            {fixedItems.length > 0 && (
-                <section
-                    {...pt?.section}
-                    aria-labelledby={fixedTitleId}
-                    className={`cratis-ordered-item-editor__section ${pt?.section?.className ?? ''}`}
-                    data-cratis-part='section'
-                    data-section='fixed'
-                >
-                    <h3 {...pt?.sectionTitle} id={fixedTitleId} className={`cratis-ordered-item-editor__title ${pt?.sectionTitle?.className ?? ''}`} data-cratis-part='sectionTitle'>
-                        {labels.fixedItems}
-                    </h3>
-                    <ul {...pt?.list} className={`cratis-ordered-item-editor__list ${pt?.list?.className ?? ''}`} data-cratis-part='list'>
-                        {fixedItems.map((item, index) => renderRow(item, index, fixedItems.length, true))}
-                    </ul>
-                </section>
-            )}
-            <section
-                {...pt?.section}
-                aria-labelledby={localTitleId}
-                className={`cratis-ordered-item-editor__section ${pt?.section?.className ?? ''}`}
-                data-cratis-part='section'
-                data-section='local'
-            >
-                <h3 {...pt?.sectionTitle} id={localTitleId} className={`cratis-ordered-item-editor__title ${pt?.sectionTitle?.className ?? ''}`} data-cratis-part='sectionTitle'>
-                    {labels.localItems}
-                </h3>
-                {items.length === 0 ? (
-                    <p {...pt?.empty} className={`cratis-ordered-item-editor__empty ${pt?.empty?.className ?? ''}`} data-cratis-part='empty'>
-                        {labels.empty}
-                    </p>
-                ) : (
-                    <ul {...pt?.list} className={`cratis-ordered-item-editor__list ${pt?.list?.className ?? ''}`} data-cratis-part='list'>
-                        {items.map((item, index) => renderRow(item, index, items.length, false))}
-                    </ul>
-                )}
-                {restrictions.map((reason) => (
-                    <p key={reason} {...pt?.message} className={`cratis-ordered-item__message cratis-ordered-item__message--note ${pt?.message?.className ?? ''}`} data-cratis-part='message'>
-                        {reason}
-                    </p>
-                ))}
-                {capabilities.add && createItem && (
-                    <>
-                        <button
-                            {...pt?.add}
-                            type='button'
-                            aria-disabled={!canAdd || undefined}
-                            onClick={handleAdd}
-                            className={`cratis-ordered-item__button cratis-ordered-item-editor__add ${pt?.add?.className ?? ''}`}
-                            data-cratis-part='add'
-                            data-control='add'
-                        >
-                            {labels.add}
-                        </button>
-                        {atMaximum && (
-                            <p {...pt?.message} className={`cratis-ordered-item__message cratis-ordered-item__message--note ${pt?.message?.className ?? ''}`} data-cratis-part='message'>
-                                {capabilities.reasons?.add ?? labels.maxItemsReached}
-                            </p>
-                        )}
-                    </>
-                )}
-            </section>
-            <div
-                {...pt?.status}
-                role='status'
-                aria-live='polite'
-                className={`cratis-ordered-item__hidden ${pt?.status?.className ?? ''}`}
-                data-cratis-part='status'
-            >
-                {announcement}
-            </div>
-        </div>
-    );
+export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>(props: OrderedItemEditorProps<TItem>) => {
+    const state = useOrderedItemEditor(props);
+    return renderEditor(state);
 };
