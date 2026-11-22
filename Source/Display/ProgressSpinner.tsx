@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { CSSProperties } from 'react';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Props for {@link ProgressSpinner}. */
 export interface ProgressSpinnerProps {
@@ -13,42 +15,46 @@ export interface ProgressSpinnerProps {
     'aria-label'?: string;
 }
 
+const progressSpinnerDescriptor = describeComponent<ProgressSpinnerProps>('ProgressSpinner', [
+    { name: 'aria-label', label: 'Accessible name', type: 'string', defaultValue: 'Loading' },
+]);
+
 /** An indeterminate loading spinner. */
-export const ProgressSpinner = ({
-    style,
-    className,
-    'aria-label': ariaLabel = 'Loading',
-}: ProgressSpinnerProps) => (
-    <span
-        className={['cratis-progress-spinner', className].filter(Boolean).join(' ')}
-        data-cratis-part='root'
-        data-cratis-component='ProgressSpinner'
-        data-busy='true'
-        data-loading='true'
-        style={style}
-        role='status'
-        aria-label={ariaLabel}
-    >
-        <svg
-            className='cratis-progress-spinner__svg'
-            data-cratis-part='svg'
-            viewBox='0 0 50 50'
-            aria-hidden='true'
+export const ProgressSpinner = (props: ProgressSpinnerProps) => {
+    const [presentation, marker] = useComponentPresentation(progressSpinnerDescriptor, props);
+    const { style, className, 'aria-label': ariaLabel = 'Loading' } = presentation;
+    return (
+        <span
+            {...marker}
+            className={['cratis-progress-spinner', className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+            data-busy='true'
+            data-loading='true'
+            style={style}
+            role='status'
+            aria-label={ariaLabel}
         >
-            <circle
-                className='cratis-progress-spinner__track'
-                data-cratis-part='track'
-                cx='25'
-                cy='25'
-                r='20'
-            />
-            <circle
-                className='cratis-progress-spinner__range'
-                data-cratis-part='range'
-                cx='25'
-                cy='25'
-                r='20'
-            />
-        </svg>
-    </span>
-);
+            <svg
+                className='cratis-progress-spinner__svg'
+                data-cratis-part='svg'
+                viewBox='0 0 50 50'
+                aria-hidden='true'
+            >
+                <circle
+                    className='cratis-progress-spinner__track'
+                    data-cratis-part='track'
+                    cx='25'
+                    cy='25'
+                    r='20'
+                />
+                <circle
+                    className='cratis-progress-spinner__range'
+                    data-cratis-part='range'
+                    cx='25'
+                    cy='25'
+                    r='20'
+                />
+            </svg>
+        </span>
+    );
+};

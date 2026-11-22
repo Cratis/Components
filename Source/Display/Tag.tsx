@@ -3,6 +3,8 @@
 
 import type { ReactNode } from 'react';
 import { IconDisplay } from '../Common/Icon';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Severity tone of a {@link Tag}. */
 export type TagSeverity =
@@ -27,29 +29,31 @@ export interface TagProps {
     children?: ReactNode;
 }
 
+const tagDescriptor = describeComponent<TagProps>('Tag', [
+    { name: 'severity', label: 'Severity', type: 'enum', values: ['secondary', 'success', 'info', 'warn', 'danger', 'contrast'] satisfies NonNullable<TagProps['severity']>[], defaultValue: 'secondary' },
+    { name: 'rounded', label: 'Rounded', type: 'boolean' },
+]);
+
 /** A small colored status label. */
-export const Tag = ({
-    value,
-    severity = 'secondary',
-    rounded,
-    icon,
-    className,
-    children,
-}: TagProps) => (
-    <span
-        className={['cratis-tag', className].filter(Boolean).join(' ')}
-        data-cratis-part='root'
-        data-cratis-component='Tag'
-        data-severity={severity}
-        data-rounded={rounded || undefined}
-    >
-        {icon && (
-            <span className='cratis-tag__icon' data-cratis-part='icon'>
-                <IconDisplay icon={icon} />
+export const Tag = (props: TagProps) => {
+    const [presentation, marker] = useComponentPresentation(tagDescriptor, props);
+    const { value, severity = 'secondary', rounded, icon, className, children } = presentation;
+    return (
+        <span
+            {...marker}
+            className={['cratis-tag', className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+            data-severity={severity}
+            data-rounded={rounded || undefined}
+        >
+            {icon && (
+                <span className='cratis-tag__icon' data-cratis-part='icon'>
+                    <IconDisplay icon={icon} />
+                </span>
+            )}
+            <span className='cratis-tag__label' data-cratis-part='label'>
+                {value ?? children}
             </span>
-        )}
-        <span className='cratis-tag__label' data-cratis-part='label'>
-            {value ?? children}
         </span>
-    </span>
-);
+    );
+};
