@@ -50,7 +50,11 @@ export const NumericInputImplementation = forwardRef<
     HTMLInputElement,
     NumericInputProps
 >(function NumericInputImplementation(props, ref) {
-    const [presentation, marker] = useComponentPresentation(numericInputDescriptor, props);
+    const [presentation, marker] = useComponentPresentation(
+        numericInputDescriptor,
+        props,
+        props.id ?? props.name,
+    );
     const {
         value,
         invalid: _invalid,

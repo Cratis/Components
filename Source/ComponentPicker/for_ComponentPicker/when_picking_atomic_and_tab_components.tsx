@@ -10,6 +10,7 @@ import {
     registeredComponentFor,
 } from '../../configuration/identity/componentInstances';
 import type { PresentationChange } from '../../configuration/identity/PresentationChange';
+import { NumericInput } from '../../Common/NumericInput';
 import { describeComponentElement } from '../describeComponentElement';
 import { atomicAndTabComponents } from './given/atomic_and_tab_components';
 import { click, hover, mountScreen, startPicking, unmountScreen, type ScreenInTheDom } from './given/a_screen_in_the_dom';
@@ -88,3 +89,19 @@ for (const example of atomicAndTabComponents) {
         });
     });
 }
+
+describe('when picking a NumericInput given an id or a name', () => {
+    let screen: ScreenInTheDom;
+
+    beforeEach(async () => {
+        screen = await mountScreen(<><NumericInput id='example-id' /><NumericInput name='example-name' /></>);
+    });
+
+    afterEach(async () => unmountScreen(screen));
+
+    it('should mark each instance with its id or name', () => {
+        Array.from(screen.container.querySelectorAll<HTMLElement>('[data-cratis-component="NumericInput"]'))
+            .map((element) => element.getAttribute('data-cratis-component-id'))
+            .should.deep.equal(['example-id', 'example-name']);
+    });
+});
