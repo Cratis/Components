@@ -1,37 +1,17 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    useEffect,
-    useId,
-    useMemo,
-    useState,
-    type CSSProperties,
-    type HTMLAttributes,
-    type ReactNode,
-} from 'react';
-import type { Key } from 'react';
-import {
-    Button as AriaButton,
-    ComboBox as AriaComboBox,
-    Input as AriaInput,
-    ListBox as AriaListBox,
-    ListBoxItem as AriaListBoxItem,
-    Popover as AriaPopover,
-} from 'react-aria-components/ComboBox';
-import { UNSAFE_PortalProvider } from 'react-aria';
-import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
-import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
-import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
-import { useCratisIcon } from '../configuration/useCratisIcon';
+import type { HTMLAttributes, ReactNode } from 'react';
+import { ComboBox as AriaComboBox } from 'react-aria-components/ComboBox';
+import { classNames } from '../ClassNames/classNames';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import {
-    asReactAriaButtonProps,
-    asReactAriaListBoxItemProps,
-    asReactAriaListBoxProps,
-} from './reactAriaProps';
-import { classNames } from '../ClassNames/classNames';
+import { partAttributes } from './comboBoxAttributes';
+import { useComboBoxState } from './useComboBoxState';
+import { useComboBoxPresentation } from './useComboBoxPresentation';
+import { renderComboBoxControl } from './renderComboBoxControl';
+import { renderComboBoxPopover } from './renderComboBoxPopover';
+import { renderComboBoxSupportingText } from './renderComboBoxSupportingText';
 
 /** Attributes a consumer may hand to one {@link ComboBox} part: class, style, title and data attributes. */
 export type ComboBoxPartAttributes = Pick<
@@ -160,183 +140,22 @@ export interface ComboBoxProps {
     pt?: ComboBoxParts;
 }
 
-const ACTION_KEY = '\u0000cratis-combobox-action';
-
-const partAttributes = (part: ComboBoxPartAttributes | undefined) => ({
-    ...part,
-    style: part?.style as CSSProperties | undefined,
-});
-
-const matches = (option: ComboBoxOption, text: string, filter: ComboBoxFilter) => {
-    if (filter === 'none' || text === '') return true;
-    const haystack = option.label.toLocaleLowerCase();
-    const needle = text.toLocaleLowerCase();
-    return filter === 'startsWith'
-        ? haystack.startsWith(needle)
-        : haystack.includes(needle);
-};
-
 /**
  * A single-selection, text-searching combobox for picking an entity from options that may still be
  * loading, may have failed to load, and may need an "add new" escape hatch. The input owns the
  * `combobox` role; the list is a `listbox` of `option`s; arrow keys move, Enter selects, Escape
  * closes. Components owns the markup, parts and tokens; React Aria supplies the interaction internally.
  */
-export const ComboBox = ({
-    options,
-    value,
-    onChange,
-    inputValue: controlledInputValue,
-    onInputChange,
-    filter = 'contains',
-    openOnFocus = false,
-    loading = false,
-    loadingMessage,
-    emptyMessage,
-    failure,
-    action,
-    optionLayout = 'inline',
-    placeholder,
-    disabled = false,
-    readOnly = false,
-    invalid = false,
-    required = false,
-    id,
-    name,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    'aria-describedby': ariaDescribedBy,
-    description,
-    errorMessage,
-    className,
-    pt,
-}: ComboBoxProps) => {
-    const icon = useCratisIcon();
-    const expandIcon = icon('expand', '▾');
-    const generatedId = useId();
-    const inputId = id ?? `cratis-combobox-${generatedId}`;
-    const descriptionId = description ? `${inputId}-description` : undefined;
-    const errorId = invalid && errorMessage ? `${inputId}-error` : undefined;
-    const describedBy =
-        [ariaDescribedBy, descriptionId, errorId].filter(Boolean).join(' ') || undefined;
-
-    const selectedLabel = options.find((option) => option.key === value)?.label ?? '';
-    const [uncontrolledInputValue, setUncontrolledInputValue] = useState(selectedLabel);
-    const [editing, setEditing] = useState(false);
-    // A list opened by the trigger, by ArrowDown or by focus is not a search: the text in the input is
-    // the selected option's label, and filtering by it would offer only the option already chosen.
-    // React Aria draws the same distinction internally with `showAllItems`; because the options are
-    // filtered here, before `react-aria-components` sees them, that state is mirrored here too.
-    const [showAllOptions, setShowAllOptions] = useState(false);
-    // A value set from outside — a form reset, options that arrive after mount with a preselected key —
-    // must show its label; while the user is editing, the text is theirs.
-    useEffect(() => {
-        if (!editing && controlledInputValue === undefined)
-            setUncontrolledInputValue(selectedLabel);
-    }, [selectedLabel, editing, controlledInputValue]);
-    const inputValue = controlledInputValue ?? uncontrolledInputValue;
-    const setInputValue = (text: string) => {
-        // Text that changes is a search again, whatever opened the list.
-        if (text !== inputValue) setShowAllOptions(false);
-        if (controlledInputValue === undefined) setUncontrolledInputValue(text);
-        onInputChange?.(text);
-    };
-    const openChanged = (isOpen: boolean, trigger?: 'focus' | 'input' | 'manual') => {
-        setEditing(isOpen);
-        setShowAllOptions(
-            isOpen && (trigger === 'manual' || (trigger === 'focus' && openOnFocus)),
-        );
-    };
-
-    const overlayEnvironment = unstable_useOverlayEnvironment();
-    const nearestDialogZIndex = useNearestDialogZIndex();
-    const popoverZIndex =
-        nearestDialogZIndex === null
-            ? 'var(--cratis-z-index-overlay)'
-            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
-
-    const showsMessage = loading || failure !== undefined;
-    const visibleOptions = useMemo(
-        () =>
-            showsMessage
-                ? []
-                : showAllOptions
-                  ? options
-                  : options.filter((option) => matches(option, inputValue, filter)),
-        [options, inputValue, filter, showsMessage, showAllOptions],
-    );
-    const items = useMemo(
-        () =>
-            action && !showsMessage
-                ? [
-                      ...visibleOptions,
-                      {
-                          key: ACTION_KEY,
-                          label: '',
-                          description: undefined,
-                          disabled: false,
-                      },
-                  ]
-                : visibleOptions,
-        [visibleOptions, action, showsMessage],
-    );
-
-    const select = (key: Key | null) => {
-        if (key === ACTION_KEY) {
-            void action?.onAction(inputValue);
-            return;
-        }
-        const next = key === null ? null : String(key);
-        onChange(next);
-        setInputValue(
-            next === null
-                ? ''
-                : (options.find((option) => option.key === next)?.label ?? ''),
-        );
-    };
-
-    const renderMessage = () =>
-        loading ? (
-            <div
-                {...partAttributes(pt?.loading)}
-                role='status'
-                aria-busy='true'
-                className={classNames(
-                    'cratis-combobox__message',
-                    'cratis-combobox__loading',
-                    pt?.loading?.className,
-                )}
-                data-cratis-part='loading'
-            >
-                {loadingMessage}
-            </div>
-        ) : failure !== undefined ? (
-            <div
-                {...partAttributes(pt?.failure)}
-                role='alert'
-                className={classNames(
-                    'cratis-combobox__message',
-                    'cratis-combobox__failure',
-                    pt?.failure?.className,
-                )}
-                data-cratis-part='failure'
-            >
-                {failure}
-            </div>
-        ) : (
-            <div
-                {...partAttributes(pt?.empty)}
-                role='status'
-                className={classNames(
-                    'cratis-combobox__message',
-                    'cratis-combobox__empty',
-                    pt?.empty?.className,
-                )}
-                data-cratis-part='empty'
-            >
-                {emptyMessage}
-            </div>
-        );
+export const ComboBox = (props: ComboBoxProps) => {
+    const {
+        value, disabled = false, readOnly = false, invalid = false, required = false,
+        loading = false, openOnFocus = false, name, className, pt,
+        'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy,
+    } = props;
+    const presentation = useComboBoxPresentation(props);
+    const state = useComboBoxState(props);
+    const { describedBy } = presentation;
+    const { inputValue, setInputValue, select, openChanged, setEditing, items } = state;
 
     return (
         <AriaComboBox
@@ -368,153 +187,9 @@ export const ComboBox = ({
         >
             {({ isOpen }) => (
                 <>
-                    <div className='cratis-combobox__control'>
-                        <AriaInput
-                            {...partAttributes(pt?.input)}
-                            id={inputId}
-                            placeholder={placeholder}
-                            aria-errormessage={errorId}
-                            className={classNames(
-                                'cratis-combobox__input',
-                                pt?.input?.className,
-                            )}
-                            data-cratis-part='input'
-                            data-disabled={disabled || undefined}
-                            data-invalid={invalid || undefined}
-                            data-readonly={readOnly || undefined}
-                            data-open={isOpen || undefined}
-                        />
-                        <AriaButton
-                            {...asReactAriaButtonProps(partAttributes(pt?.trigger))}
-                            className={classNames(
-                                'cratis-combobox__trigger',
-                                pt?.trigger?.className,
-                            )}
-                            data-cratis-part='trigger'
-                            data-disabled={disabled || undefined}
-                            data-open={isOpen || undefined}
-                        >
-                            <span aria-hidden='true'>{expandIcon}</span>
-                        </AriaButton>
-                    </div>
-                    <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
-                        <AriaPopover
-                            {...partAttributes(pt?.popover)}
-                            className={classNames(
-                                'cratis-combobox__popover',
-                                pt?.popover?.className,
-                            )}
-                            style={{
-                                zIndex: popoverZIndex,
-                                ...(pt?.popover?.style as CSSProperties | undefined),
-                            }}
-                            data-cratis-part='popover'
-                            data-open
-                        >
-                            <AriaListBox<ComboBoxOption>
-                                {...asReactAriaListBoxProps<ComboBoxOption>(
-                                    partAttributes(pt?.listbox),
-                                )}
-                                items={items}
-                                className={classNames(
-                                    'cratis-combobox__listbox',
-                                    pt?.listbox?.className,
-                                )}
-                                data-cratis-part='listbox'
-                                data-option-layout={optionLayout}
-                                renderEmptyState={renderMessage}
-                            >
-                                {(option) =>
-                                    option.key === ACTION_KEY ? (
-                                        <AriaListBoxItem
-                                            {...asReactAriaListBoxItemProps<ComboBoxOption>(
-                                                partAttributes(pt?.action),
-                                            )}
-                                            id={ACTION_KEY}
-                                            textValue={action?.label ?? ''}
-                                            className={classNames(
-                                                'cratis-combobox__action',
-                                                pt?.action?.className,
-                                            )}
-                                            data-cratis-part='action'
-                                        >
-                                            {action?.label}
-                                        </AriaListBoxItem>
-                                    ) : (
-                                        <AriaListBoxItem
-                                            {...asReactAriaListBoxItemProps<ComboBoxOption>(
-                                                partAttributes(pt?.option),
-                                            )}
-                                            id={option.key}
-                                            textValue={option.label}
-                                            isDisabled={option.disabled}
-                                            className={classNames(
-                                                'cratis-combobox__option',
-                                                pt?.option?.className,
-                                            )}
-                                            data-cratis-part='option'
-                                            data-disabled={option.disabled || undefined}
-                                            data-selected={
-                                                option.key === value || undefined
-                                            }
-                                        >
-                                            <span
-                                                {...partAttributes(pt?.optionLabel)}
-                                                className={classNames(
-                                                    'cratis-combobox__option-label',
-                                                    pt?.optionLabel?.className,
-                                                )}
-                                                data-cratis-part='optionLabel'
-                                            >
-                                                {option.label}
-                                            </span>
-                                            {option.description !== undefined && (
-                                                <span
-                                                    {...partAttributes(
-                                                        pt?.optionDescription,
-                                                    )}
-                                                    className={classNames(
-                                                        'cratis-combobox__option-description',
-                                                        pt?.optionDescription?.className,
-                                                    )}
-                                                    data-cratis-part='optionDescription'
-                                                >
-                                                    {option.description}
-                                                </span>
-                                            )}
-                                        </AriaListBoxItem>
-                                    )
-                                }
-                            </AriaListBox>
-                        </AriaPopover>
-                    </UNSAFE_PortalProvider>
-                    {descriptionId && (
-                        <span
-                            {...partAttributes(pt?.description)}
-                            id={descriptionId}
-                            className={classNames(
-                                'cratis-combobox__description',
-                                pt?.description?.className,
-                            )}
-                            data-cratis-part='description'
-                        >
-                            {description}
-                        </span>
-                    )}
-                    {errorId && (
-                        <span
-                            {...partAttributes(pt?.error)}
-                            id={errorId}
-                            className={classNames(
-                                'cratis-combobox__error',
-                                pt?.error?.className,
-                            )}
-                            data-cratis-part='error'
-                            data-invalid='true'
-                        >
-                            {errorMessage}
-                        </span>
-                    )}
+                    {renderComboBoxControl(props, presentation, isOpen)}
+                    {renderComboBoxPopover(props, state, presentation)}
+                    {renderComboBoxSupportingText(props, presentation)}
                 </>
             )}
         </AriaComboBox>

@@ -76,7 +76,15 @@ export const partDefinitions = {
             'description',
             'error',
         ],
-        sources: ['Common/ComboBox.tsx'],
+        sources: [
+            'Common/ComboBox.tsx',
+            'Common/renderComboBoxControl.tsx',
+            'Common/renderComboBoxPopover.tsx',
+            'Common/renderComboBoxOption.tsx',
+            'Common/renderComboBoxMessage.tsx',
+            'Common/renderComboBoxSupportingText.tsx',
+        ],
+        ptFiles: ['Common/ComboBox.tsx'],
         ptKeys: [
             'root',
             'input',
