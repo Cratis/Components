@@ -1,16 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Tooltip } from '../Common/Tooltip';
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import * as faIcons from 'react-icons/fa6';
+import { useState, useCallback } from 'react';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ChangeMeta } from '../types/ChangeMeta';
 import type { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
-import { getValueAtPath } from './objectHelpers';
-
-import { DatePickerInput } from '../Common/DatePickerInput';
+import { renderEditField } from './editField';
+import { renderTable } from './table';
+import { useNavigation } from './useNavigation';
+import { useValidation } from './useValidation';
 
 /**
  * Props for {@link ObjectContentEditor}.
@@ -79,168 +78,12 @@ export const ObjectContentEditor = ({
     className,
 }: ObjectContentEditorProps) => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-
-    const validateValue = useCallback(
-        (
-            propertyName: string,
-            value: Json,
-            property: JsonSchemaProperty,
-        ): string | undefined => {
-            if (editMode) {
-                if (value === null || value === undefined || value === '') {
-                    return 'This field is required';
-                }
-            } else {
-                const isRequired = schema.required?.includes(propertyName);
-                if (
-                    isRequired &&
-                    (value === null || value === undefined || value === '')
-                ) {
-                    return 'This field is required';
-                }
-            }
-
-            if (property.type === 'string' && typeof value === 'string') {
-                if (
-                    property.format === 'email' &&
-                    value &&
-                    !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
-                ) {
-                    return 'Invalid email format';
-                }
-                if (
-                    property.format === 'uri' &&
-                    value &&
-                    !value.match(/^https?:\/\/.+/)
-                ) {
-                    return 'Invalid URI format';
-                }
-            }
-
-            if (property.type === 'number' || property.type === 'integer') {
-                if (
-                    value !== null &&
-                    value !== undefined &&
-                    value !== '' &&
-                    isNaN(Number(value))
-                ) {
-                    return 'Must be a valid number';
-                }
-            }
-
-            return undefined;
-        },
-        [schema, editMode],
-    );
-
-    useEffect(() => {
-        if (!editMode || navigationPath.length > 0) return;
-
-        const errors: Record<string, string> = {};
-        const properties = schema.properties || {};
-
-        Object.entries(properties).forEach(([propertyName, property]) => {
-            const value = (object as Record<string, Json>)[propertyName];
-            const error = validateValue(
-                propertyName,
-                value,
-                property as JsonSchemaProperty,
-            );
-            if (error) {
-                errors[propertyName] = error;
-            }
-        });
-
-        setValidationErrors(errors);
-    }, [object, schema, editMode, navigationPath, validateValue]);
-
-    useEffect(() => {
-        if (editMode && onValidationChange) {
-            const hasErrors = Object.keys(validationErrors).length > 0;
-            onValidationChange(hasErrors);
-        }
-    }, [validationErrors, editMode, onValidationChange]);
-
-    const navigateTo = useCallback(
-        (segments: string[]) => {
-            setNavigationPath([...navigationPath, ...segments]);
-        },
-        [navigationPath],
-    );
-
-    const navigateToBreadcrumb = useCallback(
-        (index: number) => {
-            if (index === 0) {
-                setNavigationPath([]);
-            } else {
-                setNavigationPath(navigationPath.slice(0, index));
-            }
-        },
-        [navigationPath],
-    );
-
-    const currentData = useMemo(() => {
-        if (navigationPath.length === 0) {
-            return object;
-        }
-
-        const value = getValueAtPath(object, navigationPath);
-        return value !== null && typeof value === 'object' ? value : null;
-    }, [object, navigationPath]);
-
-    useEffect(() => {
-        if (navigationPath.length > 0 && currentData === null) {
-            setNavigationPath([]);
-        }
-    }, [currentData, navigationPath]);
-
-    const currentProperties = useMemo(() => {
-        const properties = schema.properties || {};
-
-        if (navigationPath.length === 0) {
-            return properties;
-        }
-
-        return {};
-    }, [schema, navigationPath]);
-
-    const tableStyle: React.CSSProperties = {
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Mono", monospace',
-        fontSize: '13px',
-    };
-
-    const rowStyle: React.CSSProperties = {
-        borderBottom: '1px solid var(--cratis-surface-border)',
-    };
-
-    const labelStyle: React.CSSProperties = {
-        padding: '8px 12px',
-        color: 'var(--cratis-text-color-secondary)',
-        textAlign: 'left',
-        fontWeight: 500,
-        width: '140px',
-        whiteSpace: 'nowrap',
-    };
-
-    const valueStyle: React.CSSProperties = {
-        padding: '8px 12px',
-        color: 'var(--cratis-text-color)',
-        textAlign: 'left',
-    };
-
-    const infoIconStyle: React.CSSProperties = {
-        fontSize: '0.875rem',
-        color: 'var(--cratis-text-color-secondary)',
-        flexShrink: 0,
-    };
-
-    const fieldErrorStyle: React.CSSProperties = {
-        color: 'var(--cratis-red-500)',
-        fontSize: '0.75rem',
-    };
+    const { validationErrors, validateChange } = useValidation({
+        object, schema, editMode, navigationPath, onValidationChange,
+    });
+    const { navigateTo, navigateToBreadcrumb, currentData, currentProperties } = useNavigation({
+        object, schema, navigationPath, setNavigationPath,
+    });
 
     const updateValue = useCallback(
         (propertyName: string, newValue: Json, meta: ChangeMeta) => {
@@ -253,410 +96,20 @@ export const ObjectContentEditor = ({
         [object, onChange],
     );
 
-    const renderEditField = (
+    const renderEditableValue = (
         propertyName: string,
         property: JsonSchemaProperty,
         value: Json,
-    ) => {
-        const error = validationErrors[propertyName];
-
-        const handleChange = (newValue: Json, meta: ChangeMeta) => {
+    ) => renderEditField({
+        propertyName,
+        property,
+        value,
+        error: validationErrors[propertyName],
+        handleChange: (newValue, meta) => {
             updateValue(propertyName, newValue, meta);
-            const validationError = validateValue(propertyName, newValue, property);
-            setValidationErrors((prev) => {
-                const newErrors = { ...prev };
-                if (validationError) {
-                    newErrors[propertyName] = validationError;
-                } else {
-                    delete newErrors[propertyName];
-                }
-                return newErrors;
-            });
-        };
-
-        if (property.type === 'boolean') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <input
-                        type='checkbox'
-                        aria-label={propertyName}
-                        checked={Boolean(value)}
-                        onChange={(event) =>
-                            handleChange(event.target.checked, {
-                                source: 'user',
-                                nativeEvent: event.nativeEvent,
-                            })
-                        }
-                        aria-invalid={Boolean(error) || undefined}
-                        className='cratis:size-5 cratis:accent-[var(--cratis-primary-color)]'
-                    />
-                    {error && <small style={fieldErrorStyle}>{error}</small>}
-                </div>
-            );
-        }
-
-        if (property.type === 'number' || property.type === 'integer') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <input
-                        type='number'
-                        aria-label={propertyName}
-                        value={value === null || value === undefined ? '' : Number(value)}
-                        onChange={(event) =>
-                            handleChange(
-                                event.target.value === ''
-                                    ? null
-                                    : event.target.valueAsNumber,
-                                {
-                                    source: 'user',
-                                    nativeEvent: event.nativeEvent,
-                                },
-                            )
-                        }
-                        aria-invalid={Boolean(error) || undefined}
-                        className='cratis-field-input cratis:w-full'
-                    />
-                    {error && <small style={fieldErrorStyle}>{error}</small>}
-                </div>
-            );
-        }
-
-        if (property.type === 'string' && property.format === 'date-time') {
-            const dateValue = value ? new Date(value as string) : null;
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <DatePickerInput
-                        aria-label={propertyName}
-                        value={dateValue}
-                        onChange={(date, meta) =>
-                            handleChange(
-                                date ? date.toISOString() : null,
-                                meta ?? { source: 'user' },
-                            )
-                        }
-                        showTime
-                        showIcon
-                        invalid={!!error}
-                    />
-                    {error && <small style={fieldErrorStyle}>{error}</small>}
-                </div>
-            );
-        }
-
-        if (property.type === 'string' && property.format === 'date') {
-            const dateValue = value ? new Date(value as string) : null;
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <DatePickerInput
-                        aria-label={propertyName}
-                        value={dateValue}
-                        onChange={(date, meta) =>
-                            handleChange(
-                                date ? date.toISOString().split('T')[0] : null,
-                                meta ?? { source: 'user' },
-                            )
-                        }
-                        showIcon
-                        invalid={!!error}
-                    />
-                    {error && <small style={fieldErrorStyle}>{error}</small>}
-                </div>
-            );
-        }
-
-        if (property.type === 'array') {
-            return (
-                <div
-                    className='cratis:flex cratis:items-center cratis:gap-2'
-                    style={{
-                        color: 'var(--cratis-text-color-secondary)',
-                        fontStyle: 'italic',
-                    }}
-                >
-                    <span>Array editing not yet supported</span>
-                </div>
-            );
-        }
-
-        if (property.type === 'object') {
-            return (
-                <div
-                    className='cratis:flex cratis:items-center cratis:gap-2'
-                    style={{
-                        color: 'var(--cratis-text-color-secondary)',
-                        fontStyle: 'italic',
-                    }}
-                >
-                    <span>Object editing not yet supported</span>
-                </div>
-            );
-        }
-
-        const isLongText = (value as string)?.length > 50;
-
-        if (isLongText) {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <textarea
-                        aria-label={propertyName}
-                        value={String(value ?? '')}
-                        onChange={(event) =>
-                            handleChange(event.target.value, {
-                                source: 'user',
-                                nativeEvent: event.nativeEvent,
-                            })
-                        }
-                        rows={3}
-                        aria-invalid={Boolean(error) || undefined}
-                        className='cratis-field-input cratis-field-textarea cratis:w-full'
-                    />
-                    {error && <small style={fieldErrorStyle}>{error}</small>}
-                </div>
-            );
-        }
-
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <input
-                    aria-label={propertyName}
-                    value={String(value ?? '')}
-                    onChange={(event) =>
-                        handleChange(event.target.value, {
-                            source: 'user',
-                            nativeEvent: event.nativeEvent,
-                        })
-                    }
-                    aria-invalid={Boolean(error) || undefined}
-                    className='cratis-field-input cratis:w-full'
-                />
-                {error && <small style={fieldErrorStyle}>{error}</small>}
-            </div>
-        );
-    };
-
-    const renderValue = (
-        value: Json,
-        propertyName: string,
-        pathSegments: string[],
-    ) => {
-        if (value === null || value === undefined) return '';
-
-        if (Array.isArray(value)) {
-            return (
-                <button
-                    type='button'
-                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
-                    onClick={() => navigateTo(pathSegments)}
-                    style={{
-                        color: 'var(--cratis-primary-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: 0,
-                        border: 0,
-                        background: 'transparent',
-                        font: 'inherit',
-                    }}
-                    aria-label={`Open ${propertyName}, ${value.length} items`}
-                >
-                    <span>Array[{value.length}]</span>
-                    <faIcons.FaArrowRight
-                        style={{ fontSize: '0.875rem', display: 'inline-flex' }}
-                        aria-hidden='true'
-                    />
-                </button>
-            );
-        }
-
-        if (typeof value === 'object') {
-            return (
-                <button
-                    type='button'
-                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
-                    onClick={() => navigateTo(pathSegments)}
-                    style={{
-                        color: 'var(--cratis-primary-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: 0,
-                        border: 0,
-                        background: 'transparent',
-                        font: 'inherit',
-                    }}
-                    aria-label={`Open ${propertyName}`}
-                >
-                    <span>Object</span>
-                    <faIcons.FaArrowRight
-                        style={{ fontSize: '0.875rem', display: 'inline-flex' }}
-                        aria-hidden='true'
-                    />
-                </button>
-            );
-        }
-
-        return String(value);
-    };
-
-    const renderTable = () => {
-        if (currentData === null) {
-            return null;
-        }
-
-        if (Array.isArray(currentData)) {
-            if (currentData.length === 0)
-                return (
-                    <div
-                        style={{
-                            padding: '12px',
-                            color: 'var(--cratis-text-color-secondary)',
-                        }}
-                    >
-                        Empty array
-                    </div>
-                );
-
-            const firstItem = currentData[0];
-            if (
-                typeof firstItem === 'object' &&
-                firstItem !== null &&
-                !Array.isArray(firstItem)
-            ) {
-                const keys = Object.keys(firstItem);
-
-                return (
-                    <table style={tableStyle}>
-                        <tbody>
-                            {currentData.map((item, index) => (
-                                <React.Fragment key={index}>
-                                    {index > 0 && (
-                                        <tr
-                                            style={{
-                                                height: '8px',
-                                                background: 'var(--cratis-surface-hover)',
-                                            }}
-                                        >
-                                            <td colSpan={2}></td>
-                                        </tr>
-                                    )}
-                                    {keys.map((key) => (
-                                        <tr key={`${index}-${key}`} style={rowStyle}>
-                                            <td style={labelStyle}>{key}</td>
-                                            <td style={valueStyle}>
-                                                {renderValue(
-                                                    (item as Record<string, Json>)[key],
-                                                    key,
-                                                    [String(index), key],
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </React.Fragment>
-                            ))}
-                        </tbody>
-                    </table>
-                );
-            } else {
-                return (
-                    <table style={tableStyle}>
-                        <tbody>
-                            {currentData.map((item, index) => (
-                                <tr key={index} style={rowStyle}>
-                                    <td style={labelStyle}>[{index}]</td>
-                                    <td style={valueStyle}>
-                                        {renderValue(item, `[${index}]`, [
-                                            String(index),
-                                        ])}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                );
-            }
-        }
-
-        const entries =
-            navigationPath.length === 0
-                ? Object.entries(currentProperties)
-                : Object.entries(currentData as { [key: string]: Json });
-
-        return (
-            <table style={tableStyle}>
-                <tbody>
-                    {entries.map(
-                        ([propertyName, propertyDef]: [
-                            string,
-                            JsonSchemaProperty | Json,
-                        ]) => {
-                            const value = (currentData as Record<string, Json>)[
-                                propertyName
-                            ];
-
-                            const isSchemaProperty = navigationPath.length === 0;
-                            const property =
-                                isSchemaProperty &&
-                                typeof propertyDef === 'object' &&
-                                propertyDef !== null &&
-                                'type' in propertyDef
-                                    ? (propertyDef as JsonSchemaProperty)
-                                    : null;
-                            const description = property?.description;
-
-                            return (
-                                <tr key={propertyName} style={rowStyle}>
-                                    <td style={labelStyle}>
-                                        <span
-                                            style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                            }}
-                                        >
-                                            {propertyName}
-                                            {description && (
-                                                <Tooltip
-                                                    content={description}
-                                                    position='right'
-                                                >
-                                                    <button
-                                                        type='button'
-                                                        aria-label='Property description'
-                                                        style={{
-                                                            display: 'inline-flex',
-                                                            padding: 0,
-                                                            border: 0,
-                                                            background: 'transparent',
-                                                            color: 'inherit',
-                                                        }}
-                                                    >
-                                                        <faIcons.FaCircleInfo
-                                                            aria-hidden='true'
-                                                            className='property-info-icon'
-                                                            style={infoIconStyle}
-                                                        />
-                                                    </button>
-                                                </Tooltip>
-                                            )}
-                                        </span>
-                                    </td>
-                                    <td style={valueStyle}>
-                                        {editMode && property
-                                            ? renderEditField(
-                                                  propertyName,
-                                                  property,
-                                                  value,
-                                              )
-                                            : renderValue(value as Json, propertyName, [
-                                                  propertyName,
-                                              ])}
-                                    </td>
-                                </tr>
-                            );
-                        },
-                    )}
-                </tbody>
-            </table>
-        );
-    };
+            validateChange(propertyName, newValue, property);
+        },
+    });
 
     return (
         <div
@@ -668,7 +121,14 @@ export const ObjectContentEditor = ({
                 navigationPath={navigationPath}
                 onNavigate={navigateToBreadcrumb}
             />
-            {renderTable()}
+            {renderTable({
+                currentData,
+                currentProperties,
+                navigationPath,
+                editMode,
+                renderEditField: renderEditableValue,
+                navigateTo,
+            })}
             {timestamp && (
                 <div
                     style={{
