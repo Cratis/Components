@@ -10,7 +10,7 @@ import { Spinner } from './Spinner';
 import { PivotCanvas } from './PivotCanvas';
 import { AxisLabels } from './AxisLabels';
 import { DetailPanel } from './DetailPanel';
-import { normalizeIdToLayoutKey } from '../utils/idResolution';
+import { createViewportPointerHandlers, selectedLayoutIdOf } from './viewportPointerHandlers';
 
 export interface PivotViewerMainProps<TItem extends object> {
   data: TItem[];
@@ -50,116 +50,59 @@ export interface PivotViewerMainProps<TItem extends object> {
   spacerRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function PivotViewerMain<TItem extends object>({
-  data,
-  ready,
-  isLoading,
-  loadingLabel,
-  viewportLabel,
-  visibleIds,
-  grouping,
-  layout,
-  cardWidth,
-  cardHeight,
-  zoomLevel,
-  scrollPosition,
-  containerDimensions,
-  selectedItem,
-  hoveredGroupIndex,
-  isZooming,
-  viewMode,
-  cardRenderer,
-  colorOverrides,
-  detailRenderer,
-  resolveId,
-  emptyContent,
-  dimensionFilter,
-  onCardClick,
-  onPanStart,
-  onPanMove,
-  onPanEnd,
-  onGroupHover,
-  onAxisLabelClick,
-  onCloseDetail,
-  containerRef,
-  axisLabelsRef,
-  spacerRef,
+function renderDetailPanel<TItem extends object>({ detailRenderer, selectedItem, onCloseDetail }: PivotViewerMainProps<TItem>) {
+  return detailRenderer
+    ? (
+        <DetailPanel
+          selectedItem={selectedItem}
+          onClose={onCloseDetail}
+          contentRenderer={detailRenderer}
+        />
+      )
+    : (
+      <DetailPanel
+        selectedItem={selectedItem}
+        onClose={onCloseDetail}
+      />
+    );
+}
+
+function renderAxisLabels<TItem extends object>({
+  grouping, layout, zoomLevel, dimensionFilter, hoveredGroupIndex, viewMode, onGroupHover, onAxisLabelClick, axisLabelsRef,
 }: PivotViewerMainProps<TItem>) {
-  const selectedLayoutId: ItemId | null = selectedItem
-    ? (() => {
-        const index = data.indexOf(selectedItem);
-        // Use array index as the canonical layout ID; it aligns with engine/store
-        const rawId = index !== -1 ? index : 0;
-        return normalizeIdToLayoutKey(rawId, layout) as ItemId;
-      })()
-    : null;
+  return (
+    <AxisLabels
+      groups={grouping.groups.map((g) => ({
+        key: g.key,
+        value: g.value,
+        label: String(g.value),
+        items: [],
+        count: g.ids.length,
+      }))}
+      bucketWidths={layout.bucketWidths || []}
+      zoomLevel={zoomLevel}
+      dimensionFilter={dimensionFilter}
+      hoveredGroup={hoveredGroupIndex !== null ? String(grouping.groups[hoveredGroupIndex]?.value) : null}
+      visible={viewMode === 'grouped' && grouping.groups.length > 0}
+      onHover={(label) => {
+        const index = grouping.groups.findIndex(g => String(g.value) === label);
+        onGroupHover(index >= 0 ? index : null);
+      }}
+      onClick={onAxisLabelClick}
+      containerRef={axisLabelsRef}
+    />
+  );
+}
 
-  const handleViewportClick = (e: React.MouseEvent) => {
-    if (isZooming || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const rect = container.getBoundingClientRect();
-    // Use live DOM scroll position for accurate hit testing
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
-
-    const clickX = e.clientX - rect.left + scrollLeft;
-    const clickY = e.clientY - rect.top + scrollTop;
-
-    const worldX = clickX / zoomLevel;
-    const worldY = clickY / zoomLevel;
-
-    // Check visible items
-    for (let i = 0; i < visibleIds.length; i++) {
-      const id = visibleIds[i];
-      const pos = layout.positions.get(id);
-      if (pos) {
-        if (worldX >= pos.x && worldX <= pos.x + cardWidth &&
-            worldY >= pos.y && worldY <= pos.y + cardHeight) {
-          const item = data[id];
-          if (item) {
-            onCardClick(item, e.nativeEvent as unknown as MouseEvent, id);
-          }
-          return;
-        }
-      }
-    }
-
-    // Clicked background: if a card is selected, close/deselect it
-    if (selectedItem) {
-      onCloseDetail();
-    }
-  };
-
-  const handleViewportMouseMove = (e: React.MouseEvent) => {
-    if (isZooming || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const rect = container.getBoundingClientRect();
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
-
-    const mouseX = e.clientX - rect.left + scrollLeft;
-    const mouseY = e.clientY - rect.top + scrollTop;
-
-    const worldX = mouseX / zoomLevel;
-    const worldY = mouseY / zoomLevel;
-
-    let isOverCard = false;
-    for (let i = 0; i < visibleIds.length; i++) {
-      const id = visibleIds[i];
-      const pos = layout.positions.get(id);
-      if (pos) {
-        if (worldX >= pos.x && worldX <= pos.x + cardWidth &&
-            worldY >= pos.y && worldY <= pos.y + cardHeight) {
-          isOverCard = true;
-          break;
-        }
-      }
-    }
-
-    container.style.cursor = isOverCard ? 'pointer' : 'default';
-  };
+export function PivotViewerMain<TItem extends object>(props: PivotViewerMainProps<TItem>) {
+  const {
+    data, ready, isLoading, loadingLabel, viewportLabel, visibleIds, grouping, layout, cardWidth, cardHeight,
+    zoomLevel, scrollPosition, containerDimensions, selectedItem, hoveredGroupIndex, isZooming, viewMode,
+    cardRenderer, colorOverrides, resolveId, emptyContent, onCardClick, onPanStart, onPanMove, onPanEnd,
+    containerRef, spacerRef,
+  } = props;
+  const selectedLayoutId = selectedLayoutIdOf(selectedItem, data, layout);
+  const { handleViewportClick, handleViewportMouseMove } = createViewportPointerHandlers(props);
 
   return isLoading ? (
     <Spinner label={loadingLabel} />
@@ -227,42 +170,10 @@ export function PivotViewerMain<TItem extends object>({
             />
           )}
         </div>
-        {detailRenderer
-          ? (
-              <DetailPanel
-                selectedItem={selectedItem}
-                onClose={onCloseDetail}
-                contentRenderer={detailRenderer}
-              />
-            )
-          : (
-            <DetailPanel
-              selectedItem={selectedItem}
-              onClose={onCloseDetail}
-            />
-          )}
+        {renderDetailPanel(props)}
       </div>
 
-      <AxisLabels
-        groups={grouping.groups.map((g) => ({
-          key: g.key,
-          value: g.value,
-          label: String(g.value),
-          items: [],
-          count: g.ids.length,
-        }))}
-        bucketWidths={layout.bucketWidths || []}
-        zoomLevel={zoomLevel}
-        dimensionFilter={dimensionFilter}
-        hoveredGroup={hoveredGroupIndex !== null ? String(grouping.groups[hoveredGroupIndex]?.value) : null}
-        visible={viewMode === 'grouped' && grouping.groups.length > 0}
-        onHover={(label) => {
-          const index = grouping.groups.findIndex(g => String(g.value) === label);
-          onGroupHover(index >= 0 ? index : null);
-        }}
-        onClick={onAxisLabelClick}
-        containerRef={axisLabelsRef}
-      />
+      {renderAxisLabels(props)}
     </div>
   );
 }

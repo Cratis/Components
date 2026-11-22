@@ -2,24 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useCallback, useRef, type PointerEvent, type RefObject } from 'react';
+import type { PanSample } from './panMomentum';
+import type { PinchSnapshot, PointerPosition } from './pinchGesture';
 import {
-    MOMENTUM_FRICTION,
-    MOMENTUM_MIN_VELOCITY,
-    MOMENTUM_SAMPLE_WINDOW_MS,
-} from './canvasGestureTuning';
-import { isBackgroundPointerTarget } from './isBackgroundPointerTarget';
-import {
-    type PanSample,
-    decayVelocity,
-    trimSamples,
-    velocityFromSamples,
-} from './panMomentum';
-import {
-    type PinchSnapshot,
-    type PointerPosition,
-    pinchChangeBetween,
-    pinchSnapshotOf,
-} from './pinchGesture';
+    applyPinchStep,
+    beginDragPan,
+    cancelCameraAnimation,
+    dragPanBy,
+    landTouchPointer,
+    liftTouchPointer,
+    movesPinch,
+    startTouchMomentumFrom,
+    startsDragPan,
+} from './pointerGestureSteps';
 
 /** The camera state and operations {@link useCanvasPointerGestures} drives. */
 export interface CanvasPointerGesturesOptions {
@@ -64,17 +59,7 @@ export const useCanvasPointerGestures = ({
     const isPanningRef = useRef(false);
     const lastPointerRef = useRef({ x: 0, y: 0 });
 
-    // Direct DOM write, not React state — an idle background should not look grabbable until a drag
-    // starts. Swapping to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture
-    // churn this file
-    // already avoids re-rendering for elsewhere (see the transform writes below).
-    const setPanCursor = useCallback(
-        (panning: boolean) => {
-            if (containerRef.current)
-                containerRef.current.style.cursor = panning ? 'grabbing' : 'default';
-        },
-        [containerRef],
-    );
+    const setPanCursor = usePanCursor(containerRef);
 
     const pinchRef = useRef<PinchSnapshot | null>(null);
 
@@ -82,139 +67,38 @@ export const useCanvasPointerGestures = ({
     // MOMENTUM_SAMPLE_WINDOW_MS — the trailing window startTouchMomentum reads the release velocity from.
     const touchPanSamplesRef = useRef<PanSample[]>([]);
 
-    // Touch: two fingers pan and zoom together, anywhere on the surface — the trackpad's
-    // wheel/ctrl+wheel equivalent for a tablet. The world point under the pinch midpoint stays put
-    // while the midpoint itself drags the board, so zooming and panning feel like one gesture.
-    const applyPinch = useCallback(() => {
-        const container = containerRef.current;
-        const snapshot = pinchSnapshotOf(touchPointersRef.current.values());
-        if (!container || !snapshot) return;
-
-        const previous = pinchRef.current;
-        pinchRef.current = snapshot;
-        // The first move of a gesture only establishes the baseline — there is nothing to move yet.
-        if (!previous) return;
-
-        const change = pinchChangeBetween(previous, snapshot);
-        const rect = container.getBoundingClientRect();
-        const focusX = snapshot.center.x - rect.left;
-        const focusY = snapshot.center.y - rect.top;
-        const newZoom = Math.max(
-            minZoom,
-            Math.min(maxZoom, zoomRef.current * change.scale),
-        );
-        // The world point that was under the midpoint BEFORE this step is the one being held, so the
-        // midpoint's own movement is what pans — exactly as zoom-towards-cursor does for the wheel.
-        const worldX = (focusX - change.panX - panRef.current.x) / zoomRef.current;
-        const worldY = (focusY - change.panY - panRef.current.y) / zoomRef.current;
-        panRef.current = { x: focusX - worldX * newZoom, y: focusY - worldY * newZoom };
-        zoomRef.current = newZoom;
-
-        noteGestureActivity();
-        scheduleTransformApply();
-    }, [
+    const applyPinch = usePinchApplier({
+        containerRef,
+        touchPointersRef,
+        pinchRef,
+        panRef,
+        zoomRef,
         minZoom,
         maxZoom,
         noteGestureActivity,
         scheduleTransformApply,
-        containerRef,
+    });
+
+    const startTouchMomentum = useTouchMomentum({
+        touchPanSamplesRef,
+        animationFrameRef,
         panRef,
-        touchPointersRef,
-        zoomRef,
-    ]);
-
-    // Coasts the board after a touch pan release, decaying the release velocity to a stop — the
-    // manual equivalent of the momentum a trackpad's own wheel-event stream gives panning for free.
-    // Shares animationFrameRef with smoothPanToWorld/smoothPanZoomToWorld so only one of the three
-    // ever drives the transform at once; each cancels whichever of the others was still running.
-    const startTouchMomentum = useCallback(() => {
-        const initialVelocity = velocityFromSamples(
-            touchPanSamplesRef.current,
-            MOMENTUM_MIN_VELOCITY,
-        );
-        if (!initialVelocity) return;
-
-        if (animationFrameRef.current !== null) {
-            cancelAnimationFrame(animationFrameRef.current);
-            animationFrameRef.current = null;
-        }
-
-        let velocity = initialVelocity;
-        let lastFrameTime = performance.now();
-
-        const animate = (currentTime: number) => {
-            const frameElapsedMs = currentTime - lastFrameTime;
-            lastFrameTime = currentTime;
-
-            panRef.current = {
-                x: panRef.current.x + velocity.x * frameElapsedMs,
-                y: panRef.current.y + velocity.y * frameElapsedMs,
-            };
-            velocity = decayVelocity(velocity, frameElapsedMs, MOMENTUM_FRICTION);
-
-            applyWorldTransform();
-            refreshMinimap();
-            render();
-            noteGestureActivity();
-
-            if (Math.hypot(velocity.x, velocity.y) > MOMENTUM_MIN_VELOCITY) {
-                animationFrameRef.current = requestAnimationFrame(animate);
-            } else {
-                animationFrameRef.current = null;
-            }
-        };
-
-        animationFrameRef.current = requestAnimationFrame(animate);
-    }, [
         applyWorldTransform,
         refreshMinimap,
         render,
         noteGestureActivity,
-        animationFrameRef,
-        panRef,
-    ]);
+    });
 
     // Pointer: pan via middle mouse, left-click on empty background, or a single finger on it
     const handlePointerDown = useCallback(
         (e: PointerEvent<HTMLDivElement>) => {
             // A fresh gesture always wins over a still-coasting one from the last touch pan.
-            if (animationFrameRef.current !== null) {
-                cancelAnimationFrame(animationFrameRef.current);
-                animationFrameRef.current = null;
-            }
+            cancelCameraAnimation(animationFrameRef);
 
-            if (e.pointerType === 'touch') {
-                touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-                if (touchPointersRef.current.size > 1) {
-                    // A second finger turns whatever was happening into a pinch: end the one-finger drag
-                    // so the two paths never both move the board in the same frame.
-                    isPanningRef.current = false;
-                    setPanCursor(false);
-                    pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
-                    return;
-                }
-            }
+            if (landTouchPointer(e, touchPointersRef.current, { isPanningRef, setPanCursor, pinchRef })) return;
 
-            const isBackground = isBackgroundPointerTarget(
-                e.pointerType,
-                readOnly,
-                e.target,
-                containerRef.current,
-            );
-            // A host that claims the background drag for itself only gives up the mouse/pen gesture: touch
-            // has no middle button and no wheel, so one finger must keep panning or the board is stuck.
-            const mayDragPan = backgroundDragPans || e.pointerType === 'touch';
-            if (e.button === 1 || (e.button === 0 && isBackground && mayDragPan)) {
-                if (e.button === 1) e.preventDefault();
-                isPanningRef.current = true;
-                setPanCursor(true);
-                lastPointerRef.current = { x: e.clientX, y: e.clientY };
-                if (e.pointerType === 'touch') {
-                    touchPanSamplesRef.current = [
-                        { x: e.clientX, y: e.clientY, time: performance.now() },
-                    ];
-                }
-                e.currentTarget.setPointerCapture(e.pointerId);
+            if (startsDragPan(e, { readOnly, backgroundDragPans, container: containerRef.current })) {
+                beginDragPan(e, { isPanningRef, lastPointerRef, touchPanSamplesRef, setPanCursor });
             }
         },
         [
@@ -229,32 +113,12 @@ export const useCanvasPointerGestures = ({
 
     const handlePointerMove = useCallback(
         (e: PointerEvent<HTMLDivElement>) => {
-            if (e.pointerType === 'touch' && touchPointersRef.current.has(e.pointerId)) {
-                touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-                if (touchPointersRef.current.size > 1) {
-                    applyPinch();
-                    return;
-                }
+            if (movesPinch(e, touchPointersRef.current)) {
+                applyPinch();
+                return;
             }
             if (!isPanningRef.current) return;
-            const deltaX = e.clientX - lastPointerRef.current.x;
-            const deltaY = e.clientY - lastPointerRef.current.y;
-            lastPointerRef.current = { x: e.clientX, y: e.clientY };
-            panRef.current = {
-                x: panRef.current.x + deltaX,
-                y: panRef.current.y + deltaY,
-            };
-
-            if (e.pointerType === 'touch') {
-                const samples = [
-                    ...touchPanSamplesRef.current,
-                    { x: e.clientX, y: e.clientY, time: performance.now() },
-                ];
-                touchPanSamplesRef.current = trimSamples(
-                    samples,
-                    MOMENTUM_SAMPLE_WINDOW_MS,
-                );
-            }
+            dragPanBy(e, { lastPointerRef, touchPanSamplesRef }, panRef);
 
             // Same gesture path as wheel pan: coalesce onto one rAF and signal the gesture so
             // virtualization holds still during a drag-pan too.
@@ -272,23 +136,8 @@ export const useCanvasPointerGestures = ({
 
     const handlePointerUp = useCallback(
         (e: PointerEvent<HTMLDivElement>) => {
-            if (touchPointersRef.current.delete(e.pointerId)) {
-                // Re-baseline on the fingers that are left: keeping the old geometry would register the
-                // lifted finger's absence as a huge pinch/pan step on the next move.
-                pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
-                const [remaining] = [...touchPointersRef.current.values()];
-                if (remaining) {
-                    // Lifting back down to one finger continues the same gesture as a plain drag-pan
-                    // rather than stopping dead until the user lifts and starts over.
-                    isPanningRef.current = true;
-                    setPanCursor(true);
-                    lastPointerRef.current = { x: remaining.x, y: remaining.y };
-                    touchPanSamplesRef.current = [
-                        { x: remaining.x, y: remaining.y, time: performance.now() },
-                    ];
-                    return;
-                }
-            }
+            const gesture = { isPanningRef, lastPointerRef, touchPanSamplesRef, setPanCursor, pinchRef };
+            if (liftTouchPointer(e, touchPointersRef.current, gesture)) return;
 
             const wasPanningTouch = e.pointerType === 'touch' && isPanningRef.current;
             isPanningRef.current = false;
@@ -300,3 +149,98 @@ export const useCanvasPointerGestures = ({
 
     return { handlePointerDown, handlePointerMove, handlePointerUp };
 };
+
+// Direct DOM write, not React state — an idle background should not look grabbable until a drag
+// starts. Swapping to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture
+// churn this file
+// already avoids re-rendering for elsewhere (see the transform writes below).
+const usePanCursor = (containerRef: RefObject<HTMLDivElement | null>) =>
+    useCallback(
+        (panning: boolean) => {
+            if (containerRef.current)
+                containerRef.current.style.cursor = panning ? 'grabbing' : 'default';
+        },
+        [containerRef],
+    );
+
+type PinchApplierOptions = Pick<
+    CanvasPointerGesturesOptions,
+    'containerRef' | 'touchPointersRef' | 'panRef' | 'zoomRef' | 'minZoom' | 'maxZoom' | 'noteGestureActivity' | 'scheduleTransformApply'
+> & { pinchRef: RefObject<PinchSnapshot | null> };
+
+// Touch: two fingers pan and zoom together, anywhere on the surface — the trackpad's
+// wheel/ctrl+wheel equivalent for a tablet.
+const usePinchApplier = ({
+    containerRef,
+    touchPointersRef,
+    pinchRef,
+    panRef,
+    zoomRef,
+    minZoom,
+    maxZoom,
+    noteGestureActivity,
+    scheduleTransformApply,
+}: PinchApplierOptions) =>
+    useCallback(() => {
+        const moved = applyPinchStep({
+            container: containerRef.current,
+            touchPointers: touchPointersRef.current,
+            pinchRef,
+            panRef,
+            zoomRef,
+            minZoom,
+            maxZoom,
+        });
+        if (!moved) return;
+
+        noteGestureActivity();
+        scheduleTransformApply();
+    }, [
+        minZoom,
+        maxZoom,
+        noteGestureActivity,
+        scheduleTransformApply,
+        containerRef,
+        panRef,
+        touchPointersRef,
+        zoomRef,
+    ]);
+
+type TouchMomentumHookOptions = Pick<
+    CanvasPointerGesturesOptions,
+    'animationFrameRef' | 'panRef' | 'applyWorldTransform' | 'refreshMinimap' | 'render' | 'noteGestureActivity'
+> & { touchPanSamplesRef: RefObject<PanSample[]> };
+
+// Coasts the board after a touch pan release — the manual equivalent of the momentum a trackpad's
+// own wheel-event stream gives panning for free. Shares animationFrameRef with
+// smoothPanToWorld/smoothPanZoomToWorld so only one of the three ever drives the transform at once;
+// each cancels whichever of the others was still running.
+const useTouchMomentum = ({
+    touchPanSamplesRef,
+    animationFrameRef,
+    panRef,
+    applyWorldTransform,
+    refreshMinimap,
+    render,
+    noteGestureActivity,
+}: TouchMomentumHookOptions) =>
+    useCallback(() => {
+        startTouchMomentumFrom({
+            samples: touchPanSamplesRef.current,
+            animationFrameRef,
+            panRef,
+            onFrame: () => {
+                applyWorldTransform();
+                refreshMinimap();
+                render();
+                noteGestureActivity();
+            },
+        });
+    }, [
+        applyWorldTransform,
+        refreshMinimap,
+        render,
+        noteGestureActivity,
+        animationFrameRef,
+        panRef,
+    ]);
