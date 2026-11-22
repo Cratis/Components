@@ -2,6 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useState, useRef, useCallback } from 'react';
+import {
+  exceedsClickTolerance,
+  scrollWithinBounds,
+  smoothedVelocity,
+  startInertia,
+  startsPan,
+} from './panningMotion';
 
 export function usePanning(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -37,19 +44,19 @@ export function usePanning(
     didDragRef.current = false;
     velocityRef.current = { x: 0, y: 0 };
 
-      if (e.button === 1 || (e.button === 0 && (e.altKey || !isOnCard))) {
-      if (!isOnCard) {
-        e.preventDefault?.();
-      }
-      setIsPanning(true);
-      panStartRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-        scrollLeft: container.scrollLeft,
-        scrollTop: container.scrollTop,
-      };
-      lastMouseRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
+    if (!startsPan(e.button, e.altKey, isOnCard)) return;
+
+    if (!isOnCard) {
+      e.preventDefault?.();
     }
+    setIsPanning(true);
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: container.scrollLeft,
+      scrollTop: container.scrollTop,
+    };
+    lastMouseRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
   }, [containerRef, stopInertia]);
 
   const handlePanMove = useCallback((e: React.MouseEvent | MouseEvent) => {
@@ -59,8 +66,7 @@ export function usePanning(
     const dx = e.clientX - panStart.x;
     const dy = e.clientY - panStart.y;
 
-    // Mark as dragged if moved more than 3 pixels
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+    if (exceedsClickTolerance(dx, dy)) {
       didDragRef.current = true;
     }
 
@@ -68,37 +74,20 @@ export function usePanning(
     const newCameraX = panStart.scrollLeft - dx;
     const newCameraY = panStart.scrollTop - dy;
 
-    // Update camera position
     // Update container scroll directly so the visual camera follows the drag
     const container = containerRef.current;
     if (container) {
-      // Constrain scroll position to prevent viewing beyond content bounds
-      const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
-      const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
-      
-      container.scrollLeft = Math.max(0, Math.min(maxScrollLeft, Math.round(newCameraX)));
-      container.scrollTop = Math.max(0, Math.min(maxScrollTop, Math.round(newCameraY)));
+      scrollWithinBounds(container, Math.round(newCameraX), Math.round(newCameraY));
     }
 
     // Also notify parent about scroll change (keeps external state in sync)
-    if (onScrollChange) {
-      onScrollChange({ x: container ? container.scrollLeft : newCameraX, y: container ? container.scrollTop : newCameraY });
-    }
+    onScrollChange?.(container
+      ? { x: container.scrollLeft, y: container.scrollTop }
+      : { x: newCameraX, y: newCameraY });
 
     // Track velocity for inertia
     const now = performance.now();
-    const last = lastMouseRef.current;
-    if (last) {
-      const dt = now - last.time;
-      if (dt > 0 && dt < 50) {
-        const instantVx = (last.x - e.clientX) / dt;
-        const instantVy = (last.y - e.clientY) / dt;
-        velocityRef.current = {
-          x: velocityRef.current.x * 0.5 + instantVx * 0.5,
-          y: velocityRef.current.y * 0.5 + instantVy * 0.5,
-        };
-      }
-    }
+    velocityRef.current = smoothedVelocity(velocityRef.current, lastMouseRef.current, e, now);
     lastMouseRef.current = { x: e.clientX, y: e.clientY, time: now };
   }, [isPanning, containerRef, onScrollChange]);
 
@@ -110,8 +99,8 @@ export function usePanning(
     panStartRef.current = null;
 
     // If clicked on background and didn't drag, trigger deselect
-    if (clickedOnBackgroundRef.current && !didDragRef.current && onBackgroundClick) {
-      onBackgroundClick();
+    if (clickedOnBackgroundRef.current && !didDragRef.current) {
+      onBackgroundClick?.();
     }
 
     if (!wasPanning) {
@@ -119,41 +108,9 @@ export function usePanning(
     }
 
     const container = containerRef.current;
-    if (!container) {
-      lastMouseRef.current = null;
-      return;
-    }
-
-    const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-
-    // Start inertia if moving fast enough
-    if (speed > 0.3) {
-      let vx = velocity.x * 16;
-      let vy = velocity.y * 16;
-
-      const animate = () => {
-        const currentSpeed = Math.sqrt(vx * vx + vy * vy);
-
-        if (currentSpeed < 0.5) {
-          inertiaAnimationRef.current = null;
-          return;
-        }
-
-        // Constrain scroll position to prevent viewing beyond content bounds
-        const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
-        const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
-        
-        container.scrollLeft = Math.max(0, Math.min(maxScrollLeft, container.scrollLeft + vx));
-        container.scrollTop = Math.max(0, Math.min(maxScrollTop, container.scrollTop + vy));
-
-        // Decay
-        vx *= 0.95;
-        vy *= 0.95;
-
-        inertiaAnimationRef.current = requestAnimationFrame(animate);
-      };
-
-      inertiaAnimationRef.current = requestAnimationFrame(animate);
+    if (container) {
+      // Start inertia if moving fast enough
+      startInertia(container, velocity, inertiaAnimationRef);
     }
 
     lastMouseRef.current = null;
@@ -166,6 +123,3 @@ export function usePanning(
     handlePanEnd,
   };
 }
-
-
-
