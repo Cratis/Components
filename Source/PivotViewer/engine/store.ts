@@ -244,24 +244,11 @@ export function applyFilters(
     indexes: PivotIndexes,
     filters: FilterSpec[],
 ): FilterResult {
-    if (filters.length === 0) {
-        return {
-            visibleIds: store.ids,
-            count: store.count,
-        };
-    }
-
     // Every active filter contributes exactly one set to intersect, even when it
     // matches nothing - an empty Uint32Array - so a zero-match filter correctly
     // collapses the overall intersection to empty instead of being skipped (which
     // would let the other active filters' matches leak through unfiltered).
-    const sets: Uint32Array[] = [];
-
-    for (const filter of filters) {
-        const ids = filterIds(indexes, filter);
-        if (ids) sets.push(ids);
-    }
-
+    const sets = activeFilterSets(indexes, filters);
     if (sets.length === 0) {
         return {
             visibleIds: store.ids,
@@ -269,15 +256,28 @@ export function applyFilters(
         };
     }
 
-    let visibleIds = sets[0];
-    for (let i = 1; i < sets.length; i++) {
-        visibleIds = intersectSorted(visibleIds, sets[i]);
-    }
-
+    const visibleIds = intersectAll(sets);
     return {
         visibleIds,
         count: visibleIds.length,
     };
+}
+
+function activeFilterSets(indexes: PivotIndexes, filters: FilterSpec[]) {
+    const sets: Uint32Array[] = [];
+    for (const filter of filters) {
+        const ids = filterIds(indexes, filter);
+        if (ids) sets.push(ids);
+    }
+    return sets;
+}
+
+function intersectAll(sets: Uint32Array[]) {
+    let visibleIds = sets[0];
+    for (let i = 1; i < sets.length; i++) {
+        visibleIds = intersectSorted(visibleIds, sets[i]);
+    }
+    return visibleIds;
 }
 
 function filterIds(indexes: PivotIndexes, filter: FilterSpec): Uint32Array | undefined {
@@ -401,13 +401,17 @@ function groupByNumeric(
     const bucketCount = Number.isFinite(buckets) ? Math.max(1, Math.floor(buckets)) : 10;
     const bucketSize = (max - min) / bucketCount;
     const bucketLists = bucketNumericIds(field.values, visibleIds, { min, bucketSize, bucketCount });
+    return { groups: numericBucketGroups(bucketLists, min, bucketSize) };
+}
+
+function numericBucketGroups(bucketLists: number[][], min: number, bucketSize: number) {
     const groups: GroupResult[] = [];
-    for (let i = 0; i < bucketCount; i++) {
+    for (let i = 0; i < bucketLists.length; i++) {
         if (bucketLists[i].length === 0) continue;
         groups.push(numericGroup(`${i}`, min + i * bucketSize, min + (i + 1) * bucketSize,
             new Uint32Array(bucketLists[i])));
     }
-    return { groups };
+    return groups;
 }
 
 function visibleNumericRange(values: Float64Array, ids: Uint32Array) {
@@ -457,19 +461,25 @@ export function sortIds(
     if (!field) return ids;
 
     const sortedIds = new Uint32Array(ids);
+    const comparator = idComparator(field);
+    if (comparator) sortedIds.sort(comparator);
+    return sortedIds;
+}
 
+function idComparator(field: Field): ((a: number, b: number) => number) | undefined {
     if (field.kind === 'number') {
         const values = field.values;
-        sortedIds.sort((a, b) => compareNumbers(values[a], values[b]));
-    } else if (field.kind === 'string') {
-        const values = field.values;
-        sortedIds.sort((a, b) => values[a].localeCompare(values[b]));
-    } else if (field.kind === 'boolean') {
-        const values = field.values;
-        sortedIds.sort((a, b) => values[a] - values[b]);
+        return (a, b) => compareNumbers(values[a], values[b]);
     }
-
-    return sortedIds;
+    if (field.kind === 'string') {
+        const values = field.values;
+        return (a, b) => values[a].localeCompare(values[b]);
+    }
+    if (field.kind === 'boolean') {
+        const values = field.values;
+        return (a, b) => values[a] - values[b];
+    }
+    return undefined;
 }
 
 function compareNumbers(a: number, b: number) {
