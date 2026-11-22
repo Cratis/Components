@@ -610,7 +610,7 @@ export const partDefinitions = {
             'toolbar-folder-tile-icon',
             'toolbar-folder-tile-label',
         ],
-        sources: ['Toolbar/ToolbarFolder.tsx', 'Toolbar/ToolbarDrawerTile.tsx'],
+        sources: ['Toolbar/ToolbarFolder.tsx', 'Toolbar/ToolbarFolderPanel.tsx', 'Toolbar/ToolbarDrawerTile.tsx'],
         ptFiles: ['Toolbar/ToolbarFolder.tsx'],
         ptKeys: [
             'root',
@@ -723,6 +723,7 @@ export const partDefinitions = {
         sources: [
             'ConfigurationEditor/PropertyControls.tsx',
             'ConfigurationEditor/PropertyControl.tsx',
+            'ConfigurationEditor/PropertyControlInput.tsx',
         ],
         ptFiles: ['ConfigurationEditor/PropertyControls.tsx'],
         ptKeys: [
@@ -898,6 +899,9 @@ export const partDefinitions = {
         sources: [
             'SchemaEditor/Tree/TreeSchemaEditor.tsx',
             'SchemaEditor/Tree/SchemaPropertyRow.tsx',
+            'SchemaEditor/Tree/SchemaPropertyRowName.tsx',
+            'SchemaEditor/Tree/SchemaPropertyRowControls.tsx',
+            'SchemaEditor/Tree/SchemaPropertyRowChildren.tsx',
             'SchemaEditor/Tree/GeneratedToggle.tsx',
             'SchemaEditor/Tree/PropertyTypeMenu.tsx',
             'SchemaEditor/Tree/PropertyTypeBadge.tsx',
