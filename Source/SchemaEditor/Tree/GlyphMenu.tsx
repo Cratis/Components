@@ -10,6 +10,8 @@ import { useNearestDialogZIndex } from '../../renderer/DialogStackContext';
 import { unstable_useOverlayEnvironment } from '../../renderer/RendererContext';
 import { PropertyType } from './PropertyType';
 import { PropertyTypeGlyph } from './PropertyTypeGlyph';
+import { describeComponent } from '../../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../../configuration/identity/useComponentPresentation';
 
 /** One entry of a {@link GlyphMenu}. */
 export interface GlyphMenuItem<TKey extends string | number> {
@@ -37,11 +39,18 @@ export interface GlyphMenuProps<TKey extends string | number> {
     disabled?: boolean;
 }
 
+type GlyphMenuPresentationProps = Pick<GlyphMenuProps<string | number>, 'label'>;
+
+const glyphMenuDescriptor = describeComponent<GlyphMenuPresentationProps>('GlyphMenu', [
+    { name: 'label', label: 'Accessible label', type: 'string' },
+]);
+
 /**
  * A single-choice menu that lists its entries the way the schema editor's type menu does: a colored glyph
  * followed by the name. The trigger shows the chosen entry the same way.
  */
 export const GlyphMenu = <TKey extends string | number>({ items, value, onChange, label, name, disabled }: GlyphMenuProps<TKey>): ReactNode => {
+    const [presented, marker] = useComponentPresentation(glyphMenuDescriptor, { label }, name);
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const nearestDialogZIndex = useNearestDialogZIndex();
     const zIndex = nearestDialogZIndex === null
@@ -53,7 +62,8 @@ export const GlyphMenu = <TKey extends string | number>({ items, value, onChange
         <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
             <MenuTrigger>
                 <Button
-                    aria-label={label}
+                    {...marker}
+                    aria-label={presented.label}
                     isDisabled={disabled}
                     className='cratis-schema-editor__type-button'
                     data-name={name}
@@ -61,9 +71,9 @@ export const GlyphMenu = <TKey extends string | number>({ items, value, onChange
                     {chosen && <PropertyTypeGlyph type={chosen.glyph} />}
                     {chosen?.label}
                 </Button>
-                <Popover className='cratis-schema-editor__menu' style={{ zIndex }}>
+                <Popover {...marker} className='cratis-schema-editor__menu' style={{ zIndex }}>
                     <Menu
-                        aria-label={label}
+                        aria-label={presented.label}
                         className='cratis-schema-editor__menu-list'
                         onAction={key => {
                             const picked = items.find(item => String(item.key) === String(key));

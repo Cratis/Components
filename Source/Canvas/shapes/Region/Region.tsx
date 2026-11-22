@@ -121,6 +121,7 @@ export const Region = (props: RegionProps) => {
         <>
             <div
                 ref={regionRef}
+                data-cratis-component='Region'
                 className={`canvas-region${selected ? ' canvas-region--selected' : ''}`}
                 style={{ width: region.width, height: region.height }}
                 onPointerDown={handlePointerDown}
@@ -165,7 +166,7 @@ export const Region = (props: RegionProps) => {
                 live outside the bordered box so the region's border does not offset their coordinate
                 origin — otherwise items would jump by the border width when moved into or out of a
                 region. */}
-            <div className='canvas-region__items'>{children}</div>
+            <div data-cratis-component='Region' className='canvas-region__items'>{children}</div>
         </>
     );
 };
