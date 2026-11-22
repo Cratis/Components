@@ -112,7 +112,11 @@ export const ObjectContentEditor = ({
     });
 
     return (
-        <div data-cratis-component='ObjectContentEditor' className={`order-content ${className || ''}`}>
+        <div
+            data-cratis-component='ObjectContentEditor'
+            className={className ? `order-content ${className}` : 'order-content'}
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
                 onNavigate={navigateToBreadcrumb}
@@ -128,12 +132,12 @@ export const ObjectContentEditor = ({
             {timestamp && (
                 <div
                     style={{
-                        marginTop: '12px',
-                        paddingTop: '8px',
-                        borderTop: '1px solid var(--cratis-surface-border)',
-                        fontSize: '0.75rem',
-                        color: 'var(--cratis-text-color-secondary)',
-                        fontStyle: 'italic',
+                        marginTop: '20px',
+                        padding: '12px',
+                        background: 'var(--cratis-highlight-bg)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        color: 'var(--cratis-text-color)',
                     }}
                 >
                     Snapshot captured: {timestamp.toLocaleString()}

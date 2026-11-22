@@ -52,6 +52,20 @@ describe('when displaying ObjectContentEditor values in read-only mode', () => {
     it('should retain the root styling and component marker', () => {
         editor.find('[data-cratis-component="ObjectContentEditor"]').className
             .should.equal('order-content example-editor');
+        editor.find('[data-cratis-component="ObjectContentEditor"]').getAttribute('style')!
+            .should.equal('display: flex; flex-direction: column; height: 100%;');
+    });
+
+    it('should not append a space to the root class when no extra class is supplied', async () => {
+        await editor.render({ object: {}, schema });
+        editor.find('[data-cratis-component="ObjectContentEditor"]').getAttribute('class')!
+            .should.equal('order-content');
+    });
+
+    it('should not append a space to the root class when the extra class is empty', async () => {
+        await editor.render({ object: {}, schema, className: '' });
+        editor.find('[data-cratis-component="ObjectContentEditor"]').getAttribute('class')!
+            .should.equal('order-content');
     });
 
     it('should display the property description affordance', () => {
@@ -61,6 +75,15 @@ describe('when displaying ObjectContentEditor values in read-only mode', () => {
 
     it('should display the localized snapshot timestamp', () => {
         editor.container.textContent!.should.contain(`Snapshot captured: ${timestamp.toLocaleString()}`);
+    });
+
+    it('should retain the exact snapshot footer style', () => {
+        editor.find('[data-cratis-component="ObjectContentEditor"] > div:last-child').getAttribute('style')!
+            .should.equal([
+                'margin-top: 20px; padding: 12px;',
+                'background: var(--cratis-highlight-bg); border-radius: 8px;',
+                'font-size: 12px; color: var(--cratis-text-color);',
+            ].join(' '));
     });
 
     it('should not render editable controls or notify changes or validation', () => {
