@@ -1,8 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ReactElement, type ReactNode } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 import type { ButtonProps } from './Button';
+import type { TooltipProps } from './Tooltip';
 import { resolveButtonPresentation, warnForDeprecatedProps } from './buttonPresentation';
 import { TooltipImplementation } from './TooltipImplementation';
 
@@ -57,7 +58,7 @@ const renderLabel = ({ label, children }: Pick<ButtonProps, 'label' | 'children'
         </span>
     );
 
-const withTooltip = (button: ReactElement, { tooltip, tooltipOptions }: Pick<ButtonProps, 'tooltip' | 'tooltipOptions'>) =>
+const withTooltip = (button: TooltipProps['children'], { tooltip, tooltipOptions }: Pick<ButtonProps, 'tooltip' | 'tooltipOptions'>) =>
     tooltip ? (
         <TooltipImplementation
             content={tooltip}

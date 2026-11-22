@@ -22,8 +22,10 @@ export const resolvePaginatorLabels = (
         page: (number: number) => `Page ${number}`,
         pages: 'Pages',
     };
+    const explicit: Partial<PaginatorLabels> = ariaLabels ?? {};
+    const configured: Partial<PaginatorLabels> = messages ?? {};
     const labelFor = <K extends PaginatorLabelKey>(key: K): PaginatorLabels[K] =>
-        ariaLabels?.[key] ?? messages?.[key] ?? fallbacks[key];
+        explicit[key] ?? configured[key] ?? fallbacks[key];
     return {
         navigation: labelFor('navigation'),
         first: labelFor('first'),
