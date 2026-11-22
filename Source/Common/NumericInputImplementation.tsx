@@ -3,6 +3,13 @@
 
 import { forwardRef, type ChangeEvent } from 'react';
 import type { NumericInputProps } from './NumericInput';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
+
+const numericInputDescriptor = describeComponent<NumericInputProps>('NumericInput', [
+    { name: 'placeholder', label: 'Placeholder', type: 'string' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
 
 type Root = NonNullable<NumericInputProps['pt']>['root'];
 type AriaInvalid = NumericInputProps['aria-invalid'];
@@ -43,6 +50,11 @@ export const NumericInputImplementation = forwardRef<
     HTMLInputElement,
     NumericInputProps
 >(function NumericInputImplementation(props, ref) {
+    const [presentation, marker] = useComponentPresentation(
+        numericInputDescriptor,
+        props,
+        props.id ?? props.name,
+    );
     const {
         value,
         invalid: _invalid,
@@ -54,14 +66,15 @@ export const NumericInputImplementation = forwardRef<
         readOnly: _readOnly,
         'aria-invalid': _ariaInvalid,
         ...nativeProps
-    } = props;
+    } = presentation;
     const root = pt?.root;
-    const state = resolveState(props, root);
+    const state = resolveState(presentation, root);
 
     return (
         <input
             {...root}
             {...nativeProps}
+            {...marker}
             ref={ref}
             type='number'
             value={value ?? ''}
@@ -71,7 +84,6 @@ export const NumericInputImplementation = forwardRef<
             onChange={createChangeHandler(root, onChange)}
             className={joinClassNames('cratis-text-input', 'cratis-numeric-input', root?.className, className)}
             style={{ ...root?.style, ...style }}
-            data-cratis-component='NumericInput'
             data-cratis-part='root'
             data-disabled={state.disabled || undefined}
             data-invalid={state.invalid || undefined}
