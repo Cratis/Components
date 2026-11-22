@@ -9,6 +9,8 @@ import { ToolbarRovingContext } from '../Common/ToolbarRovingContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Stable part attributes for {@link Toolbar}. */
 export interface ToolbarParts {
@@ -48,22 +50,29 @@ export interface ToolbarProps {
     onItemDragStart?: (data: unknown, event: React.DragEvent) => void;
 }
 
+const toolbarDescriptor = describeComponent<ToolbarProps>('Toolbar', [
+    { name: 'orientation', label: 'Orientation', type: 'enum', values: ['vertical', 'horizontal'] satisfies NonNullable<ToolbarProps['orientation']>[], defaultValue: 'vertical' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+]);
+
 /**
  * A toolbar container that groups icon buttons with a rounded border,
  * mimicking the style of tools panels found in canvas-based applications.
  * Supports both vertical (default) and horizontal orientations.
  */
-export const Toolbar = ({
-    children,
-    orientation = 'vertical',
-    focusMode = ToolbarFocusMode.Arrows,
-    draggable = false,
-    onItemDragStart,
-    className,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    pt,
-}: ToolbarProps) => {
+export const Toolbar = (props: ToolbarProps) => {
+    const [presentation, marker] = useComponentPresentation(toolbarDescriptor, props);
+    const {
+        children,
+        orientation = 'vertical',
+        focusMode = ToolbarFocusMode.Arrows,
+        draggable = false,
+        onItemDragStart,
+        className,
+        'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledBy,
+        pt,
+    } = presentation;
     const { rootRef, onKeyDown, roving } = useToolbarKeyboardNavigation(orientation, focusMode);
     const { messages } = useCratisComponentsConfig();
     const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
@@ -88,7 +97,7 @@ export const Toolbar = ({
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='root'
-                data-cratis-component='Toolbar'
+                {...marker}
                 data-orientation={orientation}
             >
                 <ToolbarRovingContext.Provider value={roving}>
