@@ -19,7 +19,9 @@ The picker recognizes a component by `data-cratis-component="<Name>"` on its roo
 
 Chat composer, conversation, message body, message bubble, topic list, emoji picker, failed reply, mention suggestions, reactions, avatar, typing indicator, and property-type glyph roots expose their own markers. Canvas, minimap, events view, object content editor, object navigation, pivot viewer, both schema editor layouts, and the portaled toaster region also expose markers on their existing roots.
 
-`ChatSidebarForObservableQueries` delegates identity to `ChatSidebar`. `ConfigurationEditor` renders the registered host editor or supplied fallback without its own root. `AutoCommandForm` uses the Arc form root, and `CanvasOverlay` portals caller-supplied children without a root of its own. `GlyphMenu` and `Region` remain pending because they render split roots; no wrapper is added solely for picker identity.
+`GlyphMenu` marks its trigger and portaled dropdown; both share the same presentation registration. `Region` marks its bordered canvas root and sibling member-content surface. Picking either surface identifies the owning component without adding a wrapper.
+
+`ChatSidebarForObservableQueries` delegates identity to `ChatSidebar`. `ConfigurationEditor` renders the registered host editor or supplied fallback without its own root. `AutoCommandForm` uses the Arc form root, and `CanvasOverlay` portals caller-supplied children without a root of its own.
 
 ## Pick a component
 
@@ -149,6 +151,7 @@ Components with descriptors today:
 | `Radio` | `Radio` | `aria-label`, `invalid` |
 | `ComboBox` | `ComboBox` | `placeholder`, `aria-label`, `invalid` |
 | `DatePickerInput` | `DatePickerInput` | `placeholder`, `aria-label`, `invalid` |
+| `GlyphMenu` | `GlyphMenu` | `label` |
 | `Tabs` | `Tabs` | `aria-label` |
 | `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
 | `Message` | `Message` | `severity` |
@@ -164,6 +167,8 @@ Components with descriptors today:
 `DataPage` renders a `Page` and is marked `DataPage`; its title is the `Page` title property.
 
 The `Tabs` accessible label belongs to its tab list. The `ComboBox` accessible label belongs to its search input; the `DatePickerInput` accessible label belongs to its date picker. Their selected values, options, date bounds, time settings, and callbacks are not editable presentation properties. `DatePickerInput` keeps its public identity and previewed props when an adapter supplies its renderer.
+
+`GlyphMenu` exposes only the accessible label shared by its trigger and menu, not its items, selected value, callbacks, or disabled state. `Region` has no presentation descriptor: its name and geometry are canvas data, while selection, dragging, and resizing control interaction.
 
 Progress values, numeric input values and constraints, tab items, selected values, and callbacks are not exposed as editable presentation properties.
 
