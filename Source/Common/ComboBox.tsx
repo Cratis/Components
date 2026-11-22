@@ -12,6 +12,8 @@ import { useComboBoxPresentation } from './useComboBoxPresentation';
 import { renderComboBoxControl } from './renderComboBoxControl';
 import { renderComboBoxPopover } from './renderComboBoxPopover';
 import { renderComboBoxSupportingText } from './renderComboBoxSupportingText';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 /** Attributes a consumer may hand to one {@link ComboBox} part: class, style, title and data attributes. */
 export type ComboBoxPartAttributes = Pick<
@@ -140,6 +142,12 @@ export interface ComboBoxProps {
     pt?: ComboBoxParts;
 }
 
+const comboBoxDescriptor = describeComponent<ComboBoxProps>('ComboBox', [
+    { name: 'placeholder', label: 'Placeholder', type: 'string' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
 /**
  * A single-selection, text-searching combobox for picking an entity from options that may still be
  * loading, may have failed to load, and may need an "add new" escape hatch. The input owns the
@@ -147,13 +155,14 @@ export interface ComboBoxProps {
  * closes. Components owns the markup, parts and tokens; React Aria supplies the interaction internally.
  */
 export const ComboBox = (props: ComboBoxProps) => {
+    const [presented, marker] = useComponentPresentation(comboBoxDescriptor, props, props.id ?? props.name);
     const {
         value, disabled = false, readOnly = false, invalid = false, required = false,
         loading = false, openOnFocus = false, name, className, pt,
         'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy,
-    } = props;
-    const presentation = useComboBoxPresentation(props);
-    const state = useComboBoxState(props);
+    } = presented;
+    const presentation = useComboBoxPresentation(presented);
+    const state = useComboBoxState(presented);
     const { describedBy } = presentation;
     const { inputValue, setInputValue, select, openChanged, setEditing, items } = state;
 
@@ -179,7 +188,7 @@ export const ComboBox = (props: ComboBoxProps) => {
             aria-describedby={describedBy}
             className={classNames('cratis-combobox', pt?.root?.className, className)}
             data-cratis-part='root'
-            data-cratis-component='ComboBox'
+            {...marker}
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             data-readonly={readOnly || undefined}
@@ -187,9 +196,9 @@ export const ComboBox = (props: ComboBoxProps) => {
         >
             {({ isOpen }) => (
                 <>
-                    {renderComboBoxControl(props, presentation, isOpen)}
-                    {renderComboBoxPopover(props, state, presentation)}
-                    {renderComboBoxSupportingText(props, presentation)}
+                    {renderComboBoxControl(presented, presentation, isOpen)}
+                    {renderComboBoxPopover(presented, state, presentation)}
+                    {renderComboBoxSupportingText(presented, presentation)}
                 </>
             )}
         </AriaComboBox>

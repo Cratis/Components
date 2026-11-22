@@ -12,6 +12,8 @@ import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { DatePickerInputImplementation } from './DatePickerInputImplementation';
+import { describeComponent } from '../configuration/identity/describeComponent';
+import { useComponentPresentation } from '../configuration/identity/useComponentPresentation';
 
 interface DatePickerPartAttributes extends Omit<
     HTMLAttributes<HTMLElement>,
@@ -140,6 +142,12 @@ export interface DatePickerInputProps {
     'aria-describedby'?: string;
 }
 
+const datePickerDescriptor = describeComponent<DatePickerInputProps>('DatePickerInput', [
+    { name: 'placeholder', label: 'Placeholder', type: 'string' },
+    { name: 'aria-label', label: 'Accessible label', type: 'string' },
+    { name: 'invalid', label: 'Invalid', type: 'boolean', defaultValue: false },
+]);
+
 const coreDatePickerDeclaration = Object.freeze({
     mode: 'atomic',
     fidelity: 'native',
@@ -152,5 +160,6 @@ const coreDatePickerDeclaration = Object.freeze({
  */
 export const DatePickerInput = (props: DatePickerInputProps) => {
     const declaration = unstable_useSlot('display.datePicker', coreDatePickerDeclaration);
-    return renderSlot(declaration, props);
+    const [presented, marker] = useComponentPresentation(datePickerDescriptor, props, props.id);
+    return renderSlot(declaration, { ...presented, ...marker });
 };

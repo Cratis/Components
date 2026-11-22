@@ -60,7 +60,7 @@ export const componentMarkerCoverage: Readonly<Record<string, ComponentMarkerCov
     DataTableCore: { marked: ['DataTables/DataTableCore.tsx'] },
     DataTableForObservableQuery: { delegatesTo: 'DataTableCore' },
     DataTableForQuery: { delegatesTo: 'DataTableCore' },
-    DatePickerInput: { marked: ['Common/DatePickerInputImplementation.tsx'] },
+    DatePickerInput: { marked: ['Common/DatePickerInput.tsx', 'Common/DatePickerInputImplementation.tsx'] },
     Dialog: { marked: ['Dialogs/dialogDescriptor.ts'] },
     Dropdown: { marked: ['Dropdown/DropdownParts.tsx'] },
     DropdownField: { delegatesTo: 'Dropdown' },

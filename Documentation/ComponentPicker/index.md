@@ -147,6 +147,8 @@ Components with descriptors today:
 | `Checkbox` | `Checkbox` | `aria-label`, `invalid` |
 | `Switch` | `Switch` | `aria-label`, `invalid` |
 | `Radio` | `Radio` | `aria-label`, `invalid` |
+| `ComboBox` | `ComboBox` | `placeholder`, `aria-label`, `invalid` |
+| `DatePickerInput` | `DatePickerInput` | `placeholder`, `aria-label`, `invalid` |
 | `Tabs` | `Tabs` | `aria-label` |
 | `Breadcrumbs` | `Breadcrumbs` | `aria-label` |
 | `Message` | `Message` | `severity` |
@@ -161,7 +163,9 @@ Components with descriptors today:
 
 `DataPage` renders a `Page` and is marked `DataPage`; its title is the `Page` title property.
 
-The `Tabs` accessible label belongs to its tab list. Progress values, numeric input values and constraints, tab items, selected values, and callbacks are not exposed as editable presentation properties.
+The `Tabs` accessible label belongs to its tab list. The `ComboBox` accessible label belongs to its search input; the `DatePickerInput` accessible label belongs to its date picker. Their selected values, options, date bounds, time settings, and callbacks are not editable presentation properties. `DatePickerInput` keeps its public identity and previewed props when an adapter supplies its renderer.
+
+Progress values, numeric input values and constraints, tab items, selected values, and callbacks are not exposed as editable presentation properties.
 
 ### Describe your own component
 
