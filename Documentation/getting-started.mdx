@@ -13,7 +13,7 @@ This flow uses a generated proxy, the TypeScript class Arc creates so your brows
 
 - A React 19 application built with TypeScript. Components declares `react` and `react-dom` `^19.0.0` as peers.
 - An Arc frontend with generated proxies and `experimentalDecorators`/`emitDecoratorMetadata` enabled. The [Arc tutorial's first slice](/arc/tutorial/first-slice/) sets up the project, `tsconfig.json`, and Vite proxy that this page assumes.
-- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <24`. This checkout pins its Arc development dependencies to **23.0.0**. The wider peer range is not a claim that every accepted version is exercised.
+- `@cratis/arc` and `@cratis/arc.react` in the range `>=20.3.1 <26`. This checkout pins its Arc development dependencies to **25.3.1**. The wider peer range is not a claim that every accepted version is exercised.
 - If you use strict Yarn PnP with `@cratis/arc.react@22.6.2`, apply the [version-specific workaround](#yarn-pnp-with-arc-react-2262) before installing.
 
 Keep the Arc backend running and retain the Arc tutorial's development-server routing. The examples below use its .NET/JVM proxy paths. Check that `src/Authors/RegisterAuthor.ts` exports the generated `RegisterAuthor` command with required `id` and `name`. The later table chapter also needs `AllAuthors` from `src/Authors/Author.ts`. If an export is missing, finish the backend slice and regenerate proxies rather than writing a substitute command class. For Arc's TypeScript backend, use the different `*.proxy.ts` paths described in [the first slice](/arc/tutorial/first-slice/) instead of copying these imports.
