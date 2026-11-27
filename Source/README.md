@@ -37,7 +37,7 @@ npm install @cratis/components@^4
 
 The current package manifest declares these peer dependencies:
 
-- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <24`
+- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <26`
 - `@cratis/fundamentals` `^7.10.3`
 - optional `pixi.js` `^8.20.0`
 - `react` and `react-dom` `^19.0.0`
