@@ -320,16 +320,16 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc": "24.8.1",
-        "@cratis/arc.react": "24.8.1",
-        "@cratis/arc.vite": "24.8.1",
+        "@cratis/arc": "25.3.1",
+        "@cratis/arc.react": "25.3.1",
+        "@cratis/arc.vite": "25.3.1",
         "pixi.js": "8.22.0",
         "react": "19.3.0",
         "react-dom": "19.3.0"
     },
     "peerDependencies": {
-        "@cratis/arc": ">=20.3.1 <25",
-        "@cratis/arc.react": ">=20.3.1 <25",
+        "@cratis/arc": ">=20.3.1 <26",
+        "@cratis/arc.react": ">=20.3.1 <26",
         "@cratis/fundamentals": "^7.10.3",
         "pixi.js": "^8.20.0",
         "react": "^19.0.0",

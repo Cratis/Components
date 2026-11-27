@@ -286,31 +286,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:24.8.1":
-  version: 24.8.1
-  resolution: "@cratis/arc.react@npm:24.8.1"
+"@cratis/arc.react@npm:25.3.1":
+  version: 25.3.1
+  resolution: "@cratis/arc.react@npm:25.3.1"
   dependencies:
-    "@cratis/arc": "npm:24.8.1"
+    "@cratis/arc": "npm:25.3.1"
     "@cratis/fundamentals": "npm:^7.34.4"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/8fdf0e2138c1ad8fec2ee74971b08f01cc58cf03f42ec45821448065004f6ecc0e434a063af05469c8055f9a59f3975e5fd17293ba0eb3feb43efc2bad58cbe3
+  checksum: 10/7d03c5ebaa1a07fc8930aac4064ad117af9b0310c0d125570770a45866d9ee115ca15624971f501c77f8cf806963d67d9a729eac44d7db2fbcd9d62e2eb14f30
   languageName: node
   linkType: hard
 
-"@cratis/arc.vite@npm:24.8.1":
-  version: 24.8.1
-  resolution: "@cratis/arc.vite@npm:24.8.1"
+"@cratis/arc.vite@npm:25.3.1":
+  version: 25.3.1
+  resolution: "@cratis/arc.vite@npm:25.3.1"
   dependencies:
-    "@cratis/arc": "npm:24.8.1"
+    "@cratis/arc": "npm:25.3.1"
     "@swc/core": "npm:^1.16.22"
     magic-string: "npm:^1.4.5"
     oxc-parser: "npm:^0.160.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
     vite: ^6.0.0 || ^7.0.0 || ^8.0.0
-  checksum: 10/8fc545cb545ea9020bf560ecc0074a02ac7dd0abec82c3fd4d458a4d939c74cd0bae3f5b7d788007cac1bd883404e9282fadb2235d4e60935d8229274641e873
+  checksum: 10/fcd41497ce83ae856fcf2f2cb1a476ab09de4e21271aecedf419499905f13789aac889e59994333e930765e29e2e5af4533620cbef290a72f6f4b447150731fe
   languageName: node
   linkType: hard
 
@@ -324,13 +324,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc@npm:24.8.1":
-  version: 24.8.1
-  resolution: "@cratis/arc@npm:24.8.1"
+"@cratis/arc@npm:25.3.1":
+  version: 25.3.1
+  resolution: "@cratis/arc@npm:25.3.1"
   dependencies:
     "@cratis/fundamentals": "npm:^7.34.4"
     rxjs: "npm:^7.8.2"
-  checksum: 10/d6b87dea06619acb63560b114153616a791f158ca09427598f3b07f3338915d4ff2f4b644163b00334fde3904e4f1554070fcacbfe6de3d6361c7da789805045
+  checksum: 10/9cd4fca9e7ffe90ff6a54735c40a393c89b2e1cc44c1cc4c81b5713993fe9561e89f0845565f3c762fe89b7272fd27f6e3dc088fe1c046214d78caf827fa7543
   languageName: node
   linkType: hard
 
@@ -485,9 +485,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components@workspace:Source"
   dependencies:
-    "@cratis/arc": "npm:24.8.1"
-    "@cratis/arc.react": "npm:24.8.1"
-    "@cratis/arc.vite": "npm:24.8.1"
+    "@cratis/arc": "npm:25.3.1"
+    "@cratis/arc.react": "npm:25.3.1"
+    "@cratis/arc.vite": "npm:25.3.1"
     "@internationalized/date": "npm:3.12.4"
     allotment: "npm:1.20.5"
     framer-motion: "npm:13.5.0"
@@ -499,8 +499,8 @@ __metadata:
     react-icons: "npm:5.7.0"
     ts-deepmerge: "npm:8.0.0"
   peerDependencies:
-    "@cratis/arc": ">=20.3.1 <25"
-    "@cratis/arc.react": ">=20.3.1 <25"
+    "@cratis/arc": ">=20.3.1 <26"
+    "@cratis/arc.react": ">=20.3.1 <26"
     "@cratis/fundamentals": ^7.10.3
     pixi.js: ^8.20.0
     react: ^19.0.0
@@ -7350,9 +7350,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:24.8.1"
-    "@cratis/arc.react": "npm:24.8.1"
-    "@cratis/arc.vite": "npm:24.8.1"
+    "@cratis/arc": "npm:25.3.1"
+    "@cratis/arc.react": "npm:25.3.1"
+    "@cratis/arc.vite": "npm:25.3.1"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
     "@digdir/designsystemet-css": "npm:^1.24.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"
